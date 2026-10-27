@@ -44,6 +44,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
+import numpy as np  # noqa: E402
+
 import floatfea.tolerances as TOL  # noqa: E402
 from floatfea.basis import E_STEEL, FY_S355, RHO_STEEL  # noqa: E402
 from floatfea.checks.api_wsd import (  # noqa: E402
@@ -398,6 +400,45 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     built = build_superstructure()
+    # **R992: SECTION 4's BOUND AND SECTION 8(i)'s STATIC FIGURE ARE DERIVED FROM EACH
+    # ROW'S OWN SIX COMPONENTS, NOT READ FROM `sigma_Pa`.** That column was the ONE input
+    # to two published figures that nothing in this repository compared against anything:
+    # `grep -rn sigma_Pa tests/` found a single hit and it was prose in a docstring. Scaled
+    # by 1.5 with the six components, every key, every period and every basis held, the
+    # generator exited 0 and published the six-row bound table 50% high and
+    # `against F_b : 1.5195` where the components give `1.0130`; at 0.6 the same figure
+    # read `0.6078`, UNDER UNITY, beneath the heading "The stand-in section governs".
+    # Section 7 was byte-identical in both directions, and re-running
+    # `api_wsd_utilisation.py` on the doctored table gives a byte-identical CSV -- it reads
+    # the six components and never `sigma_Pa` -- so R978's 736-cell join is green BY
+    # CONSTRUCTION there and no regeneration discipline closes it.
+    #
+    # It is R983's class and not a hand-edit-only state: `sigma = f_a + f_b` was computed
+    # twice from two copies of the section properties, in `floatfea/post/forces_table.py`
+    # and in `api_wsd_utilisation.py` through `floatfea/checks/api_wsd.py`, with nothing
+    # comparing them. The repair is the one definition, not a second join and NOT an
+    # epsilon: recomputing the column and comparing strings at the forces table's own
+    # `.6e` differs on 303 of 1248 rows, so the exact-string route R978 took is measured
+    # unavailable on this channel. It moves no published number -- all six bound rows and
+    # the static figure are identical at the precision each is published at, same station.
+    _FORCE_COMPONENTS = ("N", "Vy", "Vz", "T", "My", "Mz")
+    _members = {(b.name, m.label): m for b in built.bodies for m in b.members}
+
+    def _row_sigma(r: dict[str, str]) -> float:
+        """One forces row's sigma, from THAT ROW's six components through `_stresses`.
+
+        The same definition `member_forces_table.py` used to WRITE the row, reached
+        through the module that owns it rather than restated here, for the reason s.6's
+        sweep and s.7's join both reuse their producers: a second copy of an expression is
+        green whenever the two copies agree, whether or not either agrees with the source.
+        """
+        return float(
+            MFT._stresses(
+                _members[(r["body"], r["member"])],
+                np.array([float(r[c]) for c in _FORCE_COMPONENTS]),
+            )[0]
+        )
+
     sec = _section()
     forces = _read_csv(args.forces)
     util = _read_csv(args.util)
@@ -665,6 +706,25 @@ def main(argv: list[str] | None = None) -> int:
         f"wave height, full scale  : {run['wave_height_full_m']} m "
         f"({run['wave_height_model_m']} m model, Froude lambda = {lam_scale})"
     )
+    # **R994, R988's class: THE VALUE IS INTERPOLATED AND THE COUNT IS A LITERAL** -- here,
+    # and at s.2's design-wave bullet, s.8(iii), s.9 item 3 and the limitations block, five
+    # sites asserting one count, four of them reaching the value through
+    # `float(run['heading_deg'])`, which raises on a sequence.
+    #
+    # **IT IS LEFT A LITERAL BECAUSE A REFUSAL ALREADY HOLDS IT, AND TWO ATTEMPTS AT
+    # SOMETHING ELSE WERE BOTH UNREACHABLE.** Interpolating the count here from the
+    # recorded field's length gives a branch no configuration the rest of this file
+    # survives can reach. Refusing a non-scalar heading HERE is dead code too:
+    # `floatfea/run/pipeline.py:793-806` refuses it first, by name, at `main()`'s
+    # `wave_basis_from_sidecar` call 262 lines above this one -- and for this exact reason,
+    # in its own words, "Coercing either would publish `[0.0, 45.0] deg` or
+    # `[0.0, 45.0] m` in all three artifacts, which is what this refusal replaces."
+    #
+    # So the count is correct by construction already, and what was missing was anything
+    # connecting that refusal to these five sentences.
+    # `test_R994_a_UNION_OF_HEADINGS_is_refused_rather_than_published_as_ONE` is that link,
+    # and a union of headings stays FT2.6's work: it needs an envelope defined, not a prose
+    # edit.
     w(f"heading                  : {run['heading_deg']} deg   -- ONE heading only")
     w(
         f"integrator               : generalized-alpha, rho_inf = {run['rho_inf']}, "
@@ -923,7 +983,7 @@ def main(argv: list[str] | None = None) -> int:
         if r["basis"] != "total_max" or r["station"] != "ROOT":
             continue
         period = float(r["period_full_s"])
-        peak_by_period[period] = max(peak_by_period.get(period, 0.0), abs(float(r["sigma_Pa"])))
+        peak_by_period[period] = max(peak_by_period.get(period, 0.0), _row_sigma(r))
     w(f"{'T_full [s]':>11s} {'worst ROOT sigma BOUND [MPa]':>30s}")
     for period in sorted(peak_by_period):
         w(f"{period:11.1f} {peak_by_period[period] / 1e6:30.3f}")
@@ -1063,7 +1123,9 @@ def main(argv: list[str] | None = None) -> int:
         # here as well, about the same unread quantity.
         wp(
             f"Across the band's interior the bound {_band_dir} as `T` rises. That is read "
-            f"off the table above and not assumed; it does not say which periods are in the "
+            f"off the {_count_word(len(_in_band))} in-band rows of the table above and not "
+            f"assumed; it is a statement about those rows only and draws no conclusion "
+            f"about the periods outside them. It does not say which periods are in the "
             f"band at this height, and the sets above do."
         )
         w("")
@@ -1084,9 +1146,43 @@ def main(argv: list[str] | None = None) -> int:
                 f"`T = {_bound_top:g} s`."
             )
         )
+        # **R991: THE CONCLUSION'S SUBJECT IS `T = _lower`, AND `_band_dir` IS MEASURED
+        # OVER A SERIES THAT EXCLUDES IT.** `_in_band` is [14, 15, 16.2] on this branch by
+        # construction and `_lower` is 12.5, so "the bound falls monotonically, so the
+        # lower edge is what governs" drew a claim about one period from a direction
+        # measured over three others. One variable moved -- the `total_max` ROOT bound,
+        # every key, period, basis and other column held -- and at
+        # `10=900, 12.5=100, 14=500, 15=400, 16.2=300, 20=200` the document published
+        # "the bound falls monotonically ... so the lower edge is what governs and this
+        # case is the one that represents it" over its own table, in which `T = 12.5 s` at
+        # 100.000 MPa is the SMALLEST of the four it marks GOVERNING. At
+        # `10=900, 12.5=600, 14=300, 15=500, 16.2=200, 20=100` it published the opposite
+        # claim while 12.5 at 600.000 IS the governing argmax, because `_monotonic_word`
+        # returns FOUR words and the branch read ONE of them.
+        #
+        # So the direction word is published as what it is -- a measurement over the
+        # band's interior, with the series named -- and the CONCLUSION is read off the
+        # quantity it is about: whether the kept lower-edge case carries the largest bound
+        # among the GOVERNING periods. That is ONE claim covering all four of
+        # `_monotonic_word`'s return values rather than a branch on one of them, which is
+        # why no word is left routed to a conclusion that does not follow from it.
+        _gov_bound = {T: _bound_mpa[T] for T in sorted(_bound_mpa) if T in GOVERNING_PERIODS}
+        _gov_top = max(_gov_bound, key=lambda T: _gov_bound[T])
+        _lower_rank = _rank_by_value(_gov_bound, _lower)
+        _lower_rank_text = (
+            f"its bound is the largest of the {_count_word(len(_gov_bound))} governing "
+            f"periods', {_gov_bound[_lower]:.3f} MPa"
+            if _lower_rank == 1
+            else (
+                f"its bound ranks {_lower_rank} of {len(_gov_bound)} among the governing "
+                f"periods' — {_gov_bound[_lower]:.3f} MPa against "
+                f"{_gov_bound[_gov_top]:.3f} MPa at `T = {_gov_top:g} s`"
+            )
+        )
         _governs_text = (
-            "so the lower edge is what governs and this case is the one that represents it."
-            if _band_dir == "falls monotonically"
+            "so the lower edge is what governs on this bound, which is the reason FA0 "
+            "gives for keeping it."
+            if _lower_rank == 1
             else (
                 "so the lower edge is NOT what governs on this bound, and FA0's reason for "
                 "keeping this case is not reproduced at it."
@@ -1105,8 +1201,10 @@ def main(argv: list[str] | None = None) -> int:
         )
         wp(
             f"It sits just below `sqrt(6.5 H)` by the offset in the block and is kept as "
-            f"the band's lower edge: across the band the bound {_band_dir} as `T` rises, "
-            f"{_governs_text}"
+            f"the band's lower edge. Across the band's interior the bound {_band_dir} as "
+            f"`T` rises — read off the {_count_word(len(_in_band))} in-band rows alone, "
+            f"which do not include `T = {_lower:g} s`. On the governing periods' own "
+            f"bounds {_lower_rank_text}, {_governs_text}"
         )
         wp(
             (
@@ -1325,6 +1423,7 @@ def main(argv: list[str] | None = None) -> int:
     f_utilisations: list[float] = []
     f_fractions: list[float] = []
     f_tie = 0.0
+    _tie_rows = 0
     for fraction in (1.0, *MASS_FRACTION_LADDER):
         swept = build_superstructure(measurement_fraction=fraction)
         members = {m.label: m for b in swept.bodies for m in b.members}
@@ -1334,6 +1433,9 @@ def main(argv: list[str] | None = None) -> int:
             if key[2] == "ROOT" and key[0] == "platform"
         ]
         key, values, sigma = max(roots, key=lambda row: row[2])
+        # R994: the count in the tie sentence below is the number of rows the tie is
+        # measured over, not a literal four.
+        _tie_rows = len(roots)
         f_utilisations.append(sigma / f_b)
         f_fractions.append(fraction)
         f_tie = max(f_tie, max(s for _, _, s in roots) - min(s for _, _, s in roots))
@@ -1354,7 +1456,10 @@ def main(argv: list[str] | None = None) -> int:
     w("")
     w("**The shipped rung is not the worst rung on this measure, and `f` is not a")
     w("conservative choice in either direction.** The root moment rises monotonically as")
-    w("`f` falls: across the eight rungs above, the static root utilisation spans")
+    w(
+        f"`f` falls: across the {_count_word(len(f_fractions))} rungs above, the static "
+        f"root utilisation spans"
+    )
     w(f"`{f_span[0]:.4f}` to `{f_span[1]:.4f}`, a factor of `{f_span[1] / f_span[0]:.2f}`.")
     w(
         f"Compare that with § 7's `K` and `C_m` moves, the larger of which is "
@@ -1368,8 +1473,14 @@ def main(argv: list[str] | None = None) -> int:
     w("two properties of the sweep a reader will want:")
     w("  the dependence is LINEAR in f -- worst residual against the straight line")
     w(f"  through the f = 0 and f = 1 rungs: {f_linearity:.3e} of utilisation")
-    w(f"  the four platform arms TIE on the static basis, to {f_tie:.3e} MPa, so the")
-    w("  member named in each row is one of four identical ones and not a unique worst")
+    w(
+        f"  the {_count_word(_tie_rows)} platform arms TIE on the static basis, to "
+        f"{f_tie:.3e} MPa, so the"
+    )
+    w(
+        f"  member named in each row is one of {_count_word(_tie_rows)} identical ones "
+        f"and not a unique worst"
+    )
     w("```")
     w("")
 
@@ -1415,11 +1526,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     w("```")
     w("")
-    w("### The ten most utilised member-stations")
+    # R994: `[:10]` is a slice, so the heading's count is `len(top)` -- true at 32 rows
+    # and false at fewer, which FT2.7's smaller topologies produce.
+    top = sorted(util, key=lambda r: -float(r["utilisation_K2"]))[:10]
+    w(f"### The {_count_word(len(top))} most utilised member-stations")
     w("")
     w("| # | member | stn | T [s] | governing clause | branch | form | U | U(K=1) | " "U(C_m=1) |")
     w("|---|---|---|---|---|---|---|---|---|---|")
-    top = sorted(util, key=lambda r: -float(r["utilisation_K2"]))[:10]
     for n, r in enumerate(top, start=1):
         w(
             f"| {n} | `{r['member']}` | {r['station']} | {r['period_full_s']} | "
@@ -1428,7 +1541,7 @@ def main(argv: list[str] | None = None) -> int:
             f"{float(r['utilisation_Cm1']):.3f} |"
         )
     w("")
-    w("### What the utilisation is made of, on the same ten rows")
+    w(f"### What the utilisation is made of, on the same {_count_word(len(top))} rows")
     w("")
     w(
         "| # | member | stn | f_a [MPa] | F_a [MPa] | u_axial | f_b [MPa] | F_b [MPa] | "
@@ -1454,11 +1567,9 @@ def main(argv: list[str] | None = None) -> int:
     # ----------------------------------------------------------------------- 8. findings
     w("## 8. Findings")
     w("")
-    static_worst = max(
-        (r for r in static if r["station"] != "TIP"),
-        key=lambda r: abs(float(r["sigma_Pa"])),
-    )
-    static_sigma = abs(float(static_worst["sigma_Pa"]))
+    # R992: the same one definition as s.4's bound, on the static basis.
+    static_worst = max((r for r in static if r["station"] != "TIP"), key=_row_sigma)
+    static_sigma = _row_sigma(static_worst)
     w("**(i) The stand-in section governs, and self-weight alone is enough to do it.**")
     w("")
     w("```")
@@ -1534,20 +1645,35 @@ def main(argv: list[str] | None = None) -> int:
     if _breaking:
         _ex = _breaking[0]
         _ex_rank = _rank_by_value(_bound_mpa, _ex)
+        # **R991: `_ex_rank == 1` DECIDED A CLAIM ABOUT THE GOVERNING SET'S CONTENTS.**
+        # The rank of the EXCLUDED breaking case and the membership of the recorded argmax
+        # coincide only when that argmax is either the breaking case or a governing
+        # period; `_past_long` is a third possibility and neither branch covered it. One
+        # variable moved -- the same `total_max` ROOT bound -- and at
+        # `10=400, 12.5=380, 14=360, 15=350, 16.2=340, 20=900` the document published "so
+        # the governing basis RETAINS the largest bound in the recorded set" while the
+        # largest belongs to `T = 20 s`, which the same document marks `sensitivity`: the
+        # conservatism of the governing basis stated BACKWARDS, which is the defect R986
+        # named at this exact site with the direction word removed and the error kept.
+        # The two clauses are read off their own quantities from here on -- the rank from
+        # `_bound_mpa`, the membership from `GOVERNING_PERIODS`.
+        _ex_rank_text = (
+            f"its bound is the largest of the {_count_word(len(_bound_mpa))}, "
+            f"{_bound_mpa[_ex]:.3f} MPa"
+            if _ex_rank == 1
+            else (
+                f"it ranks {_ex_rank} of {len(_bound_mpa)} — {_bound_mpa[_ex]:.3f} MPa "
+                f"against {_bound_mpa[_bound_top]:.3f} MPa at `T = {_bound_top:g} s`"
+            )
+        )
+        _top_text = "retains" if _bound_top in GOVERNING_PERIODS else "leaves out"
         wp(
             f"**(iv) `T = {_ex:g} s` is excluded from the governing basis** because it "
             f"exceeds the deep-water breaking steepness at this height (§ 4). On § 4's "
-            + (
-                f"stress bound it is the largest of the {_count_word(len(_bound_mpa))}, so "
-                f"the governing basis leaves out the largest bound in the recorded set"
-                if _ex_rank == 1
-                else f"stress bound it ranks {_ex_rank} of {len(_bound_mpa)} — "
-                f"{_bound_mpa[_ex]:.3f} MPa against {_bound_mpa[_bound_top]:.3f} MPa at "
-                f"`T = {_bound_top:g} s` — so the governing basis retains the largest "
-                f"bound in the recorded set"
-            )
-            + " — and reporting it as governing would have meant reporting a wave that "
-            "cannot exist."
+            f"stress bound {_ex_rank_text}, and the governing basis {_top_text} the "
+            f"largest bound in the recorded set, which is at `T = {_bound_top:g} s` — and "
+            f"reporting `T = {_ex:g} s` as governing would have meant reporting a wave "
+            f"that cannot exist."
         )
     else:
         wp(

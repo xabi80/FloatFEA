@@ -126,8 +126,11 @@ largest of the six on the bound above.
 `T = 20 s` is outside the band at the long end. **The governing basis is the four
 periods EZ2 admits: the three in band, and `T = 12.5 s`, which is NOT in band.**
 It sits just below `sqrt(6.5 H)` by the offset in the block and is kept as the band's
-lower edge: across the band the bound falls monotonically as `T` rises, so the lower
-edge is what governs and this case is the one that represents it.
+lower edge. Across the band's interior the bound falls monotonically as `T` rises —
+read off the three in-band rows alone, which do not include `T = 12.5 s`. On the
+governing periods' own bounds its bound is the largest of the four governing
+periods', 483.214 MPa, so the lower edge is what governs on this bound, which is the
+reason FA0 gives for keeping it.
 The trend reverses past the long edge: `T = 20 s` ticks back up above `T = 16.2 s`,
 338.226 against 330.610 MPa.
 
@@ -406,10 +409,10 @@ exercised by the present case set at all, which makes the corresponding assertio
 vacuous rather than passing.
 
 **(iv) `T = 10 s` is excluded from the governing basis** because it exceeds the
-deep-water breaking steepness at this height (§ 4). On § 4's stress bound it is the
-largest of the six, so the governing basis leaves out the largest bound in the
-recorded set — and reporting it as governing would have meant reporting a wave that
-cannot exist.
+deep-water breaking steepness at this height (§ 4). On § 4's stress bound its bound
+is the largest of the six, 762.151 MPa, and the governing basis leaves out the
+largest bound in the recorded set, which is at `T = 10 s` — and reporting `T = 10 s`
+as governing would have meant reporting a wave that cannot exist.
 
 **(v) The truss equivalence is a stiffness equivalence only.** The stand-in tube
 stands in for the intended truss in `EI` and `EA`. It does not represent that

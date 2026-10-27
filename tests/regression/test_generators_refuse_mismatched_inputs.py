@@ -806,13 +806,42 @@ def _flat(document: str) -> str:
     return " ".join(document.split())
 
 
-def _scaled_forces(tmp: Path, basis: str, station: str | None, column: int, factor: Any) -> Path:
-    """The committed forces table with ONE column scaled on ONE basis, everything else held.
+# The forces table's own 0-based column indices, read off its header rather than typed
+# twice: `body, member, station, period_full_s, basis, N, Vy, Vz, T, My, Mz, sigma_Pa,
+# tau_Pa`. `COMPONENTS` is the six a stress is a function of, and scaling all six by one
+# factor scales sigma EXACTLY by that factor, because both of `_stresses`' terms are
+# homogeneous of degree one in the components.
+_HEADER = [
+    c
+    for ln in FORCES.read_text(encoding="utf-8").splitlines()
+    if not ln.startswith("#")
+    for c in [ln.split(",")]
+][0]
+COMPONENTS = tuple(_HEADER.index(c) for c in ("N", "Vy", "Vz", "T", "My", "Mz"))
+SIGMA_PA = _HEADER.index("sigma_Pa")
+AXIAL = _HEADER.index("N")
 
-    `factor` is a number or a callable taking the row's period string. Body, member,
-    station, period and basis are untouched, so every key and period join in the report
-    stays green and the only thing that moves is a value.
+
+def _scaled_forces(
+    tmp: Path,
+    basis: str | None,
+    station: str | None,
+    column: int | tuple[int, ...],
+    factor: Any,
+) -> Path:
+    """The committed forces table with one or more columns scaled, everything else held.
+
+    `basis` and `station` select the rows and `None` means every row; `column` is one
+    0-based index or a tuple of them; `factor` is a number or a callable taking the row's
+    period string. Body, member, station, period and basis are untouched, so every key and
+    period join in the report stays green and the only thing that moves is a value.
+
+    **R993: THE COLUMN SET IS A PARAMETER BECAUSE A DOCSTRING TABLE BELOW WAS MEASURED ON
+    ALL SIX COMPONENTS WHILE THE CELL SCALED `N` ALONE.** Every row of that table belonged
+    to a configuration the cell did not run -- BP0's shape one layer in: the figures were
+    each correct against a rule, and the rule was not the one the code applied.
     """
+    touch = (column,) if isinstance(column, int) else tuple(column)
     lines = FORCES.read_text(encoding="utf-8").splitlines(keepends=True)
     comments = [ln for ln in lines if ln.startswith("#")]
     body = [ln for ln in lines if not ln.startswith("#")]
@@ -821,15 +850,16 @@ def _scaled_forces(tmp: Path, basis: str, station: str | None, column: int, fact
     out_rows: list[str] = []
     for ln in rows:
         cols = ln.rstrip("\r\n").split(",")
-        if cols[4] == basis and (station is None or cols[2] == station):
+        if (basis is None or cols[4] == basis) and (station is None or cols[2] == station):
             f = factor(cols[3]) if callable(factor) else factor
-            cols[column] = f"{float(cols[column]) * f:.6e}"
+            for c in touch:
+                cols[c] = f"{float(cols[c]) * f:.6e}"
             touched += 1
             out_rows.append(",".join(cols) + chr(10))
         else:
             out_rows.append(ln)
     assert touched, f"no {basis} row at station {station} was scaled; the cell is vacuous"
-    out = tmp / f"scaled_{basis}_{column}.csv"
+    out = tmp / f"scaled_{basis}_{'_'.join(str(c) for c in touch)}.csv"
     out.write_text("".join(comments) + head + "".join(out_rows), encoding="utf-8")
     return out
 
@@ -856,6 +886,18 @@ def _bound_table(document: str) -> dict[float, float]:
     return rows
 
 
+def _against_f_b(document: str) -> float:
+    """Section 8(i)'s static-basis ratio AS PUBLISHED, out of its own block.
+
+    Read rather than restated, for `_bound_table`'s reason: it is a function of the forces
+    table this run was handed, so a cell that types it measures one table and silently
+    stops tracking the run.
+    """
+    found = re.search(r"against F_b = [0-9.]+ MPa\s+: ([0-9.]+)", document)
+    assert found, "section 8(i) publishes no `against F_b` ratio"
+    return float(found.group(1))
+
+
 def _band_edges(document: str) -> tuple[float, float]:
     """The associated-period band AS PUBLISHED, from section 4's own line.
 
@@ -871,9 +913,15 @@ def test_R978_a_FORCES_TABLE_WHOSE_VALUES_DISAGREE_is_refused(tmp_path: Path) ->
     """The two tables were joined on keys and on periods, and never on a VALUE.
 
     s.6 publishes forces-derived stresses and s.7 publishes utilisation-derived counts with
-    no comparison between them, so a forces table scaled by 1.5 moves s.6 and leaves s.7
-    identical: `over unity : 4 of 32` and `worst U = 1.71167` published for a structure
-    whose stresses are half again as large, at exit 0, every key and period join green.
+    no comparison between them, so a forces table whose AXIAL column is scaled by 1.5 moved
+    s.6 and left s.7 identical: `over unity : 4 of 32` and `worst U = 1.71167` published for
+    a structure whose stresses are half again as large, at exit 0, every key and period
+    join green.
+
+    **R992: that sentence used to say "a forces table scaled by 1.5", which was false of
+    the column this cell scales and exactly true of `sigma_Pa`** -- the one column the join
+    cannot reach, because `utilisation_row` never reads it. Scaling `N` moves s.7 and IS
+    refused here; the `sigma_Pa` channel is `test_R992_...` below.
 
     The join recomputes each published row through `api_wsd_utilisation.utilisation_row`
     and compares that module's own `csv_text` rendering, over the whole row dict rather
@@ -921,7 +969,9 @@ def test_R978_a_DUPLICATED_FORCES_ROW_is_refused(tmp_path: Path) -> None:
 def test_R978_a_CHANGE_BELOW_THE_PUBLISHED_PRECISION_is_accepted(tmp_path: Path) -> None:
     """EH4's weakening direction: how far may a value move with this join still green?
 
-    Solved rather than sampled. All six components scaled together:
+    Solved rather than sampled, over the six components this cell itself scales --
+    `_scaled_forces(..., COMPONENTS, ...)`, which writes each component back at the CSV's
+    own `.6e`, with the join's own refusal line read for the count:
 
         x (1 + 1e-8)  ->   0 of 736 cells differ   <- accepted here
         x (1 + 1e-7)  ->   8 of 736
@@ -933,9 +983,20 @@ def test_R978_a_CHANGE_BELOW_THE_PUBLISHED_PRECISION_is_accepted(tmp_path: Path)
     was introduced for it:** it is `_CSV_FIGURES`, which the producer's own docstring
     declares as the precision any count taken from that file is measured at. A join at a
     precision the publication does not carry would not be checkable by its reader.
+
+    **R993: THE TABLE USED TO BE MEASURED ON ALL SIX AND THE CELL USED TO SCALE `N`
+    ALONE**, which gives `0 / 0 / 82` -- every published row belonging to a configuration
+    this cell did not run, and the saturation claim wrong by a factor of 4.7 for it. The
+    cell now runs the configuration the table describes.
+
+    **AND THE CHANNEL IS NAMED BECAUSE THE 1e-7 ROW DEPENDS ON IT.** The reviewer measured
+    `13 of 736` for all six and `8` is what this path gives, because writing a component
+    back at `.6e` truncates part of a perturbation that small. Neither figure is wrong;
+    `8` is the one this cell's own injection produces, and R993 is exactly the defect of
+    publishing the other one here.
     """
     out = _out_dir(tmp_path)
-    forces = _scaled_forces(tmp_path, "total_instant", None, 5, 1.0 + 1e-8)
+    forces = _scaled_forces(tmp_path, "total_instant", None, COMPONENTS, 1.0 + 1e-8)
     proc = _run("f6_results_report.py", tmp_path, "--forces", str(forces))
     assert proc.returncode == 0, (
         "a change below the precision the CSV publishes was refused, which would make the "
@@ -965,45 +1026,36 @@ def test_R986_the_BOUND_SENTENCES_follow_the_BOUND_TABLE(tmp_path: Path) -> None
     Every assertion is taken against the table THE SAME RUN PUBLISHED, so the cell holds at
     any ordering rather than at the one it plants.
     """
-    out = _out_dir(tmp_path)
-    peaks: dict[str, float] = {}
-    for ln in FORCES.read_text(encoding="utf-8").splitlines():
-        if ln.startswith("#"):
-            continue
-        cols = ln.split(",")
-        if len(cols) > 11 and cols[4] == "total_max" and cols[2] == "ROOT":
-            peaks[cols[3]] = max(peaks.get(cols[3], 0.0), abs(float(cols[11])))
-    assert len(peaks) >= 3, peaks
+    # **THE CHANNEL MOVED WITH R992's REPAIR, AND THIS CELL WOULD OTHERWISE HAVE GONE
+    # VACUOUS WHILE STAYING GREEN.** It used to plant the bound by scaling the `sigma_Pa`
+    # COLUMN -- the column R992 took out of this generator's hands. Section 4's bound is
+    # derived from each row's own six components now, so scaling that column moves nothing
+    # and the cell would have measured the SHIPPED ordering while asserting against a
+    # planted one. It plants the six components, which scales the bound by exactly their
+    # factor, and the pre-planting figures come from a CONTROL RUN rather than from a
+    # recomputation here.
+    before = _bound_table(_control(tmp_path))
+    assert len(before) >= 3, before
 
     # Targets that RISE with T across the band and do NOT tick back up past the long edge
     # -- the inverse of all three sentences.
-    order = sorted(peaks, key=float)
-    targets = {p: 300.0e6 + 50.0e6 * n for n, p in enumerate(order)}
-    targets[order[-1]] = 400.0e6
-    forces = _scaled_forces(tmp_path, "total_max", "ROOT", 11, lambda p: targets[p] / peaks[p])
-
-    proc = _run("f6_results_report.py", tmp_path, "--forces", str(forces))
-    assert proc.returncode == 0, (proc.stdout + proc.stderr)[-700:]
-    raw = (out / "o.md").read_text(encoding="utf-8")
-    written = _flat(raw)
+    order = sorted(before)
+    targets = {p: 300.0 + 50.0 * n for n, p in enumerate(order)}
+    targets[order[-1]] = 400.0
+    raw, written = _planted_report(tmp_path, targets)
     published = _bound_table(raw)
-
-    assert "not the reference sea state" not in written, (
-        "this cell holds the sea state and moves only the bound, so the REFERENCE branch "
-        "is the one that must be under test."
-    )
     # **THE ARGMAX AND THE BAND EDGES ARE BOTH READ, NOT TYPED.** The first version of
     # this cell compared against `10.0` and against `12.542 .. 16.316`, and
     # `test_no_undeclared_tolerance_reaches_a_comparison` was red on all three -- correctly,
     # because they are sea-state quantities and a cell that restates them stops tracking
     # the run the moment the height moves, which is R902's defect inside a test. The
-    # pre-planting argmax comes from the committed table the cell itself read, and the band
-    # comes from the DOCUMENT'S OWN published edges.
-    before = max(peaks, key=lambda p: peaks[p])
+    # pre-planting argmax comes from the CONTROL RUN's own published table, and the band
+    # comes from the planted run's OWN published edges.
+    argmax_before = max(before, key=lambda T: before[T])
     top = max(published, key=lambda T: published[T])
-    assert top != float(before), (
-        f"the planted bound did not move the argmax off T = {before} s, so this cell is "
-        f"measuring the shipped ordering and not a reordering."
+    assert top != argmax_before, (
+        f"the planted bound did not move the argmax off T = {argmax_before:g} s, so this "
+        f"cell is measuring the shipped ordering and not a reordering."
     )
     lo, hi = _band_edges(raw)
     band = [published[T] for T in sorted(published) if lo <= T <= hi]
@@ -1126,3 +1178,331 @@ def test_R986_a_RECORDED_PERIOD_WITH_NO_BOUND_ROW_is_refused(tmp_path: Path) -> 
     )
     assert "carries no `total_max` ROOT row for" in proc.stdout + proc.stderr
     assert not (out / "o.md").exists()
+
+
+def _control(tmp: Path) -> str:
+    """The report as the COMMITTED inputs produce it, run here rather than read.
+
+    Every assertion that compares a planted run against the unplanted one needs the
+    unplanted figures, and reading them out of `results/F6/` would make the cell a
+    comparison against a file the same commit can edit. A real process, in its own
+    directory so it cannot collide with the planted run's `o.md`.
+    """
+    here = tmp / "control"
+    here.mkdir(exist_ok=True)
+    if not (here / "o.md").exists():
+        proc = _run("f6_results_report.py", here)
+        assert proc.returncode == 0, (proc.stdout + proc.stderr)[-700:]
+    return (here / "o.md").read_text(encoding="utf-8")
+
+
+def _band_rows(document: str) -> dict[float, list[str]]:
+    """Section 4's associated-period band table, one split row per recorded period.
+
+    The membership and breaking claims below are about sets this document publishes, so the
+    cells read the published rows rather than restating `GOVERNING_PERIODS` or re-running
+    the steepness test -- either would compare one source against itself (R977).
+    """
+    rows: dict[float, list[str]] = {}
+    inside = False
+    for line in document.splitlines():
+        if "edge offset" in line and "basis" in line:
+            inside = True
+            continue
+        if inside:
+            parts = line.split()
+            if len(parts) < 6:
+                break
+            rows[float(parts[0])] = parts
+    assert rows, "section 4 publishes no associated-period band table"
+    return rows
+
+
+def _published_basis(document: str) -> dict[float, str]:
+    """Which periods THIS DOCUMENT marks `GOVERNING`, from its own band table."""
+    return {T: parts[-1] for T, parts in _band_rows(document).items()}
+
+
+def _published_breaking(document: str) -> list[float]:
+    """Which periods THIS DOCUMENT marks `BREAKING`, from its own band table."""
+    return sorted(T for T, parts in _band_rows(document).items() if "BREAKING" in parts)
+
+
+def _planted_bound(tmp: Path, targets_mpa: dict[float, float], control: str) -> Path:
+    """A forces table whose per-case stress BOUND is the given per-period MPa values.
+
+    The factor per period is `target / published`, where `published` is the CONTROL run's
+    own bound table -- not a recomputation here, which would be a second copy of
+    `_stresses` (R983), and not the `sigma_Pa` column, which R992 takes out of this
+    generator's hands entirely. All six components are scaled by one factor, which scales
+    the bound by exactly that factor, so the argmax MEMBER within each period is unchanged
+    and the only thing that moves is the ordering the sentences are about.
+    """
+    published = _bound_table(control)
+    assert set(published) == set(targets_mpa), (sorted(published), sorted(targets_mpa))
+    return _scaled_forces(
+        tmp,
+        "total_max",
+        "ROOT",
+        COMPONENTS,
+        lambda p: targets_mpa[float(p)] / published[float(p)],
+    )
+
+
+def _planted_report(tmp: Path, targets_mpa: dict[float, float]) -> tuple[str, str]:
+    """`(raw, flattened)` for a run at a planted bound ordering, on the REFERENCE branch."""
+    out = _out_dir(tmp)
+    control = _control(tmp)
+    forces = _planted_bound(tmp, targets_mpa, control)
+    proc = _run("f6_results_report.py", tmp, "--forces", str(forces))
+    assert proc.returncode == 0, (proc.stdout + proc.stderr)[-700:]
+    raw = (out / "o.md").read_text(encoding="utf-8")
+    assert "not the reference sea state" not in raw, (
+        "these cells hold the sea state and move only the bound, so the REFERENCE branch "
+        "is the one that must be under test."
+    )
+    # **WHAT IS ASSERTED IS THE ORDERING, NOT THE TARGET VALUE, AND THAT IS NOT AN
+    # EPSILON IN DISGUISE.** The targets are a construction device: the components are
+    # written back at the CSV's own `.6e`, so a factor of 2.66 lands the bound on
+    # `900.001` where `900.000` was asked for. Every assertion in these cells reads the
+    # table the run PUBLISHED, and what each one is about is which period carries which
+    # rank -- so the ordering is the postcondition the planting has to meet, and the
+    # targets are 100 MPa apart, which no rounding at the sixth figure can cross.
+    published = _bound_table(raw)
+    assert sorted(published, key=lambda T: published[T]) == sorted(
+        targets_mpa, key=lambda T: targets_mpa[T]
+    ), (published, targets_mpa)
+    return raw, _flat(raw)
+
+
+def test_R991_the_LOWER_EDGE_CONCLUSION_follows_the_GOVERNING_BOUNDS(tmp_path: Path) -> None:
+    """`_band_dir` was measured over `_in_band` and decided a sentence about `T = 12.5 s`.
+
+    **The series the premise is measured over EXCLUDES the case the conclusion is about.**
+    `_in_band` is `[14, 15, 16.2]` on the reference branch by construction and the kept
+    lower edge is `12.5`, so "across the band the bound falls monotonically as `T` rises,
+    so the lower edge is what governs and this case is the one that represents it" drew a
+    claim about one period from a direction measured over three others.
+
+    One variable moved -- the per-case bound, every key, period, basis and station held --
+    and at this ordering the document published that sentence over its own table, in which
+    `T = 12.5 s` at 100.000 MPa is the SMALLEST of the four the same document marks
+    GOVERNING. The direction word was correctly measured. The conclusion was not.
+
+    The conclusion is read off the governing periods' own bounds from here on, which is
+    ONE claim covering all four of `_monotonic_word`'s return values rather than a branch
+    on one of them -- so this cell asserts the premise and the conclusion DISAGREE, which
+    the repaired generator can say and the old one could not.
+    """
+    raw, written = _planted_report(
+        tmp_path, {10.0: 900.0, 12.5: 100.0, 14.0: 500.0, 15.0: 400.0, 16.2: 300.0, 20.0: 200.0}
+    )
+    published = _bound_table(raw)
+    lo, hi = _band_edges(raw)
+    interior = [T for T in sorted(published) if lo <= T <= hi]
+    band = [published[T] for T in interior]
+    governing = {T: published[T] for T, b in _published_basis(raw).items() if b == "GOVERNING"}
+    lower = min(governing)
+
+    # The premise, as the table shows it: the band's interior falls.
+    assert len(band) >= 2 and band == sorted(band, reverse=True) and band[0] > band[-1], band
+    assert "falls monotonically" in written
+
+    # The conclusion, about the kept lower edge: it is the SMALLEST governing bound, so it
+    # is not what governs -- and the premise above would have said the opposite.
+    assert lower not in interior, (
+        f"T = {lower:g} s is inside the published band, so this cell is not measuring the "
+        f"case the conclusion is about."
+    )
+    assert governing[lower] == min(governing.values()), governing
+    assert "the lower edge is NOT what governs on this bound" in written, (
+        f"the document says the lower edge governs while its own table puts "
+        f"T = {lower:g} s at {governing[lower]:.3f} MPa, the smallest of the governing "
+        f"{sorted(governing.values())} (R991)."
+    )
+    # And the series the direction word is measured over is NAMED, so a reader can tell
+    # that it excludes the case the next clause is about.
+    assert f"in-band rows alone, which do not include `T = {lower:g} s`" in written
+
+
+def test_R991_the_MEMBERSHIP_CONCLUSION_follows_the_GOVERNING_SET(tmp_path: Path) -> None:
+    """`_ex_rank == 1` decided whether the governing SET contains the recorded argmax.
+
+    The rank of the EXCLUDED breaking case and the membership of the argmax coincide only
+    when that argmax is either the breaking case or a governing period. `_past_long` is a
+    third possibility and neither branch covered it: at this ordering the largest bound
+    belongs to `T = 20 s`, which the same document marks `sensitivity`, and section 8(iv)
+    published "so the governing basis RETAINS the largest bound in the recorded set".
+
+    **That states the conservatism of the governing basis backwards**, which is the defect
+    R986 named at this exact site, with the direction word removed and the error kept. It
+    is the second of EH4's two directions on this sentence: the first cell makes the
+    premise and the conclusion disagree, this one puts the argmax where neither old branch
+    could describe it.
+    """
+    raw, written = _planted_report(
+        tmp_path, {10.0: 400.0, 12.5: 380.0, 14.0: 360.0, 15.0: 350.0, 16.2: 340.0, 20.0: 900.0}
+    )
+    published = _bound_table(raw)
+    basis = _published_basis(raw)
+    top = max(published, key=lambda T: published[T])
+    breaking = _published_breaking(raw)
+
+    # The state: the argmax is neither the breaking case nor a governing period.
+    assert basis[top] != "GOVERNING", (top, basis)
+    assert breaking and top not in breaking, (top, breaking)
+
+    assert "retains the largest bound in the recorded set" not in written, (
+        f"the document calls the governing basis conservative while its own band table "
+        f"marks the argmax T = {top:g} s ({published[top]:.3f} MPa) as {basis[top]} "
+        f"(R991)."
+    )
+    assert (
+        f"leaves out the largest bound in the recorded set, which is at `T = {top:g} s`" in written
+    )
+    # The rank clause is still read off the whole recorded set, and it is NOT the clause
+    # that decides membership: the breaking case is second here, not first. The rank is
+    # counted over the PUBLISHED table, so the assertion reads the artifact.
+    assert published[breaking[0]] < published[top], (published, breaking, top)
+    rank = 1 + sum(1 for v in published.values() if v > published[breaking[0]])
+    assert f"it ranks {rank} of {len(published)} —" in written
+
+
+def test_R991_a_NON_MONOTONIC_BAND_can_still_have_the_LOWER_EDGE_GOVERNING(
+    tmp_path: Path,
+) -> None:
+    """EH4's weakening direction on the same sentence, and the third of four words.
+
+    `_monotonic_word` returns four strings and the old `_governs_text` branched on one of
+    them, so "is not monotonic" and "has too few cases to be monotonic" both routed to the
+    strong negative claim -- "the lower edge is NOT what governs on this bound, and FA0's
+    reason for keeping this case is not reproduced at it." At this ordering the band's
+    interior is not monotonic AND the kept lower edge carries the largest governing bound,
+    so the negative claim is false in the opposite direction from the first cell's.
+
+    This is the cell that shows the two are decoupled: the word is published as a
+    measurement over the band's interior and the conclusion comes from the governing
+    bounds, so all four words route to a claim that follows from them.
+    """
+    raw, written = _planted_report(
+        tmp_path, {10.0: 900.0, 12.5: 600.0, 14.0: 300.0, 15.0: 500.0, 16.2: 200.0, 20.0: 100.0}
+    )
+    published = _bound_table(raw)
+    lo, hi = _band_edges(raw)
+    band = [published[T] for T in sorted(published) if lo <= T <= hi]
+    governing = {T: published[T] for T, b in _published_basis(raw).items() if b == "GOVERNING"}
+    lower = min(governing)
+
+    # The premise: not monotonic in either direction, and measured over at least two rows,
+    # so the fourth word ("has too few cases") is not what is under test here.
+    assert len(band) >= 2 and band != sorted(band) and band != sorted(band, reverse=True), band
+    assert "is not monotonic" in written
+    assert "has too few cases to be monotonic" not in written
+
+    # The conclusion, the other way from the first cell: the lower edge IS the governing
+    # argmax, so the negative claim the old branch would have published is refused.
+    assert governing[lower] == max(governing.values()), governing
+    assert "the lower edge is NOT what governs on this bound" not in written, (
+        f"a non-monotonic band published the negative claim while its own table puts the "
+        f"kept lower edge T = {lower:g} s at {governing[lower]:.3f} MPa, the largest of "
+        f"the governing {sorted(governing.values())} (R991)."
+    )
+    assert "so the lower edge is what governs on this bound" in written
+
+
+def test_R992_the_BOUND_and_the_STATIC_FIGURE_follow_the_COMPONENTS(tmp_path: Path) -> None:
+    """`sigma_Pa` was the one input to two published figures and was joined to nothing.
+
+    R978's join recomputes all 23 utilisation columns through the producer's own row dict
+    and `sigma_Pa` is in none of them, because `api_wsd_utilisation.py` reads the six
+    components and never that column. `grep -rn sigma_Pa tests/` found one hit and it was
+    prose in a docstring. So: scaled by 1.5 with the six components, every key, period and
+    basis held, the generator exited 0 and published section 4's six-row bound table 50%
+    high and `against F_b : 1.5195` where the components give `1.0130`; at 0.6 the same
+    figure read `0.6078`, UNDER UNITY, beneath "**(i) The stand-in section governs**".
+    Section 7 was byte-identical both ways, and re-running the utilisation producer on the
+    doctored table gives a byte-identical CSV, so the 736-cell join is green BY
+    CONSTRUCTION there rather than by luck.
+
+    **Both directions, and both halves.** The two `sigma_Pa` arms assert the published
+    figures do NOT follow that column; the two component arms assert they DO -- without
+    which the first two would be satisfied by a generator that published a constant. The
+    repair is one definition and NOT an epsilon: recomputing the column and comparing
+    strings at the forces table's own `.6e` differs on 303 of 1248 rows, so the
+    exact-string route R978 took is measured unavailable on this channel.
+    """
+    control = _control(tmp_path)
+    before_bound = _bound_table(control)
+    before_ratio = _against_f_b(control)
+
+    for n, factor in enumerate((1.5, 0.6)):
+        here = tmp_path / f"sigma_{n}"
+        here.mkdir()
+        forces = _scaled_forces(here, None, None, SIGMA_PA, factor)
+        proc = _run("f6_results_report.py", here, "--forces", str(forces))
+        assert proc.returncode == 0, (proc.stdout + proc.stderr)[-700:]
+        raw = (here / "o.md").read_text(encoding="utf-8")
+        assert _bound_table(raw) == before_bound, (
+            f"section 4's stress bound followed `sigma_Pa` x {factor}, a column nothing in "
+            f"this repository compares against anything (R992)."
+        )
+        assert _against_f_b(raw) == before_ratio, (
+            f"section 8(i)'s static-basis utilisation followed `sigma_Pa` x {factor}; at "
+            f"0.6 that figure goes under unity beneath a heading that says the section "
+            f"governs (R992)."
+        )
+
+    # And the other direction: a COMPONENT moving must move both figures, or the two
+    # assertions above would hold for a generator that published a constant.
+    bound_dir = tmp_path / "components_bound"
+    bound_dir.mkdir()
+    forces = _scaled_forces(bound_dir, "total_max", "ROOT", COMPONENTS, 1.5)
+    proc = _run("f6_results_report.py", bound_dir, "--forces", str(forces))
+    assert proc.returncode == 0, (proc.stdout + proc.stderr)[-700:]
+    moved = _bound_table((bound_dir / "o.md").read_text(encoding="utf-8"))
+    assert all(moved[T] > before_bound[T] for T in before_bound), (moved, before_bound)
+
+    static_dir = tmp_path / "components_static"
+    static_dir.mkdir()
+    forces = _scaled_forces(static_dir, "static", "ROOT", COMPONENTS, 1.5)
+    proc = _run("f6_results_report.py", static_dir, "--forces", str(forces))
+    assert proc.returncode == 0, (proc.stdout + proc.stderr)[-700:]
+    assert _against_f_b((static_dir / "o.md").read_text(encoding="utf-8")) > before_ratio
+
+
+def test_R994_a_UNION_OF_HEADINGS_is_refused_rather_than_published_as_ONE(
+    tmp_path: Path,
+) -> None:
+    """Five sentences in this document state ONE heading, and the count was a literal.
+
+    The header block's "-- ONE heading only", s.2's "Regular design waves at one heading",
+    s.8(iii)'s "Only heading 0 degrees has been run", s.9 item 3's "Only 0 degrees is run"
+    and the limitations block all assert the same count, and four of them reach the value
+    through `float(run['heading_deg'])`, which raises on a sequence. **So interpolating the
+    count at the header alone would have been a branch no configuration the rest of the
+    file survives can reach**, and writing a refusal into the generator for it would have
+    been dead code of a second kind: `floatfea/run/pipeline.py:793-806` ALREADY refuses a
+    non-scalar `run.heading_deg`, by name, at `main()`'s `wave_basis_from_sidecar` call 262
+    lines above the header block -- and for this exact reason, in its own words, "Coercing
+    either would publish `[0.0, 45.0] deg` or `[0.0, 45.0] m` in all three artifacts, which
+    is what this refusal replaces."
+
+    **So the count was already correct by construction, and what was missing was this
+    cell.** Nothing in the repository connected that refusal to the five sentences it is
+    what makes true -- which is why two repairs got written for a defect that had a guard:
+    the guard was cited by nothing a reader of those sentences would find.
+
+    FT2.6's union of headings is the configuration that makes all five false at once, and
+    it is two steps away. What it needs is an envelope definition, not a prose edit.
+    """
+    side = _sidecar(tmp_path, heading_deg=[0.0, 45.0])
+    proc = _run("f6_results_report.py", tmp_path, "--provenance", str(side))
+    assert proc.returncode != 0, (
+        "a sidecar recording two headings was accepted; the document would state ONE "
+        "heading at five sites for a run that covered two, with every force, stress and "
+        "utilisation in s.6 and s.7 a function of which (R994)."
+    )
+    blob = proc.stdout + proc.stderr
+    assert "`run.heading_deg` is [0.0, 45.0] (list), not a number" in blob, blob[-700:]
+    assert "in all three artifacts" in blob, blob[-700:]
+    assert _wrote_nothing(tmp_path)
