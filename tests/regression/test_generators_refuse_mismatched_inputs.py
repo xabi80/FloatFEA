@@ -1536,3 +1536,36 @@ def test_R994_a_UNION_OF_HEADINGS_is_refused_rather_than_published_as_ONE(
     assert "`run.heading_deg` is [0.0, 45.0] (list), not a number" in blob, blob[-700:]
     assert "in all three artifacts" in blob, blob[-700:]
     assert _wrote_nothing(tmp_path)
+
+
+def test_R1022_a_RECORDED_PERIOD_OUTSIDE_ITS_DOMAIN_is_refused_by_the_REPORT(
+    tmp_path: Path,
+) -> None:
+    """The third reader, and the one the reviewer drove as a real subprocess.
+
+    `f6_results_report.py` read the sidecar copy of `periods_full_s` with
+    `[float(x) for x in ...]` and no domain. At `T = 0.5 s` it wrote the document and
+    exited 0, publishing
+
+        0.5    61.9992  BREAKING        no 96.013% short    sensitivity
+
+    plus `Breaking, so unable to describe a real wave of this height: [0.5].` -- a sea-state
+    verdict for a period outside the range every DECLARED period is held to.
+
+    **THE DOMAIN REFUSAL FIRES BEFORE THE PERIOD JOIN**, which is the half that proves the
+    door is reached rather than some later check catching the same file. `0.5` is also an
+    orphan against the solved cases, so the join at s.4 would refuse it too; the needle
+    below is the domain message and not the join message.
+    """
+    side = _sidecar(tmp_path, periods_full_s=[0.5, 12.5, 14.0, 15.0, 16.2, 20.0])
+    proc = _run("f6_results_report.py", tmp_path, "--provenance", str(side))
+    assert proc.returncode != 0, proc.stdout[-2000:]
+    blob = proc.stdout + proc.stderr
+    assert "recorded periods are not admissible" in blob, blob[-2000:]
+    assert "index 0: 0.5 s" in blob, blob[-2000:]
+    assert _wrote_nothing(tmp_path), sorted(p.name for p in tmp_path.glob("*"))
+    # NOT the join: `0.5` is also a recorded period with no solved case, so s.4 would
+    # refuse this very file for a different reason. If THAT is what fired, the domain
+    # check could be absent and this cell would still pass -- so its message is excluded.
+    assert "Recorded with no solved case" not in blob, blob[-2000:]
+    assert "do not describe the same set of cases" not in blob, blob[-2000:]

@@ -977,7 +977,7 @@ def test_R1012_the_SHIPPED_declared_set_is_still_admitted() -> None:
 
 
 class _Npz:
-    """The two things the check reads off an `np.load` result: `files` and `__getitem__`.
+    """`files` and `__getitem__`, as `np.load` returns them.
 
     A stub rather than a written npz, so these cells cost microseconds and the measured
     end-to-end arms in `tests/regression/test_fl2d_band_check.py` carry the real file.
@@ -991,11 +991,45 @@ class _Npz:
         return self._m[key]
 
 
-def _two_records(top: tuple[float, ...], per_case: tuple[float, ...]) -> _Npz:
+class _MappingOnly:
+    """`__getitem__` and NO `files` -- R1021 half two, as a type.
+
+    The check read `set(getattr(raw, "files", ()))`, so an object without the attribute
+    got an empty set of available keys and compared 0 of N: a mapping carrying all six
+    CORRECT second records was admitted having checked nothing, and so was one carrying
+    six wrong ones. The repair has no attribute and no default -- absence is `raw[key]`
+    raising `KeyError` -- so this class and `_Npz` must now behave identically, which is
+    what `_BOTH_STUBS` parametrises.
+    """
+
+    def __init__(self, mapping: dict[str, Any]) -> None:
+        self._m = mapping
+
+    def __getitem__(self, key: str) -> Any:
+        return self._m[key]
+
+
+_BOTH_STUBS = (_Npz, _MappingOnly)
+
+
+def _two_records(
+    top: tuple[float, ...],
+    per_case: tuple[float, ...],
+    *,
+    stub: type = _Npz,
+    drop: tuple[int, ...] = (),
+) -> Any:
+    """A file recording the period twice per case, with `drop` indices missing the second.
+
+    `drop` is how the reviewer expressed the evasion: indices 0 and 2 deleted alongside the
+    same permutation gave EXIT=0, `U = 2.78942` at a published `T = 14.0 s`, all three
+    artifacts written, and a band table byte-identical to the correct run.
+    """
     mapping: dict[str, Any] = {"periods_full_s": list(top)}
     for i, value in enumerate(per_case):
-        mapping[f"case{i}/period_full_s"] = value
-    return _Npz(mapping)
+        if i not in drop:
+            mapping[f"case{i}/period_full_s"] = value
+    return stub(mapping)
 
 
 SIX = (10.0, 12.5, 14.0, 15.0, 16.2, 20.0)
@@ -1037,31 +1071,117 @@ def test_R1005_a_SET_comparison_is_GREEN_on_the_very_input_this_refuses() -> Non
     assert PERMUTED != SIX
 
 
-def test_R1005_an_index_with_NO_SECOND_RECORD_abstains_rather_than_refusing() -> None:
-    """The weakening direction (EH4), and `validated_export_scale`'s own shape.
+@pytest.mark.parametrize("stub", _BOTH_STUBS, ids=["np_load", "mapping_without_files"])
+@pytest.mark.parametrize(
+    "drop, count",
+    [
+        pytest.param((0, 2), 2, id="the_two_the_permutation_moves"),
+        pytest.param(tuple(range(6)), 6, id="every_second_record_deleted"),
+        pytest.param((3,), 1, id="one_the_permutation_does_not_touch"),
+    ],
+)
+def test_R1021_a_MISSING_SECOND_RECORD_is_REFUSED_not_abstained_on(
+    stub: type, drop: tuple[int, ...], count: int
+) -> None:
+    """**THIS CELL ASSERTED THE DEFECT.** It is inverted here, in the rule's own commit.
 
-    One record is one record: there is nothing to compare and nothing to refuse. The
-    danger in this direction is a file with NO per-case keys at all, which would make the
-    check vacuous -- held by the cell below.
+    The first version abstained at an index with no second record, on
+    `validated_export_scale` and its `beside is not None` shape, and this cell asserted
+    that abstention while the docstring above named it as the weak direction. Abstention
+    is an EXIT: deleting `case0/period_full_s` and `case2/period_full_s` alongside the same
+    permutation that `test_R1005_a_PERMUTED_...` refuses gave EXIT=0, `U = 2.78942` at a
+    published `T = 14.0 s`, all three artifacts written, and a band table byte-identical
+    to the correct run's.
+
+    **THOSE FIGURES ARE THE REVIEWER'S (R1021), NOT MINE**, and the one I have dropped
+    rather than repeat is "384 rows of `member_forces.csv` carrying byte-identical forces
+    under a changed period label" -- I did not take that count, and a figure nobody in
+    this file measured does not belong in it (BF0). What IS measured here is that the
+    state is refused; the end-to-end arm is
+    `tests/regression/test_fl2d_band_check.py::test_END_TO_END_R1021_...`.
+
+    A check that is turned off by deleting the thing it reads is not a check, and the
+    non-vacuity assertion that guarded it covers ONE file while `run()` is handed any npz.
     """
     from floatfea.run.pipeline import refuse_disagreeing_period_records
 
-    only_top = _Npz({"periods_full_s": list(PERMUTED)})
-    refuse_disagreeing_period_records(Path("dynamic_inputs.npz"), PERMUTED, only_top)
-
-    # And a file carrying the second record for SOME cases is checked for those.
-    partial = _Npz({"periods_full_s": list(PERMUTED), "case2/period_full_s": 14.0})
     with pytest.raises(ConfigError) as excinfo:
-        refuse_disagreeing_period_records(Path("dynamic_inputs.npz"), PERMUTED, partial)
-    assert "differ at 1 of 6 indices" in str(excinfo.value), str(excinfo.value)
+        refuse_disagreeing_period_records(
+            Path("dynamic_inputs.npz"),
+            PERMUTED,
+            _two_records(PERMUTED, SIX, stub=stub, drop=drop),
+        )
+    message = str(excinfo.value)
+    assert f"{count} of 6 cases carry no " in message, message
+    assert f"indices {sorted(drop)}" in message, message
+    assert "refused rather than abstained on" in message, message
+
+
+def test_R1021_an_object_with_NO_files_ATTRIBUTE_compares_EVERY_index() -> None:
+    """Half two, and the direction that makes it dangerous rather than merely odd.
+
+    `set(getattr(raw, "files", ()))` turned "this object cannot list its keys" into "this
+    file records nothing", so the check returned clean with 0 of 6 compared -- including on
+    a mapping whose six second records were all CORRECT, which is the state that makes the
+    evasion invisible. Absence is the read failing now, so the two stubs agree.
+    """
+    from floatfea.run.pipeline import refuse_disagreeing_period_records
+
+    # NON-VACUOUS: the stub really does lack the attribute the old code reached for.
+    assert not hasattr(_MappingOnly({}), "files")
+    assert hasattr(_Npz({}), "files")
+
+    # Admitted, both stubs, on an agreeing file -- the control.
+    for stub in _BOTH_STUBS:
+        refuse_disagreeing_period_records(
+            Path("dynamic_inputs.npz"), SIX, _two_records(SIX, SIX, stub=stub)
+        )
+
+    # And refused, both stubs, on the permutation. Before the repair the second of these
+    # was ADMITTED: 0 of 6 compared, nothing said.
+    for stub in _BOTH_STUBS:
+        with pytest.raises(ConfigError) as excinfo:
+            refuse_disagreeing_period_records(
+                Path("dynamic_inputs.npz"), PERMUTED, _two_records(PERMUTED, SIX, stub=stub)
+            )
+        assert "differ at 2 of 6 indices" in str(excinfo.value), str(excinfo.value)
+
+
+def test_R1021_a_TEXT_second_record_is_REFUSED_rather_than_float_CONVERTED() -> None:
+    """`float("14.0") == 14.0`, so a text record would AGREE with the array it checks.
+
+    R825 and its family: a declared field arriving as a different type, accepted, and used.
+    The two records would read as agreeing while one of them is not a recorded quantity at
+    all, which is the one thing this function exists to be able to say.
+    """
+    from floatfea.run.pipeline import refuse_disagreeing_period_records
+
+    # THE PLANTED STRING IS DERIVED FROM THE DATA, not typed. `str(SIX[2])` is `"14.0"`,
+    # so there is no numeric literal here to declare or to drift: the cell asserts that
+    # Python's own `float()` makes the text record and the exported period EQUAL, which is
+    # the reason a text record would pass the cross-check at all.
+    planted = str(SIX[2])
+    assert float(planted) == SIX[2]  # non-vacuous: the conversion really does succeed
+    mapping: dict[str, Any] = {"periods_full_s": list(SIX)}
+    for i, value in enumerate(SIX):
+        mapping[f"case{i}/period_full_s"] = value
+    mapping["case2/period_full_s"] = planted
+    with pytest.raises(ConfigError) as excinfo:
+        refuse_disagreeing_period_records(Path("dynamic_inputs.npz"), SIX, _Npz(mapping))
+    message = str(excinfo.value)
+    assert "1 of 6 second period records are not numbers" in message, message
+    assert "= '14.0' (str)" in message, message
 
 
 def test_R1005_the_COMMITTED_npz_carries_the_SECOND_RECORD_for_EVERY_CASE() -> None:
-    """The check is NON-VACUOUS on the file this repository ships.
+    """The WEAKENING direction (EH4): the required record must not refuse the shipped file.
 
-    The abstention above is what makes the check safe on a file that records the period
-    once. It is also how the check could become decoration without anything going red, so
-    the property is asserted against the real file: six cases, six per-case records.
+    This cell used to carry the whole defence of the abstention -- the check could go
+    vacuous on a file recording the period once, so the committed file was asserted to
+    carry the key for every case. R1021 removed the abstention, so the property is no
+    longer what makes the check safe; it is what makes the new REQUIREMENT satisfiable by
+    the file this repository ships. Both readings want the same six keys, and the figure is
+    re-measured here rather than carried over.
     """
     import numpy as np
 
@@ -1177,7 +1297,16 @@ def test_R1019_a_RECORDED_period_outside_WAVE_PERIOD_is_REFUSED(tmp_path: Path) 
     for bad in (0.5, 0.0, WAVE_PERIOD[2] * 1.01):
         top = flat["periods_full_s"].copy()
         top[0] = bad
+        # **BOTH RECORDS MOVE, SO THE FILE IS SELF-CONSISTENT.** The first version of this
+        # cell moved only the top-level array, which makes the file disagree with itself --
+        # and `refuse_disagreeing_period_records` (R1005/R1021) refuses that eight lines
+        # later for a different reason. The cell still passed, because it asserts the
+        # DOMAIN message rather than merely that something raised; but the INPUT it
+        # described was one two checks catch, so it could not show the domain check is
+        # load-bearing. Moving both records leaves exactly one check that can refuse this
+        # file, which is what the revert arm then measures.
         probe = dict(flat, periods_full_s=top)
+        probe["case0/period_full_s"] = np.array(bad)
         npz = tmp_path / f"probe_{bad}.npz"
         np.savez(npz, **probe)
 
@@ -1194,15 +1323,32 @@ def test_R1019_a_RECORDED_period_outside_WAVE_PERIOD_is_REFUSED(tmp_path: Path) 
         with pytest.raises(ConfigError) as excinfo:
             run_pipeline(load_config(path))
         message = str(excinfo.value)
-        assert "`periods_full_s` records 1 of 6 periods outside" in message, message
-        assert "[1, 100] s" in message, message
-        assert f"index 0: {bad:g} s" in message, message
+        # **THE NEEDLES MOVED WITH THE RULE (BP0).** R1019's refusal was written inline
+        # here; R1022 made it `checked_recorded_periods` and gave it the readers it had
+        # missed, so
+        # the message is the door's. The cell still asserts the same three facts -- the
+        # count, the range, and the index with its value -- against the text that now
+        # carries them, rather than against the text of a refusal that no longer exists.
+        assert "1 of 6 recorded periods are not admissible values in s" in message, message
+        assert "[1, 100]" in message, message
+        assert f"index 0: {bad:g} s is outside the admissible range" in message, message
+        # AND THE SOURCE IS NAMED, which is what tells a reader which caller of the door
+        # refused and which file to re-export.
+        assert f"{npz.name}: `periods_full_s`" in message, message
         written = sorted(p.name for p in out_dir.glob("*")) if out_dir.exists() else []
         assert written == [], written
 
 
 def test_R1019_the_COMMITTED_array_is_INSIDE_the_declared_range() -> None:
-    """The weakening direction: the new refusal must not refuse the shipped file."""
+    """The weakening direction: the new refusal must not refuse the shipped file.
+
+    **AND IT IS THE PIPELINE'S HALF OF ONE PROPERTY, NOT A SECOND COPY OF IT (R983).**
+    `tests/unit/test_run_config.py::test_R1022_the_COMMITTED_ARRAY_and_SIDECAR_are_both_ADMITTED`
+    asks the same question of the door and of BOTH shipped files, and of their agreement.
+    This cell asks it of the array `run()` itself reads, through the key `run()` reads it
+    by -- which is the thing that would go wrong if the npz were re-exported with a
+    different key and the door were handed something else.
+    """
     import numpy as np
 
     from floatfea.run.config import WAVE_PERIOD

@@ -134,3 +134,62 @@ def test_the_names_this_test_guards_are_the_ones_the_consumers_ASK_FOR() -> None
         f"the consumers reach for {unguarded}, which `CONSUMED` does not list, so those "
         f"attributes are unprotected. Add them to `CONSUMED`."
     )
+
+
+def test_R1025_the_GENERATORS_CATEGORY_MOVES_WITH_THE_LIBRARYS_LIMIT(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """R1010's rewrite, held by a test rather than by a grid.
+
+    R1010 replaced `if s > 1.0 / 7.0` and `period_full_s < lo` in this generator with
+    reads of `_case.verdict`. Both copies were the same float as the library's, so nothing
+    moved -- which is why a 160000-point equivalence grid could show the rewrite changed no
+    published number and could NOT show the rewrite was load-bearing. What a second copy
+    costs is the NEXT edit to either constant: the library's verdict moves and the
+    published column does not.
+
+    So the library's limit is moved, and the generator's category has to move with it. A
+    copy of the literal would leave `category` where it was. ONE VARIABLE: the limit; the
+    wavelength and the steepness are asserted unchanged, so the physics is held fixed and
+    only the DECISION moves (BG0).
+    """
+    from floatfea.loads import period_band as PB
+
+    module = _load_by_path()
+    h_full, period = 24.2, 14.0
+    # The INJECTED limit. It is declared here rather than written twice, because the
+    # assertion below and the patch have to be the same number or the cell proves nothing
+    # (C131's shape: one value written twice with a comment hoping they stay equal).
+    _PATCHED_LIMIT = 0.05
+
+    lam, s, _where, category = module.steepness(period, h_full)  # type: ignore[attr-defined]
+    assert category == "in", (category, s)
+    # NON-VACUOUS in both directions: the real limit does not call this case breaking, and
+    # the patched one must. Without the second assertion the patch could be a no-op.
+    assert s < PB.BREAKING_STEEPNESS_LIMIT, (s, PB.BREAKING_STEEPNESS_LIMIT)
+    # not-a-tolerance: `_PATCHED_LIMIT` is the INJECTED limit this cell sets two lines
+    # below -- an input to the experiment, chosen so that it sits between the real limit
+    # and this case's steepness, which is what makes the category move. Nothing is
+    # compared for agreement against it and loosening it cannot turn a red green: a value
+    # above `s` makes the cell fail at `category2 == "breaking"`, and a value above the
+    # real limit makes it fail here.
+    assert (
+        # not-a-tolerance: `_PATCHED_LIMIT` is the INJECTED limit this cell sets two lines
+        # below, chosen to sit between the real limit and this case's steepness so the
+        # category has to move. It is an input to the experiment: a value above `s` makes
+        # the cell fail at `category2 == "breaking"`, and one above the real limit makes
+        # it fail here, so loosening it cannot turn a red green.
+        #
+        # MARKED rather than left to the guard's blind spot: a FUNCTION-LOCAL name holding
+        # a literal is not resolved by `tests/test_no_tolerance_literals.py` (a
+        # MODULE-LEVEL one is -- measured, see the commit message), so this comparison was
+        # silently exempt. Relying on that would be working around the guard.
+        s
+        > _PATCHED_LIMIT
+    ), s
+
+    monkeypatch.setattr(PB, "BREAKING_STEEPNESS_LIMIT", _PATCHED_LIMIT)
+    lam2, s2, where2, category2 = module.steepness(period, h_full)  # type: ignore[attr-defined]
+    assert (lam2, s2) == (lam, s), ((lam2, s2), (lam, s))
+    assert category2 == "breaking", (category2, s2)
+    assert "BREAKING" in where2, where2

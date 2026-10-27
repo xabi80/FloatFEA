@@ -41,6 +41,7 @@ import yaml
 __all__ = [
     "ConfigError",
     "RunConfig",
+    "checked_recorded_periods",
     "load_config",
 ]
 
@@ -217,6 +218,109 @@ def _checked(value: Any, name: str, bound: Bound) -> float:
             f"not a local override."
         )
     return got
+
+
+def checked_recorded_periods(values: Any, source: str) -> tuple[float, ...]:
+    """Every RECORDED full-scale wave period, held to the DECLARED period's own domain.
+
+    **ONE DOMAIN PER QUANTITY, AND ONE DOOR TO IT (R1019, R1022, R896).** `_checked`
+    above holds every period a CONFIGURATION declares to `WAVE_PERIOD`. The same quantity
+    also arrives recorded -- `periods_full_s` in the dynamic-inputs npz, and the copy of
+    it in the provenance sidecar -- and that side was read with a bare
+    `tuple(float(x) for x in ...)` and checked against nothing. That asymmetry is R877 and
+    R881: the guarantee has to be made at the READER, because what the configuration
+    declared is a different question and a recorded field with no domain is an input
+    accepted and used other than as declared (FR1 head two).
+
+    R1019 put the check at ONE reader and R1022 found the two it missed:
+    `scripts/f4_dynamic_residual.py`'s `load()` -- which is how
+    `scripts/measure/member_forces_table.py` reads the same file -- and
+    `scripts/measure/f6_results_report.py`, both of which publish EZ0 deliverables. Driven
+    as a real subprocess at `T = 0.5 s`, the report generator wrote
+    `0.5  61.9992  BREAKING  no  96.013% short  sensitivity` and exited 0 (the reviewer's
+    measurement, R1022). So this is a function and not three copies of a comparison
+    (R983), and each of the three callers has a cell asserting the refusal arrives from
+    its own site:
+
+        floatfea/run/pipeline.py              tests/unit/test_run_pipeline_refusals.py
+        scripts/f4_dynamic_residual.py        tests/verification/rung4/test_f4_g41_dynamic.py
+        scripts/measure/f6_results_report.py  tests/regression/
+                                                test_generators_refuse_mismatched_inputs.py
+
+    **NOTHING HERE CLAIMS THOSE ARE ALL OF THEM.** An earlier draft of this docstring said
+    "the three are", and a completeness claim that nothing asserts is the shape R1022
+    itself was -- a rule believed to cover a field, short by two callers. There is no
+    census guard for it ("no new apparatus"), so completeness is the reviewer's reading
+    and this sentence is what says so.
+
+    WHAT IT DOES NOT CATCH, stated rather than implied: a MODEL-scale array written into
+    this full-scale field. Every period divided by `sqrt(50)` is `1.41 .. 2.83 s`, which is
+    inside `[1, 100] s`, so this door admits it. **WHAT HAPPENS TO IT IS MEASURED AND NOT
+    ASSUMED** -- driven end to end through `floatfea.cli.main` with those six periods
+    declared as `governing_periods` and nothing overridden:
+
+        EXIT=2, artifacts written: []
+        refuse_cases_that_cannot_govern names all six -- "T = 1.41421 s at H = 24.2 m:
+        breaking; band 12.542 .. 16.316 s, H/lambda = 7.7499 (limit 0.1429)" -- and
+        refuses BEFORE the solve
+
+    So the screen catches it, as a refusal rather than a label. The one configuration under
+    which it publishes is FA0's declared override: with all six named in
+    `out_of_band_governing` the run is EXIT=0 and reports `U = 2.78942` at
+    `T = 1.41421 s`, which is the decision the configuration asked for and which every
+    artifact records. A probe that sets that override measures nothing about this door --
+    my first one did.
+
+    Raises `ConfigError` -- the same class the declared side raises, because it is the same
+    refusal about the same quantity.
+    """
+    unit, low, high = WAVE_PERIOD
+    try:
+        items = list(values)
+    except TypeError as exc:
+        raise ConfigError(
+            f"{source}: expected a sequence of periods in {unit}, got "
+            f"{type(values).__name__}, which cannot be iterated ({exc})."
+        ) from exc
+
+    def _short(item: Any) -> str:
+        """`repr` of the offending value, capped -- an integer too large to be a float is
+        one of the shapes refused here (R883), and its repr is 401 digits long."""
+        text = repr(item)
+        return text if len(text) <= 40 else f"{text[:37]}... ({len(text)} characters)"
+
+    out: list[float] = []
+    bad: list[tuple[int, str]] = []
+    for i, item in enumerate(items):
+        if isinstance(item, (bool, str, bytes)):
+            bad.append((i, f"{_short(item)} ({type(item).__name__}) is not a recorded number"))
+            out.append(float("nan"))
+            continue
+        try:
+            got = float(item)
+        except (TypeError, ValueError, OverflowError) as exc:
+            bad.append((i, f"{_short(item)} ({type(item).__name__}) is not a period ({exc})"))
+            out.append(float("nan"))
+            continue
+        out.append(got)
+        if got != got:
+            bad.append((i, f"NaN is not a value; the admissible range is [{low:g}, {high:g}]"))
+        elif not (low <= got <= high):
+            bad.append((i, f"{got:g} {unit} is outside the admissible range [{low:g}, {high:g}]"))
+
+    if bad:
+        rows = "; ".join(f"index {i}: {why}" for i, why in bad)
+        raise ConfigError(
+            f"{source}: {len(bad)} of {len(items)} recorded periods are not admissible "
+            f"values in {unit} -- {rows}. Every DECLARED period is held to "
+            f"[{low:g}, {high:g}] {unit} at this module's own `_checked`, and a recorded "
+            f"period decides the sea-state verdict, the published `period_full_s` label "
+            f"and which rows are in the envelope -- so it is held to the same range, at "
+            f"the reader, where the guarantee does not depend on what the configuration "
+            f"declared (R877, R881). The range is declared in floatfea/run/config.py and "
+            f"changing it is a reviewed change, not a local override."
+        )
+    return tuple(out)
 
 
 def _require(mapping: Any, key: str, where: str) -> Any:

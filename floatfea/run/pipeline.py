@@ -54,10 +54,10 @@ from floatfea.run.config import (
     FROUDE_LAMBDA,
     HEADING,
     WAVE_HEIGHT,
-    WAVE_PERIOD,
     Bound,
     ConfigError,
     RunConfig,
+    checked_recorded_periods,
 )
 
 __all__ = [
@@ -1312,19 +1312,84 @@ def refuse_disagreeing_period_records(npz: Path, periods: tuple[float, ...], raw
     (the six periods are the same six), so neither the FL2(d) screen nor `unknown` can see
     it, and a set comparison is green on exactly this input -- measured.
 
-    An index whose per-case key is absent has ONE record and nothing to compare, which is
-    the shape `validated_export_scale`'s `beside is not None` guard already uses for the
-    two records of the SCALE. That abstention is the direction this check is weak in, so
-    `tests/unit/test_run_pipeline_refusals.py` asserts the committed file carries the key
-    for every case -- otherwise the check could go vacuous with nothing saying so.
+    **THE SECOND RECORD IS REQUIRED FOR EVERY CASE, NOT ABSTAINED ON (R1021).** The first
+    version of this check abstained at an index whose per-case key was absent, on
+    `validated_export_scale`'s `beside is not None` shape, and said so in this docstring as
+    its weak direction. Abstention is an EXIT, and THE REVIEWER drove it (R1021, and the
+    figures are theirs): deleting `case0/` and `case2/period_full_s` alongside the same
+    permutation gave EXIT=0, `U = 2.78942` at a published `T = 14.0 s`, all three artifacts
+    written, and a band table byte-identical to the correct run's. That the state is
+    refused now is asserted by
+    `tests/regression/test_fl2d_band_check.py::test_END_TO_END_R1021_...`, end to end
+    through `run()`. A check that can be turned off by deleting the thing it reads is not
+    a check, and the non-vacuity assertion that guarded it covers ONE file -- `run()` is
+    handed any npz, and FT2.6's heading envelope is in this step's own gate.
+
+    So: every case carries the second record, or the file is refused. That is R878's
+    complete-or-empty with the empty half removed.
+
+    Whether that is a NEW demand on the format is the question a reader should ask, and it
+    is answered by a cell rather than by a sentence here:
+    `tests/unit/test_run_pipeline_refusals.py::`
+    `test_R1005_the_COMMITTED_npz_carries_the_SECOND_RECORD_for_EVERY_CASE` asserts the
+    shipped file already satisfies it, six cases and six records, and is the EH4 weakening
+    direction for this rule. An earlier draft of this paragraph argued the point instead,
+    by asserting what the export script writes and what `load()` requires -- two claims
+    about other modules that nothing in this repository checks (CW0).
+
+    **ABSENCE IS THE READ FAILING, NOT A DEFAULT (R1021 half two).** This read
+    `set(getattr(raw, "files", ()))`, so an object with no `.files` compared 0 of N and
+    returned clean -- including a mapping carrying all N correct second records. There is
+    no attribute and no default here now: `raw[key]` raising `KeyError` is what absence
+    means, so `raw` need only support `__getitem__` and nothing can stand in for "nothing
+    is recorded".
     """
-    available = set(getattr(raw, "files", ()))
-    disagree = [
-        (i, periods[i], float(raw[f"case{i}/period_full_s"]))
-        for i in range(len(periods))
-        if f"case{i}/period_full_s" in available
-        and float(raw[f"case{i}/period_full_s"]) != periods[i]
-    ]
+    missing: list[int] = []
+    mistyped: list[tuple[int, Any]] = []
+    disagree: list[tuple[int, float, float]] = []
+    for i, top in enumerate(periods):
+        key = f"case{i}/period_full_s"
+        try:
+            value = raw[key]
+        except KeyError:
+            missing.append(i)
+            continue
+        # A `str` second record would `float()` to a number and compare EQUAL, so the two
+        # records would "agree" while one of them is not a recorded quantity at all --
+        # R825's family, a declared field arriving as a different type and being used.
+        if isinstance(value, (bool, str, bytes)):
+            mistyped.append((i, value))
+            continue
+        try:
+            beside = float(value)
+        except (TypeError, ValueError, OverflowError):
+            mistyped.append((i, value))
+            continue
+        if beside != top:
+            disagree.append((i, top, beside))
+
+    if missing:
+        raise ConfigError(
+            f"{npz.name}: {len(missing)} of {len(periods)} cases carry no "
+            f"`case{{i}}/period_full_s` -- indices {missing}. This format records every "
+            f"case's period TWICE, and the second record is what makes it possible to tell "
+            f"that the top-level array still describes the cases beside it. Without it the "
+            f"file is accepted with nothing cross-checking the label the results are "
+            f"published under: a permuted `periods_full_s` with the second records deleted "
+            f"publishes one case's forces under another case's period at exit 0 (R1021). "
+            f"Absence is refused rather than abstained on. Re-export the file with "
+            f"`python scripts/export_f4_dynamic_inputs.py`."
+        )
+    if mistyped:
+        rows = "; ".join(
+            f"index {i}: `case{i}/period_full_s` = {v!r} ({type(v).__name__})" for i, v in mistyped
+        )
+        raise ConfigError(
+            f"{npz.name}: {len(mistyped)} of {len(periods)} second period records are not "
+            f"numbers -- {rows}. A text record converts to a float and compares EQUAL to "
+            f"the top-level array, so the two records would agree while one of them is not "
+            f"a recorded quantity (R825). Re-export the file."
+        )
     if not disagree:
         return
     rows = "; ".join(
@@ -1407,44 +1472,16 @@ def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunRes
             f"moment. Declare the file's own scale, or export a file at this one."
         )
 
-    periods = tuple(float(x) for x in raw["periods_full_s"])
-
-    # **R1019: THE RECORDED PERIOD ARRAY HAD NO DECLARED DOMAIN.** `config.py` runs every
-    # DECLARED period through `_checked(..., WAVE_PERIOD)`; this array is read with
-    # `float(x)` and checked against nothing, which is R877/R881's asymmetry in the one
-    # recorded numeric field `RECORDED_BOUNDS` does not cover. Under FR1 that is head two
-    # -- an input accepted and used other than as declared -- and the array decides the
-    # FL2(d) verdict, the published `period_full_s` label and which rows are in the
-    # envelope.
-    #
-    # Measured at the reader rather than at a comparison (R877), so the guarantee does not
-    # depend on what the configuration declared. What it catches, driven in-process:
-    #
-    #     T = 0.5 s   H/lambda = 62.0 -- a BREAKING row published for a period outside
-    #                 WAVE_PERIOD's [1, 100] s, reported as sensitivity at exit 0
-    #     T = 1e-160  lambda = 1.56e-320, H/lambda = inf -- a BREAKING verdict from an
-    #                 infinity
-    #     T = 1e-170  lambda underflows to 0.0 and `steepness` raises ZeroDivisionError
-    #                 out of the screen; see R1020, repaired at the library's own door
-    #
-    # A model-scale array written into this full-scale field is the realistic shape --
-    # every period divided by sqrt(50) -- and it is NOT caught by a domain check, because
-    # 1.41 .. 2.83 s is inside the range. It is caught by the breaking screen instead, and
-    # this check is not claimed to cover it.
-    outside = [(i, T) for i, T in enumerate(periods) if not WAVE_PERIOD[1] <= T <= WAVE_PERIOD[2]]
-    if outside:
-        unit, low, high = WAVE_PERIOD
-        rows = "; ".join(f"index {i}: {T:g} {unit}" for i, T in outside)
-        raise ConfigError(
-            f"{cfg.load_cases.npz.name}: `periods_full_s` records "
-            f"{len(outside)} of {len(periods)} periods outside the admissible range "
-            f"[{low:g}, {high:g}] {unit} -- {rows}. Every DECLARED period is held to that "
-            f"range at the configuration reader, and this array decides the sea-state "
-            f"verdict, the published `period_full_s` label and which rows are in the "
-            f"envelope, so it is held to the same one here -- at the reader, where the "
-            f"guarantee does not depend on what the configuration declared (R877, R881). "
-            f"One domain per quantity, whichever side of the I/O boundary it arrives from."
-        )
+    # **R1019/R1022: THE RECORDED PERIOD ARRAY IS HELD TO THE DECLARED PERIOD'S DOMAIN**,
+    # through the shared door. R1019 put the check inline here and nowhere else;
+    # `scripts/f4_dynamic_residual.py`'s `load()` and `scripts/measure/f6_results_report.py`
+    # WERE the same read with no domain, which is what R1022 found, and both go through
+    # the door now -- each with a cell asserting the refusal arrives from its own site.
+    # The domain, the refusal and the reason it is made at the READER rather than at a
+    # comparison are all in `checked_recorded_periods`.
+    periods = checked_recorded_periods(
+        raw["periods_full_s"], f"{cfg.load_cases.npz.name}: `periods_full_s`"
+    )
 
     # R1005, before `unknown` and for the same reason it exists: `unknown` asks
     # whether a declared case EXISTS, this asks whether the file AGREES WITH ITSELF

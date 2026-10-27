@@ -355,12 +355,48 @@ def test_the_report_names_the_verdict_it_answers() -> None:
     )
 
 
+def _findings() -> list[tuple[str, str]]:
+    """Every `**R<n>. (<disposition>)` heading in the verdict, id and disposition.
+
+    Split out from `_blocking()` so the FORMAT and the DISPOSITION are two questions
+    (R1032). The non-vacuity assertion below needs the first and was asking the second.
+    """
+    return [
+        (m.group(1), m.group(2))
+        for m in re.finditer(r"^\*\*(R\d+)\.?\s*\(([^)]*)\)", VERDICT_TEXT, re.MULTILINE)
+    ]
+
+
+# The dispositions a verdict writes are `BLOCKS`, `STILL BLOCKS`, `DOES NOT BLOCK` and
+# `NOT LEDGERED`. Three of the four contain the substring `block`.
+_NOT_BLOCKING = ("not block", "non-blocking", "non blocking")
+
+
 def _blocking() -> set[str]:
-    """Findings the verdict marks as blocking, read from its own headings."""
+    """Findings the verdict marks as blocking, read from its own headings.
+
+    **R1032: THIS READ "DOES NOT BLOCK" AS BLOCKING.** The test was `"block" in
+    disposition.lower()` with nothing looking for the negation, so every ledger item was
+    returned as a blocking one. The guard it feeds asks whether a BLOCKING item was routed
+    to 4a, so the false positives made it ask that of items the verdict explicitly did not
+    block.
+
+    The reviewer counted eight of verdict 23's headings and ten of verdict 24's. Over what
+    this function actually reads the number is larger, because `VERDICT_TEXT` is the WHOLE
+    verdict file and not one entry -- measured at the answered commit, 174 headings parsed,
+    the old predicate returning 160 and this one 44. That is 116 false positives, and it is
+    the figure for this function rather than for a verdict.
+
+    Fixed at the predicate rather than extended (EK2): the negation is checked first, and
+    `NOT LEDGERED` carries no `block` substring at all so it needs no case of its own.
+    """
     out: set[str] = set()
-    for m in re.finditer(r"^\*\*(R\d+)\.?\s*\(([^)]*)\)", VERDICT_TEXT, re.MULTILINE):
-        if "block" in m.group(2).lower():
-            out.add(m.group(1))
+    for item, disposition in _findings():
+        text = disposition.lower()
+        if any(negation in text for negation in _NOT_BLOCKING):
+            continue
+        if "block" in text:
+            out.add(item)
     return out
 
 
@@ -372,9 +408,15 @@ def test_a_blocking_item_is_not_routed_to_4a() -> None:
     verdict's ruling about which step that item belongs to.
     """
     blocking = _blocking()
-    assert blocking, (
-        f"no blocking finding parsed from {VERDICT.name}. The heading format "
-        "changed and this check passes on anything."
+    # **R1032, SECOND HALF: THIS ASSERTED THE WRONG THING.** It asserted that some
+    # finding BLOCKS, as a proxy for "the heading format still parses" -- and the two are
+    # different questions. With the substring defect above it was satisfied by a verdict
+    # whose every heading said DOES NOT BLOCK, so it never fired; with the defect fixed it
+    # would fire on a verdict that legitimately blocks nothing, which is a state the loop
+    # is trying to reach. What it needs to know is whether the FORMAT still matches.
+    assert _findings(), (
+        f"no `**R<n>. (<disposition>)` heading parsed from {VERDICT.name} at all. The "
+        "heading format changed and this check passes on anything."
     )
     misrouted = [
         i for i, st in _status_cells() if "4a" in _plain(st) and set(_MENTION.findall(i)) & blocking

@@ -679,3 +679,48 @@ def test_the_mass_injection_size_is_the_DECLARED_one(inputs: Any) -> None:
         f"`tolerances.py` declares {F4_G41_MASS_INJECTION_EPS!r}. Both force values are "
         "functions of it, so the ceilings describe a counter-case that was not run."
     )
+
+
+def test_R1022_a_RECORDED_PERIOD_OUTSIDE_ITS_DOMAIN_is_refused_by_load(tmp_path: Path) -> None:
+    """One of the readers of `periods_full_s` R1019 missed, which had no domain at all.
+
+    `load()` read `tuple(float(x) for x in raw["periods_full_s"])` and checked it against
+    nothing, and it is how `scripts/measure/member_forces_table.py` reads the same file --
+    so this line sits upstream of a published EZ0 deliverable. R1019 put the domain at
+    `floatfea/run/pipeline.py` only; the repair is one function, `checked_recorded_periods`,
+    and this cell is what says it is reached from HERE.
+
+    The sha is recomputed for the mutated file, so the staleness check above cannot be
+    what refuses it -- otherwise this cell would pass without reaching the door.
+    """
+    import json
+
+    import numpy as np
+
+    from floatfea.run.config import ConfigError
+
+    tmp = tmp_path
+    raw = np.load(_R.NPZ, allow_pickle=False)
+    flat = {k: raw[k] for k in raw.files}
+    top = flat["periods_full_s"].copy()
+    top[0] = 0.5
+    flat["periods_full_s"] = top
+    npz = tmp / "mutated.npz"
+    np.savez(npz, **flat)
+    prov = tmp / "mutated.provenance.json"
+    prov.write_text(json.dumps({"npz": {"sha256": _R._sha256(npz)}}), encoding="utf-8")
+
+    with pytest.raises(ConfigError) as excinfo:
+        _R.load(npz=npz, provenance=prov)
+    message = str(excinfo.value)
+    assert "recorded periods are not admissible" in message, message
+    assert "index 0: 0.5 s" in message, message
+
+    # THE CONTROL, same harness: the unmutated file through the same two arguments loads.
+    np.savez(tmp / "clean.npz", **{k: raw[k] for k in raw.files})
+    clean_prov = tmp / "clean.provenance.json"
+    clean_prov.write_text(
+        json.dumps({"npz": {"sha256": _R._sha256(tmp / "clean.npz")}}), encoding="utf-8"
+    )
+    inp = _R.load(npz=tmp / "clean.npz", provenance=clean_prov)
+    assert len(inp.periods_full_s) == 6, inp.periods_full_s

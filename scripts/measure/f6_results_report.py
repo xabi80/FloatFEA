@@ -66,6 +66,7 @@ from floatfea.model.platform import (  # noqa: E402
     _outer_diameter,
     build_superstructure,
 )
+from floatfea.run.config import checked_recorded_periods  # noqa: E402
 from floatfea.run.pipeline import (  # noqa: E402
     STATIONS_CHECKED,
     validated_export_scale,
@@ -562,7 +563,20 @@ def main(argv: list[str] | None = None) -> int:
     # once, so the two sites cannot drift. Nothing is written to the file before the join
     # raises -- `out` is a buffer and the artifact is written at the end -- so moving the
     # binding earlier does not let a refused run publish anything.
-    _recorded = [float(x) for x in run["periods_full_s"]]
+    # R1022: through the same door as the other two readers. This was
+    # `[float(x) for x in ...]` with no domain, and THE REVIEWER drove it as a real
+    # subprocess at `T = 0.5 s` and got `0.5  61.9992  BREAKING  no  96.013% short
+    # sensitivity` written into this document at exit 0 -- that measurement is theirs, not
+    # mine. That this site refuses instead now is asserted by
+    # `tests/regression/test_generators_refuse_mismatched_inputs.py::`
+    # `test_R1022_a_RECORDED_PERIOD_OUTSIDE_ITS_DOMAIN_is_refused_by_the_REPORT`, which
+    # also excludes the s.4 period-join message so a later check cannot stand in for this
+    # one.
+    _recorded = list(
+        checked_recorded_periods(
+            run["periods_full_s"], f"{args.provenance.name}: `run.periods_full_s`"
+        )
+    )
     f_b, f_b_branch = allowable_bending(sec["D"], sec["t"], FY_S355, E_STEEL)
 
     out: list[str] = []

@@ -194,8 +194,17 @@ def steepness(period_full_s: float, h_full_m: float) -> tuple[float, float, str,
     # FU0: lambda, H/lambda and both band edges come from the ONE definition in
     # `floatfea.loads.period_band`. This line used to read `9.81 * ...` -- the right
     # value as a bare literal, which is the same defect as the wrong one in a sibling
-    # script (R902 / R983). The four outcomes below are still decided here because the
-    # `where` STRINGS are this deliverable's own wording; the numbers are not.
+    # script (R902 / R983).
+    #
+    # **AND THE SENTENCE THAT USED TO FINISH THIS COMMENT WAS FALSE OF THE CODE BELOW IT.**
+    # It read "the four outcomes below are still decided here because the `where` STRINGS
+    # are this deliverable's own wording" -- which R1010 stopped being true in the same
+    # function, 20 lines down, and left standing here.
+    #
+    # That the outcomes are READ rather than decided is not asserted in prose: it is
+    # `tests/unit/test_forces_table_reexports.py`'s R1025 cell, which patches the
+    # library's limit and requires this function's category to move with it (a copy of
+    # the literal would not move).
     _case = PB.classify_case(period_full_s, h_full_m)
     lam, s = _case.wavelength_m, _case.steepness
     lo, hi = _case.band_low_s, _case.band_high_s
@@ -666,9 +675,15 @@ def _write_summary(
         "",
         "## The wave basis, per case (EZ2(d))",
         "",
+        # **R1026: `0.1429` WAS A LITERAL IN A PUBLISHED DELIVERABLE.** The fraction
+        # `1/7` is the constant's own definition in `floatfea/basis.py` and stays as
+        # text under FU1; the DECIMAL was a second copy of the value, in the one place a
+        # reader takes it from. It regenerates byte-identical, because
+        # `f"{BREAKING_STEEPNESS_LIMIT:.4f}"` is already `0.1429` -- which is the point:
+        # nothing is wrong today and the next edit to the constant is what this stops.
         f"`H = {h_full} m` full scale. Deep-water `lambda = g T^2 / (2 pi)`; the "
         "associated-period band is `sqrt(6.5 H) .. sqrt(11 H)`; the breaking limit is "
-        "`H/lambda = 1/7 = 0.1429`.",
+        f"`H/lambda = 1/7 = {PB.BREAKING_STEEPNESS_LIMIT:.4f}`.",
         "",
         "| T (s) | lambda (m) | H/lambda | position | basis |",
         "|---|---|---|---|---|",

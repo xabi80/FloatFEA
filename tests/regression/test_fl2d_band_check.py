@@ -568,3 +568,40 @@ def test_END_TO_END_a_SIDECAR_LESS_npz_still_RUNS_and_says_the_screen_was_not_pe
     result = run_pipeline(load_config(path))
     assert result.band_screen == (), "no height is recorded, so no band can be decided"
     assert result.wave_basis == {}, result.wave_basis
+
+
+def test_END_TO_END_R1021_the_PERMUTATION_WITH_THE_SECOND_RECORDS_DELETED_REFUSES(
+    tmp_path,
+) -> None:
+    """The evasion R1005 left open, driven exactly as the reviewer drove it.
+
+    The same permutation as the cell above, plus `case0/period_full_s` and
+    `case2/period_full_s` DELETED. Before R1021 the per-index abstention made that
+    EXIT=0: `U = 2.78942` at a published `T = 14.0 s`, all three artifacts written, and a
+    band table byte-identical to the correct run's. The refusal the cell above asserts was
+    reachable only while the file still carried the evidence against itself.
+
+    **THOSE FIGURES ARE THE REVIEWER'S (R1021), NOT MINE.** The reviewer also counted 384
+    rows of `member_forces.csv` carrying byte-identical forces under a changed period
+    label; I did not take that count and do not repeat it as though I had. What this cell
+    measures is its own assertion below: refused, naming the indices, nothing on disk.
+    """
+    path, out_dir, npz = _example_in(tmp_path, copy_data=True)
+    raw = np.load(npz, allow_pickle=False)
+    flat = {k: raw[k] for k in raw.files if k not in ("case0/period_full_s", "case2/period_full_s")}
+    top = flat["periods_full_s"].copy()
+    top[0], top[2] = top[2], top[0]
+    flat["periods_full_s"] = top
+    np.savez(npz, **flat)
+
+    with pytest.raises(ConfigError) as caught:
+        run_pipeline(load_config(path))
+    message = str(caught.value)
+    assert "2 of 6 cases carry no " in message, message
+    assert "indices [0, 2]" in message, message
+    assert "refused rather than abstained on" in message, message
+    written = sorted(p.name for p in out_dir.glob("*")) if out_dir.exists() else []
+    assert written == [], (
+        f"the refusal left {written} on disk; nothing should describe a run whose forces "
+        f"and period labels came from different cases"
+    )

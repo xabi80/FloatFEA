@@ -23,7 +23,13 @@ import pytest
 import yaml
 
 from floatfea.basis import FY_S355
-from floatfea.run.config import ConfigError, _NoDuplicateLoader, load_config
+from floatfea.run.config import (
+    WAVE_PERIOD,
+    ConfigError,
+    _NoDuplicateLoader,
+    checked_recorded_periods,
+    load_config,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 EXAMPLE = ROOT / "examples" / "platform12_placeholder.yaml"
@@ -568,3 +574,114 @@ def test_FQ2_R834_two_QUOTED_labels_stay_two(cfg_path: Any) -> None:
     }
     cfg = load_config(cfg_path(data))
     assert [m.label for m in cfg.mass_distribution["platform"].lumped] == ["fore", "aft"]
+
+
+# ---------------------------------------------------------------------------
+# R1019 / R1022: THE RECORDED PERIOD HAS THE DECLARED PERIOD DOMAIN, THROUGH ONE DOOR
+#
+# `_checked` holds every period a CONFIGURATION declares to `WAVE_PERIOD`. The same
+# quantity also arrives RECORDED -- `periods_full_s` in the npz, and the sidecar copy of
+# it -- and that side was read with a bare `tuple(float(x) for x in ...)`. R1019 put the
+# check at ONE reader; R1022 made it a function and gave it the two it had missed. Whether
+# those are every reader is not claimed here and is not asserted anywhere -- see the note
+# in `checked_recorded_periods`, which says so rather than implying completeness.
+
+
+# The recorded period the reviewer's own arm published a BREAKING sensitivity row at, at
+# exit 0 (R1022). It is an INPUT to every cell below: what is asserted about it is that
+# the declared domain EXCLUDES it, never that two computed numbers agree to within it.
+_REFUSED_PERIOD_S = 0.5
+
+
+def test_R1022_the_DOOR_admits_the_DECLARED_RANGE_and_refuses_both_ENDS() -> None:
+    """Both directions (EH4), and the edges are inclusive exactly as `_checked` has them."""
+    unit, low, high = WAVE_PERIOD
+    assert checked_recorded_periods([low, 12.5, high], "x.npz: `periods_full_s`") == (
+        low,
+        12.5,
+        high,
+    )
+    for bad in (0.5, 0.0, -12.5, low * 0.999, high * 1.001):
+        with pytest.raises(ConfigError) as excinfo:
+            checked_recorded_periods([10.0, bad], "x.npz: `periods_full_s`")
+        message = str(excinfo.value)
+        assert "1 of 2 recorded periods are not admissible" in message, message
+        assert f"index 1: {bad:g} {unit}" in message, message
+        assert f"[{low:g}, {high:g}]" in message, message
+
+
+def test_R1022_the_DOOR_names_EVERY_offending_index_not_just_the_first() -> None:
+    """A re-export has to be aimed at the whole list, not at one entry at a time."""
+    with pytest.raises(ConfigError) as excinfo:
+        checked_recorded_periods([0.5, 12.5, 500.0], "x.npz: `periods_full_s`")
+    message = str(excinfo.value)
+    assert "2 of 3 recorded periods" in message, message
+    assert "index 0: 0.5 s" in message, message
+    assert "index 2: 500 s" in message, message
+
+
+def test_R1022_the_DOOR_refuses_what_is_NOT_A_NUMBER_rather_than_converting_it() -> None:
+    """NaN passes every comparison; text converts; a 401-digit integer overflows.
+
+    Each of the three is an input accepted and used other than as declared (FR1 head two)
+    if it gets past here, and the last is R883 arriving at a second field.
+    """
+    for bad, needle in (
+        (float("nan"), "NaN is not a value"),
+        ("12.5", "is not a recorded number"),
+        (True, "is not a recorded number"),
+        (10**400, "is not a period"),
+        (None, "is not a period"),
+    ):
+        with pytest.raises(ConfigError) as excinfo:
+            checked_recorded_periods([10.0, bad], "x.npz: `periods_full_s`")
+        assert needle in str(excinfo.value), (bad, str(excinfo.value))
+
+    # And the 401-digit integer does not BECOME the message (it is capped).
+    with pytest.raises(ConfigError) as excinfo:
+        checked_recorded_periods([10**400], "x.npz: `periods_full_s`")
+    assert "(401 characters)" in str(excinfo.value), str(excinfo.value)
+    assert len(str(excinfo.value)) < 1000, len(str(excinfo.value))
+
+
+def test_R1022_the_DOOR_refuses_something_that_is_not_a_SEQUENCE() -> None:
+    """A scalar where an array belongs: `float(x) for x in 5` is a TypeError traceback."""
+    with pytest.raises(ConfigError) as excinfo:
+        checked_recorded_periods(5, "x.npz: `periods_full_s`")
+    assert "cannot be iterated" in str(excinfo.value), str(excinfo.value)
+    # The weakening direction: an EMPTY sequence is not an error here. Whether a file may
+    # record zero cases is `refuse_cases_that_cannot_govern`, which asks a different
+    # question; this door states a domain and an empty list satisfies it vacuously.
+    assert checked_recorded_periods([], "x.npz: `periods_full_s`") == ()
+
+
+def test_R1022_the_COMMITTED_ARRAY_and_SIDECAR_are_both_ADMITTED() -> None:
+    """The weakening direction on the files this repository ships, both readers of them."""
+    import json
+
+    import numpy as np
+
+    raw = np.load(ROOT / "data" / "f4" / "dynamic_inputs.npz", allow_pickle=False)
+    from_npz = checked_recorded_periods(raw["periods_full_s"], "committed npz")
+    recorded = json.loads(
+        (ROOT / "data" / "f4" / "dynamic_inputs.provenance.json").read_text(encoding="utf-8")
+    )
+    from_sidecar = checked_recorded_periods(recorded["run"]["periods_full_s"], "committed sidecar")
+    assert from_npz == from_sidecar, (from_npz, from_sidecar)
+    assert len(from_npz) == 6, from_npz
+    # NON-VACUOUS: the domain does not contain everything a recorded float could be.
+    unit, low, high = WAVE_PERIOD
+    # The assertion is about `WAVE_PERIOD`'s EXTENT -- that the domain does not contain
+    # everything a recorded float could be -- and `_REFUSED_PERIOD_S` is the input it is
+    # measured against, declared once at module scope with what it is.
+    assert not (
+        # not-a-tolerance: `_REFUSED_PERIOD_S` is a recorded INPUT -- the period the
+        # reviewer's arm published a BREAKING row at -- and this asserts the declared
+        # domain's EXTENT, that it does not contain everything a recorded float could be.
+        # No two computed numbers are compared, and widening the domain to admit it would
+        # turn the door off rather than turn a red green.
+        low
+        <= _REFUSED_PERIOD_S
+        <= high
+    ), WAVE_PERIOD
+    assert unit == "s", WAVE_PERIOD

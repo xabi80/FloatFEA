@@ -309,41 +309,43 @@ got a byte-identical file, and so did I twice — so this is a missing gate rath
 present defect. What it would assert is R756's own assertion over `results/F6a/`: the
 committed document is what the tree regenerates.
 
-## R1017 — no PUSH run of CI covers `tests/regression/`
+## R1017 — WITHDRAWN AS FALSE (R1023). `tests/regression/` runs on every push
 
-*Added by verdict 23 (R1 step 3's twenty-third interim check), which routed it here
-rather than ledgering it. Apparatus goes through this plan and not into a step commit.*
+*Added by verdict 23 and withdrawn by verdict 24, which measured it. The claim below was
+mine, it was published in this plan, and it is withdrawn where it was made rather than
+deleted -- a plan that quietly loses a false entry is worse than one that records it.*
 
-Every reviewed commit is judged on a **push** run, and on a push run nothing executes
-`tests/regression/`:
+**What R1017 claimed:** that no push run of CI executes `tests/regression/`, so the 23
+cells of `tests/regression/test_fl2d_band_check.py` had run on one machine only.
+
+**Why it is false, measured:**
 
 ```
-claim  the two jobs that run on push between them exclude tests/regression
-cmd    grep -n "pytest tests" .github/workflows/ci.yml
+claim  tests/regression runs on every push, in the `ladder` job
+cmd    grep -n "tests/regression" .github/workflows/ci.yml
 out    :133  pytest tests/regression -q --junit-xml=leg/regression.xml || true
-       :403  pytest tests/unit -q
        :414  pytest tests --ignore=tests/unit --ignore=tests/verification
                                  --ignore=tests/regression -q
-cmd    the job carrying :133, and its condition
-out    `determinism: name: "CI determinism -- leg"`,
-       `if: github.event_name == 'workflow_dispatch'`
-rule   CZ1 (iii) -- a green is only worth what ran
+       :510  run: sh scripts/run_rung.sh empty:tests/verification/rung6 full:tests/regression
+cmd    the job carrying :510, and its condition
+out    `ladder: name: "the verification ladder"` -- NO `if:` key in the job at all
+rule   CZ1 (iii) -- a green is only worth what ran; and `ladder 6` is SUCCESS on the
+       push run at every reviewed commit of this step
 ```
 
-**The `|| true` on `:133` is NOT the gap, and I checked rather than assuming.** R304
-already closed that: the next twenty lines parse `leg/regression.xml` and `sys.exit` on
-any `failure`/`error` case and on zero collected, so within that job the rung is a gate
-and not a diagnostic. The gap is the `if:` — the job runs on `workflow_dispatch` only.
+**Why my own census missed it, which is the part worth keeping.** The needle was
+`grep -n "pytest tests"`, and `:510` does not say `pytest`. It says
+`sh scripts/run_rung.sh ... full:tests/regression`, and `run_rung.sh` is the file whose
+entire purpose is to run a directory with its expectation DECLARED -- `full:` meaning
+"this directory must collect tests and they must pass". A needle shaped like the two
+invocations I already knew about could not see the one shaped differently.
 
-**What it costs today.** `tests/regression/test_fl2d_band_check.py` is 23 cells, among them
-the R809 cell asserting that nothing is written when the screen refuses, the end-to-end
-R1005 arm, and the five end-to-end R1007 arms. All of them have run on exactly one machine,
-the implementer's. The door-level and helper-level cells for the same repairs were placed
-in `tests/unit/test_run_pipeline_refusals.py` for this reason, so the refusals themselves
-have a second witness; the end-to-end arms do not.
+That is FR1's own third non-blocking class, "a census, needle or grep that is too narrow
+where no wrong result follows", happening to my census. It cost one apparatus entry and
+one paragraph in a report; it is recorded here because the next census I write will have
+the same temptation.
 
-**Not fixed here, and the reason is a rule rather than a preference.** "No new apparatus
-through F6" forbids a new job, and the CI definition is untouched by the diff this was
-found in. What a repair would be is one line: drop `tests/regression` from `:414`'s
-ignore list, or give the push event a job that runs it. Both change the CI definition,
-which goes through a plan.
+**What remains true, and it is small.** The `determinism` job at `:84` is
+`workflow_dispatch` only, so its `:133` invocation of `tests/regression` does not run on
+push. That is by design -- it is the ten-leg determinism measurement, not a gate -- and
+`:510` is the gate. Nothing is owed, and no apparatus is needed.

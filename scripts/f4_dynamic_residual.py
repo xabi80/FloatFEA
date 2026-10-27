@@ -6,7 +6,14 @@
 **NO FLOATSIM, NO `HSP-runs`, NO SOLVE.** That is the whole point of this module and the
 reason EX0 re-locked the plan: the gate it replaces ran green on one machine and errored on
 124 of 126 cases in CI, because the file it reached for resolves `ROOT.parent / "HSP-runs"`.
-Nothing here imports anything outside `numpy` and the standard library.
+Nothing here imports anything outside `numpy`, `floatfea` and the standard library.
+`tests/verification/rung4/test_f4_g41_dynamic.py::test_the_module_the_gate_IMPORTS_reaches_nothing_but_numpy_and_the_stdlib`
+asserts exactly that over this file's own AST, and also that no `floatfea` module reaches
+HSP code, which is what makes the `floatfea` allowance safe. The sentence here used to
+end "outside `numpy` and the standard library", which was already false of
+`floatfea.tolerances`; it is not replaced by a LIST of the imports, because a list in a
+docstring is a count that goes stale on the next import and the AST check is what is
+actually read.
 
 WHAT IT READS. `data/f4/dynamic_inputs.npz`, written by
 `scripts/export_f4_dynamic_inputs.py`, plus that file's provenance JSON. Per case and per
@@ -57,6 +64,10 @@ from numpy.typing import NDArray
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+
+# R1022: the recorded period domain, shared with `floatfea run` so the two readers of
+# `periods_full_s` cannot disagree about what is admissible.
+from floatfea.run.config import checked_recorded_periods  # noqa: E402
 
 # `CLAUDE.md`: every numerical tolerance lives in `floatfea/tolerances.py`. EV1's "both
 # edges at least 2x" is the window rule's own shape, so it is declared there as a
@@ -190,7 +201,14 @@ def load(npz: Path = NPZ, provenance: Path = PROVENANCE) -> Inputs:
 
     raw = np.load(npz, allow_pickle=False)
     fe_bodies = tuple(str(x) for x in raw["fe_bodies"])
-    periods = tuple(float(x) for x in raw["periods_full_s"])
+    # R1022: the SAME door `floatfea run` uses. This read was
+    # `tuple(float(x) for x in ...)` with no domain, and it is how
+    # `scripts/measure/member_forces_table.py` reads the file too. What this site does
+    # with an inadmissible recorded period is asserted rather than described here:
+    # `tests/verification/rung4/test_f4_g41_dynamic.py::`
+    # `test_R1022_a_RECORDED_PERIOD_OUTSIDE_ITS_DOMAIN_is_refused_by_load`, which
+    # recomputes the sha so the staleness check above cannot be what refuses it.
+    periods = checked_recorded_periods(raw["periods_full_s"], f"{npz.name}: `periods_full_s`")
     cases: list[dict[str, NDArray[np.float64]]] = []
     labels: list[tuple[str, ...]] = []
     bodies: list[NDArray[np.int64]] = []

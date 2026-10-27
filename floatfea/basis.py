@@ -86,10 +86,15 @@ SIGMA_ALLOW_S355: Final[float] = ALLOWABLE_FACTOR * FY_S355  # 213.0 MPa
 # is directive FU1 (`docs/directives/FU.md`).
 #
 # `g` IS NOT DECLARED HERE. It is `floatfea.io.frames.GRAVITY_MAGNITUDE`, the one
-# source, and `floatfea/loads/period_band.py` is the only consumer of these three
-# constants. Directive FU0 is why: two measure scripts had declared their own
+# source. Directive FU0 is why: two measure scripts had declared their own
 # `GRAVITY = 9.80665` against the library's 9.81, and two more carried 9.81 as a
 # bare literal.
+#
+# A sentence naming this module's consumers stood here and was wrong by one (R1027). It
+# is deleted rather than corrected: a list of callers in a comment goes stale on the next
+# import and nothing in this repository re-reads it. The replacement is not a corrected
+# list and not a claim about how many declarations of these constants exist -- that would
+# be the same shape again.
 # ---------------------------------------------------------------------------
 ASSOCIATED_PERIOD_LOW_COEFF: Final[float] = 6.5  # s^2/m
 ASSOCIATED_PERIOD_HIGH_COEFF: Final[float] = 11.0  # s^2/m
