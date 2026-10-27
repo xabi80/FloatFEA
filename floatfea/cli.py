@@ -20,6 +20,7 @@ import sys
 from pathlib import Path
 from typing import Any, Final
 
+from floatfea.basis import BREAKING_STEEPNESS_LIMIT
 from floatfea.post.forces_table import _stresses
 from floatfea.post.member_forces import COMPONENTS
 from floatfea.run.config import ConfigError, RunConfig, load_config
@@ -271,6 +272,50 @@ def _write_report(path: Path, result: RunResult) -> None:
             "* the dynamic-inputs file records no wave basis, so the heading and height "
             "of these loads are **not stated by this run**."
         )
+
+    lines += ["", "## Sea-state admissibility, per case (FL2(d) / EZ2)", ""]
+    screen = result.band_screen
+    if not screen:
+        lines.append(
+            "* **the screen was NOT performed.** The band is a function of the recorded "
+            "wave height and this dynamic-inputs file records none, so there is no band "
+            "to test against. No height was assumed: a band computed from a guessed "
+            "height would be indistinguishable in this report from one computed from a "
+            "recorded one. Every case below is reported with no admissibility verdict."
+        )
+    else:
+        declared_governing = set(result.config.load_cases.governing_periods)
+        declared_override = set(result.config.load_cases.out_of_band_governing)
+        lines += [
+            f"The associated-period band at the recorded height is "
+            f"`{screen[0].band_low_s:.3f} .. {screen[0].band_high_s:.3f} s`, and the "
+            f"deep-water breaking limit is `H/lambda = 1/7 = "
+            f"{BREAKING_STEEPNESS_LIMIT:.4f}`.",
+            "",
+            "| T_full (s) | H/lambda | admissibility | outside by (s) | in the envelope |",
+            "|---|---|---|---|---|",
+        ]
+        for case in screen:
+            if case.period_full_s not in declared_governing:
+                role = "sensitivity only"
+            elif case.period_full_s in declared_override:
+                role = "**GOVERNING, admitted out of band by declaration**"
+            else:
+                role = "governing"
+            margin = f"{case.margin_s:+.3f}" if case.margin_s else "—"
+            lines.append(
+                f"| {case.period_full_s:g} | {case.steepness:.4f} | "
+                f"{case.verdict.value} | {margin} | {role} |"
+            )
+        if declared_override:
+            lines += [
+                "",
+                f"**{sorted(declared_override)} s is admitted to the envelope although the band "
+                f"excludes it**, by `load_cases.out_of_band_governing`. That is a "
+                f"declaration in the configuration, not a widened band: the band edges "
+                f"are unchanged for every other case and at every other height. FA0 is "
+                f"the ruling behind the shipped example's entry.",
+            ]
 
     lines += ["", "## What this run assumes, as the builder records it", ""]
     if result.built.label:

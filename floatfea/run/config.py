@@ -417,6 +417,21 @@ class LoadCases:
     npz: Path | None = None
     cases: tuple[WaveCase, ...] = ()
     governing_periods: tuple[float, ...] = ()
+    out_of_band_governing: tuple[float, ...] = ()
+    """FL2(d)'s "unless the config says otherwise": the out-of-band periods this
+    configuration KNOWINGLY admits to the envelope.
+
+    Every entry must also be in `governing_periods`, and must actually be out of band --
+    a stale override is refused rather than ignored, because one that silently became
+    vacuous would stop protecting the case it was written for.
+
+    **THIS IS A DECLARATION, NOT A TOLERANCE, AND THE DISTINCTION IS THE WHOLE DESIGN.**
+    FA0 rules that `T = 12.5 s` governs at `H = 24.2 m` although it sits `0.042 s`
+    (`0.3%`) below `sqrt(6.5 H)`. Widening the band edge by `0.3%` to admit it would
+    admit every other case within `0.3%` of an edge, at every height, forever -- and it
+    would be a tolerance, so it would belong in `floatfea/tolerances.py` with a
+    justification. This admits ONE named period and says so in every artifact.
+    """
     window_rule: str = ""
     headings: tuple[float, ...] = ()
     """FL2(c): the headings this configuration asks for. ANY LIST.
@@ -591,6 +606,16 @@ class RunConfig:
                 else f"{len(self.load_cases.cases)} declared wave case(s)"
             ),
             "governing_periods_s": list(self.load_cases.governing_periods),
+            # R812's rule applied to FL2(d)'s override: DECLARED AND CONSUMED. An
+            # override that admitted an out-of-band case to the envelope and appeared
+            # in no artifact would be the exact state FL2(d) exists to end -- a reader
+            # cannot tell an envelope screened by the band from one a declaration
+            # widened. "(none)" rather than an empty list, so the line is never blank.
+            "out_of_band_governing_s": (
+                list(self.load_cases.out_of_band_governing)
+                if self.load_cases.out_of_band_governing
+                else "(none -- every governing period is inside the band)"
+            ),
             # R812: DECLARED AND CONSUMED. This field was accepted, stored and read by
             # nothing -- not the provenance, not an artifact, not a test -- so a reader
             # could state the window rule their npz was exported under and have it reach
@@ -901,7 +926,14 @@ def _parse_load_cases(block: Any, base: Path) -> LoadCases:
     where = "load_cases"
     _reject_unknown(
         block if isinstance(block, dict) else {},
-        ("npz", "cases", "governing_periods", "window_rule", "headings"),
+        (
+            "npz",
+            "cases",
+            "governing_periods",
+            "out_of_band_governing",
+            "window_rule",
+            "headings",
+        ),
         where,
     )
     npz_raw = block.get("npz")
@@ -949,14 +981,51 @@ def _parse_load_cases(block: Any, base: Path) -> LoadCases:
             f"{where}.governing_periods: {list(periods)} contains a repeat. A period "
             f"counted twice would weight one case twice in the envelope."
         )
+    override = _parse_out_of_band(block.get("out_of_band_governing"), periods, where)
     headings = _parse_headings(block.get("headings"), where)
     return LoadCases(
         npz=npz,
         headings=headings,
         cases=tuple(cases),
         governing_periods=periods,
+        out_of_band_governing=override,
         window_rule=_require_string(block.get("window_rule", ""), f"{where}.window_rule"),
     )
+
+
+def _parse_out_of_band(raw: Any, governing: tuple[float, ...], where: str) -> tuple[float, ...]:
+    """FL2(d)'s declared override, checked against `governing_periods` HERE.
+
+    Whether each entry is ACTUALLY out of band cannot be decided here -- the band is a
+    function of the recorded wave height, which lives in the npz's provenance sidecar and
+    not in this file. That half is `floatfea.run.pipeline.refuse_cases_that_cannot_govern`.
+    What IS decidable here is the relationship between the two declared lists, and it is
+    checked at the reader rather than at the comparison, which is R877's lesson: a check
+    inside a function that returns early when nothing is declared is a check behind a
+    declaration.
+    """
+    at = f"{where}.out_of_band_governing"
+    if raw is None:
+        return ()
+    if not isinstance(raw, list):
+        raise ConfigError(
+            f"{at}: expected a list of full-scale periods in seconds, not "
+            f"{type(raw).__name__}. It names the out-of-band periods this configuration "
+            f"knowingly admits to the envelope; leave it out if there are none."
+        )
+    values = tuple(_checked(p, f"{at}[{i}]", WAVE_PERIOD) for i, p in enumerate(raw))
+    if len(set(values)) != len(values):
+        raise ConfigError(f"{at}: {list(values)} contains a repeat.")
+    orphans = sorted(set(values) - set(governing))
+    if orphans:
+        raise ConfigError(
+            f"{at}: {orphans} s is not in `{where}.governing_periods` "
+            f"({sorted(governing)} s). This list does not ADD a period to the envelope; "
+            f"it records that a period already declared governing is admitted although "
+            f"it falls outside the associated-period band. Add it to "
+            f"`governing_periods` as well, or remove it here."
+        )
+    return values
 
 
 def _parse_code_check(block: Any) -> CodeCheck:

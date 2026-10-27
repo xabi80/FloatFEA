@@ -13,6 +13,7 @@
 * **material** — E = 2.1e+11 Pa, G = 8.07692e+10 Pa, rho = 7850 kg/m^3, Fy = 3.55e+08 Pa
 * **load_cases** — npz data/f4/dynamic_inputs.npz
 * **governing_periods_s** — [12.5, 14.0, 15.0, 16.2]
+* **out_of_band_governing_s** — [12.5]
 * **window_rule** — the committed window per case; see data/f4/dynamic_inputs.provenance.json
 * **study_only** — no
 * **code_check_sensitivities** — K_sensitivity = 1, Cm_sensitivity = 1
@@ -23,6 +24,21 @@
 * **heading** — 0.0 deg
 * **wave height** — 24.2 m full scale (0.484 m model)
 * **window** — DQ6: the last 5 whole periods, starting no earlier than ramp + 10
+
+## Sea-state admissibility, per case (FL2(d) / EZ2)
+
+The associated-period band at the recorded height is `12.542 .. 16.316 s`, and the deep-water breaking limit is `H/lambda = 1/7 = 0.1429`.
+
+| T_full (s) | H/lambda | admissibility | outside by (s) | in the envelope |
+|---|---|---|---|---|
+| 10 | 0.1550 | breaking | -2.542 | sensitivity only |
+| 12.5 | 0.0992 | too short for this height | -0.042 | **GOVERNING, admitted out of band by declaration** |
+| 14 | 0.0791 | in band | — | governing |
+| 15 | 0.0689 | in band | — | governing |
+| 16.2 | 0.0591 | in band | — | governing |
+| 20 | 0.0387 | too long for this height | +3.684 | sensitivity only |
+
+**[12.5] s is admitted to the envelope although the band excludes it**, by `load_cases.out_of_band_governing`. That is a declaration in the configuration, not a widened band: the band edges are unchanged for every other case and at every other height. FA0 is the ruling behind the shipped example's entry.
 
 ## What this run assumes, as the builder records it
 
@@ -82,11 +98,11 @@ body rather than summed, because two bodies out in opposite directions would can
 
 | stage | seconds |
 |---|---|
-| build | 0.19 |
+| build | 0.12 |
 | load | 0.00 |
-| solve | 97.08 |
+| solve | 181.16 |
 | code_check | 0.00 |
-| total | 97.27 |
+| total | 181.28 |
 
 ## Declared, and what became of it
 

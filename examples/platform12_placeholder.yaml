@@ -103,6 +103,21 @@ load_cases:
   # peaks nowhere -- see docs/milestones/R1.md section 2b, which checked that for a
   # dropped period and found a loser.
   governing_periods: [12.5, 14.0, 15.0, 16.2]
+  # FL2(d)'s "unless the config says otherwise", and this is FA0 made explicit.
+  #
+  # T = 12.5 s is 0.042 s (0.3%) BELOW sqrt(6.5 H) = 12.542 s, so the band check refuses
+  # it as a governing period unless the configuration says it is admitted deliberately.
+  # Naming it here is that statement, and it reaches every artifact as
+  # `out_of_band_governing_s`. FA0's reason is the direction: the response rises as T
+  # falls across the band, so the lower edge governs and 12.5 s represents it.
+  #
+  # IT IS NOT A WIDENED BAND. Widening the edge by 0.3% would admit every case within
+  # 0.3% of an edge at every height forever, and would be a tolerance -- so it would
+  # belong in floatfea/tolerances.py with a justification. This admits one named period.
+  #
+  # Removing this line does not change a number: it REFUSES the run, naming T = 12.5 s,
+  # its band and its margin. That is the check working.
+  out_of_band_governing: [12.5]
   window_rule: "the committed window per case; see data/f4/dynamic_inputs.provenance.json"
 
 code_check:

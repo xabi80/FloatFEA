@@ -42,6 +42,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from floatfea.checks.api_wsd import check_member
+from floatfea.loads.period_band import CaseBand, classify_case
 from floatfea.model.material import Section
 from floatfea.model.platform import (
     _outer_diameter,
@@ -64,6 +65,7 @@ __all__ = [
     "exported_froude_lambda",
     "run",
     "validated_export_scale",
+    "refuse_cases_that_cannot_govern",
     "wave_basis_from_sidecar",
 ]
 
@@ -105,6 +107,14 @@ class RunResult:
     """
 
     notes: tuple[str, ...] = ()
+    band_screen: tuple[CaseBand, ...] = ()
+    """FL2(d): the admissibility screen, one entry per case in the dynamic-inputs file.
+
+    Empty when the export recorded no wave height, in which case there is no band and
+    the report says the screen was not performed rather than printing one computed from
+    an assumed height.
+    """
+
     section_properties: dict[str, tuple[float, float, float, float, float]] = field(
         default_factory=dict
     )
@@ -748,6 +758,103 @@ outside every admissible scale, reaching a published artifact.
 """
 
 
+def _recorded_height(basis: dict[str, Any]) -> float | None:
+    """The export's own full-scale wave height, or `None` when none was recorded.
+
+    **NO TYPE CHECK HERE, DELIBERATELY, AND R994 IS WHY.** `_validated_wave_basis` is
+    the single door (R896): it refuses a partial basis, refuses a bool or a non-number
+    by name, refuses a non-finite value, and range-checks against `WAVE_HEIGHT` -- all
+    at the reader, so the guarantee does not depend on what the configuration declared
+    (R877). A second type check on the same field here could not fire, and a refusal
+    that cannot fire is dead code dressed as rigour. I shipped exactly that once in this
+    step and the reviewer was right to name it.
+
+    `_recorded_heading` DOES carry such a guard, and the asymmetry is not an oversight:
+    it is reached by `refuse_headings_this_run_cannot_cover`, which the CLI calls with a
+    basis it did not get from this module's door.
+    """
+    recorded = basis.get("wave_height_full_m")
+    return None if recorded is None else float(recorded)
+
+
+def refuse_cases_that_cannot_govern(
+    cfg: Any, periods: tuple[float, ...], basis: dict[str, Any]
+) -> tuple[CaseBand, ...]:
+    """FL2(d): the band check, per case, and the refusal of a set that cannot govern.
+
+    Returns the screen for EVERY case in the file -- that is the "and reported" half --
+    and refuses before the solve when a DECLARED governing period is inadmissible at the
+    recorded height and the configuration has not said otherwise.
+
+    **THE CAVEAT WAS ALREADY PUBLISHED AND NOTHING ENFORCED IT.** `floatfea/cli.py`'s
+    `EZ2` caveat has shipped on every artifact since F4 -- "only the declared governing
+    periods may set the envelope. Cases outside the associated-period range for this
+    wave height -- and any exceeding the deep-water breaking steepness -- are reported
+    as SENSITIVITY ONLY and cannot govern" -- while no code checked that the declared
+    set was inside the range. One variable moved on the shipped example, the breaking
+    wave added to `governing_periods` and everything else held:
+
+        governing_periods: [12.5, 14, 15, 16.2]        EXIT=0   U = 1.71167
+        governing_periods: [10, 12.5, 14, 15, 16.2]    EXIT=0   U = 2.78942
+
+    `T = 10 s` at `H = 24.2 m` has `H/lambda = 0.155`, above `1/7`. It set the governing
+    utilisation 63% high at exit 0, in a `utilisation.csv` carrying the caveat that
+    denied it could. Under FR1 that is a wrong number in a published deliverable.
+
+    **WHAT HAPPENS WITH NO RECORDED HEIGHT, STATED RATHER THAN ASSUMED.** The band is a
+    function of the wave height, which lives in the npz's provenance sidecar. FL1(a)
+    admits an npz with no sidecar, and for such a file there is no height and therefore
+    no band -- so the check cannot be performed and this returns an empty screen. It
+    does NOT fall back to an assumed height: `CLAUDE.md` forbids inventing a
+    distribution, and a band computed from a guessed height is the R902 defect exactly
+    (a module constant decided a band while the header printed a recorded value). The
+    artifacts already say "wave basis: NOT RECORDED by the export" in that case, and the
+    report's band section says the screen was not performed and why.
+    """
+    height = _recorded_height(basis)
+    if height is None:
+        return ()
+    screen = tuple(classify_case(T, height) for T in sorted(periods))
+
+    by_period = {case.period_full_s: case for case in screen}
+    declared = set(cfg.load_cases.governing_periods)
+    override = set(cfg.load_cases.out_of_band_governing)
+
+    # A STALE OVERRIDE IS REFUSED, NOT IGNORED. An entry that has become vacuous --
+    # because the recorded height moved and the period is now inside the band -- would
+    # stop protecting the case it was written for, silently, and would then admit that
+    # period again the next time the height moved back.
+    vacuous = sorted(T for T in override if T in by_period and by_period[T].may_govern)
+    if vacuous:
+        detail = "; ".join(by_period[T].describe() for T in vacuous)
+        raise ConfigError(
+            f"load_cases.out_of_band_governing names {vacuous} s, which at the recorded "
+            f"H = {height:g} m is INSIDE the band: {detail}. An override for a case "
+            f"inside the band admits nothing, and carrying it would hide the day it "
+            f"starts admitting something again. Remove it -- the period stays in "
+            f"`governing_periods` and governs on the band's own terms."
+        )
+
+    inadmissible = sorted(
+        T for T in declared if T in by_period and not by_period[T].may_govern and T not in override
+    )
+    if inadmissible:
+        detail = "; ".join(by_period[T].describe() for T in inadmissible)
+        raise ConfigError(
+            f"load_cases.governing_periods declares {inadmissible} s, which cannot set "
+            f"an envelope at the recorded H = {height:g} m: {detail}. A case outside the "
+            f"associated-period band, or above the deep-water breaking steepness, is "
+            f"SENSITIVITY ONLY -- which is what every artifact's EZ2 caveat already "
+            f"says, and what nothing checked until now. Remove it from "
+            f"`governing_periods` to report it as sensitivity, or -- if it is admitted "
+            f"deliberately, as FA0 admits T = 12.5 s at 0.3% below the lower edge -- "
+            f"name it in `load_cases.out_of_band_governing` as well, which records the "
+            f"decision in every artifact. Refused before the solve, so nothing on disk "
+            f"describes an envelope a breaking wave set."
+        )
+    return screen
+
+
 def _validated_wave_basis(present: dict[str, Any], sidecar: Path) -> dict[str, Any]:
     """The recorded basis, validated AT THE READER, or a refusal (R877, R878, R879).
 
@@ -1138,6 +1245,15 @@ def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunRes
             f"A governing period with no case behind it would silently drop out of the "
             f"envelope."
         )
+    # FL2(d), beside its sibling: both ask whether the DECLARED governing set is
+    # supportable by this file. `unknown` asks whether the case EXISTS; this asks whether
+    # it is an ADMISSIBLE SEA STATE. Here rather than earlier because the periods are in
+    # hand and no third open of the npz is needed, and before the solve and before any
+    # output, which is R809's requirement -- a refusal after the artifacts is a warning
+    # with a non-zero exit code.
+    band_screen = refuse_cases_that_cannot_govern(
+        cfg, periods, exported_wave_basis(cfg.load_cases.npz)
+    )
     timings["load"] = time.perf_counter() - t0
 
     t0 = time.perf_counter()
@@ -1169,6 +1285,7 @@ def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunRes
         mass=mass,
         timings=timings,
         notes=notes,
+        band_screen=band_screen,
         section_properties={
             body.name: _section_properties(body.members[0].section) for body in built.bodies
         },
