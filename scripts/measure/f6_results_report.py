@@ -60,6 +60,7 @@ from floatfea.checks.api_wsd import (  # noqa: E402
 )
 from floatfea.hsp_pin import HSP_TAG, KNOWN_DEVIATIONS  # noqa: E402
 from floatfea.io.froude import froude_factor  # noqa: E402
+from floatfea.loads import period_band as PB  # noqa: E402
 from floatfea.model.platform import (  # noqa: E402
     MASS_FRACTION_LADDER,
     _outer_diameter,
@@ -119,7 +120,12 @@ GOVERNING_PERIODS = AWU.GOVERNING_PERIODS
 # factor`) the code never performed.
 #
 # The height now comes from the validated sidecar, through the one door R896 built.
-GRAVITY = 9.80665
+#
+# **AND NO GRAVITY HERE EITHER (FU0).** `GRAVITY = 9.80665` used to live on this
+# line, against `floatfea.io.frames.GRAVITY_MAGNITUDE = 9.81` -- FloatSim's value,
+# which every force in the model is computed with and which that module's own
+# published frames table calls out as "not 9.80665". The band and the steepness now
+# come from `floatfea.loads.period_band`, which reads the one source.
 GRADES_MPA = (235.0, 275.0, 355.0, 420.0, 460.0, 690.0)
 DT_CLAUSE_MAX = 300.0
 
@@ -284,13 +290,13 @@ def _monotonic_word(ordered: list[float]) -> str:
 
 
 def _steepness(period_s: float, height_m: float) -> float:
-    """`H / lambda` in deep water, `lambda = g T^2 / (2 pi)`."""
-    return height_m / (GRAVITY * period_s * period_s / (2.0 * math.pi))
+    """`H / lambda` in deep water -- `floatfea.loads.period_band` is the definition."""
+    return PB.steepness(period_s, height_m)
 
 
 def _band(height_m: float) -> tuple[float, float]:
-    """DNV practice: `sqrt(6.5 H) <= T <= sqrt(11 H)`."""
-    return math.sqrt(6.5 * height_m), math.sqrt(11.0 * height_m)
+    """DNV practice, `sqrt(6.5 H) <= T <= sqrt(11 H)` -- from the library, not here."""
+    return PB.associated_period_band(height_m)
 
 
 def _section() -> dict[str, float]:

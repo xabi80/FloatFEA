@@ -65,6 +65,38 @@ SIGMA_ALLOW_S355: Final[float] = ALLOWABLE_FACTOR * FY_S355  # 213.0 MPa
 
 
 # ---------------------------------------------------------------------------
+# Sea-state admissibility -- the associated-period band and the breaking limit.
+#
+# THE ASSOCIATED-PERIOD BAND, as DNV practice and as this project has used it
+# since F4:
+#
+#     sqrt(ASSOCIATED_PERIOD_LOW_COEFF * H)  <=  T  <=  sqrt(ASSOCIATED_PERIOD_HIGH_COEFF * H)
+#
+# with H the full-scale wave height in metres and T the full-scale period in
+# seconds. For H = 24.2 m that is 12.542 .. 16.316 s.
+#
+# THE BREAKING LIMIT is the classical deep-water limiting steepness of a
+# progressive wave, H / lambda = 1/7, with the deep-water dispersion relation
+# lambda = g T^2 / (2 pi). A sea state above it cannot exist at that height and
+# period, so it cannot set a design envelope.
+#
+# Both are PHYSICAL / CODE-DERIVED CONSTANTS and not tolerances: nothing here is
+# an error ceiling, a convergence threshold or a factor introduced to make two
+# numbers agree. Their placement in this module rather than in `tolerances.py`
+# is directive FU1 (`docs/directives/FU.md`).
+#
+# `g` IS NOT DECLARED HERE. It is `floatfea.io.frames.GRAVITY_MAGNITUDE`, the one
+# source, and `floatfea/loads/period_band.py` is the only consumer of these three
+# constants. Directive FU0 is why: two measure scripts had declared their own
+# `GRAVITY = 9.80665` against the library's 9.81, and two more carried 9.81 as a
+# bare literal.
+# ---------------------------------------------------------------------------
+ASSOCIATED_PERIOD_LOW_COEFF: Final[float] = 6.5  # s^2/m
+ASSOCIATED_PERIOD_HIGH_COEFF: Final[float] = 11.0  # s^2/m
+BREAKING_STEEPNESS_LIMIT: Final[float] = 1.0 / 7.0  # -   H / lambda, deep water
+
+
+# ---------------------------------------------------------------------------
 # EN 1993-1-1 Table 5.2 -- circular hollow section class limits in compression,
 # as D/t, with eps^2 = 235/f_y. Beyond class 3 the section is slender: local
 # buckling governs and a global (Euler) check is not the binding one.

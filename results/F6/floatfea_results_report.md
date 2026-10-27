@@ -97,12 +97,12 @@ the associated-period band for H = 24.2 m, DNV practice:
   sqrt(6.5 H) = 12.5419 s    sqrt(11 H) = 16.3156 s
 
  T_full [s]   H/lambda    vs 1/7   in band   edge offset          basis
-       10.0     0.1551  BREAKING        no 20.267% short    sensitivity
+       10.0     0.1550  BREAKING        no 20.267% short    sensitivity
        12.5     0.0992        ok        no  0.334% short      GOVERNING
        14.0     0.0791        ok       yes             -      GOVERNING
        15.0     0.0689        ok       yes             -      GOVERNING
        16.2     0.0591        ok       yes             -      GOVERNING
-       20.0     0.0388        ok        no  22.582% long    sensitivity
+       20.0     0.0387        ok        no  22.582% long    sensitivity
 
 the worst ROOT stress BOUND each case produces, over all sixteen members. This is
 the per-component envelope of the total basis: the six components are each

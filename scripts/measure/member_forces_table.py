@@ -100,6 +100,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from floatfea import basis  # noqa: E402
 from floatfea.io.froude import froude_factor  # noqa: E402
+from floatfea.loads import period_band as PB  # noqa: E402
 
 # RE-EXPORTED ON PURPOSE, AND `ruff` CANNOT TELL (FL1). This file is not only a script:
 # `f6a_premise_check.py` and `f6_results_report.py` both load it BY PATH through
@@ -190,10 +191,14 @@ def steepness(period_full_s: float, h_full_m: float) -> tuple[float, float, str,
     line, and it names the two independent reasons a case can be out of range -- the
     period band and the steepness limit -- rather than collapsing them into "outside".
     """
-    lam = 9.81 * period_full_s * period_full_s / (2.0 * math.pi)
-    s = h_full_m / lam
-    lo = math.sqrt(6.5 * h_full_m)
-    hi = math.sqrt(11.0 * h_full_m)
+    # FU0: lambda, H/lambda and both band edges come from the ONE definition in
+    # `floatfea.loads.period_band`. This line used to read `9.81 * ...` -- the right
+    # value as a bare literal, which is the same defect as the wrong one in a sibling
+    # script (R902 / R983). The four outcomes below are still decided here because the
+    # `where` STRINGS are this deliverable's own wording; the numbers are not.
+    _case = PB.classify_case(period_full_s, h_full_m)
+    lam, s = _case.wavelength_m, _case.steepness
+    lo, hi = _case.band_low_s, _case.band_high_s
     # **FOUR OUTCOMES, DECIDED ONCE (R944).** The prose below this table used to decide
     # the same question with `math.sqrt(6.5 * h_full) <= 12.5` -- ONE edge of a two-edged
     # interval -- so where the band's UPPER edge had fallen past 12.5 s, which happens at
@@ -335,7 +340,7 @@ def main(argv: list[str] | None = None) -> int:
     # height from. What the check actually needs to know is whether the PUBLISHED caveat
     # text still agrees with the computed band, so it asks that directly: the figures the
     # caveats state must be the figures this run computes.
-    _lo, _hi = math.sqrt(6.5 * h_full), math.sqrt(11.0 * h_full)
+    _lo, _hi = PB.associated_period_band(h_full)
     _in = sorted(float(T) for T in inp.periods_full_s if _lo <= float(T) <= _hi)
     _kept = sorted(set(GOVERNING_PERIODS) - set(_in))
     _text = " ".join(LABELS)
@@ -542,9 +547,11 @@ def _write_summary(
     """
     # R907: the membership this section states, computed once, and the reference
     # predicate that decides whether the hand-written clause still describes the run.
-    _lo_b, _hi_b = math.sqrt(6.5 * h_full), math.sqrt(11.0 * h_full)
+    _lo_b, _hi_b = PB.associated_period_band(h_full)
     _periods = sorted(float(x) for x in inp.periods_full_s)
-    _breaking = [T for T in _periods if h_full / (9.81 * T * T / (2.0 * math.pi)) > 1.0 / 7.0]
+    _breaking = [
+        T for T in _periods if PB.classify_case(T, h_full).verdict is PB.Admissibility.BREAKING
+    ]
     _past_long = [T for T in _periods if _hi_b < T]
     _in_b = [T for T in _periods if _lo_b <= T <= _hi_b]
     # **R936: ONE PREDICATE, NOT TWO THAT DISAGREE.** This was a local
