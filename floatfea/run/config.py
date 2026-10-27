@@ -32,6 +32,7 @@ assumed to be zero.
 
 from __future__ import annotations
 
+import numbers
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final
@@ -42,7 +43,9 @@ __all__ = [
     "ConfigError",
     "RunConfig",
     "checked_recorded_periods",
+    "is_recorded_number",
     "load_config",
+    "recorded_spelling",
 ]
 
 
@@ -220,6 +223,72 @@ def _checked(value: Any, name: str, bound: Bound) -> float:
     return got
 
 
+def recorded_spelling(value: Any) -> str:
+    """How to NAME a rejected value, including the DTYPE the decision was made on (R1033).
+
+    `type(value).__name__` alone says `ndarray` for a zero-dimensional bool array, which
+    tells a reader nothing about why it was refused -- the gate decided on `dtype.kind`, so
+    the message says the dtype. Measured on the shapes this refuses: `np.array(True)` is
+    `ndarray of dtype bool`, `np.True_` is `bool_ of dtype bool`, `np.complex128(10+0j)` is
+    `complex128 of dtype complex128`. A pure-Python value has no dtype and keeps its type
+    name.
+
+    Asserted, not described:
+    `tests/unit/test_run_pipeline_refusals.py::`
+    `test_R1033_a_BOOL_TYPED_second_record_is_REFUSED_not_read_as_ONE` requires
+    `(ndarray of dtype bool)` in the refusal, and a revert arm that drops the dtype
+    reddens it.
+    """
+    name = getattr(getattr(value, "dtype", None), "name", None)
+    return f"{type(value).__name__} of dtype {name}" if name else type(value).__name__
+
+
+def is_recorded_number(value: Any) -> bool:
+    """True only for a REAL number, in either spelling a recorded field arrives in (R1033).
+
+    **A NEGATIVE LIST OF FORBIDDEN TYPES CANNOT BE COMPLETED**, and that is what this
+    replaces. Both gates for the R825 family tested `isinstance(value, (bool, str, bytes))`
+    -- the python types a JSON sidecar can produce -- and the npz readers receive numpy
+    scalars, for which the list is wrong in a way no amount of names fixes:
+
+        isinstance(np.str_("x"), str)   True    -- a str subclass, so it was caught
+        isinstance(np.True_, bool)      False   -- NOT a bool subclass, so it was not
+
+    `np.True_` therefore reached `float()` and was admitted as `1.0`, and
+    `np.complex128(10+0j)` as `10.0` with nothing but a `ComplexWarning`.
+
+    **WHY THE DTYPE AND NOT `numbers.Real`.** The callers receive different spellings of
+    the same quantity -- R1033 named two and R1041 found a third, the npz's recorded
+    `froude_lambda` -- and two of the three differ like this, measured:
+
+        raw["case0/period_full_s"]   ndarray, dtype float64, ndim 0
+                                     numbers.Real -> False      dtype.kind -> 'f'
+        raw["periods_full_s"][0]     np.float64
+                                     numbers.Real -> True       dtype.kind -> 'f'
+
+    A `numbers.Real`-only test would refuse the committed npz at
+    `refuse_disagreeing_period_records`, because a 0-d array is not registered with the
+    numeric ABCs -- and `exported_froude_lambda` reads its key whole too, so it receives
+    the same 0-d spelling. `dtype.kind` is the one question both spellings answer: `i`/`u`/`f` are
+    integer and floating, and the kinds this refuses are `b` (bool), `c` (complex), `U`,
+    `S` and `O`.
+
+    That asymmetry is asserted rather than described here --
+    `tests/unit/test_run_config.py::`
+    `test_R1033_numbers_Real_ALONE_WOULD_REFUSE_THE_COMMITTED_FILE` pins it, so the
+    shorter test cannot be substituted back without a red.
+
+    Pure-Python numbers carry no dtype, so they fall through to `numbers.Real` with `bool`
+    excluded -- `True` is an `int` and would otherwise pass.
+    """
+    if isinstance(value, bool):
+        return False
+    kind = getattr(getattr(value, "dtype", None), "kind", None)
+    if kind is not None:
+        return kind in "iuf"
+    return isinstance(value, numbers.Real)
+
+
 def checked_recorded_periods(values: Any, source: str) -> tuple[float, ...]:
     """Every RECORDED full-scale wave period, held to the DECLARED period's own domain.
 
@@ -292,8 +361,8 @@ def checked_recorded_periods(values: Any, source: str) -> tuple[float, ...]:
     out: list[float] = []
     bad: list[tuple[int, str]] = []
     for i, item in enumerate(items):
-        if isinstance(item, (bool, str, bytes)):
-            bad.append((i, f"{_short(item)} ({type(item).__name__}) is not a recorded number"))
+        if not is_recorded_number(item):
+            bad.append((i, f"{_short(item)} ({recorded_spelling(item)}) is not a recorded number"))
             out.append(float("nan"))
             continue
         try:

@@ -19,6 +19,7 @@ import copy
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pytest
 import yaml
 
@@ -28,6 +29,7 @@ from floatfea.run.config import (
     ConfigError,
     _NoDuplicateLoader,
     checked_recorded_periods,
+    is_recorded_number,
     load_config,
 )
 
@@ -631,7 +633,10 @@ def test_R1022_the_DOOR_refuses_what_is_NOT_A_NUMBER_rather_than_converting_it()
         ("12.5", "is not a recorded number"),
         (True, "is not a recorded number"),
         (10**400, "is not a period"),
-        (None, "is not a period"),
+        # **BP0: `None` MOVED CLASSIFICATION WITH R1033.** It used to be caught by
+        # `float(None)` raising, and is now caught by the positive type gate before any
+        # conversion is attempted -- a better refusal, and a different sentence.
+        (None, "is not a recorded number"),
     ):
         with pytest.raises(ConfigError) as excinfo:
             checked_recorded_periods([10.0, bad], "x.npz: `periods_full_s`")
@@ -685,3 +690,99 @@ def test_R1022_the_COMMITTED_ARRAY_and_SIDECAR_are_both_ADMITTED() -> None:
         <= high
     ), WAVE_PERIOD
     assert unit == "s", WAVE_PERIOD
+
+
+# ---------------------------------------------------------------------------
+# R1033: THE TYPE GATE LISTED THE FORBIDDEN TYPES AND THE LIST COULD NOT BE COMPLETED
+#
+# Both gates for the R825 family tested `isinstance(value, (bool, str, bytes))` -- the
+# python types a JSON sidecar can produce. The npz readers receive numpy scalars, and
+# `np.bool_` is NOT a `bool` subclass although `np.str_` IS a `str` one, so `np.True_`
+# reached `float()` and was admitted as `1.0` at every index.
+
+
+@pytest.mark.parametrize(
+    "spelling, value, admitted",
+    [
+        pytest.param("python float", 12.5, True, id="python_float"),
+        pytest.param("python int", 12, True, id="python_int"),
+        pytest.param("python bool", True, False, id="python_bool"),
+        pytest.param("python str", "12.5", False, id="python_str"),
+        pytest.param("python bytes", b"12.5", False, id="python_bytes"),
+        pytest.param("python complex", 10 + 0j, False, id="python_complex"),
+        pytest.param("None", None, False, id="none"),
+        pytest.param("numpy float64", np.float64(12.5), True, id="numpy_float64"),
+        pytest.param("numpy float32", np.float32(12.5), True, id="numpy_float32"),
+        pytest.param("numpy int64", np.int64(12), True, id="numpy_int64"),
+        pytest.param("numpy bool_", np.True_, False, id="numpy_bool_"),
+        pytest.param("numpy complex128", np.complex128(10 + 0j), False, id="numpy_complex128"),
+        pytest.param("numpy str_", np.str_("12.5"), False, id="numpy_str_"),
+        pytest.param("zero-dim float array", np.array(12.5), True, id="zero_dim_array"),
+        pytest.param("zero-dim bool array", np.array(True), False, id="zero_dim_bool_array"),
+    ],
+)
+def test_R1033_the_RECORDED_NUMBER_test_decides_EVERY_spelling(
+    spelling: str, value: Any, admitted: bool
+) -> None:
+    """One decision, both spellings, every dtype kind a recorded field can arrive as.
+
+    The two it exists for are `numpy bool_` and `numpy complex128`: the first was admitted
+    as `1.0` and the second as `10.0` with nothing but a `ComplexWarning`. The zero-dim
+    arms are the spelling `refuse_disagreeing_period_records` receives.
+
+    `numpy` is imported at MODULE scope because `pytest.param` arguments are evaluated at
+    collection time -- the first draft of this cell passed the spellings as strings and
+    `eval`-ed them here, which is a worse answer than an import.
+    """
+    assert is_recorded_number(value) is admitted, (spelling, type(value).__name__)
+
+
+def test_R1033_numbers_Real_ALONE_WOULD_REFUSE_THE_COMMITTED_FILE() -> None:
+    """**THE OTHER REPAIR THE VERDICT OFFERED BREAKS ONE OF THE TWO SITES**, measured.
+
+    The condition allowed "`numbers.Real` with booleans excluded, or `np.issubdtype` on the
+    dtype". The two callers receive DIFFERENT spellings of the same quantity: the top-level
+    array is subscripted, so its elements are `np.float64` and `numbers.Real` is True; the
+    per-case second record is read whole and is a ZERO-DIMENSIONAL array, for which
+    `numbers.Real` is False. A `numbers.Real`-only gate would refuse the file this
+    repository ships, at `refuse_disagreeing_period_records`, on its next run.
+
+    This cell is what stops the dtype test being "simplified" to the shorter one later.
+    """
+    import numbers
+
+    import numpy as np
+
+    raw = np.load(ROOT / "data" / "f4" / "dynamic_inputs.npz", allow_pickle=False)
+    second = raw["case0/period_full_s"]
+    element = raw["periods_full_s"][0]
+
+    assert second.ndim == 0 and second.dtype.kind == "f", (second.ndim, second.dtype)
+    assert isinstance(second, numbers.Real) is False, type(second).__name__
+    assert isinstance(element, numbers.Real) is True, type(element).__name__
+    # AND THE TEST THAT SHIPPED ADMITS BOTH, which is the property the shorter one loses.
+    assert is_recorded_number(second) and is_recorded_number(element)
+
+
+def test_R1033_the_DOOR_refuses_the_two_it_was_admitting() -> None:
+    """`np.True_` as `1.0` and `np.complex128(10+0j)` as `10.0`, both at exit 0 before."""
+    import numpy as np
+
+    for probe in (np.True_, np.complex128(10 + 0j), np.str_("12.5")):
+        with pytest.raises(ConfigError) as excinfo:
+            checked_recorded_periods([probe] * 2, "x.npz: `periods_full_s`")
+        message = str(excinfo.value)
+        assert "2 of 2 recorded periods are not admissible" in message, message
+        assert "is not a recorded number" in message, message
+    # THE WEAKENING DIRECTION: the committed array is still admitted, whole.
+    #
+    # The expected tuple is DERIVED from the file rather than typed. This cell's property
+    # is that the array is ADMITTED, not what the six values are -- those are pinned by
+    # `test_R1019_the_COMMITTED_array_is_INSIDE_the_declared_range` and by
+    # `test_R1005_the_COMMITTED_npz_carries_the_SECOND_RECORD_for_EVERY_CASE`. Typing them
+    # here would be a third copy that goes stale if the pair is ever re-exported, which is
+    # the same mistake the `50.0` in `test_headings_and_bem_coverage.py` was.
+    raw = np.load(ROOT / "data" / "f4" / "dynamic_inputs.npz", allow_pickle=False)
+    expected = tuple(float(x) for x in raw["periods_full_s"])
+    assert checked_recorded_periods(raw["periods_full_s"], "committed") == expected
+    assert len(expected) == 6, expected  # non-vacuous: the array is not empty

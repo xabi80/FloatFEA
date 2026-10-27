@@ -1362,3 +1362,32 @@ def test_R1019_the_COMMITTED_array_is_INSIDE_the_declared_range() -> None:
     # here to show `WAVE_PERIOD` excludes it. An input, and nothing is allowed to differ
     # from it by any amount.
     assert not (low <= 0.5 <= high)  # not-a-tolerance: the injected out-of-domain period
+
+
+def test_R1033_a_BOOL_TYPED_second_record_is_REFUSED_not_read_as_ONE() -> None:
+    """The same defect at the other gate, in the spelling that gate actually receives.
+
+    `isinstance(np.True_, bool)` is False, so the list this gate tested admitted a
+    bool-typed npz and `float(np.True_)` made every second record `1.0`. Where the top
+    array was bool too, BOTH of `run()`'s period gates passed.
+
+    The spelling matters: this gate reads `raw[key]` whole, so what arrives is a
+    ZERO-DIMENSIONAL array and not a scalar -- which is why the shared decision asks the
+    DTYPE and not `numbers.Real`.
+    """
+    import numpy as np
+
+    from floatfea.run.pipeline import refuse_disagreeing_period_records
+
+    assert isinstance(np.True_, bool) is False  # non-vacuous: the old list could not see it
+    mapping: dict[str, Any] = {"periods_full_s": list(SIX)}
+    for i, _value in enumerate(SIX):
+        mapping[f"case{i}/period_full_s"] = np.array(True)  # 0-d, dtype bool
+    with pytest.raises(ConfigError) as excinfo:
+        refuse_disagreeing_period_records(Path("dynamic_inputs.npz"), SIX, _Npz(mapping))
+    message = str(excinfo.value)
+    assert "6 of 6 second period records are not numbers" in message, message
+    # AND THE MESSAGE NAMES THE DTYPE IT DECIDED ON. `type(v).__name__` alone says
+    # `ndarray`, which tells a reader nothing about why a zero-dimensional array was
+    # refused; the gate reads `dtype.kind`, so the refusal says the dtype.
+    assert "(ndarray of dtype bool)" in message, message

@@ -58,6 +58,8 @@ from floatfea.run.config import (
     ConfigError,
     RunConfig,
     checked_recorded_periods,
+    is_recorded_number,
+    recorded_spelling,
 )
 
 __all__ = [
@@ -1258,7 +1260,29 @@ def exported_froude_lambda(npz: Path) -> tuple[float | None, str]:
     try:
         with np.load(npz, allow_pickle=False) as raw:
             if "froude_lambda" in raw.files:
-                return float(np.asarray(raw["froude_lambda"]).reshape(()).item()), "the npz"
+                recorded = raw["froude_lambda"]
+                # **R1041: THE SAME DEFECT AS R1033, AT THE THIRD SITE NEITHER OF US
+                # NAMED.** This read converted whatever was there, so a bool-typed
+                # `froude_lambda` became `1.0` -- which is the BOTTOM of `FROUDE_LAMBDA`'s
+                # domain, so the range check admits it, and a sidecar recording
+                # `lambda: 1.0` agrees with it. Driven:
+                #
+                #     exported_froude_lambda  -> (1.0, 'the npz')
+                #     validated_export_scale  -> ADMITTED lambda = 1.0
+                #
+                # `lambda = 1` is NO Froude scaling: every full-scale force equals the
+                # model-scale one, in the scale both EZ0 generators resolve through
+                # `validated_export_scale`. The decision is the shared one, so this site
+                # cannot drift from the other two (R983).
+                if not is_recorded_number(recorded):
+                    return None, (
+                        f"the npz records `froude_lambda` as {recorded!r} "
+                        f"({recorded_spelling(recorded)}), which is not a recorded number. "
+                        f"A scale that is not a number cannot be range-checked as one: a "
+                        f"bool converts to 1.0, which is both inside the admissible range "
+                        f"and NO Froude scaling at all (R1041). Re-export the file."
+                    )
+                return float(np.asarray(recorded).reshape(()).item()), "the npz"
     except (OSError, ValueError) as exc:  # pragma: no cover - unreadable npz
         return None, f"the npz could not be read ({exc})"
 
@@ -1357,7 +1381,15 @@ def refuse_disagreeing_period_records(npz: Path, periods: tuple[float, ...], raw
         # A `str` second record would `float()` to a number and compare EQUAL, so the two
         # records would "agree" while one of them is not a recorded quantity at all --
         # R825's family, a declared field arriving as a different type and being used.
-        if isinstance(value, (bool, str, bytes)):
+        #
+        # **R1033: THIS LISTED THE FORBIDDEN TYPES AND THE LIST WAS WRONG.** It read
+        # `isinstance(value, (bool, str, bytes))`, and `np.bool_` is not a `bool` subclass
+        # though `np.str_` is a `str` one -- so a bool-typed npz was admitted as `1.0` at
+        # every index. The decision is `is_recorded_number`, shared with the configuration
+        # reader and with the scale reader, so the three cannot drift, and it asks the
+        # DTYPE because what arrives here is a ZERO-DIMENSIONAL array for which
+        # `numbers.Real` is False.
+        if not is_recorded_number(value):
             mistyped.append((i, value))
             continue
         try:
@@ -1382,7 +1414,8 @@ def refuse_disagreeing_period_records(npz: Path, periods: tuple[float, ...], raw
         )
     if mistyped:
         rows = "; ".join(
-            f"index {i}: `case{i}/period_full_s` = {v!r} ({type(v).__name__})" for i, v in mistyped
+            f"index {i}: `case{i}/period_full_s` = {v!r} ({recorded_spelling(v)})"
+            for i, v in mistyped
         )
         raise ConfigError(
             f"{npz.name}: {len(mistyped)} of {len(periods)} second period records are not "

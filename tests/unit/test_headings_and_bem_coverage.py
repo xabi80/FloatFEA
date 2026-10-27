@@ -658,3 +658,60 @@ def test_R919_the_SIDECAR_alone_still_answers(tmp_path: Path) -> None:
         # in `tests/regression/test_r1_example_golden.py`.
         == 50.0
     )
+
+
+def test_R1041_a_BOOL_TYPED_npz_SCALE_is_REFUSED_not_read_as_ONE(tmp_path: Path) -> None:
+    """R1033's family at the THIRD site, which neither the verdict nor I had named.
+
+    `exported_froude_lambda` converted whatever the key held, so a bool-typed
+    `froude_lambda` became `1.0` -- the BOTTOM of `FROUDE_LAMBDA`'s admissible range, so
+    the range check admits it, and a sidecar recording `lambda: 1.0` agrees with it so
+    R908's two-record comparison passes too. Driven before the repair:
+
+        exported_froude_lambda  -> (1.0, 'the npz')
+        validated_export_scale  -> ADMITTED lambda = 1.0
+
+    `lambda = 1` is NO Froude scaling: every full-scale force equals the model-scale one,
+    in the scale `member_forces_table.py` and `f6_results_report.py` both resolve through
+    `validated_export_scale` before publishing an EZ0 deliverable.
+    """
+    import json as _json
+
+    import numpy as np
+
+    from floatfea.run.config import ConfigError
+    from floatfea.run.pipeline import exported_froude_lambda, validated_export_scale
+
+    committed = ROOT / "data" / "f4" / "dynamic_inputs.npz"
+    raw = np.load(committed, allow_pickle=False)
+    flat = {k: raw[k] for k in raw.files}
+    flat["froude_lambda"] = np.array(True)
+    npz = tmp_path / "boolscale.npz"
+    np.savez(npz, **flat)
+    side = _json.loads((committed.with_suffix(".provenance.json")).read_text(encoding="utf-8"))
+    # The sidecar AGREES with what the bool converts to, so R908's comparison cannot be
+    # what refuses this -- without that, the cell would pass without reaching the gate.
+    side["run"]["lambda"] = 1.0
+    (tmp_path / "boolscale.provenance.json").write_text(_json.dumps(side), encoding="utf-8")
+
+    value, where = exported_froude_lambda(npz)
+    assert value is None, (value, where)
+    assert "ndarray of dtype bool" in where, where
+    assert "NO Froude scaling" in where, where
+    with pytest.raises(ConfigError) as excinfo:
+        validated_export_scale(npz, tmp_path / "boolscale.provenance.json")
+    assert "is not a recorded number" in str(excinfo.value), str(excinfo.value)
+
+    # THE WEAKENING DIRECTION: the committed pair still resolves, at the scale it records.
+    #
+    # **THE SCALE IS READ FROM THE FILE, NOT TYPED.** The first draft of these two lines
+    # compared against `50.0`, which `tests/test_no_tolerance_literals.py` flagged -- an
+    # undeclared comparison literal in the cell written to hold a repair, which is R1006
+    # for the third consecutive round. Reading it from the npz removes the literal AND
+    # makes the assertion the property that matters: the reader returns what the file
+    # records, and the resolver agrees with it, rather than both matching a number typed
+    # here that would go stale if the committed pair were ever re-exported.
+    recorded = float(np.asarray(np.load(committed, allow_pickle=False)["froude_lambda"]).item())
+    value, where = exported_froude_lambda(committed)
+    assert value == recorded and where == "the npz", (value, where, recorded)
+    assert validated_export_scale(committed, committed.with_suffix(".provenance.json")) == recorded

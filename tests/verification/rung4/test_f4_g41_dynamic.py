@@ -724,3 +724,36 @@ def test_R1022_a_RECORDED_PERIOD_OUTSIDE_ITS_DOMAIN_is_refused_by_load(tmp_path:
     )
     inp = _R.load(npz=tmp / "clean.npz", provenance=clean_prov)
     assert len(inp.periods_full_s) == 6, inp.periods_full_s
+
+
+def test_R1033_a_BOOL_TYPED_npz_is_REFUSED_by_load_with_a_MATCHING_sha(tmp_path: Path) -> None:
+    """The silently wrong result the verdict named, at the reader that feeds a deliverable.
+
+    `load()` is where `scripts/measure/member_forces_table.py` takes its periods from, and
+    that generator writes the EZ0 pair `docs/F4_member_forces.{md,csv}`. It is deliberately
+    unable to refuse a different sea state (R902, because FT2.6 needs that), so a bool-typed
+    `periods_full_s` published every case under `period_full_s = 1` with its own wave-basis
+    row -- and `classify_case(1.0, 24.2)` is BREAKING, `H/lambda = 15.4998`.
+
+    The sha256 is recomputed for the mutated file, so the staleness check cannot be what
+    refuses it; without that this cell would pass without reaching the gate.
+    """
+    import json
+
+    import numpy as np
+
+    from floatfea.run.config import ConfigError
+
+    raw = np.load(_R.NPZ, allow_pickle=False)
+    flat = {k: raw[k] for k in raw.files}
+    flat["periods_full_s"] = np.ones(len(raw["periods_full_s"]), dtype=bool)
+    npz = tmp_path / "bool.npz"
+    np.savez(npz, **flat)
+    prov = tmp_path / "bool.provenance.json"
+    prov.write_text(json.dumps({"npz": {"sha256": _R._sha256(npz)}}), encoding="utf-8")
+
+    with pytest.raises(ConfigError) as excinfo:
+        _R.load(npz=npz, provenance=prov)
+    message = str(excinfo.value)
+    assert "recorded periods are not admissible" in message, message
+    assert "is not a recorded number" in message, message
