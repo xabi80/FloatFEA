@@ -1153,10 +1153,35 @@ def test_the_generator_would_catch_a_row_under_the_wrong_number() -> None:
     row's site to a path its own block does not name, and the generator must
     refuse to print the table at all.
     """
+    # **R1016: THIS CONTROL USED TO DIE IN `next()` WITH A BARE `StopIteration`.** A
+    # negative control whose own failure mode is an uncaught exception says nothing about
+    # the state it is in -- and the state it is usually in is EG3 state (2), where no
+    # answering report exists, so `ANSWERS` is absent and there is no row to ablate. The
+    # repair names the state rather than widening what the control accepts (EK2).
+    assert ANSWERS.is_file(), (
+        f"{ANSWERS.name} is not committed, so there is no row to ablate and this control "
+        f"cannot run. That is EG3 state (2) -- a verdict exists and the answering report "
+        f"does not -- and it clears when the report is written, not by time."
+    )
     gen = _generator()
     answers = json.loads(ANSWERS.read_text(encoding="utf-8"))
     answered = dict(answers["answered"])
-    victim = next(i for i in answered if i in gen.blocks(VERDICT_TEXT))
+    blocks = gen.blocks(VERDICT_TEXT)
+    candidates = [i for i in answered if i in blocks]
+    assert candidates, (
+        f"{ANSWERS.name} answers {len(answered)} items and the newest verdict carries "
+        f"{len(blocks)} blocks, and NONE of the answered items appears in it -- so there "
+        f"is no row whose number could be moved and the ablation has nothing to ablate. "
+        f"THE USUAL CAUSE IS EG3 STATE (2): `_answers_path` resolves against the NEWEST "
+        f"REPORT REVISION, which is {REPORT.name}'s and therefore an OLDER step's, while "
+        f"`VERDICT_TEXT` is the newest verdict's -- a verdict exists and the answering "
+        f"report does not. It clears when that report is written, not by time -- and "
+        f"note that `STEP` here is {STEP}, the NEWEST REPORTED step, not the step the "
+        f"newest verdict judges. If a report answering that verdict does exist and this "
+        f"still fires, the answers file is answering a different verdict, or this control "
+        f"has stopped being a control."
+    )
+    victim = candidates[0]
     answered[victim] = dict(answered[victim], site="floatfea/does_not_appear.py")
     with pytest.raises(SystemExit) as caught:
         gen.table(VERDICT_TEXT, {"answered": answered})

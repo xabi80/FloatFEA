@@ -206,13 +206,22 @@ def steepness(period_full_s: float, h_full_m: float) -> tuple[float, float, str,
     # band" while this row said "above the band ... by 2.012 s". Measured at H = 10 m:
     # three places in one file, two answers. The category is returned so the prose reads
     # the classification instead of repeating half of it.
-    if s > 1.0 / 7.0:
+    # **R1010: THE DECISION IS READ, NOT REPEATED.** The comment above said the four
+    # outcomes are "still decided here because the `where` STRINGS are this
+    # deliverable's own wording" -- and that conflated the strings with the decision.
+    # `if s > 1.0 / 7.0` was a second copy of `BREAKING_STEEPNESS_LIMIT`, and
+    # `period_full_s < lo` a second copy of the band comparison, in a script that
+    # publishes a tracked deliverable. Both are the same float as the library's today, so
+    # nothing moves; what moves is the next edit to either constant, which used to change
+    # the library's verdict and leave this column where it was. The strings stay here,
+    # because they ARE this deliverable's wording.
+    if _case.verdict is PB.Admissibility.BREAKING:
         category = "breaking"
         where = f"BREAKING (H/L {s:.4f} > 1/7); and below the band {lo:.3f}-{hi:.3f} s"
-    elif period_full_s < lo:
+    elif _case.verdict is PB.Admissibility.TOO_SHORT:
         category = "below"
         where = f"below the band {lo:.3f}-{hi:.3f} s by {lo - period_full_s:.3f} s"
-    elif period_full_s > hi:
+    elif _case.verdict is PB.Admissibility.TOO_LONG:
         category = "above"
         where = f"above the band {lo:.3f}-{hi:.3f} s by {period_full_s - hi:.3f} s"
     else:
@@ -678,10 +687,11 @@ def _write_summary(
         # above contradicts. They are derived from `h_full` for the same reason the band
         # itself now is (R902).
         (
-            f"**`T = 12.5 s` sits `{math.sqrt(6.5 * h_full) - 12.5:.3f} s` below "
-            f"`sqrt(6.5 x {h_full:g}) = {math.sqrt(6.5 * h_full):.3f} s`, and FA0 RULES "
+            f"**`T = 12.5 s` sits `{_lo_b - 12.5:.3f} s` "
+            f"below `sqrt(6.5 x {h_full:g}) = "
+            f"{_lo_b:.3f} s`, and FA0 RULES "
             f"THAT IT STAYS.** "
-            f"`{(math.sqrt(6.5 * h_full) - 12.5) / math.sqrt(6.5 * h_full):.1%}` below the "
+            f"`{(_lo_b - 12.5) / _lo_b:.1%}` below the "
             "bound is within the guidance's own precision, "
             "and the case was CHOSEN as the band's lower edge. The reason it matters is the "
             "direction: **the response rises as `T` falls across the band**, so the lower edge "
@@ -726,11 +736,13 @@ def _write_summary(
                 # edge", so that is what it asks. `_where_12_5` still supplies the
                 # WORD, from the table's own four-outcome classification (R944), so
                 # the two readers cannot disagree about the position.
-                if math.sqrt(6.5 * h_full) <= 12.5
+                if _lo_b <= 12.5
                 else (
-                    f"**`T = 12.5 s` sits `{math.sqrt(6.5 * h_full) - 12.5:.3f} s` below "
-                    f"`sqrt(6.5 x {h_full:g}) = {math.sqrt(6.5 * h_full):.3f} s`, which "
-                    f"is `{(math.sqrt(6.5 * h_full) - 12.5) / math.sqrt(6.5 * h_full):.1%}` "
+                    f"**`T = 12.5 s` sits "
+                    f"`{_lo_b - 12.5:.3f} s` below "
+                    f"`sqrt(6.5 x {h_full:g}) = "
+                    f"{_lo_b:.3f} s`, which is "
+                    f"`{(_lo_b - 12.5) / _lo_b:.1%}` "
                     "below the bound.** FA0 ruled that this case STAYS in the governing "
                     "set at the reference sea state, where the offset is `0.3%` and "
                     "within the guidance's own precision. **That ruling is NOT asserted "

@@ -32,7 +32,7 @@ import pytest
 import yaml
 
 from floatfea.run.config import ConfigError, load_config
-from floatfea.run.pipeline import (  # noqa: F401
+from floatfea.run.pipeline import (
     _validated_wave_basis,
     refuse_headings_this_run_cannot_cover,
     refuse_uncovered_headings,

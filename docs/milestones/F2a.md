@@ -308,3 +308,42 @@ The generators are deterministic today — verdict 123 regenerated the deliverab
 got a byte-identical file, and so did I twice — so this is a missing gate rather than a
 present defect. What it would assert is R756's own assertion over `results/F6a/`: the
 committed document is what the tree regenerates.
+
+## R1017 — no PUSH run of CI covers `tests/regression/`
+
+*Added by verdict 23 (R1 step 3's twenty-third interim check), which routed it here
+rather than ledgering it. Apparatus goes through this plan and not into a step commit.*
+
+Every reviewed commit is judged on a **push** run, and on a push run nothing executes
+`tests/regression/`:
+
+```
+claim  the two jobs that run on push between them exclude tests/regression
+cmd    grep -n "pytest tests" .github/workflows/ci.yml
+out    :133  pytest tests/regression -q --junit-xml=leg/regression.xml || true
+       :403  pytest tests/unit -q
+       :414  pytest tests --ignore=tests/unit --ignore=tests/verification
+                                 --ignore=tests/regression -q
+cmd    the job carrying :133, and its condition
+out    `determinism: name: "CI determinism -- leg"`,
+       `if: github.event_name == 'workflow_dispatch'`
+rule   CZ1 (iii) -- a green is only worth what ran
+```
+
+**The `|| true` on `:133` is NOT the gap, and I checked rather than assuming.** R304
+already closed that: the next twenty lines parse `leg/regression.xml` and `sys.exit` on
+any `failure`/`error` case and on zero collected, so within that job the rung is a gate
+and not a diagnostic. The gap is the `if:` — the job runs on `workflow_dispatch` only.
+
+**What it costs today.** `tests/regression/test_fl2d_band_check.py` is 23 cells, among them
+the R809 cell asserting that nothing is written when the screen refuses, the end-to-end
+R1005 arm, and the five end-to-end R1007 arms. All of them have run on exactly one machine,
+the implementer's. The door-level and helper-level cells for the same repairs were placed
+in `tests/unit/test_run_pipeline_refusals.py` for this reason, so the refusals themselves
+have a second witness; the end-to-end arms do not.
+
+**Not fixed here, and the reason is a rule rather than a preference.** "No new apparatus
+through F6" forbids a new job, and the CI definition is untouched by the diff this was
+found in. What a repair would be is one line: drop `tests/regression` from `:414`'s
+ignore list, or give the push event a job that runs it. Both change the CI definition,
+which goes through a plan.

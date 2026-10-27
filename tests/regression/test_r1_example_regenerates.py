@@ -70,7 +70,11 @@ NAMES = ("report.md", "member_forces.csv", "utilisation.csv")
 #     three machine states: total 65.97, 97.27 and 126.26 s.
 #
 #     **FIVE STAGES, NOT THREE (R850), AND THE FIRST VERSION OF THIS GATE FAILED FALSE.**
-#     `floatfea/cli.py:297` writes `build`, `load`, `solve`, `code_check`, `total`. Naming
+#     `run()` in `floatfea/run/pipeline.py` assembles `build`, `load`, `solve` and
+#     `code_check` into `timings`, and `_write_report`'s `## Wall time` table prints what
+#     it finds. (Cited by NAME: the line reference that stood here, `cli.py:297`, pointed
+#     at the governing-utilisation sentence rather than at the stages, and had done before
+#     FL2(d) moved anything. A name survives an insertion above it.) Naming
 #     only three left `| load |` and `| code_check |` INSIDE the byte comparison, and both
 #     are sub-10-ms stages printed at two decimals: the row flips between `0.00` and `0.01`
 #     at 5 ms, against a load stage measured at 1.6 ms cold and 0.7 ms warm -- a 3.1x

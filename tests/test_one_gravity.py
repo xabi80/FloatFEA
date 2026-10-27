@@ -35,9 +35,11 @@ syntax tree and cannot be hidden in a comment or revealed by reformatting.
 from __future__ import annotations
 
 import ast
-import importlib
+import importlib.util
 import math
+import sys
 from pathlib import Path
+from types import ModuleType
 
 from floatfea.io import frames
 from floatfea.loads import period_band
@@ -65,7 +67,15 @@ DECLARING = Path("floatfea/io/frames.py")
 # each exempted file still contains a forbidden literal, so the commit that fixes half B
 # turns this list red and forces its deletion. A guard that fails false is fixed or
 # deleted, never extended (EK2).
-EXEMPT_PENDING_FT2_4 = (Path("scripts/measure/f6a_required_section.py"),)
+# **R1014: THE EXACT HITS, NOT MERELY "SOME".** The reverse guard below asserted that an
+# exempted file still carried a forbidden literal AT ALL, so a PARTIAL repair of half B --
+# `9.80665` corrected to `9.81`, still a bare literal -- kept the exemption alive and left
+# the leftover unscanned. Measured, three arms: shipped `[(52, 9.80665)]` green, partial
+# `[(52, 9.81)]` ALSO green, full repair `[]` red. Declaring the line and the value makes
+# the middle arm red too, which is the arm that matters.
+EXEMPT_PENDING_FT2_4: dict[Path, list[tuple[int, float]]] = {
+    Path("scripts/measure/f6a_required_section.py"): [(52, 9.80665)],
+}
 
 
 def _sources() -> list[Path]:
@@ -115,18 +125,69 @@ def test_every_exemption_is_STILL_NEEDED() -> None:
     This is what stops `EXEMPT_PENDING_FT2_4` becoming a permanent hole. When FT2.4
     repairs half B this test fails, and the only repair for it is removing the entry.
     """
-    for rel in EXEMPT_PENDING_FT2_4:
+    for rel, declared in EXEMPT_PENDING_FT2_4.items():
         hits = _gravity_literals(ROOT / rel)
-        assert hits, (
-            f"{rel.as_posix()} is exempted from FU0 but carries no gravity literal any "
-            "more. The exemption is stale: delete it from `EXEMPT_PENDING_FT2_4`."
+        assert hits == declared, (
+            f"{rel.as_posix()} is exempted from FU0 for {declared} and its gravity "
+            f"literals are now {hits}. EITHER the repair landed, in which case the "
+            f"exemption is stale and gets deleted from `EXEMPT_PENDING_FT2_4` (EK2), OR "
+            f"the literal moved or changed value, in which case the exemption no longer "
+            f"describes what it is covering and the new state is unscanned. A guard that "
+            f"accepts 'some literal, somewhere' accepts a PARTIAL repair."
         )
 
 
 def test_the_declaring_module_declares_FLOATSIMS_value_and_not_the_standard_one() -> None:
     """9.81, not 9.80665. The frames table publishes this distinction explicitly."""
-    assert frames.GRAVITY_MAGNITUDE == 9.81
+    # not-a-tolerance: FloatSim's own gravity, the quantity this whole file exists to
+    # keep single-sourced. Exact equality against the value directive FU0 names; nothing
+    # is being allowed to differ by it, and a window here would be the detector band the
+    # `FORBIDDEN` comment above refuses for the same reason.
+    assert frames.GRAVITY_MAGNITUDE == 9.81  # not-a-tolerance: FloatSim's declared g
     assert frames.GRAVITY_VECTOR == (0.0, 0.0, -9.81)
+
+
+def _period_band_loaded_fresh(under_name: str) -> ModuleType:
+    """A SECOND module object from `period_band.py`'s own file, left out of `sys.modules`.
+
+    **WHY NOT `importlib.reload`, WHICH IS WHAT THIS CELL USED TO DO -- R1018.** `reload`
+    re-executes the module in its EXISTING namespace and leaves the new objects bound in
+    `sys.modules`, so every name already imported elsewhere in the process goes on
+    pointing at the PRE-reload objects while the module globals hold post-reload ones.
+    `Admissibility.may_govern` resolves `Admissibility` through those globals, so for the
+    old class -- the one `tests/unit/test_period_band.py` imported at collection -- it
+    compared a member of the old class against the new class's `IN_BAND` and returned
+    `False` for every member. Fourteen of that file's twenty-eight cells went red, with
+    the message `assert False is (<Admissibility.IN_BAND> is <Admissibility.IN_BAND>)` --
+    two objects that print identically and are not identical.
+
+    It was invisible to every measurement this commit took: the two files alone give
+    `28 passed`, and CI runs `pytest tests/unit` in a different process from the root
+    `tests/test_*.py` files, so no job there runs them together. Only a whole-suite run
+    sees it, and the reviewer's did.
+
+    `spec_from_file_location` + `module_from_spec` + `exec_module` gives a module object
+    that executes `period_band.py` from source, binding whatever `frames.GRAVITY_MAGNITUDE`
+    is at that moment, and NOTHING in `sys.modules` is replaced -- which is the whole
+    property the repair needs. The assertion below keeps that property honest.
+    """
+    spec = importlib.util.spec_from_file_location(under_name, Path(period_band.__file__))
+    assert spec is not None and spec.loader is not None
+    fresh = importlib.util.module_from_spec(spec)
+    # **THE `sys.modules` ENTRY IS REQUIRED AND IT IS NOT THE ONE R1018 IS ABOUT.**
+    # `period_band` declares `CaseBand` as a dataclass, and `dataclasses._process_class`
+    # resolves annotations through `sys.modules.get(cls.__module__).__dict__`; without an
+    # entry under THIS name that is `None.__dict__` --
+    # `AttributeError: 'NoneType' object has no attribute '__dict__'`, measured. So the
+    # entry goes in under the PROBE's name, which `floatfea.loads.period_band` is not, and
+    # comes out again in `finally`. The live module is never rebound, which is the one
+    # thing `importlib.reload` could not avoid.
+    sys.modules[under_name] = fresh
+    try:
+        spec.loader.exec_module(fresh)
+    finally:
+        del sys.modules[under_name]
+    return fresh
 
 
 def test_the_SCREENS_wavelength_reads_the_FRAMES_value() -> None:
@@ -134,22 +195,34 @@ def test_the_SCREENS_wavelength_reads_the_FRAMES_value() -> None:
 
     `period_band` binds `GRAVITY_MAGNITUDE` at import, which is the idiom every other
     consumer uses (`floatfea/loads/selfweight.py`, `floatfea/solve/static.py`), so the
-    dependency is proved by reloading the module against a patched frames rather than by
-    patching an attribute the function never re-reads. A test that patched
+    dependency is proved by EXECUTING the module's source against a patched frames rather
+    than by patching an attribute the function never re-reads. A test that patched
     `period_band.GRAVITY_MAGNITUDE` and passed would prove nothing about where the value
     comes from.
     """
     period_s = 10.0
     before = period_band.deep_water_wavelength(period_s)
     original = frames.GRAVITY_MAGNITUDE
+    live = sys.modules["floatfea.loads.period_band"]
     try:
         # A value nothing could arrive at by accident.
         frames.GRAVITY_MAGNITUDE = 1.0  # type: ignore[misc]
-        reloaded = importlib.reload(period_band)
-        after = reloaded.deep_water_wavelength(period_s)
+        probe = _period_band_loaded_fresh("_period_band_at_patched_gravity")
+        after = probe.deep_water_wavelength(period_s)
     finally:
         frames.GRAVITY_MAGNITUDE = original  # type: ignore[misc]
-        importlib.reload(period_band)
+
+    # **THE PROPERTY R1018 COST FOURTEEN CELLS, ASSERTED RATHER THAN ARGUED.** The module
+    # every other test holds is the same OBJECT it was before this cell ran, and the probe
+    # is a different one that never entered `sys.modules`.
+    assert sys.modules["floatfea.loads.period_band"] is live
+    assert sys.modules["floatfea.loads.period_band"] is period_band
+    assert probe is not period_band
+    assert "_period_band_at_patched_gravity" not in sys.modules
+    assert probe.Admissibility is not period_band.Admissibility, (
+        "the probe did not re-execute the module source, so the two assertions below "
+        "would be comparing one module against itself"
+    )
 
     # **BOTH ASSERTIONS ARE BIT-EXACT, AND THE FORM MATTERS.** The first version of this
     # compared `after` with `before / 9.81` and failed by 2 ulp -- `15.915494309189533`
@@ -164,5 +237,8 @@ def test_the_SCREENS_wavelength_reads_the_FRAMES_value() -> None:
         f"the screen is not reading the single source"
     )
     assert before == 9.81 * period_s * period_s / (2.0 * math.pi)
-    # And the restore worked, so no later test inherits a patched module.
+    # And the restore worked -- of the VALUE, which is all a restore can be once nothing
+    # is reloaded. The four assertions above are what says no later test inherits a
+    # patched MODULE, and the sentence that used to stand here claimed the second from a
+    # measurement of the first. That was R1018's cover.
     assert period_band.deep_water_wavelength(period_s) == before

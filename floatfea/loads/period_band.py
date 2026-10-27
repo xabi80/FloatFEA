@@ -171,14 +171,42 @@ def deep_water_wavelength(period_full_s: float) -> float:
     """
     if not math.isfinite(period_full_s) or period_full_s <= 0.0:
         raise ValueError(f"period {period_full_s!r} s {_POSITIVE} and finite")
-    return GRAVITY_MAGNITUDE * period_full_s * period_full_s / (2.0 * math.pi)
+    lam = GRAVITY_MAGNITUDE * period_full_s * period_full_s / (2.0 * math.pi)
+    # **R1020: THE PERIOD BEING POSITIVE DOES NOT MAKE THE WAVELENGTH POSITIVE.** `T^2`
+    # underflows for a `T` this function's own check admits: at `T = 1e-170` the product
+    # is exactly `0.0`, so `steepness` raised `ZeroDivisionError` out of the screen, and
+    # at `T = 1e-160` it is `1.56e-320` and `H/lambda` is `inf` -- which the screen then
+    # reads as BREAKING, a verdict from an infinity. This is the function's OWN invariant
+    # and not a second copy of the reader's domain check (R1019): R994 forbids a refusal
+    # that CANNOT fire, and this one fires on an input the check above lets through.
+    if lam <= 0.0:
+        raise ValueError(
+            f"period {period_full_s!r} s gives a wavelength that underflows to {lam!r} m; "
+            f"`g T^2 / (2 pi)` is not representable at this period, so no steepness can "
+            f"be formed from it"
+        )
+    return lam
 
 
 def steepness(period_full_s: float, height_full_m: float) -> float:
     """`H / lambda` in deep water."""
     if not math.isfinite(height_full_m) or height_full_m < 0.0:
         raise ValueError(f"wave height {height_full_m!r} m must be finite and >= 0")
-    return height_full_m / deep_water_wavelength(period_full_s)
+    lam = deep_water_wavelength(period_full_s)
+    s = height_full_m / lam
+    # **R1020, the other half: a POSITIVE wavelength does not make a FINITE steepness.**
+    # At `T = 1e-160` the wavelength is `1.56e-320` -- denormal but positive, so the check
+    # inside `deep_water_wavelength` admits it -- and `H/lambda` is `inf`. `classify_case`
+    # then compares `inf > BREAKING_STEEPNESS_LIMIT` and returns BREAKING: a verdict about
+    # a sea state, formed from an infinity, with nothing saying so. Refused by name here
+    # because this is the one place the quotient exists.
+    if not math.isfinite(s):
+        raise ValueError(
+            f"period {period_full_s!r} s and height {height_full_m!r} m give a steepness "
+            f"of {s!r} (wavelength {lam!r} m); no admissibility verdict can be formed "
+            f"from it"
+        )
+    return s
 
 
 def associated_period_band(height_full_m: float) -> tuple[float, float]:

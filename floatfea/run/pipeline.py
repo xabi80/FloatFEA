@@ -54,6 +54,7 @@ from floatfea.run.config import (
     FROUDE_LAMBDA,
     HEADING,
     WAVE_HEIGHT,
+    WAVE_PERIOD,
     Bound,
     ConfigError,
     RunConfig,
@@ -66,6 +67,7 @@ __all__ = [
     "run",
     "validated_export_scale",
     "refuse_cases_that_cannot_govern",
+    "refuse_disagreeing_period_records",
     "wave_basis_from_sidecar",
 ]
 
@@ -611,8 +613,9 @@ def _recorded_heading(basis: dict[str, Any]) -> float | None:
             f"heading, and a boolean is what YAML makes of `yes`, `on` or `true` -- "
             f"neither can be compared against a declared heading, and coercing either "
             f"would publish an envelope attributed to a direction nobody exported. Fix "
-            f"the sidecar beside the npz, or remove `load_cases.headings` so no "
-            f"comparison is claimed."
+            f"the sidecar beside the npz: this value is refused at the READER whether or "
+            f"not any heading is declared (R877), so there is no configuration under "
+            f"which the run proceeds with it."
         )
     return float(recorded)
 
@@ -769,9 +772,23 @@ def _recorded_height(basis: dict[str, Any]) -> float | None:
     that cannot fire is dead code dressed as rigour. I shipped exactly that once in this
     step and the reviewer was right to name it.
 
-    `_recorded_heading` DOES carry such a guard, and the asymmetry is not an oversight:
-    it is reached by `refuse_headings_this_run_cannot_cover`, which the CLI calls with a
-    basis it did not get from this module's door.
+    **R1011: `_recorded_heading` CARRIES SUCH A GUARD AND THE REASON THIS DOCSTRING GAVE
+    FOR THE ASYMMETRY WAS FALSE.** It said that function "is reached by
+    `refuse_headings_this_run_cannot_cover`, which the CLI calls with a basis it did not
+    get from this module's door". Measured: that function has exactly ONE production call
+    site, `run()` in this same module, and the basis it is handed is
+    `exported_wave_basis(cfg.load_cases.npz)` -- this module's door. So the stated reason
+    inverted the conclusion drawn from it: on the true graph `_recorded_heading`'s guard is
+    the one that cannot fire in production, which is what the paragraph above calls dead
+    code dressed as rigour.
+
+    It is kept rather than deleted, and the reason is a property of the CALLER and not of
+    the guard: `refuse_headings_this_run_cannot_cover` and `_recorded_heading` are reached
+    directly by `tests/unit/test_headings_and_bem_coverage.py` with dicts no door has
+    seen, so the guard is the contract those cells are written against. The honest
+    statement is that it is a contract on a public helper and not a production refusal.
+    What it must not claim is that production reaches it, which is what this paragraph
+    claimed.
     """
     recorded = basis.get("wave_height_full_m")
     return None if recorded is None else float(recorded)
@@ -824,6 +841,23 @@ def refuse_cases_that_cannot_govern(
     # because the recorded height moved and the period is now inside the band -- would
     # stop protecting the case it was written for, silently, and would then admit that
     # period again the next time the height moved back.
+    # **R1012: THE GUARANTEE WAS A PROPERTY OF THE CALLER.** Both refusals below are
+    # guarded by `T in by_period`, so a declared period with no case in the file was
+    # passed over in silence. Through `floatfea run` that is unreachable -- `unknown`
+    # fires thirteen lines above the call site -- but this function is in `__all__`, and a
+    # public entry point whose guarantee holds only because of where it happens to be
+    # called is the shape R896 exists to close. Asserted here so the two refusals below
+    # can be read as covering the whole declared set.
+    absent = sorted((set(declared) | set(override)) - by_period.keys())
+    if absent:
+        raise ConfigError(
+            f"refuse_cases_that_cannot_govern was given {absent} s as declared or "
+            f"overridden, and this file carries {sorted(by_period)} s. A period with no "
+            f"case behind it cannot be screened, and passing it over in silence would "
+            f"leave the two refusals below covering less than the declared set. Through "
+            f"`floatfea run` the `unknown` check refuses this first; a direct caller gets "
+            f"it here."
+        )
     vacuous = sorted(T for T in override if T in by_period and by_period[T].may_govern)
     if vacuous:
         detail = "; ".join(by_period[T].describe() for T in vacuous)
@@ -912,7 +946,23 @@ def _validated_wave_basis(present: dict[str, Any], sidecar: Path) -> dict[str, A
                 f"Coercing either would publish `{value} deg` or `{value} m` in all three "
                 f"artifacts, which is what this refusal replaces."
             )
-        if not math.isfinite(float(value)):
+        # **R883: THE SENTENCE IN THIS DOCSTRING WAS FALSE AND THIS IS THE REPAIR.** It
+        # said `10**400` "is caught before `float()` raises `OverflowError`". It was not:
+        # `isinstance(10**400, (int, float))` is True, so the type check above passes, and
+        # `float(10**400)` then raised `OverflowError` out of this very line -- a traceback
+        # rather than a named refusal, for a value a JSON sidecar can carry. Repaired by
+        # catching it, so the claim becomes true rather than deleted; CW0 allows either,
+        # and a clean refusal is worth more than a sentence.
+        try:
+            as_float = float(value)
+        except OverflowError as exc:
+            raise ConfigError(
+                f"{sidecar.name}: `run.{key}` is an integer too large to represent as a "
+                f"float ({type(value).__name__} with {len(str(abs(value)))} digits). "
+                f"Refused by name here rather than as an `OverflowError` traceback out of "
+                f"the conversion below."
+            ) from exc
+        if not math.isfinite(as_float):
             raise ConfigError(
                 f"{sidecar.name}: `run.{key}` is {value!r}, which is not finite. It is "
                 f"refused here by name rather than further down, where only a comparison "
@@ -1022,11 +1072,74 @@ def wave_basis_from_sidecar(sidecar: Path) -> dict[str, Any]:
     `exported_wave_basis`; a caller holding the sidecar itself comes here. Neither reads
     the `run` block directly, and a reader that does is the defect, not a shortcut.
     """
+    # **R1007: `ABSENT` AND `COULD NOT BE READ` WERE THE SAME RETURN VALUE, AND THE
+    # SECOND SILENTLY DISABLED A GATE.** A sidecar that exists and cannot be parsed came
+    # back `{}`, which every consumer reads as "the export recorded no wave basis": all
+    # three artifacts published "wave basis: NOT RECORDED by the export of this
+    # dynamic-inputs file", and FL2(d)'s `refuse_cases_that_cannot_govern` took its
+    # `if height is None: return ()` exit, so the whole sea-state screen was skipped at
+    # EXIT 0 beside the EZ2 caveat denying that a breaking case can govern. An ABSENT
+    # sidecar is legitimate -- FL1(a) admits an npz without one -- and a PRESENT one that
+    # cannot be read is a defect in the file, so the two stop sharing a return value here.
+    if not sidecar.exists():
+        return {}
     try:
         recorded = json.loads(sidecar.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {}
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ConfigError(
+            f"{sidecar.name} exists and cannot be read as JSON ({type(exc).__name__}: "
+            f"{exc}). It is the only record of the wave height and heading these loads "
+            f"were exported at, and an unreadable record is NOT an absent one: returning "
+            f"'not recorded' here published that sentence on all three artifacts and "
+            f"skipped the sea-state screen that decides whether a declared period may set "
+            f"the envelope. Repair the file, or delete it to run with the basis genuinely "
+            f"not recorded -- which every artifact then says."
+        ) from exc
+
+    # **R884: A MALFORMED CONTAINER WAS REPORTED AS AN ABSENT ONE.** `key in run_block` is
+    # a MEMBERSHIP test on a list and a SUBSTRING test on a string, so for any non-mapping
+    # `run` block every key came back "absent", `present` was empty, `_validated_wave_basis`
+    # returned `{}` on its first line, and the same false publication followed. Six
+    # malformed containers were measured; `run: 5`, `run: true` and `run: null` instead
+    # raised `TypeError` out of the comprehension, so one defect gave a traceback for three
+    # shapes and a silent wrong answer for the other three. Both are refusals now, and they
+    # are HERE -- before the comprehension -- because that is the only place either can
+    # fire: `_validated_wave_basis` takes its own `if not present: return {}` exit on an
+    # empty mapping, so a type check added inside it cannot see this input.
+    #
+    # THE DISTINCTION THIS RESTORES IS THE ONE THE VALIDATOR ALREADY DRAWS FOR A PARTIAL
+    # BASIS: "a sidecar missing a field is WRONG rather than ABSENT". A sidecar whose `run`
+    # block is not a mapping is wrong in exactly that way.
+    if not isinstance(recorded, dict):
+        raise ConfigError(
+            f"{sidecar.name}: the provenance sidecar's top level is "
+            f"{type(recorded).__name__}, not an object. Every artifact states the wave "
+            f"basis from this file's `run` block, and a non-object has none -- so the run "
+            f"would have published the basis as NOT RECORDED although the file is present "
+            f"and merely malformed, and the sea-state screen would have been skipped. "
+            f"Delete the sidecar to run with the basis genuinely not recorded, which every "
+            f"artifact then says, or fix its shape."
+        )
     run_block = recorded.get("run", {})
+    if not isinstance(run_block, dict):
+        # The multi-heading sentence is TRUE OF A LIST ONLY, so it is attached to a list
+        # only. It read as a flat clause first and arm 6 of my own measurement printed
+        # "`run` is int, not an object. A LIST here is a multi-heading export ..." -- a
+        # refusal explaining a shape the input does not have.
+        because = (
+            " A LIST here is a multi-heading export meeting a single-heading reader, "
+            "which is the same shape `run.heading_deg` is refused for one level down."
+            if isinstance(run_block, list)
+            else ""
+        )
+        raise ConfigError(
+            f"{sidecar.name}: `run` is {type(run_block).__name__}, not an object.{because} "
+            f"Membership of a key in a non-mapping is not key lookup, so every field would "
+            f"have read as absent: the run would have published the wave basis as NOT "
+            f"RECORDED at exit 0 although this file records one, and skipped the screen "
+            f"that refuses a breaking wave from setting the envelope. Delete the sidecar to "
+            f"run with the basis genuinely not recorded, or fix its shape."
+        )
     present = {
         key: run_block[key]
         for key in (*WAVE_BASIS_KEYS, *RECORDED_PROVENANCE_NUMERIC)
@@ -1174,6 +1287,64 @@ class _Inputs:
     periods_full_s: tuple[float, ...]
 
 
+def refuse_disagreeing_period_records(npz: Path, periods: tuple[float, ...], raw: Any) -> None:
+    """R1005: the file's two records of each case's period must agree, INDEX BY INDEX.
+
+    `periods_full_s[i]` is the array `run()` reads; `case{i}/period_full_s` is written
+    beside each case's own loads by `scripts/export_f4_dynamic_inputs.py` and was read by
+    nothing. Everything downstream matches the two BY POSITION --
+    `post/forces_table.py` enumerates `periods_full_s` and subscripts `case{i}/lam` with
+    the same `i` -- so the top-level array decides the FL2(d) verdict, the published label
+    and which rows are in the envelope, while the `case{i}/` groups supply the forces.
+
+    ONE VARIABLE MOVED: indices 0 and 2 of the top-level array permuted, every `case{i}/`
+    group byte-identical, the sidecar unchanged, the same configuration, a real `run()`:
+
+        EXIT=0, governing U = 2.78942 at platform:hub2_arm ROOT, LABELLED T = 14.0 s
+        band table  | 10 | 0.1550 | breaking | -2.542 | sensitivity only |
+                    | 14 | 0.0791 | in band  | -      | governing        |
+        control, unpermuted, same code: EXIT=0, U = 1.71167 at T = 12.5 s
+
+    That is the breaking case's utilisation -- 63% above the shipped figure -- published
+    under an admissible period's label, with no artifact saying anything is off.
+
+    **COMPARED POSITIONALLY, NOT AS A SET.** At the set level the permutation is invisible
+    (the six periods are the same six), so neither the FL2(d) screen nor `unknown` can see
+    it, and a set comparison is green on exactly this input -- measured.
+
+    An index whose per-case key is absent has ONE record and nothing to compare, which is
+    the shape `validated_export_scale`'s `beside is not None` guard already uses for the
+    two records of the SCALE. That abstention is the direction this check is weak in, so
+    `tests/unit/test_run_pipeline_refusals.py` asserts the committed file carries the key
+    for every case -- otherwise the check could go vacuous with nothing saying so.
+    """
+    available = set(getattr(raw, "files", ()))
+    disagree = [
+        (i, periods[i], float(raw[f"case{i}/period_full_s"]))
+        for i in range(len(periods))
+        if f"case{i}/period_full_s" in available
+        and float(raw[f"case{i}/period_full_s"]) != periods[i]
+    ]
+    if not disagree:
+        return
+    rows = "; ".join(
+        f"index {i}: `periods_full_s[{i}]` = {top:g} s against "
+        f"`case{i}/period_full_s` = {per:g} s"
+        for i, top, per in disagree
+    )
+    raise ConfigError(
+        f"{npz.name}: the file disagrees with itself about which case is which. It records "
+        f"every case's period TWICE and the two records differ at {len(disagree)} of "
+        f"{len(periods)} indices -- {rows}. The loads are taken from the `case{{i}}/` "
+        f"groups BY POSITION while the sea-state screen, the governing-period selection "
+        f"and the published `period_full_s` label all come from `periods_full_s`, so a "
+        f"disagreement publishes one case's forces under another case's period. Both "
+        f"records are published, so a reader cannot tell which the numbers are at. The "
+        f"pair has been separated or edited, and that is refused rather than resolved by "
+        f"preference (R908). Re-export the file."
+    )
+
+
 def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunResult:
     """Build, solve, member forces, code check. Wall time per stage (FL1(d))."""
     timings: dict[str, float] = {}
@@ -1237,6 +1408,50 @@ def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunRes
         )
 
     periods = tuple(float(x) for x in raw["periods_full_s"])
+
+    # **R1019: THE RECORDED PERIOD ARRAY HAD NO DECLARED DOMAIN.** `config.py` runs every
+    # DECLARED period through `_checked(..., WAVE_PERIOD)`; this array is read with
+    # `float(x)` and checked against nothing, which is R877/R881's asymmetry in the one
+    # recorded numeric field `RECORDED_BOUNDS` does not cover. Under FR1 that is head two
+    # -- an input accepted and used other than as declared -- and the array decides the
+    # FL2(d) verdict, the published `period_full_s` label and which rows are in the
+    # envelope.
+    #
+    # Measured at the reader rather than at a comparison (R877), so the guarantee does not
+    # depend on what the configuration declared. What it catches, driven in-process:
+    #
+    #     T = 0.5 s   H/lambda = 62.0 -- a BREAKING row published for a period outside
+    #                 WAVE_PERIOD's [1, 100] s, reported as sensitivity at exit 0
+    #     T = 1e-160  lambda = 1.56e-320, H/lambda = inf -- a BREAKING verdict from an
+    #                 infinity
+    #     T = 1e-170  lambda underflows to 0.0 and `steepness` raises ZeroDivisionError
+    #                 out of the screen; see R1020, repaired at the library's own door
+    #
+    # A model-scale array written into this full-scale field is the realistic shape --
+    # every period divided by sqrt(50) -- and it is NOT caught by a domain check, because
+    # 1.41 .. 2.83 s is inside the range. It is caught by the breaking screen instead, and
+    # this check is not claimed to cover it.
+    outside = [(i, T) for i, T in enumerate(periods) if not WAVE_PERIOD[1] <= T <= WAVE_PERIOD[2]]
+    if outside:
+        unit, low, high = WAVE_PERIOD
+        rows = "; ".join(f"index {i}: {T:g} {unit}" for i, T in outside)
+        raise ConfigError(
+            f"{cfg.load_cases.npz.name}: `periods_full_s` records "
+            f"{len(outside)} of {len(periods)} periods outside the admissible range "
+            f"[{low:g}, {high:g}] {unit} -- {rows}. Every DECLARED period is held to that "
+            f"range at the configuration reader, and this array decides the sea-state "
+            f"verdict, the published `period_full_s` label and which rows are in the "
+            f"envelope, so it is held to the same one here -- at the reader, where the "
+            f"guarantee does not depend on what the configuration declared (R877, R881). "
+            f"One domain per quantity, whichever side of the I/O boundary it arrives from."
+        )
+
+    # R1005, before `unknown` and for the same reason it exists: `unknown` asks
+    # whether a declared case EXISTS, this asks whether the file AGREES WITH ITSELF
+    # about which case is which. The mechanism and the measurement are in the
+    # helper's docstring rather than copied here.
+    refuse_disagreeing_period_records(cfg.load_cases.npz, periods, raw)
+
     unknown = sorted(set(cfg.load_cases.governing_periods) - set(periods))
     if unknown:
         raise ConfigError(

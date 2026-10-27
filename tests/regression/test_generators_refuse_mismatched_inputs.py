@@ -966,16 +966,33 @@ def test_R978_a_DUPLICATED_FORCES_ROW_is_refused(tmp_path: Path) -> None:
     assert not (out / "o.md").exists()
 
 
-def test_R978_a_CHANGE_BELOW_THE_PUBLISHED_PRECISION_is_accepted(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    "factor, expect_exit, expect_count",
+    [
+        pytest.param(1.0 + 1e-8, 0, None, id="1e-8_accepted"),
+        pytest.param(1.0 + 1e-7, 1, 8, id="1e-7_refused_8_of_736"),
+        pytest.param(1.0 + 1e-5, 1, 384, id="1e-5_refused_384_of_736_SATURATED"),
+    ],
+)
+def test_R978_a_CHANGE_BELOW_THE_PUBLISHED_PRECISION_is_accepted(
+    tmp_path: Path, factor: float, expect_exit: int, expect_count: int | None
+) -> None:
     """EH4's weakening direction: how far may a value move with this join still green?
 
     Solved rather than sampled, over the six components this cell itself scales --
     `_scaled_forces(..., COMPONENTS, ...)`, which writes each component back at the CSV's
     own `.6e`, with the join's own refusal line read for the count:
 
-        x (1 + 1e-8)  ->   0 of 736 cells differ   <- accepted here
-        x (1 + 1e-7)  ->   8 of 736
-        x (1 + 1e-5)  -> 384 of 736, and it SATURATES there
+        x (1 + 1e-8)  ->   0 of 736 cells differ   <- accepted
+        x (1 + 1e-7)  ->   8 of 736                <- refused
+        x (1 + 1e-5)  -> 384 of 736, and it SATURATES there   <- refused
+
+    **R1002: ALL THREE ROWS NOW RUN.** The cell used to inject `1e-8` alone and assert
+    `returncode == 0`, so the two rows carrying the saturation claim were context no
+    assertion reached -- a published table measured by nothing, which is BI3's shape. All
+    three were right when I re-measured them, so the repair is to run them rather than to
+    shrink the table: `expect_count` is read back out of the join's own refusal line, so
+    the figures in this docstring and the figures the code produces cannot drift apart.
 
     `384` is every cell that is a function of the forces row; the other `352` are the five
     key columns, the three branch/clause labels and the two allowables, none of which a
@@ -996,13 +1013,25 @@ def test_R978_a_CHANGE_BELOW_THE_PUBLISHED_PRECISION_is_accepted(tmp_path: Path)
     publishing the other one here.
     """
     out = _out_dir(tmp_path)
-    forces = _scaled_forces(tmp_path, "total_instant", None, COMPONENTS, 1.0 + 1e-8)
+    forces = _scaled_forces(tmp_path, "total_instant", None, COMPONENTS, factor)
     proc = _run("f6_results_report.py", tmp_path, "--forces", str(forces))
-    assert proc.returncode == 0, (
-        "a change below the precision the CSV publishes was refused, which would make the "
-        "join a comparison at a precision no reader of the file can take (R978)."
+    blob = proc.stdout + proc.stderr
+    assert proc.returncode == expect_exit, (
+        f"a perturbation of {factor - 1.0:g} gave exit {proc.returncode} where "
+        f"{expect_exit} was measured. Below `_CSV_FIGURES` the join must ACCEPT -- "
+        f"refusing there makes it a comparison at a precision no reader of the file can "
+        f"take (R978) -- and above it the join must REFUSE.\n{blob[:600]}"
     )
-    assert (out / "o.md").exists()
+    if expect_count is None:
+        assert (out / "o.md").exists()
+        return
+    # THE COUNT, READ BACK OUT OF THE REFUSAL. The published table's own figure, so the
+    # docstring above and the code cannot drift apart (BP0).
+    assert f"{expect_count} of 736 cells over 32 rows disagree" in blob, blob[:600]
+    assert not (out / "o.md").exists(), (
+        "the join refused and still wrote the document; a refusal after the artifact is a "
+        "warning with an exit code (R809)"
+    )
 
 
 def test_R986_the_BOUND_SENTENCES_follow_the_BOUND_TABLE(tmp_path: Path) -> None:
@@ -1481,9 +1510,10 @@ def test_R994_a_UNION_OF_HEADINGS_is_refused_rather_than_published_as_ONE(
     through `float(run['heading_deg'])`, which raises on a sequence. **So interpolating the
     count at the header alone would have been a branch no configuration the rest of the
     file survives can reach**, and writing a refusal into the generator for it would have
-    been dead code of a second kind: `floatfea/run/pipeline.py:793-806` ALREADY refuses a
-    non-scalar `run.heading_deg`, by name, at `main()`'s `wave_basis_from_sidecar` call 262
-    lines above the header block -- and for this exact reason, in its own words, "Coercing
+    been dead code of a second kind: `_validated_wave_basis`'s `RECORDED_BOUNDS` loop
+    (in `floatfea/run/pipeline.py`) ALREADY refuses a non-scalar `run.heading_deg`, by
+    name, at `main()`'s own `wave_basis_from_sidecar` call, which runs before the header
+    block -- and for this exact reason, in its own words, "Coercing
     either would publish `[0.0, 45.0] deg` or `[0.0, 45.0] m` in all three artifacts, which
     is what this refusal replaces."
 

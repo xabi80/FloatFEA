@@ -22,6 +22,8 @@ function nothing calls was three findings in this step already.
 
 from __future__ import annotations
 
+import json
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -431,3 +433,138 @@ def test_a_NEGATIVE_recorded_height_never_reaches_the_screen(tmp_path: Any) -> N
     from floatfea.run.config import WAVE_HEIGHT
 
     assert WAVE_HEIGHT[1] == 0.0, WAVE_HEIGHT
+
+
+# ---------------------------------------------------------------------------
+# THE TWO WAYS THE SCREEN WAS BYPASSED AT EXIT 0, DRIVEN THROUGH `run()`
+#
+# Both were found by running the model at a configuration the FL2(d) commit did not
+# choose, and neither is visible in that commit's diff.
+
+
+def _example_in(tmp_path, **overrides):
+    """The shipped example, rewritten into `tmp_path` with absolute inner paths.
+
+    `copy_data=True` also copies the npz and its sidecar, so a cell may damage them
+    without touching the committed files.
+    """
+    data = yaml.safe_load(EXAMPLE.read_text(encoding="utf-8"))
+    data["floatsim"]["deck"] = str((EXAMPLE.parent / data["floatsim"]["deck"]).resolve())
+    npz = (EXAMPLE.parent / data["load_cases"]["npz"]).resolve()
+    if overrides.pop("copy_data", False):
+        local = tmp_path / "data"
+        local.mkdir(exist_ok=True)
+        shutil.copy2(npz, local / npz.name)
+        shutil.copy2(npz.with_suffix(".provenance.json"), local / f"{npz.stem}.provenance.json")
+        npz = local / npz.name
+    data["load_cases"]["npz"] = str(npz)
+    out_dir = tmp_path / "out"
+    data["outputs"]["directory"] = str(out_dir)
+    for key, value in overrides.items():
+        data["load_cases"][key] = value
+    path = tmp_path / "config.yaml"
+    path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+    return path, out_dir, npz
+
+
+def test_END_TO_END_R1005_a_PERMUTED_period_array_REFUSES_AND_WRITES_NOTHING(
+    tmp_path,
+) -> None:
+    """The file disagreeing with itself published `U = 2.78942` labelled `T = 14.0 s`.
+
+    ONE VARIABLE MOVED: indices 0 and 2 of `periods_full_s` permuted, every `case{i}/`
+    group byte-identical, the sidecar untouched, the shipped governing set. Before the
+    repair: EXIT=0, `U = 2.78942` -- the breaking case's, 63% above the shipped figure --
+    at `platform:hub2_arm ROOT`, over a band table reading
+    `| 14 | 0.0791 | in band | — | governing |`, and the `period_full_s` column of all
+    1248 rows of `member_forces.csv` naming a different case than the forces beside it.
+    """
+    path, out_dir, npz = _example_in(tmp_path, copy_data=True)
+    raw = np.load(npz, allow_pickle=False)
+    flat = {k: raw[k] for k in raw.files}
+    top = flat["periods_full_s"].copy()
+    top[0], top[2] = top[2], top[0]
+    flat["periods_full_s"] = top
+    np.savez(npz, **flat)
+
+    with pytest.raises(ConfigError) as caught:
+        run_pipeline(load_config(path))
+    message = str(caught.value)
+    assert "disagrees with itself about which case is which" in message, message
+    assert "differ at 2 of 6 indices" in message, message
+    written = sorted(p.name for p in out_dir.glob("*")) if out_dir.exists() else []
+    assert written == [], (
+        f"the refusal left {written} on disk; nothing should describe a run whose forces "
+        f"and period labels came from different cases"
+    )
+
+
+@pytest.mark.parametrize(
+    "damage, needle",
+    [
+        pytest.param("list", "`run` is list, not an object", id="run_block_is_a_list"),
+        pytest.param("int", "`run` is int, not an object", id="run_block_is_an_int"),
+        pytest.param("null", "`run` is NoneType, not an object", id="run_block_is_null"),
+        pytest.param("toplevel", "top level is list, not an object", id="top_level_is_a_list"),
+        pytest.param("corrupt", "exists and cannot be read as JSON", id="sidecar_is_not_json"),
+    ],
+)
+def test_END_TO_END_R1007_a_MALFORMED_SIDECAR_REFUSES_INSTEAD_OF_SKIPPING_THE_SCREEN(
+    tmp_path, damage: str, needle: str
+) -> None:
+    """Every shape that used to make the whole FL2(d) screen vanish at exit 0.
+
+    Measured before the repair, on the `run: []` arm with the breaking period declared and
+    no override: EXIT=0, `screen_entries = 0`, governing `U = 2.78942` at `T = 10 s`, all
+    three artifacts written -- under "wave basis: NOT RECORDED by the export of this
+    dynamic-inputs file" and "the screen was NOT performed ... this dynamic-inputs file
+    records none". Both sentences are false of a sidecar whose `run.wave_height_full_m`
+    is `24.2`, and the EZ2 caveat denying that a breaking case can govern shipped beside
+    them.
+
+    The three `TypeError` shapes (`run: 5`, `run: true`, `run: null`) are the same defect
+    arriving as a traceback instead of a wrong number.
+    """
+    path, out_dir, npz = _example_in(
+        tmp_path,
+        copy_data=True,
+        governing_periods=[10.0, 12.5, 14.0, 15.0, 16.2],
+        out_of_band_governing=[12.5],
+    )
+    sidecar = npz.with_suffix(".provenance.json")
+    if damage == "corrupt":
+        sidecar.write_text("{ this is not json", encoding="utf-8")
+    elif damage == "toplevel":
+        nested = json.loads(sidecar.read_text(encoding="utf-8"))
+        sidecar.write_text(json.dumps([nested]), encoding="utf-8")
+    else:
+        record = json.loads(sidecar.read_text(encoding="utf-8"))
+        record["run"] = {"list": [], "int": 5, "null": None}[damage]
+        sidecar.write_text(json.dumps(record), encoding="utf-8")
+
+    with pytest.raises(ConfigError) as caught:
+        run_pipeline(load_config(path))
+    assert needle in str(caught.value), str(caught.value)
+    written = sorted(p.name for p in out_dir.glob("*")) if out_dir.exists() else []
+    assert written == [], (
+        f"the refusal left {written} on disk; nothing should describe a run that "
+        f"published the wave basis as NOT RECORDED from a file that records one"
+    )
+
+
+def test_END_TO_END_a_SIDECAR_LESS_npz_still_RUNS_and_says_the_screen_was_not_performed(
+    tmp_path,
+) -> None:
+    """The weakening direction of the repair above, and FL1(a) requires it.
+
+    Every arm above refuses. Without this cell the repair could have been "refuse any
+    sidecar that is not perfect", which would refuse the sidecar-less npz FL1(a) admits
+    -- and the measurement that distinguishes them is which of the two states the file is
+    in, not how strict the reader is.
+    """
+    path, out_dir, npz = _example_in(tmp_path, copy_data=True)
+    npz.with_suffix(".provenance.json").unlink()
+
+    result = run_pipeline(load_config(path))
+    assert result.band_screen == (), "no height is recorded, so no band can be decided"
+    assert result.wave_basis == {}, result.wave_basis

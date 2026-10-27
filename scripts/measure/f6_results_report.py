@@ -721,8 +721,9 @@ def main(argv: list[str] | None = None) -> int:
     # SOMETHING ELSE WERE BOTH UNREACHABLE.** Interpolating the count here from the
     # recorded field's length gives a branch no configuration the rest of this file
     # survives can reach. Refusing a non-scalar heading HERE is dead code too:
-    # `floatfea/run/pipeline.py:793-806` refuses it first, by name, at `main()`'s
-    # `wave_basis_from_sidecar` call 262 lines above this one -- and for this exact reason,
+    # `_validated_wave_basis`'s `RECORDED_BOUNDS` loop (in `floatfea/run/pipeline.py`)
+    # refuses it first, by name, at `main()`'s own `wave_basis_from_sidecar` call -- and
+    # for this exact reason,
     # in its own words, "Coercing either would publish `[0.0, 45.0] deg` or
     # `[0.0, 45.0] m` in all three artifacts, which is what this refusal replaces."
     #
@@ -753,9 +754,12 @@ def main(argv: list[str] | None = None) -> int:
     # at exit 0. A period with no case behind it has no steepness and no basis; printing
     # one states a sea state that was never analysed.
     #
-    # The comparison is a set difference, the form `run()` already uses at
-    # `pipeline.py:1123-1130` for the CONFIGURED list. Not a tolerance: give it any
-    # slack and a period with no case rejoins the table.
+    # The comparison is a set difference, the form `run()` already uses for the CONFIGURED
+    # list -- its own `unknown = sorted(set(cfg.load_cases.governing_periods) -
+    # set(periods))` check in `floatfea/run/pipeline.py`. Cited by NAME because the line
+    # reference that stood here (`pipeline.py:1123-1130`) pointed at the Froude
+    # scale-mismatch message instead, and had done since before FL2(d) moved anything.
+    # Not a tolerance: give it any slack and a period with no case rejoins the table.
     _solved = {float(r["period_full_s"]) for r in forces if r.get("period_full_s")}
     # **R958: THE JOIN WAS ONE-DIRECTIONAL.** `set(_recorded) - _solved` refuses a declared
     # period with no case; a SOLVED case with no declaration was silent. At H = 24.1 m
@@ -967,7 +971,8 @@ def main(argv: list[str] | None = None) -> int:
         else:
             offset = f"{(period - hi) / hi:.3%} long"
         w(
-            f"{period:11.1f} {steep:10.4f} {'BREAKING' if steep > 1.0 / 7.0 else 'ok':>9s} "
+            f"{period:11.1f} {steep:10.4f} "
+            f"{'BREAKING' if steep > PB.BREAKING_STEEPNESS_LIMIT else 'ok':>9s} "
             f"{'yes' if in_band else 'no':>9s} {offset:>13s} "
             f"{'GOVERNING' if period in GOVERNING_PERIODS else 'sensitivity':>14s}"
         )
@@ -1008,7 +1013,10 @@ def main(argv: list[str] | None = None) -> int:
     # because FT2.6 is what produces a sidecar at another sea state; until then a height
     # these sentences were not written for gets a REFUSAL, which is the one outcome that
     # cannot mislead. No fallback and no warning: the deliverable is not written.
-    _breaking = sorted(T for T in _recorded if _steepness(T, h_full) > 1.0 / 7.0)
+    # R1010: the limit comes from the ONE definition. The same float today, which is
+    # why no row of the regenerated deliverable moves; a different float on the next
+    # edit, which is the point.
+    _breaking = sorted(T for T in _recorded if _steepness(T, h_full) > PB.BREAKING_STEEPNESS_LIMIT)
     _past_long = sorted(T for T in _recorded if hi < T)
     _in_band = sorted(T for T in _recorded if lo <= T <= hi)
     _kept = sorted(set(GOVERNING_PERIODS) - set(_in_band))

@@ -409,7 +409,11 @@ def test_R866_a_declared_heading_the_RUN_CANNOT_COVER_refuses_AT_THE_CALL_SITE(
         data["load_cases"]["headings"] = [0.0, 45.0, 90.0]
         data["outputs"]["directory"] = str(out)
 
-    # `cli.main` CATCHES ConfigError, prints it and returns 2 (`cli.py:447-449`), so the
+    # `cli.main` CATCHES ConfigError, prints it and returns 2 -- its `except ConfigError`
+    # handler in `floatfea/cli.py`, cited by NAME because the line reference here
+    # (`cli.py:447-449`) was CORRECT at 3960026 and was staled by FL2(d)'s own commit
+    # inserting the band-table section above it (R1013's class, two sites the census's
+    # path-prefixed regex could not see) -- so the
     # contract here is the exit code and the message on stderr -- not an exception. A test
     # written against `pytest.raises` passed its control and failed this case, which is
     # how the real contract got measured rather than assumed.
@@ -699,7 +703,9 @@ def test_FQ3_R832_an_EMPTY_basis_says_so_AND_no_caveat_contradicts_it(built: Any
     # AND NO CAVEAT SUPPLIES THE HEADING THE HEADER SAYS IS ABSENT.
     #
     # THE NEEDLE IS THE RETIRED SENTENCE, NOT THE PHRASE IT CONTAINED. My first version
-    # asserted `"is in the provenance above" not in blob` and it failed on `cli.py:77` --
+    # asserted `"is in the provenance above" not in blob` and it failed on the
+    # MID-station caveat in `floatfea/cli.py`'s caveat tuple -- cited by name for the
+    # same reason as above, the line having moved under FL2(d) --
     # a DIFFERENT caveat, correctly saying the `C_m` value used is in the provenance. A
     # test that reddens on a true sentence about another quantity is not this gate.
     assert "the heading these loads were exported at" not in blob, blob[:400]
@@ -737,3 +743,476 @@ def test_FQ2_R818_the_PROVENANCE_carries_the_sensitivity_operating_points() -> N
     text = str(prov["code_check_sensitivities"])
     assert "K_sensitivity" in text and "Cm_sensitivity" in text, text
     assert "1" in text, text
+
+
+# ---------------------------------------------------------------------------
+# THE DOOR'S SHAPE, AND THE TWO MEANINGS OF AN EMPTY BASIS
+#
+# **R1007 AND R884 ARE ONE DEFECT WITH TWO FACES, AND BOTH PUBLISHED A NUMBER.** A
+# sidecar whose `run` block was not a mapping, or which existed and could not be parsed,
+# came back from the door as `{}` -- indistinguishable from the legitimate "this export
+# recorded no wave basis". Measured through the real CLI, one variable moved, the
+# committed sidecar's `run` replaced by `[]` and `governing_periods` gaining the breaking
+# period:
+#
+#     EXIT=0, screen_entries = 0, governing U = 2.78942 at T = 10 s, all three artifacts
+#     written, report.md saying "the screen was NOT performed ... this dynamic-inputs
+#     file records none" -- of a file whose `run.wave_height_full_m` is 24.2
+#
+# So the whole FL2(d) screen was bypassed in silence and the breaking wave set the
+# envelope 63% high, beside the EZ2 caveat denying that it could.
+#
+# These cells are at the DOOR, where the distinction is made. The arms that reach them
+# through `run()` are in `tests/regression/test_fl2d_band_check.py`; these are the ones
+# CI runs.
+
+
+def _sidecar_with(tmp_path: Path, payload: Any) -> Path:
+    """A sidecar file carrying `payload` as its whole JSON document."""
+    import json
+
+    path = tmp_path / "dynamic_inputs.provenance.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def _committed_run_block() -> dict[str, Any]:
+    import json
+
+    sidecar = ROOT / "data" / "f4" / "dynamic_inputs.provenance.json"
+    block = json.loads(sidecar.read_text(encoding="utf-8"))["run"]
+    assert isinstance(block, dict) and "wave_height_full_m" in block, sorted(block)
+    return dict(block)
+
+
+@pytest.mark.parametrize(
+    "run_value",
+    [
+        pytest.param([], id="empty_list"),
+        pytest.param(["wave_height_full_m", "heading_deg"], id="list_of_the_key_names"),
+        pytest.param("wave_height_full_m heading_deg window lambda", id="string_of_them"),
+        pytest.param(5, id="int"),
+        pytest.param(True, id="bool"),
+        pytest.param(None, id="null"),
+    ],
+)
+def test_R884_a_NON_MAPPING_run_block_is_REFUSED_rather_than_read_as_ABSENT(
+    tmp_path: Path, run_value: Any
+) -> None:
+    """Six shapes, one refusal. Three of them used to raise `TypeError` instead.
+
+    `key in run_block` is a MEMBERSHIP test on a list and a SUBSTRING test on a string, so
+    the two container shapes reported every key absent and published "NOT RECORDED"; `5`,
+    `True` and `None` raised `TypeError` out of the comprehension. One defect, a traceback
+    for three inputs and a silent wrong answer for the other three.
+
+    The two list shapes are the ones that matter most: they are what a multi-heading
+    export would write, which is the same shape `run.heading_deg` is already refused for
+    one level down.
+    """
+    from floatfea.run.pipeline import wave_basis_from_sidecar
+
+    sidecar = _sidecar_with(tmp_path, {"run": run_value})
+    with pytest.raises(ConfigError) as excinfo:
+        wave_basis_from_sidecar(sidecar)
+    message = str(excinfo.value)
+    assert "`run` is" in message, message
+    assert type(run_value).__name__ in message, message
+    # **THE EXPLANATION MATCHES THE SHAPE.** The multi-heading sentence is true of a list
+    # and of nothing else, and the first version of this refusal printed it for every
+    # type: "`run` is int, not an object. A LIST here is a multi-heading export ...".
+    assert ("A LIST here" in message) is isinstance(run_value, list), message
+    # AND THE REFUSAL NAMES THE ACTION, because R979's lesson is that a refusal whose
+    # remedy cannot work leaves the operator nothing to do.
+    assert "Delete the sidecar" in message, message
+
+
+def test_R1007_a_NON_OBJECT_top_level_is_REFUSED(tmp_path: Path) -> None:
+    """`recorded.get` is not defined on a list, and a list is valid JSON."""
+    from floatfea.run.pipeline import wave_basis_from_sidecar
+
+    sidecar = _sidecar_with(tmp_path, [{"run": _committed_run_block()}])
+    with pytest.raises(ConfigError) as excinfo:
+        wave_basis_from_sidecar(sidecar)
+    assert "top level is list" in str(excinfo.value), str(excinfo.value)
+
+
+def test_R1007_a_sidecar_that_EXISTS_and_cannot_be_PARSED_is_REFUSED(tmp_path: Path) -> None:
+    """UNREADABLE IS NOT ABSENT, and that was the whole of R1007.
+
+    The `except (OSError, json.JSONDecodeError): return {}` that used to stand here made a
+    corrupt sidecar publish "wave basis: NOT RECORDED by the export" on all three
+    artifacts and skipped the sea-state screen, at exit 0.
+    """
+    from floatfea.run.pipeline import wave_basis_from_sidecar
+
+    sidecar = tmp_path / "dynamic_inputs.provenance.json"
+    sidecar.write_text("{ this is not json", encoding="utf-8")
+    with pytest.raises(ConfigError) as excinfo:
+        wave_basis_from_sidecar(sidecar)
+    message = str(excinfo.value)
+    assert "exists and cannot be read as JSON" in message, message
+    assert "is NOT an absent one" in message, message
+
+
+def test_R1007_an_ABSENT_sidecar_still_returns_an_EMPTY_basis(tmp_path: Path) -> None:
+    """The other half of the distinction, and FL1(a) requires it.
+
+    Without this cell the repair above could have been written as "refuse everything",
+    which would refuse the sidecar-less npz FL1(a) admits.
+    """
+    from floatfea.run.pipeline import wave_basis_from_sidecar
+
+    assert wave_basis_from_sidecar(tmp_path / "does_not_exist.provenance.json") == {}
+
+
+def test_R1007_a_run_block_that_RECORDS_NO_BASIS_is_absence_and_not_a_defect(
+    tmp_path: Path,
+) -> None:
+    """The third `{}` return, and it is the only remaining one.
+
+    A `run` block that IS a mapping and carries none of the five basis keys nor any of
+    `RECORDED_PROVENANCE_NUMERIC` records no basis. That is absence, so it returns `{}` as
+    before. After this commit every OTHER route to `{}` is a refusal, which is what makes
+    `_recorded_height`'s `None` unambiguous again.
+
+    **AND THE BOUNDARY IS NARROWER THAN IT LOOKS, WHICH I HAD WRONG.** This cell first
+    used `{"lambda": 50.0}` as "a mapping recording no basis", and the door REFUSED it --
+    `lambda` is one of `WAVE_BASIS_KEYS`, so `present` is non-empty and the five-key
+    completeness check (R878) fires: "records a PARTIAL wave basis: ['heading_deg',
+    'wave_height_full_m', 'wave_height_model_m', 'window'] missing from ['lambda']". So
+    the empty-`present` exit is reached only by a block carrying NONE of the eight keys,
+    and a block carrying some is wrong rather than absent -- which is R878's rule, already
+    in force. Both halves are asserted below so the boundary is where it is measured to
+    be and not where I assumed.
+    """
+    from floatfea.run.pipeline import wave_basis_from_sidecar
+
+    none_of_them = _sidecar_with(tmp_path, {"run": {"sha": "abc"}, "git": {"tag": "v1"}})
+    assert wave_basis_from_sidecar(none_of_them) == {}
+    assert wave_basis_from_sidecar(_sidecar_with(tmp_path, {"run": {}})) == {}
+
+    # SOME of them is PARTIAL, not absent (R878), and that is a refusal.
+    partial = _sidecar_with(tmp_path, {"run": {"lambda": 50.0}})
+    with pytest.raises(ConfigError) as excinfo:
+        wave_basis_from_sidecar(partial)
+    assert "records a PARTIAL wave basis" in str(excinfo.value), str(excinfo.value)
+
+
+def test_R883_an_INTEGER_TOO_LARGE_FOR_A_FLOAT_is_a_NAMED_refusal(tmp_path: Path) -> None:
+    """`_validated_wave_basis`'s docstring claimed this was caught. It was not.
+
+    `isinstance(10**400, (int, float))` is True, so the type check passed and
+    `float(10**400)` raised `OverflowError` -- a traceback out of the validator, for a
+    value a JSON sidecar can carry. The repair makes the docstring's sentence true.
+    """
+    from floatfea.run.pipeline import wave_basis_from_sidecar
+
+    block = _committed_run_block()
+    block["wave_height_full_m"] = 10**400
+    sidecar = _sidecar_with(tmp_path, {"run": block})
+    with pytest.raises(ConfigError) as excinfo:
+        wave_basis_from_sidecar(sidecar)
+    message = str(excinfo.value)
+    assert "too large to represent as a float" in message, message
+    assert "401 digits" in message, message
+
+
+def test_R883_the_UNCAUGHT_shape_is_what_the_repair_replaced(tmp_path: Path) -> None:
+    """The control for the cell above: `float()` on that value really does raise.
+
+    Without this, the cell above would pass equally if `OverflowError` had never been
+    reachable -- it would be a test of a refusal with no defect behind it, which is the
+    R994 shape this repository deletes rather than keeps.
+    """
+    with pytest.raises(OverflowError):
+        float(10**400)
+
+
+def test_R1012_the_PUBLIC_screen_refuses_a_period_with_NO_CASE_behind_it() -> None:
+    """The guarantee was a property of the caller (R896's shape).
+
+    Both of the screen's refusals are guarded by `T in by_period`, so a declared period
+    absent from the file was passed over in silence. Unreachable through `floatfea run`,
+    where `unknown` fires thirteen lines earlier -- but the function is in `__all__`.
+    """
+    from floatfea.run.pipeline import refuse_cases_that_cannot_govern
+
+    class _Cfg:
+        class load_cases:  # noqa: N801 -- a stub standing in for the dataclass
+            governing_periods = (13.0,)
+            out_of_band_governing: tuple[float, ...] = ()
+
+    with pytest.raises(ConfigError) as excinfo:
+        refuse_cases_that_cannot_govern(_Cfg(), (12.5, 14.0), {"wave_height_full_m": 24.2})
+    message = str(excinfo.value)
+    assert "[13.0] s as declared or overridden" in message, message
+    assert "cannot be screened" in message, message
+
+
+def test_R1012_the_SHIPPED_declared_set_is_still_admitted() -> None:
+    """The weakening direction: the new refusal must not refuse the real configuration."""
+    from floatfea.run.pipeline import refuse_cases_that_cannot_govern
+
+    class _Cfg:
+        class load_cases:  # noqa: N801
+            governing_periods = (12.5, 14.0, 15.0, 16.2)
+            out_of_band_governing = (12.5,)
+
+    screen = refuse_cases_that_cannot_govern(
+        _Cfg(), (10.0, 12.5, 14.0, 15.0, 16.2, 20.0), {"wave_height_full_m": 24.2}
+    )
+    assert len(screen) == 6
+
+
+# ---------------------------------------------------------------------------
+# R1005: THE TWO RECORDS OF EACH CASE'S PERIOD
+#
+# The npz records every case's period twice -- `periods_full_s[i]` and
+# `case{i}/period_full_s` -- and nothing compared them. The screen, the governing
+# selection and the published label read the first; the forces come from the `case{i}/`
+# groups BY POSITION. A permutation of the top-level array alone published the breaking
+# case's `U = 2.78942` under the label `T = 14.0 s`, at exit 0, over a band table calling
+# that period admissible.
+
+
+class _Npz:
+    """The two things the check reads off an `np.load` result: `files` and `__getitem__`.
+
+    A stub rather than a written npz, so these cells cost microseconds and the measured
+    end-to-end arms in `tests/regression/test_fl2d_band_check.py` carry the real file.
+    """
+
+    def __init__(self, mapping: dict[str, Any]) -> None:
+        self._m = mapping
+        self.files = list(mapping)
+
+    def __getitem__(self, key: str) -> Any:
+        return self._m[key]
+
+
+def _two_records(top: tuple[float, ...], per_case: tuple[float, ...]) -> _Npz:
+    mapping: dict[str, Any] = {"periods_full_s": list(top)}
+    for i, value in enumerate(per_case):
+        mapping[f"case{i}/period_full_s"] = value
+    return _Npz(mapping)
+
+
+SIX = (10.0, 12.5, 14.0, 15.0, 16.2, 20.0)
+PERMUTED = (14.0, 12.5, 10.0, 15.0, 16.2, 20.0)
+
+
+def test_R1005_the_AGREEING_file_is_admitted() -> None:
+    """The control. Without it the check below could be an unconditional refusal."""
+    from floatfea.run.pipeline import refuse_disagreeing_period_records
+
+    refuse_disagreeing_period_records(Path("dynamic_inputs.npz"), SIX, _two_records(SIX, SIX))
+
+
+def test_R1005_a_PERMUTED_top_level_array_is_REFUSED_naming_both_values_and_the_index() -> None:
+    """The arm that published `U = 2.78942` labelled `T = 14.0 s`."""
+    from floatfea.run.pipeline import refuse_disagreeing_period_records
+
+    with pytest.raises(ConfigError) as excinfo:
+        refuse_disagreeing_period_records(
+            Path("dynamic_inputs.npz"), PERMUTED, _two_records(PERMUTED, SIX)
+        )
+    message = str(excinfo.value)
+    assert "disagrees with itself about which case is which" in message, message
+    assert "differ at 2 of 6 indices" in message, message
+    # BOTH values and the INDEX, which is what a re-export needs to be aimed at.
+    assert "`periods_full_s[0]` = 14 s against `case0/period_full_s` = 10 s" in message, message
+    assert "`periods_full_s[2]` = 10 s against `case2/period_full_s` = 14 s" in message, message
+
+
+def test_R1005_a_SET_comparison_is_GREEN_on_the_very_input_this_refuses() -> None:
+    """Why POSITIONALLY. The obvious fix is the one that fails here, and it is measured.
+
+    This is the cell that keeps the repair from being rewritten as a set difference by
+    someone who reads "compare the two records" and reaches for the shape `unknown` uses
+    eight lines below.
+    """
+    assert set(PERMUTED) == set(SIX)
+    assert sorted(PERMUTED) == sorted(SIX)
+    assert PERMUTED != SIX
+
+
+def test_R1005_an_index_with_NO_SECOND_RECORD_abstains_rather_than_refusing() -> None:
+    """The weakening direction (EH4), and `validated_export_scale`'s own shape.
+
+    One record is one record: there is nothing to compare and nothing to refuse. The
+    danger in this direction is a file with NO per-case keys at all, which would make the
+    check vacuous -- held by the cell below.
+    """
+    from floatfea.run.pipeline import refuse_disagreeing_period_records
+
+    only_top = _Npz({"periods_full_s": list(PERMUTED)})
+    refuse_disagreeing_period_records(Path("dynamic_inputs.npz"), PERMUTED, only_top)
+
+    # And a file carrying the second record for SOME cases is checked for those.
+    partial = _Npz({"periods_full_s": list(PERMUTED), "case2/period_full_s": 14.0})
+    with pytest.raises(ConfigError) as excinfo:
+        refuse_disagreeing_period_records(Path("dynamic_inputs.npz"), PERMUTED, partial)
+    assert "differ at 1 of 6 indices" in str(excinfo.value), str(excinfo.value)
+
+
+def test_R1005_the_COMMITTED_npz_carries_the_SECOND_RECORD_for_EVERY_CASE() -> None:
+    """The check is NON-VACUOUS on the file this repository ships.
+
+    The abstention above is what makes the check safe on a file that records the period
+    once. It is also how the check could become decoration without anything going red, so
+    the property is asserted against the real file: six cases, six per-case records.
+    """
+    import numpy as np
+
+    raw = np.load(ROOT / "data" / "f4" / "dynamic_inputs.npz", allow_pickle=False)
+    top = [float(x) for x in raw["periods_full_s"]]
+    assert len(top) == 6, top
+    per_case = [f"case{i}/period_full_s" for i in range(len(top))]
+    assert [k for k in per_case if k in raw.files] == per_case, sorted(raw.files)
+    # not-a-tolerance: the two records of the EXPORTED case periods, compared for exact
+    # equality against each other. Nothing is allowed to differ here by any amount; that
+    # is the whole content of R1005.
+    assert [float(raw[k]) for k in per_case] == top, (top, per_case)
+
+
+# ---------------------------------------------------------------------------
+# R882 AND R1011: TWO SENTENCES, MADE CHECKABLE
+#
+# Both were prose repairs, and prose in the source tree does not get to claim things
+# about the code (CW0). These are the assertions that hold them.
+
+
+def test_R882_the_heading_refusal_DOES_NOT_recommend_removing_the_DECLARATION() -> None:
+    """The remedy clause routed a reader from the refusal to the publication.
+
+    Until R877 the message ended "Fix the sidecar beside the npz, or remove
+    `load_cases.headings` so no comparison is claimed" -- and the path it recommended was
+    the one on which the bad value was PUBLISHED: a run declaring no headings took an
+    early return and printed `heading True deg` at exit 0. R877 moved validation to the
+    reader, which makes the advice not merely dangerous but FALSE: the value is refused
+    whether or not any heading is declared.
+    """
+    from floatfea.run.pipeline import _recorded_heading
+
+    with pytest.raises(ConfigError) as excinfo:
+        _recorded_heading({"heading_deg": [0.0, 90.0]})
+    message = str(excinfo.value)
+    assert "not a single heading in degrees" in message, message
+    assert "remove `load_cases.headings`" not in message, message
+    assert "refused at the READER whether or not any heading is declared" in message, message
+
+    # AND THE ADVICE IS FALSE, which is the measurement behind the sentence: the door
+    # refuses the same value with no `headings` declared at all.
+    assert load_config(EXAMPLE).load_cases.headings == (), (
+        "the shipped example is the configuration that declared nothing and published "
+        "the bad value; if it now declares headings this cell's premise has moved"
+    )
+
+
+def test_R1011_the_heading_coverage_check_has_ONE_production_call_site() -> None:
+    """`_recorded_height`'s docstring stated a false call graph as its reason.
+
+    It said `refuse_headings_this_run_cannot_cover` "is reached by ... the CLI ... with a
+    basis it did not get from this module's door", and used that to explain why
+    `_recorded_heading` carries a type guard and `_recorded_height` does not. The true
+    graph inverts the conclusion: the one production call site is `run()` in the same
+    module, and the basis it passes is `exported_wave_basis(...)` -- the door. So the
+    guard cannot fire in production, and the honest statement is that it is a contract on
+    a public helper.
+
+    Measured here rather than asserted there, because a sentence about a call graph goes
+    stale the first time someone adds a caller.
+    """
+    import ast
+
+    source = (ROOT / "floatfea" / "run" / "pipeline.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    calls = [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "refuse_headings_this_run_cannot_cover"
+    ]
+    assert len(calls) == 1, [node.lineno for node in calls]
+    # AND IT IS HANDED THIS MODULE'S OWN DOOR, which is the half that inverts the reason.
+    passed = calls[0].args[1]
+    assert isinstance(passed, ast.Call) and isinstance(passed.func, ast.Name), ast.dump(passed)
+    assert passed.func.id == "exported_wave_basis", passed.func.id
+
+    # The guard is kept because TESTS reach it directly with dicts no door has seen --
+    # which is what makes it a contract rather than dead code (R994).
+    direct = ROOT / "tests" / "unit" / "test_headings_and_bem_coverage.py"
+    assert "refuse_headings_this_run_cannot_cover(" in direct.read_text(encoding="utf-8")
+
+
+# ---------------------------------------------------------------------------
+# R1019: THE RECORDED PERIOD ARRAY HAD NO DECLARED DOMAIN
+#
+# `config.py` runs every DECLARED period through `_checked(..., WAVE_PERIOD)`. `run()`
+# read `periods_full_s` with `float(x)` and checked it against nothing -- R877/R881's
+# asymmetry in the one recorded numeric field `RECORDED_BOUNDS` does not cover. Found by
+# running R1010's equivalence grid over `WAVE_PERIOD x WAVE_HEIGHT`, a configuration
+# nothing in the diff chose.
+
+
+def test_R1019_a_RECORDED_period_outside_WAVE_PERIOD_is_REFUSED(tmp_path: Path) -> None:
+    """Both ends of the declared range, and the index and value are named.
+
+    `T = 0.5 s` is the one that mattered: it is accepted by every other check, gives
+    `H/lambda = 62` at the recorded height, and would have been published as a BREAKING
+    sensitivity row for a period outside the range every declared period is held to.
+    """
+    import numpy as np
+
+    from floatfea.run.config import WAVE_PERIOD
+    from floatfea.run.pipeline import run as run_pipeline
+
+    data = yaml.safe_load(EXAMPLE.read_text(encoding="utf-8"))
+    npz_src = (EXAMPLE.parent / data["load_cases"]["npz"]).resolve()
+    raw = np.load(npz_src, allow_pickle=False)
+    flat = {k: raw[k] for k in raw.files}
+
+    for bad in (0.5, 0.0, WAVE_PERIOD[2] * 1.01):
+        top = flat["periods_full_s"].copy()
+        top[0] = bad
+        probe = dict(flat, periods_full_s=top)
+        npz = tmp_path / f"probe_{bad}.npz"
+        np.savez(npz, **probe)
+
+        local = yaml.safe_load(EXAMPLE.read_text(encoding="utf-8"))
+        local["floatsim"]["deck"] = str((EXAMPLE.parent / local["floatsim"]["deck"]).resolve())
+        local["load_cases"]["npz"] = str(npz)
+        local["load_cases"]["governing_periods"] = [14.0, 15.0, 16.2]
+        local["load_cases"]["out_of_band_governing"] = []
+        out_dir = tmp_path / f"out_{bad}"
+        local["outputs"]["directory"] = str(out_dir)
+        path = tmp_path / f"cfg_{bad}.yaml"
+        path.write_text(yaml.safe_dump(local, sort_keys=False), encoding="utf-8")
+
+        with pytest.raises(ConfigError) as excinfo:
+            run_pipeline(load_config(path))
+        message = str(excinfo.value)
+        assert "`periods_full_s` records 1 of 6 periods outside" in message, message
+        assert "[1, 100] s" in message, message
+        assert f"index 0: {bad:g} s" in message, message
+        written = sorted(p.name for p in out_dir.glob("*")) if out_dir.exists() else []
+        assert written == [], written
+
+
+def test_R1019_the_COMMITTED_array_is_INSIDE_the_declared_range() -> None:
+    """The weakening direction: the new refusal must not refuse the shipped file."""
+    import numpy as np
+
+    from floatfea.run.config import WAVE_PERIOD
+
+    raw = np.load(ROOT / "data" / "f4" / "dynamic_inputs.npz", allow_pickle=False)
+    periods = [float(x) for x in raw["periods_full_s"]]
+    _unit, low, high = WAVE_PERIOD
+    assert all(low <= T <= high for T in periods), periods
+    # AND THE CHECK IS NON-VACUOUS: the range does not contain everything a float can be.
+    # not-a-tolerance: `0.5` is the out-of-domain PERIOD the sibling cell injects, named
+    # here to show `WAVE_PERIOD` excludes it. An input, and nothing is allowed to differ
+    # from it by any amount.
+    assert not (low <= 0.5 <= high)  # not-a-tolerance: the injected out-of-domain period
