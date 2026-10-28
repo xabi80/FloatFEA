@@ -2,6 +2,79 @@
 Reviewed commit: 3ad464b1b8453d485725f1ac60d4ccfbb2cca863
 **Reviewed commit: `3ad464b1b8453d485725f1ac60d4ccfbb2cca863`.**
 Verdict: HOLD
+Tests: **1672 failed, 4079 passed, 1 skipped -- the WHOLE 5752-test collection at the judged sha, measured by me locally in two runs that together cover every id, which I could not say in the entry below.** `tests` minus the five report-guard files: **3530 passed, 2 warnings in 2470.07s (0:41:10), ZERO failures** -- and that run includes the whole verification ladder, all 2088 of it, locally. `tests/unit tests/regression tests/*.py`: **1672 failed, 1991 passed, 1 skipped, 1 warning in 3603.12s (1:00:03)**, which is `401 + 366 + 2897 = 3664` exactly. The two runs leave no id uncovered, and the 1672 are the same 1672, in the same two files.
+Scope: **ADDENDUM to the interim check at `3ad464b`. NO NEW FINDINGS. It corrects two figures about MY OWN EVIDENCE in the entry below and adds the completed whole-tree local measurement.** It counts against no round for the same reason the entry below does -- ES0, no new report revision, `ls docs/reports/R1/` still has no `step-3.md` -- and it closes nothing (no `--closes`, FK1). The precedent in this file is `3b2ce57`, the FV3 addendum that corrected verdict 26's anchor with no new findings.
+
+## Carried
+
+**All three blocking findings of the entry below stand UNCHANGED and UNWEAKENED: R1073, R1074, R1075.** Nothing in this measurement touches them -- they are about sentences and factors in `floatfea/cli.py`, and every one of them was found by running the model at a configuration the diff did not choose, not by a suite count. **L11 through L19 stand unchanged.** R867-R870 stand blocking, twenty-fifth round. Condition 4 and the F6b escalation paragraph stand.
+
+**And the two things I got wrong about my own evidence, named rather than quietly overwritten:**
+
+| what the entry below says | what is true | why it happened |
+|---|---|---|
+| "`python -m pytest -q tests` was started first, reached 17% in 45 minutes on this machine, and I killed it" | **I did not kill it, and a second broad run I also believed killed completed as well.** Both ran to a summary line, and between them they cover every id in the tree. | I issued `pkill` against two patterns and read a progress file that had stopped advancing; I never checked the exit. **A `pkill` whose effect I did not measure is an unmeasured claim about my own apparatus**, which is the whole of BF0 turned on the reviewer. |
+| "**1672 failed, 1076 passed, 1 skipped** across my own runs" and "the 20 root-guard files I did not run locally and `tests/verification` are green in CI at this sha" | **1672 failed, 4079 passed, 1 skipped**, and I DID run all 22 root-guard files and the whole ladder locally. All green on both machines, not only on CI's. | the figure was a true count of the runs I knew about. It understated my own coverage by 3003 passing tests, which is the safe direction for a reviewer to err and still the wrong number. |
+
+## Findings
+
+**None. This addendum adds no finding and withdraws none.** The three blocking findings and the nine ledger items of the entry below are the whole list, and the measurement in this entry strengthens the entry's conclusion rather than qualifying it.
+
+```
+claim  the two completed runs cover every id at the judged sha, and the 1672 reds are the
+       only failures anywhere in the tree on EITHER machine
+cmd    python -m pytest -q -p no:randomly tests --ignore=tests/test_report_carried.py
+         --ignore=tests/test_report_guard_states.py
+         --ignore=tests/test_report_numbers_are_sourced.py
+         --ignore=tests/test_plan_figures.py --ignore=tests/test_figure_local_check.py
+       python -m pytest -q -p no:randomly tests/unit tests/regression tests/*.py -rf
+out    3530 passed, 2 warnings in 2470.07s (0:41:10)            exit 0
+       1672 failed, 1991 passed, 1 skipped, 1 warning in 3603.12s (1:00:03)
+rule   CZ0 (d) with CA2 -- a red test at the reviewed commit -- and EG3 with the FS1/FT1
+       predicate for the boundary set
+cell   the arithmetic, and it closes: the collection at the judged sha is 5752; run A omits
+       exactly the five report-guard files, so those five collected 5752 - 3530 = 2222 at
+       that commit; run B omits `tests/verification` and collects 401 + 366 + 2897 = 3664;
+       the five omitted from A are all root files and so are all inside B, which leaves no
+       id in neither. Union passed = 5752 - 1672 - 1 = 4079.
+judge  **ZERO failures outside the two report-guard files, measured locally over the whole
+       tree and not inferred from CI.** The verification ladder is green locally as well as
+       in CI -- 2088 ids inside run A's 3530 -- so there is no STOP on the low-rung head on
+       either machine. Run A's `0 failed` over 3530 ids is also the cleanest statement
+       available that the three blocking findings are about PUBLISHED SENTENCES and not
+       about the arithmetic: nothing in `floatfea/` that a test watches moved.
+```
+
+**AND ONE MEASUREMENT I MADE BY ACCIDENT THAT IS WORTH THE LINE, BECAUSE IT IS R861 ON MY OWN COMMIT.** After writing the entry below I re-collected the five report-guard files in my worktree and got **2257**, against the **2222** the same five collected at the judged sha. The 35 new ids are the findings and sites of the verdict I had just written, entering two parametrised guards. **The collection size is a function of what the reviewer writes, measured across one commit of mine** -- which is exactly why the entry below checks the FS1/FT1 predicate per id and quotes no baseline. It is also a reminder that the only tree these counts describe is the one they were taken in: the 5752 and the 2222 belong to `3ad464b` and I am not restating them as properties of anything else.
+
+## Tolerances touched
+
+**NONE, and nothing about this addendum could touch one.** It adds no code and no test; it is a verdict entry.
+
+```
+cmd    git diff 3ad464b..HEAD -- floatfea tests scripts examples
+out    (empty) -- the only commit between them is my own verdict, which touches
+       docs/reviews/R1/step-3.md and nothing else
+rule   CLAUDE.md section Tolerances
+judge  no value, no form, no counter, no injection. EU1 does not attach.
+```
+
+## Next step opens when
+
+**Unchanged from the entry below, item for item.** This addendum opens nothing, closes nothing and reorders nothing. R1073, R1074 and R1075 in the next commit, then R867-R870, then condition 4 with the F6b paragraph, then L11-L19 to the ledger. The `Answers:` header of the step-3 report must name the interim check at `3ad464b` -- **this addendum is part of that same entry's round and not a separate verdict to answer**; if the header names it instead, that is right too, because both describe the same commit.
+
+**One line on what this cost and what it bought, since I am the one who spent it.** It cost one verdict entry and no round. It bought the statement the entry below could not make -- that the whole tree is green at the judged sha apart from the designed boundary set, on my machine as well as on CI's -- and it put on the record that I asserted "I killed it" without measuring it. The rule I broke is the one I apply to every report I read, and the correction belongs in the directory the implementer cannot write to rather than in a message.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: 3ad464b1b8453d485725f1ac60d4ccfbb2cca863
+**Reviewed commit: `3ad464b1b8453d485725f1ac60d4ccfbb2cca863`.**
+Verdict: HOLD
 Tests: **1672 failed, 1076 passed, 1 skipped across my own runs at the judged sha, in my own worktree (FV2) -- and NO whole-suite single run, which I say rather than quoting a partial.** `python -m pytest -q tests` was started first, reached 17% in 45 minutes on this machine, and I killed it and ran scopes; **CI at the judged sha is the whole-tree measurement and its union IS the whole 5752-test collection, which I verified rather than assumed** (ladder 2088 + rung 6 366 + unit 401 + guards 2897 = 5752 = my own `--collect-only tests`). Mine: `tests/unit` + `tests/regression` **767 passed, 1 warning in 2169.41s**; the two report-guard files **1672 failed, 309 passed, 1 skipped in 1170.55s**, every id traced below and `comm` against CI's 1672 **EMPTY IN BOTH DIRECTIONS**; `tests/regression/test_ft25_truss_sizing.py` alone **38 passed in 17.86s**; the two R1072 cells **2 passed** unmutated and **2 failed in 0.48s** under my own application of option (a); the FS1 control at `bd315a1` **149 passed, 0 failed**; `ruff check floatfea tests scripts`, `black --check floatfea tests scripts` (159 files) and `mypy floatfea` (45 sources) all clean on my own run. **The 20 root-guard files I did not run locally and `tests/verification` are green in CI at this sha**, per-rung counts below.
 Scope: **ES0 INTERIM CHECK.** `grep -c 'ES0 INTERIM CHECK (counts against no round)' docs/reviews/R1/step-3.md` is **32** before this entry, so this is the thirty-third; I counted it from the file rather than carrying a number. `ls docs/reports/R1/` is `step-1-answers.json step-1.md step-2-answers.json step-2.md` -- **still no `docs/reports/R1/step-3.md`**, so no reviewed revision has been consumed, **0 of 3**, and this counts against no round. No `--closes`: an interim check closes nothing (FK1). **EU1 does not attach** -- no tolerance value and no declared counter moved -- and I ran the adversarial case anyway, at four configurations the diff did not choose, and all three blocking findings came from there.
 
