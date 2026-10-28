@@ -282,7 +282,10 @@ def main() -> int:
     # satisfy the next gate in the chain has not met that goal, so the anchor is emitted
     # here rather than left to a convention that happened to hold nine times.
     # **FV3: `args.judged`, NOT `sha()`.** Both lines carry the same value and neither
-    # reads HEAD. `sha()` survives for the ancestry check in `_judged`, nowhere else.
+    # reads HEAD. `sha()` survives for the ancestry check in `_judged` and nowhere that
+    # reports a judged commit -- and an earlier version of this comment said "nowhere
+    # else", which the confirmation line at the end of `main` made false while claiming
+    # FV3 was fully applied.
     anchor = f"**Reviewed commit: `{args.judged}`.**"
     header = (
         f"# Review — {args.milestone} step {args.step}"
@@ -368,7 +371,7 @@ def main() -> int:
     out.write_text(rounds, encoding="utf-8", newline="\n")
     kept = len(previous.strip().splitlines())
     print(
-        f"wrote {out.relative_to(root)}  ({m.group(1)} @ {sha()[:10]}); "
+        f"wrote {out.relative_to(root)}  ({m.group(1)} @ {args.judged[:10]}); "
         f"{kept} lines of earlier rounds preserved"
     )
     return 0
