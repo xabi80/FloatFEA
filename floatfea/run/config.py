@@ -1262,7 +1262,9 @@ def _parse_truss(raw: Any, where: str) -> TrussOptions:
         `float(raw.get(...))` accepts `True` as `1.0` and `"24"` as `24.0`, so
         `joint_allowance: yes` -- which YAML makes `True` -- arrived as exactly `1.0` and
         `validate`'s `< 1.0` passed it. Every `steel/m` figure would then publish with NO
-        joint allowance at all: chord steel 13% low against the declared 1.15, in a number
+        joint allowance at all -- CHORD AND DIAGONAL steel 13% low against the declared
+        1.15 (L11: this said "chord steel", the fourth site of that family and the one
+        inside the commit that fixed the other three), in a number
         someone sizes steel against. `isinstance(True, int)` is why the bool test comes
         first.
         """
@@ -1303,6 +1305,22 @@ def _parse_truss(raw: Any, where: str) -> TrussOptions:
                 raise ConfigError(
                     f"{where}.{key}[{i}] is {entry!r}, which is not a number. A depth or "
                     f"width is a length in metres."
+                )
+            # **FINITE TOO (L18), and this is the hazard `_number`'s own comment names
+            # a few lines away while this door let it through.** Measured:
+            # `depths: [.nan, 8.0]` gave EXIT 0 and an artifact whose headline read
+            # "Lightest declared cell: box, depth nan m ... nan m2" with two FINITE cells
+            # listed below it at 1.4304 and 1.4360 -- because `min` over a grid containing
+            # `nan` returns a non-minimum, every comparison with `nan` being False. The
+            # published `diag A` for that row was finite, so the row did not even look
+            # wrong throughout.
+            if not math.isfinite(float(entry)):
+                raise ConfigError(
+                    f"{where}.{key}[{i}] is {entry!r}. A declared depth or width must be "
+                    f"finite: a `nan` in the grid makes `lightest()` return a cell that "
+                    f"is not the lightest, because every comparison with `nan` is False "
+                    f"-- so the artifact recommends a row with finite cells beneath it "
+                    f"(L18)."
                 )
             out.append(float(entry))
         return tuple(out)

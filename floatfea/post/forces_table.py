@@ -161,7 +161,9 @@ def checked_joint_reactions(raw: Any, index: int) -> Any:
         and `np.asarray(..., dtype=np.float64)` downstream WIDENS a lossy array back,
         so nothing after this point can tell a float16 file from a float64 one.
 
-    `grep -rnF "np.savez" --include=*.py floatfea scripts` lists the producers. **No
+    `grep -rnF "np.savez" --include=*.py floatfea scripts` lists them -- and what it
+    finds is this paragraph twice and ONE `np.savez_compressed`, because there is no
+    bare `np.savez` anywhere in either tree (L12). **No
     count is given here and that is deliberate: this paragraph is on its THIRD revision
     of one** -- it has read two and then three as the wording around it changed, because
     the needle matches this prose as well as the code. And the claim is about the library

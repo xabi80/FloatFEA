@@ -248,7 +248,8 @@ def test_FT2_5_a_declared_truss_block_is_PARSED() -> None:
         # R1071: `_floats` refused a bool and a string for the LISTS twenty lines away and
         # these two scalars did not. YAML turns `yes` into `True`, `float(True)` is `1.0`,
         # and `validate`'s `< 1.0` passes it -- so every `steel/m` figure would publish
-        # with NO joint allowance, chord steel 13% low against the declared 1.15.
+        # with NO joint allowance -- chord AND diagonal steel 13% low against the
+        # declared 1.15 (L11).
         pytest.param(
             {**GOOD, "joint_allowance": True}, "is not a number", id="an_allowance_of_yes"
         ),
@@ -369,6 +370,18 @@ def test_END_TO_END_truss_sizing_writes_its_artifact_and_DISCLAIMS_the_U(tmp_pat
     for geometry in GEOMETRIES:
         assert geometry in text, geometry
     assert "`D/t = 24`" in text, text
+    # **R1074: the governing-face sentence must describe THIS run's cells**, not a figure
+    # carried from another deck. The arm for it did not redden until this assertion
+    # existed -- nothing read that sentence.
+    cfg = load_config(path)
+    expected_cells = (
+        len(cfg.sections.truss.depths)
+        * len(cfg.sections.truss.widths)
+        * len(cfg.sections.truss.shapes)
+        * len(GEOMETRIES)
+    )
+    assert f"Of the {expected_cells} cells in the tables above" in text, text
+    assert "60 declared cells" not in text, "a figure from another deck is published here"
 
 
 def test_END_TO_END_the_truss_is_resolved_at_the_ACCEPTED_forces_not_the_BASELINE(
@@ -692,9 +705,15 @@ def test_L8_a_NON_FINITE_declared_parameter_is_REFUSED(truss_value, needle: str)
     """
     from floatfea.run.config import _parse_truss
 
+    # BOTH scalars, because the code closes both and the cell covered one (L15).
+    for key in ("joint_allowance", "d_over_t"):
+        with pytest.raises(ConfigError) as caught:
+            _parse_truss({**GOOD, key: truss_value}, "sections.truss")
+        assert needle in str(caught.value), (key, str(caught.value))
+    # AND the grid, which L18 closed in a different door.
     with pytest.raises(ConfigError) as caught:
-        _parse_truss({**GOOD, "joint_allowance": truss_value}, "sections.truss")
-    assert needle in str(caught.value), str(caught.value)
+        _parse_truss({**GOOD, "depths": [truss_value, 8.0]}, "sections.truss")
+    assert "must be finite" in str(caught.value), str(caught.value)
 
 
 def test_R1072_the_TRIANGLE_shear_allocation_does_NOT_close_and_the_BOX_does() -> None:
@@ -724,16 +743,28 @@ def test_R1072_the_TRIANGLE_shear_allocation_does_NOT_close_and_the_BOX_does() -
         # Both shapes allocate `|Vz|/2` to each of two faces, so both SUM to Vz = 1.
         assert box.face_shear["vertical"] * 2 == 1.0
         assert tri.face_shear["vertical"] * 2 == 1.0
-        # THE BOX: its faces are vertical, so that allocation IS in-plane equilibrium.
-        assert chord_buckling_length("uniform_panel", h, b) == min(h, b)
-        assert math.hypot(h, 0.0) == h
         # THE TRIANGLE: in-plane equilibrium needs `Lf/h` times as much, and `Lf > h`
         # strictly whenever `b > 0` -- so the shortfall is never zero and never favourable.
+        # (Three assertions here used to be arithmetic about Python rather than about
+        # `floatfea` -- `math.hypot(h, 0.0) == h` and a restatement of `2*(Lf/(2h))` --
+        # and they are gone (L14).)
         assert lf > h
-        shortfall = lf / h
         in_plane = 2.0 * (1.0 * lf / (2.0 * h))
-        assert in_plane == pytest.approx(shortfall, abs=1e-12)  # not-a-tolerance: identity
         assert tri.face_shear["vertical"] * 2 < in_plane
+
+        # **THE TORSION HALF, which the published claim asserts and no cell covered (L14):
+        # the module's share is `q h` where Bredt gives `q Lf`, short by the same factor.**
+        # Driven with `T = 1` and `Vy = Vz = 0`, so the torsion term is the whole shear.
+        tri_t = triangle_resolution(0.0, 0.0, 0.0, 1.0, 0.0, 0.0, h, b)
+        q = 1.0 / (2.0 * enclosed_area("triangle", h, b))
+        # **EXACTLY, and no tolerance.** With `Vz = 0` the module's share is `abs(q*h)`
+        # from the same expression computed here, so equality is exact -- and it is the
+        # `h` rather than the `Lf` that this pins, which is the whole finding.
+        assert tri_t.face_shear["vertical"] == q * h
+        # Bredt wants `q Lf`, and `Lf > h > 0`, so the shortfall is strict. The RATIO
+        # being `Lf/h` follows from those two by algebra and needs no float comparison --
+        # asserting it would have been a round-off threshold standing in for a derivation.
+        assert q * lf > tri_t.face_shear["vertical"]
 
 
 def test_R1072_a_TRIANGLE_diagonal_force_is_pinned_ABSOLUTELY_at_h_not_b() -> None:
@@ -749,7 +780,12 @@ def test_R1072_a_TRIANGLE_diagonal_force_is_pinned_ABSOLUTELY_at_h_not_b() -> No
     `test_R1072_the_TRIANGLE_shear_allocation_does_NOT_close_and_the_BOX_does` is the one
     that records the gap.
     """
-    h, b = 3.0, 8.0
+    # **`h=8, b=3` AND NOT `h=3, b=8` (L13).** At `h=3, b=8` the inclined face's own
+    # dimension is `h = 3` and `min(h, b)` is also `3`, so the two readings give the SAME
+    # panel and the SAME diagonal -- `707106.7811865476` against `...75`. A cell there
+    # cannot tell them apart, and mutating `panel * sqrt(2)` to `panel * 2.0` left both
+    # R1072 cells green. At `h=8, b=3` the panels are `8` and `3` and they separate.
+    h, b = 8.0, 3.0
     shear = 1.0e6
     rows = [("probe ROOT", (0.0, 0.0, shear, 0.0, 0.0, 0.0))]
     truss = TrussOptions(depths=(h,), widths=(b,), shapes=("triangle",))
@@ -758,7 +794,18 @@ def test_R1072_a_TRIANGLE_diagonal_force_is_pinned_ABSOLUTELY_at_h_not_b() -> No
     assert inclined.shear_key == "vertical" and inclined.dimension == h
 
     for cell in group.cells:
-        length, _steel = panel_and_diagonal(cell.geometry, h, b, inclined)
+        # **THE LENGTH IS DERIVED HERE, NOT TAKEN FROM `panel_and_diagonal` (L13).** The
+        # first version of this cell read `length` from that function and then asserted
+        # the force against it -- so a mutation of the function moved BOTH sides and the
+        # assertion was tautological. Mutating `panel * sqrt(2)` to `panel * 2.0` left it
+        # green, which is what L13 measured; relocating the geometry did not fix it,
+        # because the geometry was never the problem.
+        panel = inclined.dimension if cell.geometry == "per_face_45" else min(h, b)
+        length = (
+            panel * math.sqrt(2.0)
+            if cell.geometry == "per_face_45"
+            else math.hypot(panel, inclined.dimension)
+        )
         expected = (shear / 2.0) * length / inclined.dimension
         assert cell.diagonal_force == expected, (cell.geometry, cell.diagonal_force)
         # The inclined face governs here: `Vy = T = 0`, so the bottom face carries nothing.
