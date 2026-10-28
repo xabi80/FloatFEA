@@ -2,6 +2,123 @@
 Reviewed commit: 739364a5f9ccf1479d8a66be43930a4527146ea6
 **Reviewed commit: `739364a5f9ccf1479d8a66be43930a4527146ea6`.**
 Verdict: HOLD
+Tests: **1539 failed, 4142 passed, 1 skipped in 3331.71s (0:55:31)** -- the WHOLE-SUITE local run at `739364a`, which the entry two below this one said did not exist. It does. See the correction.
+Scope: **A CORRECTION AGAINST MYSELF. No new finding, no withdrawn finding, no change of disposition, and it judges no new commit.** ES0 interim check, counts against no round; still no `docs/reports/R1/step-3.md`, so **0 of 3** reviewed revisions. No `--closes`. Step 3 stays HOLD on R1069, R1070 and R1071.
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **my own "no whole-suite local run" sentence** | **FALSE, AND IT IS MINE. Corrected below.** | the run completed; the count is in the header. |
+| **the 1539 boundary-red trace** | **CONFIRMED AND STRENGTHENED, id for id in BOTH directions.** | see the comparison below. It is now the strongest form of that trace this file has carried. |
+| **R1069, R1070, R1071 and every closure item** | **UNCHANGED AND NOT RESTATED.** | the entry two below this one stands exactly as written. |
+
+## Findings
+
+**NONE. This entry adds no finding.**
+
+## THE CORRECTION, AND IT IS CP3 COMMITTED BY THE REVIEWER
+
+The interim check two entries below carries, in its own `Tests:` line:
+
+> "**no whole-suite local run, which I say rather than quote a partial**: `python -m pytest -q`
+> was started first and was at 3% after 25 minutes on this machine, so I killed it and ran
+> scopes."
+
+**I did not kill it. I decided to kill it, wrote that I had, and never ran the command.** It
+finished forty minutes later:
+
+```
+claim  a whole-suite local run at 739364a exists, and the sentence asserting its absence is
+       false
+cmd    python -m pytest -q -p no:randomly          (started at 739364a, clean tree)
+out    1539 failed, 4142 passed, 1 skipped, 2 warnings in 3331.71s (0:55:31)     EXIT=1
+rule   CP3 -- a figure is pasted from the run that produced the artifact it is pasted into,
+       and the pasting is the LAST edit; if an edit follows the paste, the paste is void
+judge  **This is the defect I block others on, in the direction that is easier to miss: I
+       asserted an ABSENCE, and an absence is a claim about the repository like any other.**
+       BF0 asks for the command that would refute every sentence stating a fact. The command
+       that refutes this one is the run itself, which was still going while I wrote the
+       sentence saying it was not.
+```
+
+**AND THE RESULT CONFIRMS THE VERDICT RATHER THAN CONTRADICTING IT, WHICH IS NOT THE POINT
+BUT HAS TO BE SAID.** The red set is identical to CI's, in both directions:
+
+```
+cmd    comm, the whole-suite local FAILED ids against CI run 40685604906's 1539
+out    local whole-suite reds: 1539
+       CI reds:                1539
+       only in CI:   0
+       only local:   0
+cmd    the local 1539 grouped by test function
+out    1309  tests/test_report_carried.py::test_every_named_site_is_touched_or_declared
+        218  tests/test_report_carried.py::test_the_report_carries_the_finding
+          7  tests/test_report_guard_states.py::test_the_guard_survives_the_state
+          5  the five singleton report guards already named
+rule   EG3 (i), and FS1/FT1's predicate as applied in the entry two below
+judge  **Every red in the whole tree is in the two report-guard files, and every one was
+       already traced.** Nothing outside the boundary set is red anywhere -- 4142 passed. The
+       trace in that entry rested on a five-file subset plus CI's list; it now rests on the
+       whole tree, measured locally, agreeing with CI id for id on two operating systems.
+       **The waiver still applies and CZ1 (iv) is still not reached.**
+```
+
+**ONE HAZARD IN THAT RUN THAT I DISCLOSE RATHER THAN LET PASS.** It began on a clean tree at
+`739364a` and finished AFTER my two verdict commits, which added 652 lines to
+`docs/reviews/R1/step-3.md` -- a file the report guards read. **So the tree moved underneath
+it, which is CZ1's reusable half applied to a run**, and on its own that would make the
+report-guard portion of the count void. What rescues it is not an argument but an independent
+frozen measurement: CI ran a checkout of `739364a` that could not move, and its 1539 ids are
+the same 1539. **The count is corroborated by a run that was incapable of the hazard**, and I
+say which half of the evidence does the work.
+
+**WHAT I AM NOT DOING: editing the entry below.** `scripts/write_verdict.py` appends
+newest-first under DX2 and rewrites nothing, and a record the current reviewer can edit is not
+a record. The false sentence stays on the page with this correction above it -- the same
+treatment I gave verdict 26's anchor one entry ago, and the same treatment I would require of
+a report.
+
+**AND THE METHOD NOTE IS WORTH MORE THAN THE RESULT, which is what I said when I recorded
+R1050 against myself in the addendum to verdict 29.** Both of my self-corrections this
+milestone are the same shape: **a claim about the state of the world taken from my own
+intention rather than from a command.** There I read a working file and believed it was a
+commit; here I wrote that I had killed a process because I had decided to. The repair in both
+cases is the same one this project already requires of the implementer, and it is cheap: the
+sentence that states an absence carries the command that would find the thing.
+
+## Tolerances touched
+
+**NONE. This entry judges no new commit.**
+
+```
+cmd    git diff --stat 739364a..HEAD -- floatfea tests scripts .github
+out    (empty) -- every commit since 739364a is mine and touches docs/reviews/R1/step-3.md only
+cmd    git diff 739364a..HEAD -- floatfea/tolerances.py | wc -c
+out    0
+rule   CLAUDE.md section Tolerances
+```
+
+## Next step opens when
+
+**This entry closes nothing, opens nothing and consumes no round (ES0, FK1). Step 3 stays
+HOLD -- 0 of 3 reviewed revisions -- on R1069, R1070 and R1071, whose closing conditions are
+in the entry two below and are not restated here.**
+
+**It adds one thing to nobody's list but mine**, and it is recorded so the next reader of this
+file sees it before repeating it: **a sentence asserting that something was not done is a
+claim, and it carries its command.**
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: 739364a5f9ccf1479d8a66be43930a4527146ea6
+**Reviewed commit: `739364a5f9ccf1479d8a66be43930a4527146ea6`.**
+Verdict: HOLD
 Scope: **ANCHOR CORRECTION ONLY, under FV3. NO NEW FINDINGS, NO CHANGE OF DISPOSITION, AND IT JUDGES NO NEW COMMIT.** ES0 interim check, counts against no round; `ls docs/reports/R1/` is unchanged and there is still no step-3 report, so **0 of 3** reviewed revisions. No `--closes`.
 
 **WHY THIS ENTRY EXISTS.** `docs/directives/FV.md`, clause FV3, asks that **verdict 26's
