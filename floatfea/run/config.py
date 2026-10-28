@@ -546,7 +546,14 @@ class TrussOptions:
     """The chord and diagonal tube slenderness the sizing holds fixed (FI's own value)."""
 
     joint_allowance: float = 1.15
-    """FI4's allowance on chord steel for joints and laps. A declared factor, reported."""
+    """A declared allowance on CHORD AND DIAGONAL steel for joints and laps, reported.
+
+    **Chord AND diagonal (L6), and it is not FI4's.** This said "chord steel" and
+    "FI4's allowance"; the first was wrong once the factor moved to both terms, and
+    the second resolves to nothing -- FI4 does not mention a joint allowance at all.
+    `scripts/measure/f6b_truss_sizing.py` applies it to `(chord_steel + diagonal_steel)`
+    and is where the value comes from.
+    """
 
     depths: tuple[float, ...] = ()
     widths: tuple[float, ...] = ()
@@ -1266,6 +1273,20 @@ def _parse_truss(raw: Any, where: str) -> TrussOptions:
                 f"parameter is a number: YAML turns `yes` into `True` and `float(True)` is "
                 f"`1.0`, so a bool here would arrive as a silently plausible value rather "
                 f"than as an error (R1071)."
+            )
+        # **FINITE TOO (L8), and `_checked` in this module already refuses NaN with a
+        # comment naming this hazard.** A `nan` allowance propagates into every published
+        # `steel/m`, which at least PRINTS as `nan`; the quiet one is `lightest()`, whose
+        # `min` over a grid containing `nan` returns a cell that is not the minimum --
+        # because every comparison with `nan` is False. And `d_over_t: .nan` reached
+        # `Section.circular_tube` and died in an uncaught `ValueError` rather than a
+        # `ConfigError`, which is a traceback where a message belongs.
+        if not math.isfinite(float(value)):
+            raise ConfigError(
+                f"{where}.{key} is {value!r}. A declared design parameter must be finite: "
+                f"a non-finite one reaches every published `steel/m` figure, and a `nan` "
+                f"in the grid makes `lightest()` return a cell that is not the lightest, "
+                f"because every comparison with `nan` is False (L8)."
             )
         return float(value)
 

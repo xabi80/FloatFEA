@@ -312,7 +312,7 @@ class TrussCell:
     diagonal_force: float
     diagonal_face: str
     steel_area_per_m: float
-    """Chord steel (with the joint allowance) plus diagonal steel, per metre of truss."""
+    """Chord steel plus diagonal steel per metre of truss, the allowance on BOTH (L6)."""
 
 
 @dataclass(frozen=True)

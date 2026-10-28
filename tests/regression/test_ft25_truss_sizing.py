@@ -674,3 +674,92 @@ def test_R1069_the_DIAGONAL_is_sized_at_ITS_OWN_length_not_the_chords() -> None:
                 f"at {cell.geometry} the diagonal length {length} and the chord buckling "
                 f"length {buckling} give the same area, so this cell cannot discriminate"
             )
+
+
+@pytest.mark.parametrize(
+    "truss_value, needle",
+    [
+        pytest.param(float("nan"), "must be finite", id="a_nan_allowance"),
+        pytest.param(float("inf"), "must be finite", id="an_inf_allowance"),
+    ],
+)
+def test_L8_a_NON_FINITE_declared_parameter_is_REFUSED(truss_value, needle: str) -> None:
+    """`_checked` in the same module refuses NaN; these two scalars did not.
+
+    The loud half is harmless -- a `nan` allowance prints as `nan` in every `steel/m`
+    figure. **The quiet half is `lightest()`**, whose `min` over a grid containing `nan`
+    returns a cell that is not the minimum, because every comparison with `nan` is False.
+    """
+    from floatfea.run.config import _parse_truss
+
+    with pytest.raises(ConfigError) as caught:
+        _parse_truss({**GOOD, "joint_allowance": truss_value}, "sections.truss")
+    assert needle in str(caught.value), str(caught.value)
+
+
+def test_R1072_the_TRIANGLE_shear_allocation_does_NOT_close_and_the_BOX_does() -> None:
+    """The idealisation's error, pinned as a measurement so it cannot drift unrecorded.
+
+    **THIS CELL DOES NOT ASSERT THE ALLOCATION IS RIGHT. IT ASSERTS WHAT IT IS.** Each of
+    the triangle's two inclined faces is allocated `|Vz|/2`, as though it were vertical. It
+    is not: for its VERTICAL component to be `|Vz|/2`, an inclined face of length
+    `Lf = hypot(h, b/2)` must carry `|Vz| Lf / (2h)` in plane. So the allocation is short
+    by exactly `Lf/h`, and the torsion share is short by the same factor -- `q h` where
+    Bredt gives `q Lf`.
+
+    **THE BOX IS THE CONTROL AND IT CLOSES EXACTLY**, because its faces really are
+    vertical, so `Lf = h` and the factor is one.
+
+    The idealisation is inherited verbatim from `scripts/measure/f6b_truss_sizing.py` and
+    is already published in `results/F6b/truss_sizing.md`; FI1 (`docs/milestones/F6b.md`)
+    says shear goes to the VERTICAL faces and a triangle has none, so nothing declares it.
+    **It is escalated rather than repaired** -- making it close in `floatfea/` alone would
+    put two answers for one quantity in this repository. This cell is what stops the gap
+    being rediscovered instead of ruled on.
+    """
+    for h, b in ((8.0, 3.0), (3.0, 8.0), (2.0, 8.0)):
+        lf = math.hypot(h, b / 2.0)
+        box = box_resolution(0.0, 0.0, 1.0, 0.0, 0.0, 0.0, h, b)
+        tri = triangle_resolution(0.0, 0.0, 1.0, 0.0, 0.0, 0.0, h, b)
+        # Both shapes allocate `|Vz|/2` to each of two faces, so both SUM to Vz = 1.
+        assert box.face_shear["vertical"] * 2 == 1.0
+        assert tri.face_shear["vertical"] * 2 == 1.0
+        # THE BOX: its faces are vertical, so that allocation IS in-plane equilibrium.
+        assert chord_buckling_length("uniform_panel", h, b) == min(h, b)
+        assert math.hypot(h, 0.0) == h
+        # THE TRIANGLE: in-plane equilibrium needs `Lf/h` times as much, and `Lf > h`
+        # strictly whenever `b > 0` -- so the shortfall is never zero and never favourable.
+        assert lf > h
+        shortfall = lf / h
+        in_plane = 2.0 * (1.0 * lf / (2.0 * h))
+        assert in_plane == pytest.approx(shortfall, abs=1e-12)  # not-a-tolerance: identity
+        assert tri.face_shear["vertical"] * 2 < in_plane
+
+
+def test_R1072_a_TRIANGLE_diagonal_force_is_pinned_ABSOLUTELY_at_h_not_b() -> None:
+    """The cell the ruling requires either way: a triangle force, absolutely, at `h != b`.
+
+    Every other force cell in this file uses `shapes=("box",)`. The chord channel has three
+    equilibrium identities holding it; the shear channel had none for the triangle, which is
+    how R1072's allocation went unexamined through two commits and one review.
+
+    What is pinned is the force the SHIPPED allocation produces -- `|Vz|/2` on the inclined
+    face, times `L/d` -- so that if the allocation is ever changed, this cell fails and the
+    change cannot be silent. It is a statement about the code, not an endorsement of it;
+    `test_R1072_the_TRIANGLE_shear_allocation_does_NOT_close_and_the_BOX_does` is the one
+    that records the gap.
+    """
+    h, b = 3.0, 8.0
+    shear = 1.0e6
+    rows = [("probe ROOT", (0.0, 0.0, shear, 0.0, 0.0, 0.0))]
+    truss = TrussOptions(depths=(h,), widths=(b,), shapes=("triangle",))
+    group = resolve_group("platform", rows, truss, MATERIAL)
+    inclined = faces("triangle", h, b)[0]
+    assert inclined.shear_key == "vertical" and inclined.dimension == h
+
+    for cell in group.cells:
+        length, _steel = panel_and_diagonal(cell.geometry, h, b, inclined)
+        expected = (shear / 2.0) * length / inclined.dimension
+        assert cell.diagonal_force == expected, (cell.geometry, cell.diagonal_force)
+        # The inclined face governs here: `Vy = T = 0`, so the bottom face carries nothing.
+        assert cell.diagonal_face == "vertical", cell.diagonal_face

@@ -520,6 +520,20 @@ def _write_required_section(path: Path, report: SizingReport) -> None:
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
+def _margin(group: Any) -> str:
+    """How far ahead the lightest declared cell is, in its own words.
+
+    `lightest()` is an argmin over a grid, and the artifact publishes it where a reader
+    will take it as advice. Two readings of the same `(shape, h, b)` have finished within
+    `0.4%` of each other on the shipped deck, so the margin belongs beside the answer.
+    """
+    steels = sorted(c.steel_area_per_m for c in group.cells)
+    if len(steels) < 2 or steels[0] <= 0.0:
+        return "the only declared cell, so there is no margin to report"
+    gap = (steels[1] - steels[0]) / steels[0]
+    return f"ahead of the next declared cell by {gap * 100.0:.2f}%"
+
+
 def _write_truss_sizing(path: Path, report: TrussReport) -> None:
     """FT2.5's artifact. The acceptance is on the TUBE; the truss is reported, not solved.
 
@@ -610,6 +624,14 @@ def _write_truss_sizing(path: Path, report: TrussReport) -> None:
             f"{best.width:g} m, reading `{best.geometry}` -- "
             f"{best.steel_area_per_m:.4f} m2 of steel per metre of truss.",
             "",
+            f"**Read that as an ARGMIN OF A DECLARED GRID AND NOT AS A RECOMMENDATION, and"
+            f" check the margin before acting on it.** It is {_margin(group)}. The two"
+            f" readings of FI1's 45-degree panel can finish within a fraction of a percent"
+            f" of each other, and WHICH ONE WINS DEPENDS ON THE LOAD: measured, a row with"
+            f" a large torsion puts `uniform_panel` ahead for both shapes, while the"
+            f" near-zero torsion of this deck's platform arms puts `per_face_45` ahead by"
+            f" about 0.4%. A margin that thin is not a basis for choosing a truss form.",
+            "",
             "| shape | h (m) | b (m) | reading | chord A (m2) | chord force (N) | "
             "governing station | branch | diag A (m2) | steel/m (m2) |",
             "|---|---|---|---|---|---|---|---|---|---|",
@@ -628,12 +650,36 @@ def _write_truss_sizing(path: Path, report: TrussReport) -> None:
         "* **The acceptance is the tube's.** See the first section of this file.",
         "* A **pin-jointed parallel-chord idealisation** of an arm whose real form is",
         "  undecided, with no joint or connection check.",
-        "* **The triangle's inclined faces are braced over the depth `h`, not over",
-        "  `hypot(h, b/2)`, their true inclined length.** That understates the diagonal",
-        "  length and its buckling length both, so the triangle's diagonal areas are",
-        "  **unconservative** by that ratio. It is FI1's declared idealisation and it is",
-        "  stated in `floatfea/run/truss.py` — it belongs here as well, because a reader",
-        "  of this file cannot see that source (L4).",
+        "* **THE TRIANGLE'S SHEAR ALLOCATION DOES NOT CLOSE, AND ITS DIAGONAL AREAS",
+        "  ARE UNCONSERVATIVE BY `hypot(h, b/2) / h` (R1072).** Each of the two inclined",
+        "  faces is allocated `|Vz|/2`, as though it were vertical. It is not: for its",
+        "  VERTICAL component to be `|Vz|/2`, an inclined face of length",
+        "  `Lf = hypot(h, b/2)` must carry `|Vz| Lf / (2h)` in plane. Measured, with",
+        "  `Vz = 1` and `Vy = T = 0`, the module's allocation sums to `1.000000` while",
+        "  in-plane equilibrium needs `Lf/h`: **`1.01743` at `h=8, b=3`, `1.66667` at",
+        "  `h=3, b=8`, `2.23607` at `h=2, b=8`.** The torsion share is short by the same",
+        "  factor, `q h` where Bredt gives `q Lf`. **THE BOX CLOSES EXACTLY** at",
+        "  `1.000000` on every `(h, b)`, which is the control: its faces really are",
+        "  vertical, so `Lf = h`.",
+        "* **It is the SHEAR ALLOCATION and none of it is the braced length.** Changing",
+        "  only the lengths moves `diag A` by `1.0000x` on all 60 declared cells -- under",
+        "  `per_face_45` the force is `shear * sqrt(2)` whatever the dimension is. An",
+        "  earlier version of this bullet named the braced length as the mechanism, gave",
+        "  the magnitude as `up to 1.667`, and cited FI1; all three were wrong. FI1",
+        "  (`docs/milestones/F6b.md`) says shear goes to the VERTICAL faces, and a",
+        "  triangle has none -- so FI1 declares nothing here, and this allocation is",
+        "  inherited from `scripts/measure/f6b_truss_sizing.py`, which published it.",
+        "* **WHEN IT REACHES A PUBLISHED NUMBER, and on this deck it does not.** The",
+        "  bottom face governs at every declared cell here, so `diag A` does not move and",
+        "  `steel/m` moves by at most `1.0498x`. That masking is this deck's grouping and",
+        "  heading, not the idealisation: six of the twelve governing-basis stations carry",
+        "  `|Vy| < 0.01 N` against `|Vz|` up to `6.24e6 N`, and only the group-wide",
+        "  maximum picking up another hub's `|Vy| = 5.758e6` puts the bottom face in",
+        "  front, by `1.81x` on one ratio at heading 0 deg. At `Vy = T = 0` the inclined",
+        "  face governs and `diag A` is low by `1.7723x` at `h=3, b=8`.",
+        "* **It is escalated, not resolved.** Making the allocation close would diverge",
+        "  from the published `results/F6b/` deliverable it was ported from, and FI1",
+        "  declares nothing to decide it by.",
         "* The chord and diagonal areas are **minimum areas at the declared `D/t`**, not",
         "  sections from a catalogue.",
         "* **Linear Airy waves** and a **rigid-body** FloatSim; the superstructure only.",

@@ -157,18 +157,16 @@ def checked_joint_reactions(raw: Any, index: int) -> Any:
         `scripts/export_f4_dynamic_inputs.py` writes `np.float64`, and it is the only
         `np.savez` in `floatfea/` or `scripts/` -- so no TRACKED dynamic-inputs file has
         any other producer, and a narrower one did not come from the exporter the refusal
-        points at. (`grep -rnF "np.savez" --include=*.py floatfea scripts` lists
-        them. **No count is given, and that is deliberate: this paragraph is on its
-        THIRD revision of one** -- it has read two and three as the wording around it
-        changed, because the needle matches this prose as well as the code. The claim
-        is about the library and the scripts and NOT the repository: `tests/` writes
-        this field too, at other dtypes and values, because the counter-cases below
-        are exactly that. The
-        claim is deliberately about the library and the scripts and NOT about the
-        repository: `tests/` writes this field too, at other dtypes and other values,
-        because the counter-cases below are exactly that.)
+        points at;
         and `np.asarray(..., dtype=np.float64)` downstream WIDENS a lossy array back,
         so nothing after this point can tell a float16 file from a float64 one.
+
+    `grep -rnF "np.savez" --include=*.py floatfea scripts` lists the producers. **No
+    count is given here and that is deliberate: this paragraph is on its THIRD revision
+    of one** -- it has read two and then three as the wording around it changed, because
+    the needle matches this prose as well as the code. And the claim is about the library
+    and the scripts, NOT the repository: `tests/` writes this field too, at other dtypes
+    and other values, because the counter-cases below are exactly that.
 
     A float32 file is therefore refused with a message that says to re-export rather than
     being computed from quietly. If a future exporter has reason to write a narrower

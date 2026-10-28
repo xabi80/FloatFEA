@@ -105,7 +105,7 @@ sections:
   #   widths:  [3.0, 4.0, 5.0, 6.0, 8.0]         # m
   #   shapes:  [box, triangle]                   # FI1(a) and FI1(b)
   #   d_over_t: 24.0                             # chord/diagonal slenderness, FI's value
-  #   joint_allowance: 1.15                      # FI4's allowance on chord steel
+  #   joint_allowance: 1.15                      # on CHORD AND DIAGONAL steel (L6)
   #   diameter_search: [0.05, 6.0]               # m, the bisection bracket. The floor is
   #                                              # TUBE_DIAMETER's own minimum: a chord is
   #                                              # a tube and goes through the same bound.
