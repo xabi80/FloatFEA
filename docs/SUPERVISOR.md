@@ -34,7 +34,7 @@ In its own worktree at the judged sha, a working-file read IS a read of the comm
 
 Both read this file. The witness applies exactly the guards in
 `.claude/agents/gating-supervisor.md` — the list lives there, once — and
-**both rule under the same blocking criterion (CZ0)**, in that file's
+**both rule under the same blocking criterion — FR1 for the rest of R1, narrowing CZ0 (FV4)**, in that file's
 § *What blocks, and what is a closure item*: a finding blocks only if it is a
 defect in `floatfea/` **or in a published deliverable** (EZ0), a tolerance value or
 form, a gate assertion, or a red test at the reviewed commit. **A published deliverable is
@@ -179,7 +179,10 @@ step on everything else.
    the `cmd:` with the needle changed and confirms the answer moves.
 7. Construct one adversarial case for the step and run it. The inside
    supervisor is asked to do the same; do not assume it did.
-7b. Rule under CZ0. Sort every finding into blocking (a)–(d) or closure, and
+7b. Rule under FR1 for the rest of R1 — a finding blocks only if it can cause a
+   SILENTLY WRONG result, and you state that result for each one; CZ0's four heads
+   are what FR1 narrows and are the criterion again once R1 closes (FV4). Sort
+   every finding into blocking or closure, and
    count the verdicts this step already has — on the third the step closes
    with its open items carried by name, and the witness says so rather than
    asking for a fourth.

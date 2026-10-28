@@ -212,7 +212,11 @@ the same hand as the code, against closed forms both share assumptions with, are
 instruments — and four of them have been defective this milestone while the
 element was fine.
 
-## What blocks, and what is a closure item — **CZ0 lives in `CLAUDE.md`**
+## What blocks, and what is a closure item — **the criterion lives in `CLAUDE.md`**
+
+**FOR THE REST OF R1 THE GOVERNING CRITERION IS FR1, NOT CZ0 (FV4).** Read `CLAUDE.md` § "What blocks for the rest of R1: a SILENTLY WRONG result (FR1)" first, and rule under it. It NARROWS CZ0's four heads: a finding blocks only if it can cause a silently wrong result — a wrong number in a gate, a CSV, a report or any published deliverable (EZ0), or an input accepted and used other than as declared — **and you state, for each blocking finding, the silently wrong result it produces.** A finding that cannot be given that sentence is a ledger item, and saying so costs one line instead of a round. CZ0's four heads are unchanged everywhere else and are the criterion again once R1 closes.
+
+This clause is here because `grep -c FR1` in this file was **0** while FR1 was the rule you were required to apply — R1039, relayed by three consecutive verdicts, each of which ruled under `CLAUDE.md` instead and said so.
 
 **READ `CLAUDE.md` § "Step gating" BEFORE RULING, AND RULE UNDER WHAT IS WRITTEN
 THERE.** This file used to carry a copy of CZ0 and of the clauses around it. The
@@ -225,10 +229,15 @@ applied to the criterion itself, so there is no copy here any more.
 
 The clauses you need, by name, all in `CLAUDE.md` § "Step gating":
 
+* **FR1** — *What blocks for the rest of R1*, with **EZ0**. The live criterion;
+  see the paragraph above. Its three non-blocking classes are a refusal whose
+  message is unclear but whose outcome is right, a census or needle too narrow
+  where no wrong result follows, and report prose or figure wording.
 * **CZ0** — *What blocks, and what is a closure item*, as amended by **EZ0**
-  (a published deliverable), superseding **BU0**. Four heads (a)–(d) and nothing
-  else; everything else is a closure item you list under `## Closure items` with
-  its file, its line and what would close it, and then move past.
+  (a published deliverable), superseding **BU0**. Four heads (a)–(d), narrowed
+  by FR1 for the rest of R1. Everything else is a closure item you list under
+  `## Closure items` with its file, its line and what would close it, and then
+  move past.
 * **CA2 and CK2 ARE KEPT HERE IN FULL, because `CLAUDE.md` does not carry them**
   and a citation to a document that does not state a rule would delete it. They
   qualify CZ0's head (d), a red test at the reviewed commit: **a red CI is red
@@ -251,9 +260,17 @@ The clauses you need, by name, all in `CLAUDE.md` § "Step gating":
   step's rounds. This file carried neither clause, so a closure review had no
   clause in it under which it could exist.
 * **CZ1** — a closure commit is verified after it exists, with its four outputs;
-  **EG3**, **EH1**, **EJ2** and **FC1** — the two boundary states, their two
-  corrected lists, and the two CZ1-class guards that cannot pass in the commit
-  they describe.
+  **EG3** — the two boundary states, both self-clearing, with its two conditions
+  (the trace is pasted and matched PER ID; the verdict commit is measured too).
+* **FS1 with FT1 — THE BOUNDARY-RED PREDICATE, AND THERE ARE NO HAND LISTS (FV4).**
+  A red is a boundary red if it **names a finding or a site of the newest verdict**,
+  OR if **its SUBJECT IS THE COMMIT CARRYING IT**. Any other red blocks — CZ1 (iv)
+  unchanged. **The enumerated lists EG3 once carried are GONE**, and this file no
+  longer names them: they were adopted five times and were short in both
+  directions every time (EH1, FN2/R813, EJ2/R644, FC1, R835), and R861 withdrew
+  the reviewer's own baseline figure one commit after writing it because two of
+  the guards are parametrised over *what you yourself wrote*. **Check the
+  predicate; do not check a list.** Both limbs are reasons, not names.
 * **EH4** — every boundary is solved in BOTH directions, including the two that
   weaken a gate.
 * **EE1 / EG4(e)** — corpus batches are **paused** until 28 October, except mutation
