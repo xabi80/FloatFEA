@@ -1323,6 +1323,23 @@ def _parse_truss(raw: Any, where: str) -> TrussOptions:
                     f"(L18)."
                 )
             out.append(float(entry))
+        # **A REPEAT IS REFUSED (R1082), for the reason `_parse_headings` already gives
+        # for a repeated heading.** A duplicated depth or width resolves the same cell
+        # twice, prints it twice in the published tables, and puts it second in the
+        # ranking behind itself -- which made `_margin` report a cell as its own
+        # runner-up at `0.00%` while the real margin over the other reading was
+        # non-zero. Nothing about the answer changes and everything about what the
+        # grid claims to have swept does.
+        seen: dict[float, int] = {}
+        for i, got in enumerate(out):
+            if got in seen:
+                raise ConfigError(
+                    f"{where}.{key}[{i}] repeats {got!r}, already declared at index "
+                    f"{seen[got]}. A repeated length resolves the same cell twice and "
+                    f"ranks it behind itself, so the published margin compares a cell "
+                    f"with its own duplicate instead of with another geometry (R1082)."
+                )
+            seen[got] = i
         return tuple(out)
 
     shapes_raw = raw.get("shapes", ["box", "triangle"])
@@ -1334,6 +1351,16 @@ def _parse_truss(raw: Any, where: str) -> TrussOptions:
     shapes = tuple(
         _require_string(entry, f"{where}.shapes[{i}]") for i, entry in enumerate(shapes_raw)
     )
+    # The same refusal on the other axis of the same grid (R1082).
+    seen_shapes: dict[str, int] = {}
+    for i, name in enumerate(shapes):
+        if name in seen_shapes:
+            raise ConfigError(
+                f"{where}.shapes[{i}] repeats {name!r}, already declared at index "
+                f"{seen_shapes[name]}. A repeated shape resolves the same cell twice and "
+                f"ranks it behind itself (R1082)."
+            )
+        seen_shapes[name] = i
 
     bracket_raw = raw.get("diameter_search", [0.05, 6.0])
     if not isinstance(bracket_raw, list) or len(bracket_raw) != 2:

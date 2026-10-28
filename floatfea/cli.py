@@ -536,7 +536,12 @@ def _governing_faces(report: TrussReport) -> str:
             )
     if not counts:
         return "none has a governing face, because no cell was resolved"
-    return ", ".join(f"{n} are governed by the {face} face" for face, n in sorted(counts.items()))
+    # `is` at one, `are` otherwise (L36): a two-group configuration printed "1 are
+    # governed by the horizontal face" into a published sentence.
+    return ", ".join(
+        f"{n} {'is' if n == 1 else 'are'} governed by the {face} face"
+        for face, n in sorted(counts.items())
+    )
 
 
 def _margin(group: Any) -> str:
@@ -569,17 +574,29 @@ def _margin(group: Any) -> str:
             "margin against it is undefined"
         )
     gap = (next_up.steel_area_per_m - best.steel_area_per_m) / best.steel_area_per_m
-    same_cell = (
+    same_hb = (
         next_up.shape == best.shape and next_up.depth == best.depth and next_up.width == best.width
     )
-    what = (
-        f"the OTHER READING (`{next_up.geometry}`) of the same `{next_up.shape}` cell"
-        if same_cell
-        else (
+    # **THREE STATES, NOT TWO (R1082).** `same_hb` alone cannot tell the OTHER READING of a
+    # cell from a DUPLICATE of it, and the two want opposite sentences: a repeated
+    # declaration put `per_face_45` ahead of "the OTHER READING (`per_face_45`)" by
+    # `0.00%`, naming the winner's own reading as its runner-up. The grid refuses a repeat
+    # now, so this branch is unreachable from a config -- it stays because `_margin` is
+    # also called directly, and a total function that cannot misdescribe its own input is
+    # worth more than one that relies on its caller.
+    if same_hb and next_up.geometry == best.geometry:
+        what = (
+            f"an IDENTICAL cell (`{next_up.shape}`, `h = {next_up.depth:g} m`, "
+            f"`b = {next_up.width:g} m`, `{next_up.geometry}`), which this grid declares "
+            f"more than once -- so this is not a margin over any other geometry"
+        )
+    elif same_hb:
+        what = f"the OTHER READING (`{next_up.geometry}`) of the same `{next_up.shape}` cell"
+    else:
+        what = (
             f"the next cell (`{next_up.shape}`, `h = {next_up.depth:g} m`, "
             f"`b = {next_up.width:g} m`, `{next_up.geometry}`)"
         )
-    )
     return f"ahead of {what} by {gap * 100.0:.2f}%"
 
 
@@ -677,10 +694,11 @@ def _write_truss_sizing(path: Path, report: TrussReport) -> None:
             f" and check the margin before acting on it.** It is {_margin(group)}. The two"
             f" readings of FI1's 45-degree panel can finish within a fraction of a percent"
             f" of each other, and a margin that thin is not a basis for choosing a truss"
-            f" form. (An earlier version of this sentence named the torsion as what decides"
-            f" the winner. It does not, and the figures that showed so belong in the"
-            f" commit that measured them rather than in every run of this generator --"
-            f" R1075, R1077.)",
+            f" form. **AND WHICH CELL WINS CAN DEPEND ON THE LOAD, NOT ONLY ON THE"
+            f" GEOMETRY (R1081):** the torsion alone, moved as the single variable over a"
+            f" declared grid, has been measured to flip both the winning SHAPE and the"
+            f" winning READING. So the argmin above is a property of THIS run's loads and"
+            f" this grid, and carries over to neither another deck nor another heading.",
             "",
             "| shape | h (m) | b (m) | reading | chord A (m2) | chord force (N) | "
             "governing station | branch | diag A (m2) | steel/m (m2) |",
@@ -738,24 +756,39 @@ def _write_truss_sizing(path: Path, report: TrussReport) -> None:
         "* **FI1 DECLARES NOTHING HERE.** `docs/milestones/F6b.md` says shear `Vz` goes",
         "  to the VERTICAL faces, and a triangle has none. The allocation is inherited",
         "  from `scripts/measure/f6b_truss_sizing.py`, which published it in",
-        "  `results/F6b/truss_sizing.md` -- where, as of this writing, it carries no",
-        "  disclosure of this gap at all.",
+        "  `results/F6b/truss_sizing.md`. **That file now carries this disclosure too,",
+        "  and an earlier version of this sentence said it carried none** -- true when",
+        "  written and false in the same commit that made it so, which is BP0's own",
+        "  shape: a statement whose subject moved underneath it.",
         "* **It is escalated, not resolved.** Making the allocation close would diverge",
         "  from that published deliverable, and FI1 declares nothing to decide it by.",
         "  **Whether the inclined face should be braced over `Lf` as well is the second",
         "  half of the same question and is escalated with it.**",
-        f"* **WHETHER IT REACHES A PUBLISHED NUMBER DEPENDS ON WHICH FACE GOVERNS, AND"
-        f" THIS RUN IS MEASURED RATHER THAN ASSUMED (R1074).** Of the"
+        f"* **IT REACHES EVERY TRIANGLE ROW'S PUBLISHED `steel/m`, AND THE GOVERNING"
+        f" FACE CANNOT BE USED TO BOUND THAT (R1080).** An earlier version of this bullet"
+        f" said the error reaches `diag A` only where the INCLINED face governs, and"
+        f" conditioned the reader's whole answer on the face named in the table."
+        f" **That reasoning is circular: the governing face is itself chosen by comparing"
+        f" face shears that the defect understates, so the attribution printed in these"
+        f" tables is computed UNDER the defect and cannot delimit it.** The two published"
+        f" quantities behave differently, and the reason is structural rather than"
+        f" measured, so it holds for every configuration and not just for this one."
+        f" **`steel/m` SUMS the faces' diagonal steel**, so raising the inclined faces'"
+        f" share by `Lf/h > 1` raises the sum WHEREVER THOSE FACES CARRY MORE THAN THE"
+        f" SMALLEST DECLARED TUBE ALREADY COVERS, whichever face governs -- and below"
+        f" that, the sizing returns `sections.truss.diameter_search`'s own floor for the"
+        f" shipped and the corrected demand alike, so the published figure does not move"
+        f" at all. **That exception is a function of a DECLARED input, not a corner:**"
+        f" raising the bracket's lower end raises the shear at which the defect begins to"
+        f" surface, and on a grid declared with a large minimum tube it may not surface on"
+        f" any row. **`diag A` is the MAXIMUM over"
+        f" faces**, so it moves only where the corrected inclined face overtakes the"
+        f" bottom one -- which is exactly the comparison the defect biases. The direction"
+        f" is one-way in both: the areas are monotone in the force and `Lf/h > 1`, so"
+        f" **every triangle figure in these tables is LOW, never high.** Of the"
         f" {sum(len(g.cells) for g in report.trusses)} cells in the tables above,"
-        f" {_governing_faces(report)}. Where a box's VERTICAL or a triangle's BOTTOM face"
-        f" governs, the inclined-face"
-        f" error cannot reach `diag A` at all; where the INCLINED face governs it reaches"
-        f" it in full. An earlier version of this bullet hard-coded a cell count, a"
-        f" claim that every cell behaved alike, and a steel-per-metre bound -- all three"
-        f" taken from one deck and one commented-out grid, and emitted for every"
-        f" configuration. **They are described rather than quoted here**, because a"
-        f" retired figure quoted in a published artifact is still a wrong figure in a"
-        f" published artifact.",
+        f" {_governing_faces(report)} -- reported as a fact about this run, and NOT as a"
+        f" bound on the error. The box rows are unaffected: `Lf = h` there.",
         "* The chord and diagonal areas are **minimum areas at the declared `D/t`**, not",
         "  sections from a catalogue.",
         "* **Linear Airy waves** and a **rigid-body** FloatSim; the superstructure only.",

@@ -36,6 +36,7 @@ from floatfea.run.pipeline import run as run_pipeline
 from floatfea.run.sizing import governing_rows, size_truss
 from floatfea.run.truss import (
     GEOMETRIES,
+    ChordForces,
     Face,
     area_for_compression,
     area_for_tension,
@@ -959,3 +960,250 @@ def test_R1077_the_MARGIN_says_what_it_is_OVER_in_all_four_states() -> None:
         _cell_at("box", 8.0, 3.0, "uniform_panel", 1.0),
     ]
     assert "needs no steel at all" in cli._margin(_Group(free))
+
+    # (6) **A DUPLICATE IS NOT THE OTHER READING (R1082).** `same_hb` alone put
+    # `per_face_45` ahead of "the OTHER READING (`per_face_45`)" -- the winner's own
+    # reading named as its runner-up, at `0.00%`. Three states on one axis, not two.
+    twice = [
+        _cell_at("box", 3.0, 3.0, "per_face_45", 1.0),
+        _cell_at("box", 3.0, 3.0, "per_face_45", 1.0),
+        _cell_at("box", 3.0, 3.0, "uniform_panel", 2.0),
+    ]
+    got = cli._margin(_Group(twice))
+    assert "an IDENTICAL cell (`box`, `h = 3 m`, `b = 3 m`, `per_face_45`)" in got, got
+    assert "OTHER READING" not in got, got
+    assert "declares " in got and "more than once" in got, got
+
+    # L36, in passing: `_governing_faces` published "1 are governed by the horizontal
+    # face". Both branches of the agreement, since a fix for one can break the other.
+    class _Report:
+        def __init__(self, cells):
+            self.trusses = [_Group(cells)]
+
+    one = _cell_at("box", 3.0, 3.0, "per_face_45", 1.0)
+    two = _cell_at("box", 8.0, 3.0, "uniform_panel", 1.0)
+    assert cli._governing_faces(_Report([one])).startswith("1 is governed by")
+    assert "2 are governed by" in cli._governing_faces(_Report([one, two]))
+
+
+@pytest.mark.parametrize(
+    "key, grid, needle",
+    [
+        ("depths", [3.0, 3.0], "depths[1] repeats 3.0, already declared at index 0"),
+        ("widths", [8.0, 2.0, 8.0], "widths[2] repeats 8.0, already declared at index 0"),
+        ("shapes", ["box", "box"], "shapes[1] repeats 'box', already declared at index 0"),
+    ],
+)
+def test_R1082_a_REPEATED_grid_entry_is_refused_on_every_axis(tmp_path, key, grid, needle) -> None:
+    """A repeated depth, width or shape is refused at parse, as a repeated heading is.
+
+    **THE CONFIGURATION WAS ADMISSIBLE AND IT PRODUCED A FALSE SENTENCE.** At
+    `depths: [3.0, 3.0]` the artifact published a `per_face_45` winner as being ahead of
+    "the OTHER READING (`per_face_45`)" by `0.00%`, while the real margin over the other
+    reading at that cell was non-zero. `_parse_headings` in the same module already
+    refuses a repeat and gives the reason -- nothing about the answer changes and
+    everything about what the run claims to have swept does. This closes the other three
+    axes of the same grid.
+    """
+    truss = dict(GOOD)
+    truss[key] = grid
+    path, out_dir = _fixture(tmp_path, truss=truss)
+    with pytest.raises(ConfigError) as excinfo:
+        load_config(path)
+    assert needle in str(excinfo.value), str(excinfo.value)
+    assert "R1082" in str(excinfo.value), str(excinfo.value)
+    # Refused at parse, so nothing is written -- the artifact never existed to be wrong.
+    assert not out_dir.exists() or not list(out_dir.glob("*"))
+
+
+def test_R1080_the_bullet_does_NOT_bound_the_error_BY_THE_GOVERNING_FACE(tmp_path) -> None:
+    """The reach of the inclined-face defect is stated structurally, not by the face count.
+
+    **THE RETIRED SENTENCE WAS CIRCULAR AND THAT IS WHY IT IS GONE (R1080).** It told a
+    reader the error "cannot reach `diag A` at all" wherever a box's vertical or a
+    triangle's bottom face governs -- but the governing face is chosen by comparing face
+    shears the defect understates, so the attribution printed in the tables is computed
+    under the defect and cannot delimit it.
+
+    The replacement is structural and therefore true at every configuration, which is the
+    property the old one lacked: `steel/m` SUMS the faces' diagonal steel so it moves on
+    every triangle cell with a non-zero inclined-face shear, whichever face governs, while
+    `diag A` is a MAXIMUM so it moves only where the corrected inclined face overtakes the
+    bottom one. Measured over a 36-point `(h, b)` grid at four load mixes: `steel/m` moved
+    on 288 of 288 cells and `diag A` on 155 of them -- including one load mix where
+    `diag A` moved on 0 of 72 while `steel/m` moved on all 72, which is precisely the case
+    the retired sentence told a reader was safe.
+    """
+    from floatfea import cli
+
+    path, out_dir = _fixture(tmp_path)
+    assert cli.main(["run", str(path)]) == 0
+    text = (out_dir / "truss_sizing.md").read_text(encoding="utf-8")
+
+    # The circular claim is gone, in both of the forms it took.
+    assert "cannot reach `diag A` at all" not in text, text
+    assert "WHETHER IT REACHES A PUBLISHED NUMBER DEPENDS ON WHICH FACE GOVERNS" not in text
+
+    # And the structural statement is present, with the mechanism that makes it general.
+    assert "SUMS the faces' diagonal steel" in text, text
+    assert "MAXIMUM over" in text, text
+    # **AND THE QUANTIFIER, which an earlier version of this bullet got wrong.** It said
+    # the sum rises on every cell with a non-zero inclined-face shear. It does not: below
+    # the smallest declared tube the sizing returns the bracket floor for both demands.
+    # **THE NEEDLE SPANS THE CLAUSE, NOT A FRAGMENT OF IT.** A first version asserted only
+    # `SMALLEST DECLARED TUBE ALREADY COVERS`, which lives on the source line AFTER the one
+    # carrying the quantifier -- so the arm that replaced the quantifier left it green. A
+    # needle whose domain cannot contain the failure is not a needle.
+    assert (
+        "raises the sum WHEREVER THOSE FACES CARRY MORE THAN THE SMALLEST DECLARED TUBE"
+        " ALREADY COVERS" in text
+    ), text
+    assert "whose inclined-face shear is non-zero" not in text, text
+    assert "a function of a DECLARED input" in text, text
+    assert "LOW, never high" in text, text
+    # The face count survives as a description, explicitly disclaimed as a bound.
+    assert "NOT as a" in text and "bound on the error" in text, text
+
+
+def test_R1081_the_artifact_does_not_claim_the_winner_is_LOAD_INDEPENDENT(tmp_path) -> None:
+    """The argmin is a property of this run's loads, and the artifact says so.
+
+    **THE R1077 REPAIR REMOVED THE LITERALS AND THE QUALIFIER WITH THEM (R1081).** The
+    sentence had read that the torsion does not decide the winner "on this deck", which
+    was true and measured; stripped of its qualifier it became a universal claim that is
+    false -- torsion moved as the single variable flips both the winning shape and the
+    winning reading. The artifact now states the dependence rather than denying it, and
+    attaches no figure, because any figure here is a fact about one deck emitted by a
+    generator that runs for all of them.
+    """
+    from floatfea import cli
+
+    path, out_dir = _fixture(tmp_path)
+    assert cli.main(["run", str(path)]) == 0
+    text = (out_dir / "truss_sizing.md").read_text(encoding="utf-8")
+
+    assert "WHICH CELL WINS CAN DEPEND ON THE LOAD" in text, text
+    assert "named the torsion as what decides" not in text, text
+    assert "property of THIS run's loads" in text, text
+
+
+def test_R1082_a_NEAR_duplicate_is_ACCEPTED_because_the_comparison_is_EXACT(tmp_path) -> None:
+    """`[3.0, 3.0000001]` are two declared depths and both are kept.
+
+    **THIS IS EH4's WEAKENING DIRECTION ON THE REFUSAL THE SAME COMMIT ADDED**, and it is
+    the half a new rule does not get checked on by default: the repeat refusal was added
+    because a repeat produced a false sentence, so every arm of it points at refusing
+    MORE. The question this asks is what the rule refuses that nobody asked it to.
+
+    The comparison is exact float equality and it stays that way. Reaching for `isclose`
+    here would put a comparison epsilon in `config.py` under another name -- a "near
+    duplicate" threshold is a tolerance, which `CLAUDE.md` forbids outright, and it would
+    refuse a grid a user is entitled to declare. Two depths a tenth of a micron apart are
+    a strange thing to sweep and they are not this parser's business to forbid.
+    """
+    truss = dict(GOOD)
+    truss["depths"] = [3.0, 3.0000001]
+    path, _out_dir = _fixture(tmp_path, truss=truss)
+    cfg = load_config(path)
+    assert cfg.sections.truss.depths == (3.0, 3.0000001), cfg.sections.truss.depths
+    # Both survive as distinct declared depths: the grid is two deep, not one.
+    assert len(set(cfg.sections.truss.depths)) == 2
+
+    # And the exact duplicate of one of them is still refused, so widening to accept the
+    # near-duplicate did not cost the refusal -- both directions hold at once.
+    truss["depths"] = [3.0, 3.0000001, 3.0]
+    again = tmp_path / "again"
+    again.mkdir()
+    path2, _ = _fixture(again, truss=truss)
+    with pytest.raises(ConfigError) as caught:
+        load_config(path2)
+    assert "repeats 3.0, already declared at index 0" in str(caught.value), str(caught.value)
+
+
+def test_R1080_the_defect_does_NOT_move_steel_per_m_BELOW_the_bracket_FLOOR() -> None:
+    """The exception to R1080's reach, as arithmetic rather than as a sentence.
+
+    **MY OWN BULLET CLAIMED THE SUM RISES ON EVERY CELL WITH A NON-ZERO INCLINED-FACE
+    SHEAR, AND THAT IS FALSE.** `area_for_compression` bisects inside
+    `sections.truss.diameter_search` and the smallest declared tube already carries a small
+    demand, so the shipped and the corrected allocations return the SAME floor area and the
+    published `steel/m` is byte-identical. My first probe missed it because every load I
+    chose was large; the boundary has to be solved, not sampled.
+
+    The cell pins both sides of that boundary at one `(h, b)` with one variable moved -- the
+    inclined-face allocation -- so the exception is a property of the resolution and not of
+    a published sentence. It carries no threshold of its own: the two loads are far either
+    side of a boundary this test never names, and the assertions are equality and
+    inequality of published figures.
+    """
+    import math
+
+    import floatfea.run.truss as truss_mod
+
+    original = truss_mod.RESOLVERS["triangle"]
+
+    def corrected(n, vy, vz, t, my, mz, h, b):
+        cf = original(n, vy, vz, t, my, mz, h, b)
+        lf = math.hypot(h, b / 2.0)
+        shears = dict(cf.face_shear)
+        shears["inclined"] = shears["inclined"] * (lf / h)
+        return ChordForces(cf.chords, shears)
+
+    def resolve(vz, fixed):
+        truss_mod.RESOLVERS["triangle"] = corrected if fixed else original
+        try:
+            group = resolve_group(
+                "probe",
+                [("probe", (0.0, 3.0e6, vz, 0.0, 1.0e8, 0.0))],
+                TrussOptions(depths=(3.0,), widths=(8.0,), shapes=("triangle",)),
+                MATERIAL,
+            )
+            return {c.geometry: c for c in group.cells}
+        finally:
+            truss_mod.RESOLVERS["triangle"] = original
+
+    # The one variable really did move, measured at the RESOLUTION rather than at the
+    # reported `diagonal_force` -- which names the GOVERNING face, the bottom one here, and
+    # is therefore identical under a correction to the inclined face. That identity is the
+    # finding R1080 is about, so the cell must not rest on it.
+    row = (0.0, 3.0e6, 1.0e3, 0.0, 1.0e8, 0.0)
+    assert (
+        corrected(*row, 3.0, 8.0).face_shear["inclined"]
+        > original(*row, 3.0, 8.0).face_shear["inclined"]
+    )
+
+    # BELOW the floor: that larger inclined shear does NOT move the published figure.
+    small_shipped, small_fixed = resolve(1.0e3, False), resolve(1.0e3, True)
+    for geometry, shipped in small_shipped.items():
+        fixed = small_fixed[geometry]
+        assert fixed.steel_area_per_m == shipped.steel_area_per_m, (
+            geometry,
+            shipped.steel_area_per_m,
+            fixed.steel_area_per_m,
+        )
+
+    # ABOVE it: the same one-variable change does move the published figure, and UP.
+    big_shipped, big_fixed = resolve(1.0e6, False), resolve(1.0e6, True)
+    for geometry, shipped in big_shipped.items():
+        fixed = big_fixed[geometry]
+        assert fixed.steel_area_per_m > shipped.steel_area_per_m, geometry
+
+    # And the control: the box has no inclined face, so the same patch cannot reach it.
+    box_a = resolve_group(
+        "probe",
+        [("probe", (0.0, 3.0e6, 1.0e6, 0.0, 1.0e8, 0.0))],
+        TrussOptions(depths=(3.0,), widths=(8.0,), shapes=("box",)),
+        MATERIAL,
+    )
+    truss_mod.RESOLVERS["triangle"] = corrected
+    try:
+        box_b = resolve_group(
+            "probe",
+            [("probe", (0.0, 3.0e6, 1.0e6, 0.0, 1.0e8, 0.0))],
+            TrussOptions(depths=(3.0,), widths=(8.0,), shapes=("box",)),
+            MATERIAL,
+        )
+    finally:
+        truss_mod.RESOLVERS["triangle"] = original
+    for a, b in zip(box_a.cells, box_b.cells, strict=True):
+        assert a.steel_area_per_m == b.steel_area_per_m, (a.geometry, a.shape)
