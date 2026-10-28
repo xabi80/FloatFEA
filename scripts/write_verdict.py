@@ -39,11 +39,18 @@ outside a triple -- and the patch script that made the edit left the token
 `PLACEHOLDER_WRITE_VERDICT` in the quoted sentence, which nothing in the tree
 reads and so nothing caught.
 
-The `Reviewed commit:` stamp is taken from `HEAD`, which is structurally NOT the
-reviewed commit whenever the reviewer commits its corpus first -- as it is
-instructed to. The body names the commit it judged; that line does not. Recorded
-here rather than fixed, because changing what the stamp reads is a change to the
-reviewer's own tooling and goes through a directive, not through this edit.
+**R1049 IS CLOSED (FV3): THE STAMP IS `--judged`, NOT `HEAD`.** It used to read
+`HEAD`, which is structurally NOT the reviewed commit whenever the reviewer
+commits its corpus first -- as it is instructed to. The body named the commit it
+judged; that line did not, and the reviewer had been writing the judged sha into
+its prose by hand as a stopgap, and saying so, for several rounds.
+
+`--judged <sha>` is now REQUIRED, it is what gets stamped, and it must be an
+ancestor of `HEAD` or the tool refuses. **There is no implicit fallback to
+`HEAD`,** which is the whole point: a default is what made the old line correct
+by coincidence -- right exactly when the reviewer had committed nothing of its
+own, and silently wrong whenever it had. Adopted by directive FV3,
+`docs/directives/FV.md`.
 """
 from __future__ import annotations
 
@@ -146,13 +153,58 @@ def _closes(value: str) -> str:
 
 
 def sha() -> str:
+    """`HEAD`. Used for the ancestry check only -- never for the stamp (FV3)."""
     return subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+
+
+def _judged(value: str) -> str:
+    """Resolve `--judged` to a full sha and REFUSE unless it is an ancestor of `HEAD`.
+
+    Two refusals rather than one, because they catch different mistakes:
+
+    * a sha git does not know -- a typo, or a commit from another clone;
+    * a sha git knows that is NOT an ancestor of `HEAD` -- a commit on another branch, or
+      one rebased away. A verdict anchored there names a commit this history does not
+      contain, and every guard that resolves the anchor would follow it off the branch.
+
+    **THERE IS NO FALLBACK TO `HEAD`, AND THAT IS THE POINT OF FV3.** A default is what
+    made the old stamp correct by coincidence: it agreed with the judged commit exactly
+    when the reviewer had not yet committed anything of its own, and disagreed silently
+    whenever it had.
+    """
+    try:
+        full = subprocess.check_output(
+            ["git", "rev-parse", "--verify", value + "^{commit}"], text=True
+        ).strip()
+    except subprocess.CalledProcessError:
+        raise argparse.ArgumentTypeError(
+            f"--judged {value!r}: not a commit this repository knows. The verdict's anchor "
+            f"is what every downstream guard resolves, so a sha that does not exist here "
+            f"cannot be stamped (FV3)."
+        ) from None
+    if subprocess.call(["git", "merge-base", "--is-ancestor", full, sha()]) != 0:
+        raise argparse.ArgumentTypeError(
+            f"--judged {full[:12]}: a commit, but NOT an ancestor of HEAD ({sha()[:12]}). "
+            f"A verdict may only judge a commit this history contains -- otherwise its "
+            f"anchor points off the branch and every guard that follows it is reading "
+            f"another line of development (FV3)."
+        )
+    return full
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--milestone", type=_milestone, required=True)
     ap.add_argument("--step", type=int, required=True)
+    ap.add_argument(
+        "--judged",
+        type=_judged,
+        required=True,
+        help=(
+            "the sha this verdict judges. REQUIRED, stamped verbatim, and refused unless "
+            "it is an ancestor of HEAD. No fallback to HEAD (FV3, closing R1049)."
+        ),
+    )
     ap.add_argument(
         "--closes",
         type=_closes,
@@ -229,12 +281,14 @@ def main() -> int:
     # **FN3's goal is that the reviewer can USE the tool.** A tool whose output does not
     # satisfy the next gate in the chain has not met that goal, so the anchor is emitted
     # here rather than left to a convention that happened to hold nine times.
-    anchor = f"**Reviewed commit: `{sha()}`.**"
+    # **FV3: `args.judged`, NOT `sha()`.** Both lines carry the same value and neither
+    # reads HEAD. `sha()` survives for the ancestry check in `_judged`, nowhere else.
+    anchor = f"**Reviewed commit: `{args.judged}`.**"
     header = (
         f"# Review — {args.milestone} step {args.step}"
         + (" — ES0 INTERIM CHECK (counts against no round)" if args.interim else "")
         + "\n"
-        f"Reviewed commit: {sha()}\n"
+        f"Reviewed commit: {args.judged}\n"
         f"{anchor}\n"
     )
     # FK0: ONE LINE, INTO THIS ENTRY, AND NOTHING OTHERWISE. It goes in the header so
