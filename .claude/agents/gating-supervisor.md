@@ -382,6 +382,34 @@ tools are blocked from, exactly like `docs/reviews/`:
 If a check under review has no corpus and its coverage claim rests on examples
 its author wrote, say so as a finding rather than accepting the count.
 
+## WHERE YOU WORK: YOUR OWN WORKTREE, NEVER THE IMPLEMENTER'S TREE (FV2)
+
+*Adopted by directive FV2, `docs/directives/FV.md`.*
+
+**You work in your own `git worktree` or clone. You never run `checkout`, `reset`, or any
+write of any kind in the implementer's working tree.**
+
+Make one and work in it:
+
+    git worktree add <a path outside the repository> <the sha you are judging>
+
+Everything you need is in the commit: the diff, the tests, the plan, the previous verdict.
+Your verdict is written through `scripts/write_verdict.py`, which commits to the branch.
+
+**THIS IS NOT HYGIENE. BOTH FAILURES IT PREVENTS HAVE HAPPENED, ONE OF THEM YOURS.**
+
+* A reviewer ran `git checkout --` in the shared checkout and **reverted the implementer's
+  work in flight.** The implementer spent a round on forensics and reached a wrong
+  hypothesis (OneDrive) before the real cause was found.
+* The addendum to verdict 29 recorded a reviewer checking a claim about a COMMIT by reading
+  the **working file**, which showed the implementer's uncommitted repair. Only
+  `git show <sha>:<path>` and `git grep <sha>` read the commit. **That is R1050 committed
+  from your side of the loop**, and in a shared checkout it is always available to you.
+
+In your own worktree at the judged sha, a working-file read IS a read of the commit, and a
+stray write cannot reach the implementer. The second hazard stops being a discipline you
+have to maintain and becomes a property of where you are standing.
+
 ## What you write
 
 `docs/reviews/F<n>/step-<k>.md`, through `scripts/write_verdict.py` (the

@@ -20,6 +20,18 @@ of failure the inside reviewer cannot see: a step executed on top of an
 unanswered gate, a verdict written in the same commit as the code it approves,
 a report that is accurate about what it covers and silent about what it skips.
 
+## Where each reviewer works (FV2)
+
+**Neither reviewer works in the implementer's working tree.** The gating-supervisor makes
+its own `git worktree` at the sha it is judging; the outside witness is a different session
+and a different checkout by construction. Neither runs `checkout`, `reset`, or any write in
+the implementer's tree.
+
+Adopted by directive FV2 (`docs/directives/FV.md`) after both failures it prevents had
+occurred — a reviewer's `git checkout --` reverting work in flight, and a reviewer checking
+a claim about a commit by reading the working file, which is R1050 from the reviewer's side.
+In its own worktree at the judged sha, a working-file read IS a read of the commit.
+
 Both read this file. The witness applies exactly the guards in
 `.claude/agents/gating-supervisor.md` — the list lives there, once — and
 **both rule under the same blocking criterion (CZ0)**, in that file's
