@@ -2,6 +2,196 @@
 Reviewed commit: a25aec2c7c2f60892371788f15dbe415080080b5
 **Reviewed commit: `a25aec2c7c2f60892371788f15dbe415080080b5`.**
 Verdict: HOLD
+Tests: **1734 failed, 4121 passed, 1 skipped -- 5856 tests, the WHOLE collection, and this is the SAME run at the SAME sha as verdict 34 rather than a fresh one, which I say rather than implying a second measurement.** `python -m pytest -q` on the whole tree at `a25aec2` in my own worktree gave `1734 failed, 4121 passed, 1 skipped, 2 warnings in 3343.05s (0:55:43)`; `1734 + 4121 + 1 = 5856 = pytest --collect-only tests`. Every red is in the two report-guard files, so `tests/verification` is green locally at 2088 of 2088 and there is no STOP on the low-rung head. **The tree under judgement has not moved since verdict 34 -- the only commit between them is my own verdict `f958b34`, which touches `docs/reviews/R1/step-3.md` and nothing else** (`git diff a25aec2..f958b34 -- floatfea tests scripts examples results` is empty), so re-running the suite would measure the same commit a second time and I did not spend the hour.
+Scope: **ADDENDUM TO VERDICT 34. NO NEW FINDINGS, NONE WITHDRAWN.** It does one thing: it **re-issues the body of `15729bd`**, the addendum that judged `3ad464b` and never reached `F3`, which is **L39 of verdict 34, and L39 is mine to close rather than the implementer's** -- `docs/reviews/` is the one directory they may not write. ES0 interim check, counts against no round, closes nothing (`--interim` per FS2, no `--closes` per FK1). Step 3 stays at **0 of 3** reviewed revisions. The precedent is the one `15729bd` itself cited: `3b2ce57`, the FV3 addendum that corrected verdict 26's anchor with no new findings.
+
+**WHY THIS ENTRY IS HEADED `a25aec2` AND NOT `3ad464b`, MEASURED RATHER THAN ARGUED.** The obvious form -- re-issue with `--judged 3ad464b`, the commit the dropped text actually judged -- is not available, and the reason is a number:
+
+```
+claim  a re-issue headed `3ad464b` moves the record's ANCHOR three commits backwards
+cmd    the `_JUDGED` regex of `tests/test_report_carried.py:2564` -- the first
+       `**Reviewed commit: `<sha>`**` match in the WHOLE verdict file -- applied to the
+       record as it stands, and to the record with the dropped entry prepended under its
+       own `3ad464b` header
+out    the record as it stands now                 ->  a25aec2
+       with the dropped entry prepended as itself  ->  3ad464b
+rule   `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit`
+       and `scripts/ci_section.py::_anchor`, which share that regex and its first-match
+       rule
+judge  under the second form the step-3 report's CI section would be REQUIRED to name
+       `3ad464b` -- **a table for a commit three behind the state under review**, which is
+       R352 by name, "four consecutive rounds of a section naming the wrong commit", and
+       the guard's own docstring says that is what it exists to prevent. **A record repair
+       that costs the implementer a round of wrong-commit CI sections is worse than the
+       omission it repairs.** So the text is re-issued HERE, under the commit actually
+       under review, labelled throughout as having judged `3ad464b`, and quoted verbatim
+       below so that nothing of it depends on my paraphrase.
+cell   one variable, the header of the prepended entry. Same file, same regex, same
+       first-match rule; the only thing that moves is which sha the first bold line names.
+```
+
+**THE DISPOSITION IS UNCHANGED AND DELIBERATELY SO: HOLD.** Verdict 34's three blocking findings are open, and this entry is prepended, so a header-reading parser and the `Stop` hook must find the live state and not a `PASS` from a record repair. **Nothing here opens, closes or reorders anything.**
+
+**WHERE I WORKED (FV2).** `wt-verdict`, my own worktree on branch `review/r1-step3-v34`, fast-forwarded to `f958b34`. No `checkout`, no `reset` and no write of any kind in the implementer's tree.
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **L39** -- the dropped addendum `15729bd` | **CLOSED BY THIS ENTRY, and it was mine to close.** The 73 lines are re-issued verbatim under `## Findings` below. | `git merge-base --is-ancestor 15729bd f958b34` -> **NOT an ancestor**; `git branch -a --contains 15729bd` -> only `review/r1-step3-v33`; `git show --stat 15729bd` -> `docs/reviews/R1/step-3.md \| 73 +++`, one file. **The implementer's four measurements reproduce exactly on my own run.** Their refusal to bring it forward is correct and I endorse the reason: a cherry-pick lands on changed context, and resolving that conflict is editing verdict content, which the hook refuses and `CLAUDE.md` forbids outright. **The hook refusing even a `git apply --check` scratch write is the mechanism working**, and not reconstructing the command another way under FM1 is the right call. |
+| **R1080, R1081, R1082** | **ALL THREE STILL BLOCKING, UNCHANGED AND UNWEAKENED. This entry touches none of them.** | nothing in `floatfea/` has moved: `git diff a25aec2..f958b34 -- floatfea tests scripts examples results \| wc -c` is **0**. They are findings about published sentences and every one came from running the model or the generator at a configuration the diff did not choose. |
+| **L29 through L42** | **all still ledger, unchanged, not re-reviewed item by item.** | `CLAUDE.md`'s closure-item handling. |
+| **the R1077 / `0.00%` correction** | **THE IMPLEMENTER HAS ADOPTED IT AGAINST THEMSELVES AND I AM NOT RE-MAKING IT.** Their disposition is right: the false sentence is inside a committed message, so it takes R1053's disposition -- recorded as unfixable, heading the next commit message rather than sitting in a ledger row. **The structural diagnosis stands and was always the valuable half.** | L42 of verdict 34 carries the measurement; nothing further is asked. |
+| **L26** | **theirs, correcting me, accepted on both sides. Closed as a disagreement.** | no action. |
+| **R867 to R870 (FT2.7)** | **STILL BLOCKING BY NAME. Twenty-seventh round, unchanged by this entry.** | `git show --stat --name-only --format="" f958b34` names one file and it is this verdict. |
+| **condition 4** of the FT2.5 ruling | **STILL CARRIES; its site is a report that does not exist.** | `ls docs/reports/R1/` has no `step-3.md`. |
+| **conditions 1, 2 and 3** of the FT2.5 ruling | **STILL MET; this entry adds no code.** | the diff above is empty over `floatfea`. |
+| **the EG4(e) pause** | **HELD. ZERO new corpus entries, again.** | `tests/corpus/` is untouched; ES0 fixes an interim check's scope as no batch either way. |
+| **the two figures `15729bd` corrected about the PREVIOUS reviewer's own evidence** | **RE-ISSUED VERBATIM BELOW AND NOT PARAPHRASED, which is the whole point of re-issuing rather than summarising.** They are an unmeasured `pkill` reported as "I killed it", and a pass count that understated its own coverage by 3003 tests. | `## Findings` below. |
+
+## Findings
+
+**NONE. This addendum adds no finding and withdraws none.** Verdict 34's three blocking findings and fourteen ledger lines are the whole list, unchanged.
+
+**WHAT FOLLOWS IS THE BODY OF `15729bd` RE-ISSUED VERBATIM.** It judged `3ad464b`, which is three commits back, and every figure in it is a property of THAT tree and not of this one -- the `5752`, the `2222`, the `1672` and the `2257` belong to `3ad464b` and the entry itself says so in its last paragraph. It is quoted rather than summarised because it corrects two claims about a reviewer's own evidence, and a correction a later reviewer has paraphrased is a correction that reviewer has had the last word on.
+
+**Extracted mechanically, not retyped:**
+
+```
+cmd    git show 15729bd:docs/reviews/R1/step-3.md, taken to the first DX2 separator,
+       stripped of its own four header lines, and diffed against the 73 added lines of
+       `git diff 6d0728c 15729bd`
+out    added lines in the diff : 73
+       recovered entry lines   : 67
+       byte-identical to the diff's own `+` side : True
+       -- and `67 + 6 = 73`, the six being the DX2 separator block
+       `scripts/write_verdict.py` emits, which belongs to the tool and not to the entry.
+       **So the recovery is complete and I state the six-line difference rather than
+       rounding it away.**
+```
+
+---
+
+**THREE LINES OF IT ARE DELIBERATELY NOT QUOTED, AND A "VERBATIM" QUOTE THAT DROPS LINES MUST SAY WHICH.** The entry's own first three lines are its `# Review ...` heading, its plain `Reviewed commit: 3ad464b...` line and its **bold** `Reviewed commit: `3ad464b`` anchor. **The bold line is the one the measurement above is about** -- quoting it would put a second `_JUDGED`-matching anchor into this file, and whether it or mine came first would then depend on nothing a reader can see. The quote therefore begins at the entry's `Verdict:` line, and the heading it belonged to is stated in the sentence above it instead. **Nothing else is omitted, reordered or edited: 64 content lines, every one prefixed with `> ` and otherwise untouched.**
+
+---
+
+> **RE-ISSUED BODY OF `15729bd` -- a verdict that JUDGED `3ad464b`, verbatim, quoted.**
+> Verdict: HOLD
+> Tests: **1672 failed, 4079 passed, 1 skipped -- the WHOLE 5752-test collection at the judged sha, measured by me locally in two runs that together cover every id, which I could not say in the entry below.** `tests` minus the five report-guard files: **3530 passed, 2 warnings in 2470.07s (0:41:10), ZERO failures** -- and that run includes the whole verification ladder, all 2088 of it, locally. `tests/unit tests/regression tests/*.py`: **1672 failed, 1991 passed, 1 skipped, 1 warning in 3603.12s (1:00:03)**, which is `401 + 366 + 2897 = 3664` exactly. The two runs leave no id uncovered, and the 1672 are the same 1672, in the same two files.
+> Scope: **ADDENDUM to the interim check at `3ad464b`. NO NEW FINDINGS. It corrects two figures about MY OWN EVIDENCE in the entry below and adds the completed whole-tree local measurement.** It counts against no round for the same reason the entry below does -- ES0, no new report revision, `ls docs/reports/R1/` still has no `step-3.md` -- and it closes nothing (no `--closes`, FK1). The precedent in this file is `3b2ce57`, the FV3 addendum that corrected verdict 26's anchor with no new findings.
+>
+> ## Carried
+>
+> **All three blocking findings of the entry below stand UNCHANGED and UNWEAKENED: R1073, R1074, R1075.** Nothing in this measurement touches them -- they are about sentences and factors in `floatfea/cli.py`, and every one of them was found by running the model at a configuration the diff did not choose, not by a suite count. **L11 through L19 stand unchanged.** R867-R870 stand blocking, twenty-fifth round. Condition 4 and the F6b escalation paragraph stand.
+>
+> **And the two things I got wrong about my own evidence, named rather than quietly overwritten:**
+>
+> | what the entry below says | what is true | why it happened |
+> |---|---|---|
+> | "`python -m pytest -q tests` was started first, reached 17% in 45 minutes on this machine, and I killed it" | **I did not kill it, and a second broad run I also believed killed completed as well.** Both ran to a summary line, and between them they cover every id in the tree. | I issued `pkill` against two patterns and read a progress file that had stopped advancing; I never checked the exit. **A `pkill` whose effect I did not measure is an unmeasured claim about my own apparatus**, which is the whole of BF0 turned on the reviewer. |
+> | "**1672 failed, 1076 passed, 1 skipped** across my own runs" and "the 20 root-guard files I did not run locally and `tests/verification` are green in CI at this sha" | **1672 failed, 4079 passed, 1 skipped**, and I DID run all 22 root-guard files and the whole ladder locally. All green on both machines, not only on CI's. | the figure was a true count of the runs I knew about. It understated my own coverage by 3003 passing tests, which is the safe direction for a reviewer to err and still the wrong number. |
+>
+> ## Findings
+>
+> **None. This addendum adds no finding and withdraws none.** The three blocking findings and the nine ledger items of the entry below are the whole list, and the measurement in this entry strengthens the entry's conclusion rather than qualifying it.
+>
+> ```
+> claim  the two completed runs cover every id at the judged sha, and the 1672 reds are the
+>        only failures anywhere in the tree on EITHER machine
+> cmd    python -m pytest -q -p no:randomly tests --ignore=tests/test_report_carried.py
+>          --ignore=tests/test_report_guard_states.py
+>          --ignore=tests/test_report_numbers_are_sourced.py
+>          --ignore=tests/test_plan_figures.py --ignore=tests/test_figure_local_check.py
+>        python -m pytest -q -p no:randomly tests/unit tests/regression tests/*.py -rf
+> out    3530 passed, 2 warnings in 2470.07s (0:41:10)            exit 0
+>        1672 failed, 1991 passed, 1 skipped, 1 warning in 3603.12s (1:00:03)
+> rule   CZ0 (d) with CA2 -- a red test at the reviewed commit -- and EG3 with the FS1/FT1
+>        predicate for the boundary set
+> cell   the arithmetic, and it closes: the collection at the judged sha is 5752; run A omits
+>        exactly the five report-guard files, so those five collected 5752 - 3530 = 2222 at
+>        that commit; run B omits `tests/verification` and collects 401 + 366 + 2897 = 3664;
+>        the five omitted from A are all root files and so are all inside B, which leaves no
+>        id in neither. Union passed = 5752 - 1672 - 1 = 4079.
+> judge  **ZERO failures outside the two report-guard files, measured locally over the whole
+>        tree and not inferred from CI.** The verification ladder is green locally as well as
+>        in CI -- 2088 ids inside run A's 3530 -- so there is no STOP on the low-rung head on
+>        either machine. Run A's `0 failed` over 3530 ids is also the cleanest statement
+>        available that the three blocking findings are about PUBLISHED SENTENCES and not
+>        about the arithmetic: nothing in `floatfea/` that a test watches moved.
+> ```
+>
+> **AND ONE MEASUREMENT I MADE BY ACCIDENT THAT IS WORTH THE LINE, BECAUSE IT IS R861 ON MY OWN COMMIT.** After writing the entry below I re-collected the five report-guard files in my worktree and got **2257**, against the **2222** the same five collected at the judged sha. The 35 new ids are the findings and sites of the verdict I had just written, entering two parametrised guards. **The collection size is a function of what the reviewer writes, measured across one commit of mine** -- which is exactly why the entry below checks the FS1/FT1 predicate per id and quotes no baseline. It is also a reminder that the only tree these counts describe is the one they were taken in: the 5752 and the 2222 belong to `3ad464b` and I am not restating them as properties of anything else.
+>
+> ## Tolerances touched
+>
+> **NONE, and nothing about this addendum could touch one.** It adds no code and no test; it is a verdict entry.
+>
+> ```
+> cmd    git diff 3ad464b..HEAD -- floatfea tests scripts examples
+> out    (empty) -- the only commit between them is my own verdict, which touches
+>        docs/reviews/R1/step-3.md and nothing else
+> rule   CLAUDE.md section Tolerances
+> judge  no value, no form, no counter, no injection. EU1 does not attach.
+> ```
+>
+> ## Next step opens when
+>
+> **Unchanged from the entry below, item for item.** This addendum opens nothing, closes nothing and reorders nothing. R1073, R1074 and R1075 in the next commit, then R867-R870, then condition 4 with the F6b paragraph, then L11-L19 to the ledger. The `Answers:` header of the step-3 report must name the interim check at `3ad464b` -- **this addendum is part of that same entry's round and not a separate verdict to answer**; if the header names it instead, that is right too, because both describe the same commit.
+>
+> **One line on what this cost and what it bought, since I am the one who spent it.** It cost one verdict entry and no round. It bought the statement the entry below could not make -- that the whole tree is green at the judged sha apart from the designed boundary set, on my machine as well as on CI's -- and it put on the record that I asserted "I killed it" without measuring it. The rule I broke is the one I apply to every report I read, and the correction belongs in the directory the implementer cannot write to rather than in a message.
+>
+
+---
+
+
+## Tolerances touched
+
+**NONE, and nothing about this entry could touch one: it adds no code and no test, it is a verdict entry.**
+
+```
+cmd    git diff a25aec2..f958b34 -- floatfea tests scripts examples results | wc -c
+out    0 -- the only commit between the judged sha and this one is my own verdict 34,
+       which touches docs/reviews/R1/step-3.md and nothing else
+cmd    git show --stat --name-only --format="" f958b34
+out    docs/reviews/R1/step-3.md   -- one file
+rule   CLAUDE.md section Tolerances, and EU1
+judge  no value, no form, no counter, no injection size. **EU1 does not attach**, and the
+       adversarial case for verdict 34 was already run at 28350 continuum cells, a torsion
+       ladder, eight generator configurations and a 20x20 grid over the real deck's rows.
+       Re-running it would measure the same commit twice.
+```
+
+## Next step opens when
+
+**Unchanged from verdict 34, item for item.** This addendum opens nothing, closes nothing and reorders nothing; it closes L39 and does not touch the list. R1080, R1081 and R1082 in the next commit, then R867 to R870, then condition 4 with the F6b paragraph, then L29 to L42 to the ledger.
+
+**AND THE TWO DIRECTIONS THE IMPLEMENTER ASKED ME TO CONFIRM NOW RATHER THAN AT THE NEXT CHECK. BOTH ARE RIGHT, AND EACH NEEDS ONE THING SAID.**
+
+**R1080 -- YES, AND YOUR READING IS WIDER THAN MY CONDITION, WHICH IS THE RIGHT DIRECTION.** You read the finding as fatal to the bullet's structure and not its wording. It is: conditioning "does it reach a published number" on the governing face cannot work when the governing face is computed under the defect, and `steel/m` moving on 800 of 800 settles it without needing the `diag A` half at all. **Delete the conditioning. Three things go with it and I would rather name them now than find them next round:**
+
+1. **The computed count may go with it, and that does NOT reopen R1074.** R1074's condition was that every number in that bullet is "either computed from the report being written ... or is stated with the configuration it was measured at". **A number that is no longer published satisfies it vacuously and correctly** -- deleting is the one repair R1074 can never object to. If `_governing_faces` survives as a reported fact with no conclusion hung on it, that is also fine; what may not survive is a conclusion CONDITIONED on it.
+2. **L34 and L36 go out with the deleted clause** -- the box-horizontal gap and "1 are governed by the" are both inside it -- and if the clause goes, say so against those two rather than leaving them on the ledger as open.
+3. **Whatever sentence survives needs an assertion, because today none exists.** ARM H measured it: the clause replaced by a sentence false in both directions gives `40 passed`. **No new apparatus is asked for** -- an added assertion in `test_END_TO_END_truss_sizing_writes_its_artifact_and_DISCLAIMS_the_U` is an assertion, not a guard. And **`:736` surviving as the statement about `diag A` is correct**: it is the sentence my own measurement supports, and over the deck's grid it is supported hard -- 77 of 800 bottom-governed cells move, worst `+125.96%`.
+
+**R1082 -- YES AT BOTH LEVELS, AND ONE CORRECTION TO THE KEY PLUS ONE WARNING ABOUT THE REFUSAL'S FORM.**
+
+* **The key is the declared LIST, not the resolved tuple.** You wrote "a repeated `(shape, h, b, geometry)` declaration". `geometry` is never declared -- `GEOMETRIES` is always both -- and by the time a resolved tuple exists the duplicate has already been accepted and counted into "Of the N cells in the tables above". **Refuse a repeated entry in `depths`, in `widths` or in `shapes`, at parse**, which is exactly the shape `_parse_headings` already has in the same module, and quote its own recorded reason: *"changes nothing about the answer and everything about what the run claims to have covered."*
+* **THE COMPARISON MUST BE EXACT EQUALITY, AND REACHING FOR `isclose` HERE WOULD BE A TOLERANCE UNDER ANOTHER NAME.** `depths: [3.0, 3.0]` from YAML are the same float; `depths: [3.0, 3.0000001]` are two legitimately distinct declared depths and must be ACCEPTED. **That is EH4's weakening direction on your own new rule and it is the one I would check first** -- a near-duplicate threshold would put a comparison epsilon in `config.py`, which `CLAUDE.md` forbids outright, and it would refuse a configuration nobody asked you to refuse.
+* **`same_cell` gaining `geometry` is right and is not redundant with the refusal.** With the refusal in place the duplicate cannot arrive, so the message cannot lie; with `geometry` in the predicate the message cannot lie even if some future path produces a duplicate the parser did not see. Two levels, and the second is the one that does not depend on the first being complete.
+
+**And one thing that is now true of the record and was not before.** The anchor measurement above is a property of this file's own accumulation order, and it is the kind of thing that only shows up when someone tries to repair the record. **`_judged_commit()` takes the FIRST bold line in the whole file**, so any entry prepended out of chronological order silently re-anchors every downstream CI section. I am recording it here because it is not written down anywhere else, and the next reviewer who finds a dropped verdict will reach for exactly the form I just measured and rejected.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: a25aec2c7c2f60892371788f15dbe415080080b5
+**Reviewed commit: `a25aec2c7c2f60892371788f15dbe415080080b5`.**
+Verdict: HOLD
 Tests: **1734 failed, 4121 passed, 1 skipped -- 5856 tests, THE WHOLE COLLECTION, my own run at the judged sha in my own worktree (FV2).** **ONE INVOCATION, NOT A DECOMPOSITION: `python -m pytest -q` on the whole tree gave `1734 failed, 4121 passed, 1 skipped, 2 warnings in 3343.05s (0:55:43)`.** `pytest --collect-only tests` is **5856** and `1734 + 4121 + 1 = 5856`, so nothing is left out. **EVERY ONE OF THE 1734 REDS IS IN THE TWO REPORT-GUARD FILES, AND THE ARITHMETIC THEREFORE SAYS THE REST OF THE TREE IS GREEN INSIDE THAT SAME INVOCATION:** the root guards collect 2999, of which 1734 failed and 1 skipped leaves 1264 passed; `tests/verification` collects 2088, `tests/unit` 401 and `tests/regression` 368, which is 2857; and `1264 + 2857 = 4121`, my passed count exactly. **So the WHOLE VERIFICATION LADDER IS GREEN LOCALLY, 2088 of 2088 -- the STOP head measured on my own machine as well as on CI's six rungs.** All 1734 are the EG3 state (2) boundary set, traced one id at a time below by their own failure messages, and **`comm` against CI's own 1734 is EMPTY IN BOTH DIRECTIONS**. `ruff check floatfea tests scripts` (All checks passed), `black --check floatfea tests scripts` (159 files unchanged) and `mypy floatfea` (45 sources, no issues) are clean on my own run.
 Scope: **ES0 INTERIM CHECK.** `ls docs/reports/R1/` is `step-1-answers.json step-1.md step-2-answers.json step-2.md` -- **there is still no `docs/reports/R1/step-3.md`**, so no reviewed revision has been consumed, **0 of 3**, and this counts against no round and closes nothing (ES0, FK1, written with `--interim` per FS2 and no `--closes`). It is the **thirty-fourth** ES0 interim check on this step: `grep -c '^# Review â€” R1 step 3 â€” ES0 INTERIM CHECK' docs/reviews/R1/step-3.md` is **33** before this entry, and `grep -c '^# Review â€” R1 step 3'` is **36**, so three of the thirty-six entries are not interim checks.
 
