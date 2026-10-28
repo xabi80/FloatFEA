@@ -73,7 +73,18 @@ def ordinal(index: int, count: int) -> str:
     next to the words "the largest candidate declared". One function so the stored form and
     the shown form cannot drift apart again.
     """
-    return f"{index + 1} of {count}"
+    return f"{position(index)} of {count}"
+
+
+def position(index: int) -> str:
+    """A grid position ALONE, 1-based, for a reader (L1).
+
+    `ordinal`'s docstring claimed every reader-facing index went through it, and four
+    sites in `floatfea/cli.py` added one inline -- so the claim was false and the two
+    forms could drift. Both renderers live here now and `ordinal` is written in terms
+    of this one, so a change to the base cannot reach only half of them.
+    """
+    return str(index + 1)
 
 
 def with_group_sections(cfg: RunConfig, chosen: dict[str, TubeSection]) -> RunConfig:

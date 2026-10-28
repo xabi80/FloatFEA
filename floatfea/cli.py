@@ -30,6 +30,7 @@ from floatfea.run.sizing import (
     SizingReport,
     TrussReport,
     ordinal,
+    position,
     size_required_sections,
     size_truss,
 )
@@ -440,7 +441,7 @@ def _write_required_section(path: Path, report: SizingReport) -> None:
         lines.append(
             f"| {g.group} | {ordinal(g.chosen_index, len(g.grid))} | "
             f"{g.chosen.d_outer:g} | "
-            f"{g.chosen.wall:g} | candidate {g.proposed_index + 1} | "
+            f"{g.chosen.wall:g} | candidate {position(g.proposed_index)} | "
             f"{g.proposed_fixed_force_u:.6g} | {g.resolved_u:.6g} |"
         )
 
@@ -455,15 +456,15 @@ def _write_required_section(path: Path, report: SizingReport) -> None:
             )
         lines.append(
             f"* **{g.group}** — fixed-force `max U = {g.proposed_fixed_force_u:.6g}` at "
-            f"candidate {g.proposed_index + 1}, re-solved `max U = {g.resolved_u:.6g}` at "
-            f"candidate {g.chosen_index + 1}; {moved}."
+            f"candidate {position(g.proposed_index)}, re-solved `max U = {g.resolved_u:.6g}` at "
+            f"candidate {position(g.chosen_index)}; {moved}."
         )
 
     lines += ["", "## Every re-solve", ""]
     for it in report.iterations:
         sections = ", ".join(
             f"`{name}` D={it.sections[name].d_outer:g} t={it.sections[name].wall:g} "
-            f"(candidate {it.grid_index[name] + 1})"
+            f"(candidate {position(it.grid_index[name])})"
             for name in sorted(it.sections)
         )
         lines.append(f"**Re-solve {it.index}** — {sections}")
@@ -579,7 +580,9 @@ def _write_truss_sizing(path: Path, report: TrussReport) -> None:
             "Member groups with no candidate grid, carried at their **declared** sections "
             "into every re-solve above and NOT sized: "
             + ", ".join(f"`{n}`" for n in sizing.unsized)
-            + ".",
+            + ". **No truss is resolved for them either** (L5): the tables below cover"
+            " only the groups with a candidate grid, so a group named here has neither a"
+            " chosen tube nor a truss anywhere in this file.",
         ]
 
     lines += [
@@ -625,6 +628,12 @@ def _write_truss_sizing(path: Path, report: TrussReport) -> None:
         "* **The acceptance is the tube's.** See the first section of this file.",
         "* A **pin-jointed parallel-chord idealisation** of an arm whose real form is",
         "  undecided, with no joint or connection check.",
+        "* **The triangle's inclined faces are braced over the depth `h`, not over",
+        "  `hypot(h, b/2)`, their true inclined length.** That understates the diagonal",
+        "  length and its buckling length both, so the triangle's diagonal areas are",
+        "  **unconservative** by that ratio. It is FI1's declared idealisation and it is",
+        "  stated in `floatfea/run/truss.py` — it belongs here as well, because a reader",
+        "  of this file cannot see that source (L4).",
         "* The chord and diagonal areas are **minimum areas at the declared `D/t`**, not",
         "  sections from a catalogue.",
         "* **Linear Airy waves** and a **rigid-body** FloatSim; the superstructure only.",

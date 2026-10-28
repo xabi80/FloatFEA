@@ -209,19 +209,25 @@ def chord_buckling_length(geometry: str, h: float, b: float) -> float:
     return max(h, b) if geometry == "per_face_45" else min(h, b)
 
 
-def panel_and_diagonal(geometry: str, h: float, b: float, face: Face) -> tuple[float, float, float]:
-    """`(chord buckling length, diagonal length, diagonal steel per unit truss length)`.
+def panel_and_diagonal(geometry: str, h: float, b: float, face: Face) -> tuple[float, float]:
+    """`(diagonal length, diagonal steel per unit truss length)` for one braced face.
 
-    The third decides mass: a diagonal of length `L_d` repeated every `p` along the truss
-    contributes `A_d * L_d / p` of area per unit length.
+    The second decides mass: a diagonal of length `L` repeated every `p` along the truss
+    contributes `A_d * L / p` of area per unit length. **It is NOT the force ratio** -- see
+    `_cell`, and see R1069, which is the defect of believing it was.
+
+    **THIS NO LONGER RETURNS THE CHORD BUCKLING LENGTH, AND THAT IS PART OF R1069's
+    REPAIR.** It used to return it first, as a second copy of what `chord_buckling_length`
+    already computes -- and a caller bound that first element to a variable named `panel`
+    and used it as the panel spacing. Under `uniform_panel` the two coincide, so the
+    mis-binding was invisible there and wrong under `per_face_45`. One quantity, one
+    function: the buckling length comes from `chord_buckling_length` and nowhere else.
     """
-    if geometry == "per_face_45":
-        panel = face.dimension
-        diagonal = panel * math.sqrt(2.0)
-        return max(h, b), diagonal, diagonal / panel
-    panel = min(h, b)
-    diagonal = math.hypot(panel, face.dimension)
-    return panel, diagonal, diagonal / panel
+    panel = face.dimension if geometry == "per_face_45" else min(h, b)
+    diagonal = (
+        panel * math.sqrt(2.0) if geometry == "per_face_45" else math.hypot(panel, face.dimension)
+    )
+    return diagonal, diagonal / panel
 
 
 def area_for_tension(force: float, material: Material) -> float:
@@ -422,19 +428,33 @@ def _cell(
     diagonal_face = ""
     diagonal_steel_per_m = 0.0
     for face in faces(shape, h, b):
-        panel, _length, steel_factor = panel_and_diagonal(geometry, h, b, face)
+        length, steel_factor = panel_and_diagonal(geometry, h, b, face)
         shear = max(abs(forces.face_shear[face.shear_key]) for _label, forces in resolved)
-        # A 45-degree diagonal carries `V / cos(theta)` for the face's own inclination;
-        # `panel_and_diagonal` already returns the length ratio, which is the same factor.
-        force = shear * math.hypot(panel, face.dimension) / panel
-        area, _b = area_for_compression(-force, math.hypot(panel, face.dimension), truss, material)
+        # **`F_d = V L / d`, FROM STATICS, AND NOT `V L / p` (R1069).** A cut
+        # perpendicular to the truss axis crosses both chords and the diagonal. The chords
+        # are parallel to the axis, so their transverse component is ZERO and the diagonal
+        # alone carries the shear: `F_d (d/L) = V`, i.e. `F_d = V/sin(theta) = V L / d`.
+        #
+        # `steel_factor` is `L/p` and is the MASS ratio, not this one. They coincide only
+        # where `p == d`, which is `per_face_45` by construction -- so a check run only
+        # there cannot tell them apart, and mine did not. The control that needs no
+        # algebra: at `p = 1, d = 50` a nearly transverse diagonal must carry nearly all of
+        # `V`; statics gives `F/V = 1.0002` and `L/p` gives `50.01`. A ratio that grows
+        # without bound as a member becomes transverse is not a force ratio.
+        force = shear * length / face.dimension
+        area, _b = area_for_compression(-force, length, truss, material)
         area = max(area, area_for_tension(force, material))
         if area > diagonal_area:
             diagonal_area, diagonal_force, diagonal_face = area, force, face.shear_key
         diagonal_steel_per_m += face.count * area * steel_factor
 
     n_chords = 4 if shape == "box" else 3
-    steel_per_m = n_chords * chord_area * truss.joint_allowance + diagonal_steel_per_m
+    # **THE JOINT ALLOWANCE APPLIES TO CHORD AND DIAGONAL STEEL BOTH (L3).** It was on
+    # the chords alone here, where `scripts/measure/f6b_truss_sizing.py` has
+    # `line_mass = (chord_steel + diagonal_steel) * RHO_STEEL * JOINT_ALLOWANCE` -- so
+    # the published steel-per-metre understated the diagonals' share of the allowance,
+    # in the unconservative direction, against the source this was ported from.
+    steel_per_m = (n_chords * chord_area + diagonal_steel_per_m) * truss.joint_allowance
     return TrussCell(
         shape=shape,
         depth=h,

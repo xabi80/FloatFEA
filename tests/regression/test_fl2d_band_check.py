@@ -1001,3 +1001,57 @@ def test_R1063_a_NON_2D_lam_is_REFUSED_rather_than_dying_in_an_index_error(
     assert f"have {ndim} dimensions" in message, message
     assert "dies in an index error" in message, message
     assert not out_dir.exists() or sorted(out_dir.glob("*")) == [], list(out_dir.glob("*"))
+
+
+@pytest.mark.parametrize(
+    "keep, refused",
+    [
+        pytest.param(0, True, id="BOTH_keys_emptied"),
+        pytest.param(1, True, id="BOTH_keys_at_ONE_instant"),
+        pytest.param(2, False, id="TWO_instants_is_the_CONTROL"),
+    ],
+)
+def test_R1070_a_window_SHORTER_THAN_TWO_is_REFUSED_on_BOTH_keys(
+    tmp_path, keep: int, refused: bool
+) -> None:
+    """R1063's check compared `lam` with `times`. Emptying BOTH satisfies it: `0 == 0`.
+
+    The reviewer drove `case1/lam` AND `case1/times` each to `[:0]` and got **exit 0**,
+    `U = 1.35117` against the control's `1.71167`, 32 utilisation rows, not one `nan`, and
+    `member_forces.csv` down from 1248 rows to 1056 -- exactly R1063's published figure and
+    exactly its silence, by a route the agreement check cannot see.
+
+    **THE BOUND IS THE EXPORTER'S OWN**, not a number chosen at the reader:
+    `scripts/export_f4_dynamic_inputs.py` refuses a run of fewer than two steps at the
+    WRITE. The refusal message already NAMED that bound while the code did not enforce it,
+    which is FR1's second head -- a file accepted and used other than as declared.
+
+    `keep = 2` is the control, and it is the one that makes this a bound rather than a
+    blanket refusal: two instants is the shortest legal window and it must still run.
+    """
+    from floatfea import cli
+
+    path, out_dir, npz = _example_in(tmp_path, copy_data=True)
+    raw = np.load(npz, allow_pickle=False)
+    flat = {k: raw[k] for k in raw.files}
+    for suffix in ("lam", "times"):
+        key = f"case{GOVERNING_CASE_INDEX}/{suffix}"
+        flat[key] = np.array(flat[key][:keep], dtype=np.float64)
+    np.savez(npz, **flat)
+
+    if refused:
+        with pytest.raises(SystemExit) as caught:
+            cli.main(["run", str(path)])
+        message = str(caught.value)
+        assert "instants to be a window at all" in message, message
+        assert "fewer than two steps" in message, message
+        written = sorted(p.name for p in out_dir.glob("*")) if out_dir.exists() else []
+        assert written == [], written
+    else:
+        # TWO instants: the shortest legal window. It must reach the solve -- whatever it
+        # then publishes -- rather than being refused by a bound that is one too high.
+        from floatfea.post.forces_table import checked_joint_reactions
+
+        with np.load(npz, allow_pickle=False) as reread:
+            lam = checked_joint_reactions(reread, GOVERNING_CASE_INDEX)
+        assert lam.shape[0] == 2

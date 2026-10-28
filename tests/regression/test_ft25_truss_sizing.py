@@ -30,11 +30,13 @@ import numpy as np
 import pytest
 import yaml
 
-from floatfea.run.config import ConfigError, Material, load_config
+from floatfea.run.config import ConfigError, Material, TrussOptions, load_config
 from floatfea.run.pipeline import run as run_pipeline
 from floatfea.run.sizing import governing_rows, size_truss
 from floatfea.run.truss import (
     GEOMETRIES,
+    area_for_compression,
+    area_for_tension,
     box_resolution,
     chord_buckling_length,
     enclosed_area,
@@ -157,8 +159,10 @@ def test_the_two_GEOMETRY_readings_differ_in_the_direction_R801_names() -> None:
     assert chord_buckling_length("per_face_45", h, b) == max(h, b)
     assert chord_buckling_length("uniform_panel", h, b) == min(h, b)
     vertical = faces("box", h, b)[0]
-    _p45, d45, steel45 = panel_and_diagonal("per_face_45", h, b, vertical)
-    _pu, du, steelu = panel_and_diagonal("uniform_panel", h, b, vertical)
+    # TWO returns, not three: `panel_and_diagonal` no longer hands back the chord buckling
+    # length. That duplicate of `chord_buckling_length` is what invited R1069.
+    d45, steel45 = panel_and_diagonal("per_face_45", h, b, vertical)
+    du, steelu = panel_and_diagonal("uniform_panel", h, b, vertical)
     # **EXACTLY, and no tolerance.** `panel_and_diagonal` computes `panel * sqrt(2)` with
     # `panel = face.dimension = h`, and `hypot(panel, face.dimension)` with
     # `panel = min(h, b) = b` -- so each assertion below is the same float expression the
@@ -218,6 +222,14 @@ def test_FT2_5_a_declared_truss_block_is_PARSED() -> None:
     # THE FLOOR IS THE DECLARED TUBE-DIAMETER MINIMUM, not the measure script's 0.02 m --
     # which the bounds check refuses, as the first run of this block discovered.
     assert parsed.diameter_search == (0.05, 6.0)
+    # THE WEAKENING DIRECTION of R1071's refusal: an INT is a number and must still be
+    # accepted, or declaring `d_over_t: 24` rather than `24.0` would be refused for
+    # nothing. `isinstance(True, int)` is why the bool test has to come first.
+    from floatfea.run.config import _parse_truss as _pt
+
+    widened = _pt({**GOOD, "d_over_t": 24, "joint_allowance": 1}, "sections.truss")
+    assert widened.d_over_t == 24.0  # not-a-tolerance: a declared option, exact
+    assert widened.joint_allowance == 1.0
 
 
 @pytest.mark.parametrize(
@@ -233,6 +245,18 @@ def test_FT2_5_a_declared_truss_block_is_PARSED() -> None:
         pytest.param(
             {**GOOD, "joint_allowance": 0.9}, "REMOVES steel", id="an_allowance_below_one"
         ),
+        # R1071: `_floats` refused a bool and a string for the LISTS twenty lines away and
+        # these two scalars did not. YAML turns `yes` into `True`, `float(True)` is `1.0`,
+        # and `validate`'s `< 1.0` passes it -- so every `steel/m` figure would publish
+        # with NO joint allowance, chord steel 13% low against the declared 1.15.
+        pytest.param(
+            {**GOOD, "joint_allowance": True}, "is not a number", id="an_allowance_of_yes"
+        ),
+        pytest.param(
+            {**GOOD, "joint_allowance": "1.15"}, "is not a number", id="an_allowance_as_text"
+        ),
+        pytest.param({**GOOD, "d_over_t": True}, "is not a number", id="a_D_over_t_of_yes"),
+        pytest.param({**GOOD, "d_over_t": "24"}, "is not a number", id="a_D_over_t_as_text"),
         pytest.param(
             {**GOOD, "diameter_search": [6.0, 0.05]},
             "not an increasing bracket",
@@ -442,3 +466,211 @@ def test_a_force_row_with_the_WRONG_COMPONENT_COUNT_is_REFUSED_by_name() -> None
     message = str(caught.value)
     assert "carries 5 force components where the resolutions take six" in message, message
     assert "shift every argument one place" in message, message
+
+
+def test_R1069_the_DIAGONAL_FORCE_is_V_L_over_d_from_STATICS(tmp_path) -> None:
+    """The assertion that was missing, and whose absence let a wrong formula ship.
+
+    **NO CELL IN THIS FILE ASSERTED AN ABSOLUTE DIAGONAL FORCE.** The R801 pair asserts the
+    TRADE between the two readings and the lengths; nothing pinned the force, so a wrong
+    force ratio passed everything. It shipped in `739364a` and reached
+    `truss_sizing.md`'s diagonal area, its steel-per-metre and therefore the cell it
+    RECOMMENDS.
+
+    **THE IDENTITY, derived rather than quoted.** One braced panel as a pin-jointed free
+    body: chords at `(0,0)-(p,0)` and `(0,d)-(p,d)`, diagonal across. A cut perpendicular to
+    the truss axis crosses both chords and the diagonal; the chords are parallel to the axis
+    so their transverse component is ZERO, and the diagonal alone carries the shear:
+
+        F_d * (d / L) = V        =>      F_d = V * L / d = V / sin(theta)
+
+    **AND THE CELL ASSERTS THE WRONG FORMULA DIFFERS, which is what makes it non-vacuous
+    and is why it is driven at `h != b`.** `V L / d` and `V L / p` coincide exactly when
+    `p == d` -- which is `per_face_45` by construction. My own first-principles check agreed
+    with the wrong formula for precisely that reason, and
+    `test_at_h_EQUALS_b_the_two_readings_COINCIDE_exactly` sits where every candidate
+    denominator agrees. A cell that cannot separate them proves nothing.
+    """
+    h, b = 8.0, 3.0
+    shear = 8.33e5
+    rows = [("probe ROOT", (0.0, 0.0, shear, 0.0, 0.0, 0.0))]
+    truss = TrussOptions(depths=(h,), widths=(b,), shapes=("box",))
+    group = resolve_group("platform", rows, truss, MATERIAL)
+
+    for cell in group.cells:
+        # The vertical faces take `Vz`, so with `Vy = T = 0` the vertical face governs and
+        # its own shear is `|Vz| / 2` -- which `test_the_TORSION_term...` pins separately.
+        vertical = faces("box", h, b)[0]
+        length, steel_factor = panel_and_diagonal(cell.geometry, h, b, vertical)
+        statics = (shear / 2.0) * length / vertical.dimension
+        wrong = (shear / 2.0) * steel_factor
+        assert cell.diagonal_force == statics, (cell.geometry, cell.diagonal_force, statics)
+        # NON-VACUITY: at `h != b` the two candidate formulas MUST differ under
+        # `uniform_panel`, or this cell could not have caught R1069.
+        if cell.geometry == "uniform_panel":
+            assert statics != wrong, (
+                "the statics force and `V * steel_factor` agree at this geometry, so this "
+                "cell cannot tell them apart and would have passed on R1069"
+            )
+
+
+def test_R1069_a_NEARLY_TRANSVERSE_diagonal_carries_NEARLY_ALL_the_shear() -> None:
+    """The control that needs no algebra, and it is the one that settles the formula.
+
+    As a diagonal becomes transverse its force must approach `V`, because it is carrying
+    the shear almost directly. At `p = 1, d = 50` statics gives `F/V = 1.0002`; the ratio
+    `L/p` gives `50.01`. **A ratio that grows without bound as a member becomes more
+    transverse is not a force ratio** -- it is the steel-per-unit-length ratio, which is a
+    different quantity with the same two symbols in it.
+    """
+    p, d = 1.0, 50.0
+    length = math.hypot(p, d)
+    # **STATED AS INEQUALITIES IN THE SYMBOLS, so there is no magnitude literal to be a
+    # threshold.** `sqrt(1 + x^2) - 1 < x` for `x > 0`, with `x = p/d`: the statics ratio is
+    # within `p/d` of ONE, i.e. a nearly transverse diagonal carries nearly all of `V`.
+    assert length / d - 1.0 < p / d
+    # And `L/p` exceeds `d/p` outright, because `L > d`. At this aspect ratio that is
+    # `50.01` against `1.0002` -- a ratio that grows without bound as a member becomes
+    # transverse, which is what disqualifies it as a force ratio.
+    assert length / p > d / p
+
+
+def test_R1069_the_CHORD_resolutions_match_FIRST_PRINCIPLES(tmp_path) -> None:
+    """The chord half, checked from the coordinates and not from its own derivations.
+
+    **THIS WAS A SCRATCHPAD SCRIPT AND IS NOW A CELL, and the reviewer's reason for
+    requiring that is the right one:** landing the measurement one commit after the thing
+    it would have caught is the wrong order. The chord half is the half that was already
+    correct -- every coefficient in both docstrings is right -- and this is what says so
+    reproducibly rather than in a message.
+
+    It reads NO coefficient. It builds the chord COORDINATES, computes the centroid and
+    both second moments by summation over them, applies `F_i = N/n + A_c My (z_i - zbar) /
+    I_yy + A_c Mz (y_i - ybar) / I_zz`, and compares.
+    """
+    h, b = 8.0, 3.0
+    n, vy, vz, t, my, mz = -1.0e6, 2.0e5, 3.0e5, 0.0, 1.9e8, 2.7e8
+
+    def first_principles(positions: dict[str, tuple[float, float]]) -> dict[str, float]:
+        count = len(positions)
+        zbar = sum(z for _y, z in positions.values()) / count
+        ybar = sum(y for y, _z in positions.values()) / count
+        i_yy = sum((z - zbar) ** 2 for _y, z in positions.values())
+        i_zz = sum((y - ybar) ** 2 for y, _z in positions.values())
+        return {
+            name: n / count + my * (z - zbar) / i_yy + mz * (y - ybar) / i_zz
+            for name, (y, z) in positions.items()
+        }
+
+    box = first_principles(
+        {
+            "top_+b": (+b / 2.0, +h / 2.0),
+            "top_-b": (-b / 2.0, +h / 2.0),
+            "bot_+b": (+b / 2.0, -h / 2.0),
+            "bot_-b": (-b / 2.0, -h / 2.0),
+        }
+    )
+    got = box_resolution(n, vy, vz, t, my, mz, h, b).chords
+    assert got.keys() == box.keys()
+    for name in sorted(got):
+        # EXACT for the box: `N/4` and the `+-My/(2h)`, `+-Mz/(2b)` pairs are exact in
+        # binary.
+        assert got[name] == box[name], (name, got[name], box[name])
+
+    tri_positions = {"apex": (0.0, h), "bot_+b": (+b / 2.0, 0.0), "bot_-b": (-b / 2.0, 0.0)}
+    tri = first_principles(tri_positions)
+    got = triangle_resolution(n, vy, vz, t, my, mz, h, b).chords
+    assert got.keys() == tri.keys()
+    for name in sorted(got):
+        assert got[name] == tri[name], (name, got[name], tri[name])
+
+    # AND THE THREE SECTION PROPERTIES THE DOCSTRING CLAIMS, by summation over the same
+    # coordinates -- so `(2/3) A_c h^2` is a measurement here and not a sentence.
+    zbar = sum(z for _y, z in tri_positions.values()) / 3.0
+    assert zbar == h / 3.0
+    # not-a-tolerance: a round-off floor on an algebraic identity, NOT a threshold two
+    # quantities are allowed to differ by. Measured: the sum is `42.66666666666667` and
+    # `(2/3)h^2` is `42.666666666666664` -- one ulp apart, because `zbar = 8/3` is inexact
+    # in binary. The defect it must catch is a wrong coefficient (`1/2`, `3/4`), which is
+    # `10.7` or `5.3` away from this value -- thirteen orders of magnitude above the floor.
+    i_yy = sum((z - zbar) ** 2 for _y, z in tri_positions.values())
+    two_thirds = 2.0 / 3.0 * h * h
+    assert i_yy == pytest.approx(two_thirds, abs=1e-12)  # not-a-tolerance: round-off floor
+    assert sum((y - 0.0) ** 2 for y, _z in tri_positions.values()) == b * b / 2.0
+
+
+def test_L3_the_JOINT_ALLOWANCE_scales_CHORD_AND_DIAGONAL_steel_both() -> None:
+    """The allowance was on the chords alone; the source applies it to both.
+
+    **AND THIS CELL EXISTS BECAUSE THE REPAIR WAS HELD BY NOTHING.** No cell asserts
+    `steel_area_per_m` absolutely, so moving the allowance from one term to two changed a
+    published number with the whole suite green -- the same shape as the revert arm that
+    measured a prediction instead of a guard.
+
+    The assertion is a PROPORTIONALITY, which is what distinguishes the two placements
+    without pinning a magnitude: if the allowance multiplies chord AND diagonal steel then
+    the total scales by it exactly, and if it multiplies the chords alone then the ratio is
+    strictly smaller because the diagonal term does not move. `scripts/measure/f6b_truss_sizing.py`
+    has `line_mass = (chord_steel + diagonal_steel) * RHO_STEEL * JOINT_ALLOWANCE`.
+    """
+    h, b = 8.0, 3.0
+    rows = [("probe ROOT", (-1.0e6, 2.0e5, 3.0e5, 0.0, 1.9e8, 2.7e8))]
+    plain = resolve_group(
+        "platform",
+        rows,
+        TrussOptions(depths=(h,), widths=(b,), shapes=("box",), joint_allowance=1.0),
+        MATERIAL,
+    )
+    allowed = resolve_group(
+        "platform",
+        rows,
+        TrussOptions(depths=(h,), widths=(b,), shapes=("box",), joint_allowance=1.15),
+        MATERIAL,
+    )
+    assert len(plain.cells) == len(allowed.cells) and plain.cells
+    for a, b_ in zip(plain.cells, allowed.cells, strict=True):
+        # Exact, because the allowance is the only factor that moved and it multiplies the
+        # whole sum. `1.15` is a declared option, not a tolerance.
+        assert b_.steel_area_per_m == a.steel_area_per_m * 1.15, (a.geometry, a, b_)
+        # NON-VACUITY: the diagonal term is a real share of the total, so a chord-only
+        # allowance would give a ratio strictly below 1.15 and this cell would fail.
+        assert a.diagonal_area > 0.0, a
+
+
+def test_R1069_the_DIAGONAL_is_sized_at_ITS_OWN_length_not_the_chords() -> None:
+    """The second half of R1069, and it had no cell until this arm failed to redden.
+
+    **I PREDICTED THAT ARM WOULD NOT FIRE AND IT DID NOT, WHICH MEANS IT WAS MEASURING THE
+    PREDICTION.** Reverting the compression length from the diagonal's own length back to
+    the chord buckling length left the whole suite green: nothing asserted the diagonal
+    AREA absolutely, only its force. Same shape as the arm that caught me last commit, so
+    the same answer (EK2): a cell, not a note.
+
+    The discrimination is real and it is at `h != b` for the same reason as the force: at
+    `h = 8, b = 3` under `uniform_panel` the diagonal is `hypot(3, 8) = 8.544 m` long while
+    the chord's buckling length is `min(8, 3) = 3 m`, so a diagonal sized at the chord's
+    length comes out far too small -- unconservative, and in a published area.
+    """
+    h, b = 8.0, 3.0
+    shear = 8.33e5
+    rows = [("probe ROOT", (0.0, 0.0, shear, 0.0, 0.0, 0.0))]
+    truss = TrussOptions(depths=(h,), widths=(b,), shapes=("box",))
+    group = resolve_group("platform", rows, truss, MATERIAL)
+    vertical = faces("box", h, b)[0]
+
+    for cell in group.cells:
+        length, _steel = panel_and_diagonal(cell.geometry, h, b, vertical)
+        force = (shear / 2.0) * length / vertical.dimension
+        right, _branch = area_for_compression(-force, length, truss, MATERIAL)
+        right = max(right, area_for_tension(force, MATERIAL))
+        assert cell.diagonal_area == right, (cell.geometry, cell.diagonal_area, right)
+        # NON-VACUITY: sizing at the CHORD's buckling length must give a different area,
+        # or this cell cannot tell the two apart.
+        buckling = chord_buckling_length(cell.geometry, h, b)
+        if buckling != length:
+            wrong, _b2 = area_for_compression(-force, buckling, truss, MATERIAL)
+            wrong = max(wrong, area_for_tension(force, MATERIAL))
+            assert right != wrong, (
+                f"at {cell.geometry} the diagonal length {length} and the chord buckling "
+                f"length {buckling} give the same area, so this cell cannot discriminate"
+            )

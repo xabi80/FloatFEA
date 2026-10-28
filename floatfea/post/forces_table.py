@@ -83,6 +83,16 @@ def _gravity_field(n_dof: int) -> NDArray[np.float64]:
 ROWS_PER_JOINT_YAW_LOCKED = 4
 """Three translations plus the one locked axis. `floatfea.io.froude`'s composite width."""
 
+ROWS_PER_WINDOW_MINIMUM = 2
+"""The fewest instants a case's window may carry (R1070).
+
+**NOT A TOLERANCE AND NOT A CHOICE MADE HERE.** It is the exporter's own bound,
+`scripts/export_f4_dynamic_inputs.py`'s `if len(steps) < 2: raise SystemExit`, and
+this is the read enforcing at the READER what the writer already enforces at the
+WRITE. A count of instants is an integer, not a threshold: there is no value here
+that could be loosened to make two numbers agree.
+"""
+
 
 def checked_joint_reactions(raw: Any, index: int) -> Any:
     """`case{index}/lam`, held to all FOUR properties its schema declares.
@@ -147,13 +157,13 @@ def checked_joint_reactions(raw: Any, index: int) -> Any:
         `scripts/export_f4_dynamic_inputs.py` writes `np.float64`, and it is the only
         `np.savez` in `floatfea/` or `scripts/` -- so no TRACKED dynamic-inputs file has
         any other producer, and a narrower one did not come from the exporter the refusal
-        points at. (`grep -rnF "np.savez" --include=*.py floatfea
-        scripts` -- `-F`, a FIXED string, so the
-        docstring carries no escape sequence of its own -- gives exactly TWO hits: the
-        exporter's call, and the line
-        above. Needling `savez(` instead would miss the exporter, whose call is the
-        compressed variant; so the self-reference is disclosed rather than engineered
-        around, and a reader matching the output against this paragraph sees both. The
+        points at. (`grep -rnF "np.savez" --include=*.py floatfea scripts` lists
+        them. **No count is given, and that is deliberate: this paragraph is on its
+        THIRD revision of one** -- it has read two and three as the wording around it
+        changed, because the needle matches this prose as well as the code. The claim
+        is about the library and the scripts and NOT the repository: `tests/` writes
+        this field too, at other dtypes and values, because the counter-cases below
+        are exactly that. The
         claim is deliberately about the library and the scripts and NOT about the
         repository: `tests/` writes this field too, at other dtypes and other values,
         because the counter-cases below are exactly that.)
@@ -322,6 +332,36 @@ def checked_joint_reactions(raw: Any, index: int) -> Any:
             f"(R1063). The usual cause is a truncated or partially-written export; "
             f"re-export with `python scripts/export_f4_dynamic_inputs.py`, whose own window "
             f"guard refuses a run shorter than two steps."
+        )
+    # **R1070: BOUNDED BELOW, BECAUSE `0 == 0` PASSES THE AGREEMENT CHECK -- AND IT
+    # COMES AFTER IT, DELIBERATELY.** With `lam` emptied and `times` left full BOTH
+    # faults hold, and the agreement refusal is the more useful of the two because it
+    # names both lengths; the reader learns the file disagrees with itself rather than
+    # only that one number is small. The order was the other way round first and it
+    # took the agreement message away from exactly that case.** R1063
+    # compared `lam`'s first axis with the file's own window record, which catches a
+    # `lam` truncated ALONE. Emptying BOTH keys satisfies it -- the reviewer drove
+    # `case1/lam` and `case1/times` each to `[:0]` and got exit 0 with
+    # `U = 1.35117` against the control's `1.71167`, 32 utilisation rows, not one `nan`,
+    # and `member_forces.csv` down from 1248 rows to 1056. Exactly R1063's published
+    # figure and exactly its silence, by a route the agreement check cannot see.
+    #
+    # The bound is the EXPORTER'S OWN, not a number chosen here:
+    # `scripts/export_f4_dynamic_inputs.py` refuses a run of fewer than two steps
+    # outright. **The refusal below already NAMED that bound while the code did not
+    # enforce it**, which is the gap FR1's second head is about -- a file accepted and
+    # used other than as declared.
+    if min(lam.shape[0], times.shape[0]) < ROWS_PER_WINDOW_MINIMUM:
+        raise SystemExit(
+            f"{where}: {lam.shape[0]} timesteps and `{window_key}` carries "
+            f"{times.shape[0]}, and a window needs at least {ROWS_PER_WINDOW_MINIMUM} "
+            f"instants to be a window at all -- which is the bound "
+            f"`scripts/export_f4_dynamic_inputs.py` already enforces at the WRITE, "
+            f"refusing a run of fewer than two steps. A case with no instants, or one, "
+            f"contributes no per-instant row to the envelope and drops out of it "
+            f"silently while every artifact goes on declaring it was screened: measured, "
+            f"`U = 1.35117` published at exit 0 where the whole file gives `1.71167` "
+            f"(R1070). Re-export the file."
         )
     offending = int(np.count_nonzero(~np.isfinite(lam)))
     if offending:

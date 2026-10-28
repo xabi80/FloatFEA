@@ -1248,6 +1248,27 @@ def _parse_truss(raw: Any, where: str) -> TrussOptions:
         where,
     )
 
+    def _number(key: str, default: float) -> float:
+        """One declared scalar, with `bool` and `str` refused (R1071).
+
+        **`_floats` BELOW ALREADY REFUSED BOTH, TWENTY LINES AWAY, AND THESE DID NOT.**
+        `float(raw.get(...))` accepts `True` as `1.0` and `"24"` as `24.0`, so
+        `joint_allowance: yes` -- which YAML makes `True` -- arrived as exactly `1.0` and
+        `validate`'s `< 1.0` passed it. Every `steel/m` figure would then publish with NO
+        joint allowance at all: chord steel 13% low against the declared 1.15, in a number
+        someone sizes steel against. `isinstance(True, int)` is why the bool test comes
+        first.
+        """
+        value = raw.get(key, default)
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ConfigError(
+                f"{where}.{key} is {value!r}, which is not a number. A declared design "
+                f"parameter is a number: YAML turns `yes` into `True` and `float(True)` is "
+                f"`1.0`, so a bool here would arrive as a silently plausible value rather "
+                f"than as an error (R1071)."
+            )
+        return float(value)
+
     def _floats(key: str) -> tuple[float, ...]:
         value = raw.get(key, ())
         if not isinstance(value, list):
@@ -1287,8 +1308,8 @@ def _parse_truss(raw: Any, where: str) -> TrussOptions:
     )
 
     options = TrussOptions(
-        d_over_t=float(raw.get("d_over_t", 24.0)),
-        joint_allowance=float(raw.get("joint_allowance", 1.15)),
+        d_over_t=_number("d_over_t", 24.0),
+        joint_allowance=_number("joint_allowance", 1.15),
         depths=_floats("depths"),
         widths=_floats("widths"),
         shapes=shapes,
