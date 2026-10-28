@@ -1,4 +1,544 @@
 # Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: 739364a5f9ccf1479d8a66be43930a4527146ea6
+**Reviewed commit: `739364a5f9ccf1479d8a66be43930a4527146ea6`.**
+Verdict: HOLD
+Tests: **1016 passed, 1539 failed, 1 skipped** across my own runs at this commit, in my own worktree (FV2) -- and **no whole-suite local run, which I say rather than quote a partial**: `python -m pytest -q` was started first and was at 3% after 25 minutes on this machine, so I killed it and ran scopes. CI at the judged sha is the whole-tree measurement and it is traced below. Mine: `tests/unit` **401 passed**; `test_ft25_truss_sizing.py` + `test_ft24_required_section.py` **36 passed**; `test_fl2d_band_check.py` **39 passed**; the five root guards **1539 failed, 540 passed, 1 skipped**; `ruff check floatfea tests scripts`, `black --check floatfea tests`, `mypy floatfea` all clean.
+Scope: **ES0 INTERIM CHECK, the twenty-seventh on step 3.** `ls docs/reports/R1/` is `step-1-answers.json step-1.md step-2-answers.json step-2.md` -- still no `docs/reports/R1/step-3.md`, so no reviewed revision has been consumed, **0 of 3**, and this counts against no round (ES0). No `--closes`: an interim check closes nothing (FK1).
+
+**THE ANCHOR LINES ABOVE ARE RIGHT BY CONSTRUCTION FOR THE FIRST TIME IN THIS FILE, AND THAT
+IS FV3.** Both carry `739364a5f9ccf1479d8a66be43930a4527146ea6` because I passed `--judged`,
+which is required and has no fallback to `HEAD`. **R1049 is closed**, and verdict 26's anchor
+is corrected in the addendum entry I wrote beside this one, as FV3 asks.
+
+**I RULED UNDER FR1 WITH EZ0** (`CLAUDE.md` section "What blocks for the rest of R1"), which my
+own definition now cites -- FV4, confirmed by diff below. **THREE FINDINGS BLOCK AND EACH
+CARRIES THE SILENTLY-WRONG-RESULT SENTENCE FR1'S LAST CLAUSE DEMANDS.** Five are ledger and
+for each I say why it cannot be given one.
+
+**WHERE I WORKED (FV2).** `git worktree add .../rev-r1s3 739364a`. No `checkout`, no `reset`
+and no write of any kind in your tree; the only commands aimed at it were
+`git -C <your root> status --porcelain` and `rev-parse F3`, both read-only, both to establish
+your tree was clean before I committed anything of mine. **One gap in FV2 I name rather than
+route around: FV2 says the tool "commits to the branch" and it does not** -- it writes a file
+-- and a detached worktree cannot advance `F3` without a write in your checkout, which is the
+one thing FV2 forbids. So this verdict is committed in MY worktree on top of `739364a` and
+**you fast-forward `F3` to it yourself**. Your tree is clean and my parent is your HEAD, so
+that cannot lose work. The wording FV2 needs is Xabier's, not yours.
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R1063** (the window length of `lam[N,n_rows]`) | **ANSWERED IN SUBSTANCE AT THE SHAPE I RULED, AND THE REPAIR IS REAL -- BUT THE DEFECT IS STILL REACHABLE BY ONE MORE KEY EDIT. Carries as R1070 and still blocks.** | The decision owns the read (`checked_joint_reactions(raw, index)`), `N` is checked against `case{index}/times`, the `ndim` gates exist, the order is right (window before finiteness), the enumeration says FOUR, and `git grep -c "Three axes" 739364a -- floatfea tests` is `0`. All four cells green: `test_fl2d_band_check.py` **39 passed**. Not closed: **nothing bounds either length below**, so emptying `lam` AND `times` together republishes R1063's exact figure at exit 0. Measured in R1070. |
+| **FT2.5 as reading (a)** | **BUILT AS RULED. The loop is CALLED, not copied** -- `size_truss` calls `resolve_until_admissible`, `floatfea/run/sizing.py:400`. | read line by line; 36 cells green. |
+| **condition 1** (the label states which quantity the acceptance was taken on) | **MET, and it is the first section of the file.** | `## READ THIS BEFORE ANY NUMBER BELOW`, with "evaluated on the TUBE, not on the truss", "never re-solved**", "That is the tube's utilisation." The cell asserts all four against `text.split("## The tube the loop accepted")[0]`, so it asserts them of the HEAD rather than of the file -- which is the right domain and I checked that it is. |
+| **condition 2** (resolved at the ACCEPTED forces, not the baseline) | **MET, and you measured the discrimination instead of taking it, which is the better answer.** | `size_truss` reads `sizing.final`; the cell holds it bitwise with an explicit non-vacuity arm (`strict=True`). "Detects the plumbing rather than a visible defect" is the honest form and I endorse it. |
+| **condition 3** (no `STANDIN_I`-style literal crosses into `floatfea/`) | **MET.** | `git grep -n "0\.888\|STANDIN" 739364a -- floatfea` returns five lines and **every one is prose explaining why the constant is not there**; no executable literal. And `diameter_search` goes through `TUBE_DIAMETER = ("m", 0.05, 50.0)`, which also closes EH4's weakening direction at both ends -- I checked that direction because it is the one nobody chooses. |
+| **condition 4** (one sentence of disclosure for Xabier) | **CANNOT BE VERIFIED YET; IT CARRIES.** | No step-3 report, so the hand-written paragraph has no site. Not a failure -- but it must not be dropped: it is the only part of that ruling that leaves the loop. |
+| **R1064** (the fingerprint with its command) | **ANSWERED, AND I REPRODUCED IT FROM THE COMMITTED BLOBS BY A DIFFERENT COMMAND, which was the condition.** | `git diff --name-only 007a9e4..739364a \| sort \| while read -r f; do echo "$(git rev-parse "739364a:$f")  $f"; done \| md5sum` -> `8cb981204d1a1a0ccfa59563b2032d38`. Yours hashed working files; mine reads the commit. Same digest. |
+| **R1067** (`candidate {index} of {count}`) | **FIXED, and the display is right -- but the docstring's claim ABOUT it is not. Ledger L1.** | `candidate 2 of 2` in the refusal; `\| platform \| 3 of 3 \| 2.5 \| 0.41 \|` is the third of three and `0.41` is the third wall. `ordinal()` is correct; its "Every message ... goes through here" is refuted by four `+ 1` sites in the same commit. |
+| **the R1059 only-writer sentence** | **THE COUNT IS GONE AND THE CLAIM IS NOW ONE A COMMAND CHECKS, which was my condition -- but the replacement FIGURE is wrong. Ledger L2.** | `grep -rnF "np.savez" --include=*.py floatfea scripts` gives **THREE** hits, not the "exactly TWO" the docstring states: `forces_table.py:148`, `forces_table.py:150`, `export_f4_dynamic_inputs.py:437`. The paragraph names `np.savez` twice. Third revision of one sentence's count. |
+| **R1065, R1066, R1068** | **still ledger, not re-reviewed item by item** | CLAUDE.md's closure-item handling. |
+| **R867-R870 (FT2.7)** | **STILL BLOCKING BY NAME. Twenty-third round. Cell unchanged, and I accept your statement of the blocker.** | Untouched by `739364a`. Your reading -- the gate names "the reviewer's eight" while the repository holds three sentences about them -- is what I measured myself at my twentieth round, and it has not moved. |
+| **the whole-suite run and the EG3 state at every commit, compared against the CI list rather than a count** | **DONE, and I measured both sides myself.** | CI's 1539 and my local 1539 are the same count with the same single skip and no local-only id. Trace below. |
+| **R1049, R899/R1039** | **BOTH CLOSED BY DIRECTIVE THIS TURN. Confirmed by diff and by running the tool.** | FV3 and FV4 below. |
+| **R885, R895** | **relayed to Xabier in full text under FV5 -- out of my hands, correctly.** | neither is yours to decide. |
+| **the EG4(e) date note** | **SAID ONCE MORE, STILL NOT MINE TO DECIDE.** | The pause ran "until 28 October", which is today. This is an interim check, whose scope ES0 fixes independently of the pause, so no batch either way. The first reviewed revision is where it is decided. |
+
+## Findings
+
+**R1069. (BLOCKS -- FR1 head one) THE DIAGONAL FORCE AND THE DIAGONAL'S BUCKLING LENGTH ARE
+BOTH BUILT FROM `panel_and_diagonal`'s FIRST RETURN, WHICH IS THE CHORD BUCKLING LENGTH AND
+NOT THE PANEL SPACING. WE FOUND THIS INDEPENDENTLY AND WE DISAGREE ABOUT THE REPAIR; I
+SETTLED IT BY STATICS AND THE DEFECT IS WIDER THAN EITHER OF US FIRST SAID.**
+
+`floatfea/run/truss.py:425-430`. The function's own docstring declares the tuple as
+`(chord buckling length, diagonal length, diagonal steel per unit truss length)`; `_cell`
+binds the first element to `panel` and discards `_length`, the diagonal length, which is the
+quantity it then recomputes wrongly:
+
+```
+        panel, _length, steel_factor = panel_and_diagonal(geometry, h, b, face)
+        force = shear * math.hypot(panel, face.dimension) / panel
+        area, _b = area_for_compression(-force, math.hypot(panel, face.dimension), truss, material)
+```
+
+**YOUR PROPOSED REPAIR, `force = shear * steel_factor`, IS CORRECT FOR `per_face_45` AND
+WRONG FOR `uniform_panel`, and it would lock in the error on exactly the rows where that
+reading's error lives.** `steel_factor` is `L/p`. The force ratio is `L/d`. They coincide only
+when `p == d`, which is `per_face_45` by construction -- which is why your check agreed with
+it there. I did not settle this against your formula or against mine; I solved one panel as a
+free body.
+
+```
+claim  the diagonal force is V*L/d and not V*L/p, for every reading and every face
+cmd    one panel of a braced face as a pin-jointed free body. Chords A=(0,0) B=(p,0) and
+       C=(0,d) D=(p,d); diagonal A->D; a cut perpendicular to the truss axis crosses both
+       chords and the diagonal. The chords are parallel to the axis, so they carry ZERO
+       transverse component: the diagonal alone resists the face shear.
+out    F_d * (d/L) = V   ->   F_d = V * L / d   =   V / sin(theta),  sin(theta) = d/L
+cmd    that identity against the shipped expression, against `V*steel_factor`, and against
+       the source script, over four aspect ratios x two readings x two faces, V = 8.33e5
+out    reading           h    b  face d panel p |   STATICS F       L |     shipped       L |  V*steel_factor |  V*L/d (source)
+       per_face_45     8.0  3.0     8.0     8.0 |   1178039.9  11.314 |   1178039.9  11.314 |       1178039.9 |       1178039.9
+       per_face_45     8.0  3.0     3.0     3.0 |   1178039.9   4.243 |    889644.4   8.544 |       1178039.9 |       1178039.9
+       uniform_panel   8.0  3.0     8.0     3.0 |    889644.4   8.544 |   2372385.0   8.544 |       2372385.0 |        889644.4
+       uniform_panel   8.0  3.0     3.0     3.0 |   1178039.9   4.243 |   1178039.9   4.243 |       1178039.9 |       1178039.9
+       per_face_45    10.0  2.0     2.0     2.0 |   1178039.9   2.828 |    849496.7  10.198 |       1178039.9 |       1178039.9
+       uniform_panel  10.0  2.0    10.0     2.0 |    849496.7  10.198 |   4247483.3  10.198 |       4247483.3 |        849496.7
+rule   `scripts/measure/f6b_truss_sizing.py:402-404` -- `sin_theta = face.dimension /
+       diag_len; force = shear / sin_theta` -- which is `V*L/d` and is right on every row
+cell   one variable, the denominator; the same `faces`, the same `panel_and_diagonal`, the
+       same resolutions and the same `area_for_*` throughout
+judge  **The statics column is `V*L/d` on all sixteen rows.** `V*steel_factor` departs from
+       it on exactly the `uniform_panel` rows where `face.dimension > panel` -- `2.667x` at
+       `h=8,b=3` and `5.00x` at `h=10,b=2`. **The source script is right in BOTH readings.**
+```
+
+**And the degenerate control is what makes it unarguable, because it needs no algebra.** At
+`p = 1, d = 50` the diagonal is almost transverse: `sin(theta) = 0.9998`, so it must carry
+almost exactly the shear, and statics gives `F/V = 1.0002`. `L/p` gives `50.01`. **A ratio
+that grows without bound as a member becomes more transverse is not a force ratio.** It is
+the steel-per-unit-length ratio, which is what `panel_and_diagonal` returns it as and what
+the comment at `:427-428` misnames "the same factor". That comment is the SOURCE of the
+error, not a correct instruction the code ignores -- so this is CW0 in the ordinary
+direction, not the reverse one.
+
+**The silently wrong result, as FR1's last clause requires.** `truss_sizing.md` publishes
+`diag A (m2)` and `steel/m (m2)` per cell and the sentence "Lightest declared cell: ...
+reading `<geometry>`". Two independent wrong figures reach it, with opposite signs:
+
+* `per_face_45`, any face whose dimension is not `max(h, b)`: the force is **24% low**
+  (`889644` against `1178040` at `h=8,b=3`) and the diagonal's buckling length is **2.01x
+  high** (`8.544` against `4.243`). The two oppose, and your measurement of the net on that
+  face -- `+18%` on the area -- is right. **The sign is a function of the aspect ratio, so
+  neither of us may call it conservative in general**, and you said so yourself, which is the
+  correct reading of R682 and R694.
+* `uniform_panel`, any face whose dimension exceeds the panel: the force is **2.667x high**
+  at `h=8,b=3` and the published `diag A` is `0.01814 m2` against `0.00906 m2`, **2.00x**.
+
+**And the recommendation itself inverts.** `lightest()` ranks the declared grid by
+`steel_area_per_m`:
+
+```
+cmd    the whole declared grid of the shipped FT2.5 fixture (depths [3,8], widths [3]),
+       each cell by the shipped `_cell` and by the source's diagonal block, nothing else moved
+out    lightest() shape=box       SHIPPED -> 1.3419 m2/m  h=8  per_face_45
+       lightest() shape=box       SOURCE  -> 1.3137 m2/m  h=8  uniform_panel
+       lightest() shape=triangle  SHIPPED -> 1.7739 m2/m  h=8  per_face_45
+       lightest() shape=triangle  SOURCE  -> 1.7603 m2/m  h=8  uniform_panel
+judge  the artifact tells a reader which of FI1's two readings costs less steel, and tells
+       them the opposite of the measurement, for BOTH shapes
+```
+
+**Closed when** `force = shear * _length / face.dimension` (equivalently `shear / sin_theta`),
+the compression sizing is passed `_length` rather than a recomputed hypotenuse,
+`panel_and_diagonal` stops returning the chord buckling length at all -- `chord_buckling_length`
+already computes that quantity at `:410`, so the first element is a second copy of it and is
+what invited the mis-binding -- and the `:427-428` comment is deleted rather than reworded.
+**AND a cell pins the ABSOLUTE diagonal force and length, per face, per reading, at `h != b`,
+against the panel geometry and not against a ratio either of us wrote.** No cell in
+`test_ft25_truss_sizing.py` asserts a diagonal force at all today: the two geometry cells
+assert lengths and steel factors, and `test_at_h_EQUALS_b_the_two_readings_COINCIDE_exactly`
+sits at `h == b`, which is precisely where every candidate denominator agrees. **The
+collection the assertions inspect cannot contain this failure**, which is why your R801 pair
+passed on it.
+
+**YOUR SEQUENCING QUESTION, RULED: the next commit, as a repair commit, NOT folded into
+FT2.6's.** Step 3 is HOLD on three blocking items, and HOLD means the listed items are
+answered before anything else; the "fix the whole list once in the closure commit"
+instruction is about CLOSURE items and does not reach these. And there is a reason specific to
+this one: **two readers proposed two different two-line repairs and only one is right.** A
+repair whose correct form was contested needs its own commit and its own cell, because the
+cell is the thing that settles it -- not a paragraph from either of us.
+
+**R1070. (BLOCKS -- FR1 head one AND head two) R1063 SURVIVES ONE MORE KEY EDIT. NOTHING
+BOUNDS EITHER WINDOW LENGTH BELOW, SO EMPTYING `lam` AND `times` TOGETHER REPUBLISHES
+`U = 1.35117` AT EXIT 0 -- THE SAME NUMBER, WITH THE SAME SILENCE, AS THE ROUTE THE REPAIR
+CLOSES.**
+
+The repair makes the file agree with ITSELF about how long its window is. It does not make
+`N` agree with what the file DECLARES that window to be, and zero equals zero.
+
+```
+claim  the governing case emptied in BOTH keys is accepted, solved and published
+cmd    the shipped example through `floatfea.cli.main`, one variable: `case1/lam` and
+       `case1/times` each replaced by their own `[:0]`. Nothing else touched -- same dtype,
+       same column count, same sidecar, same provenance, same configuration. `case1` is the
+       governing case at `T_full = 12.5 s`.
+out    CONTROL untouched        EXIT 0  maxU=1.71167  util_rows=32  nan=0  mf_rows=1248  periods=['12.5','15','16.2']
+       lam+times BOTH emptied   EXIT 0  maxU=1.35117  util_rows=32  nan=0  mf_rows=1056  periods=['14','15','16.2']
+       stdout: "governing U = 1.35117 at platform:hub4_arm ROOT (T = 14 s, 3.3.2 interaction)"
+rule   `lam.shape[0] != times.shape[0]` at `floatfea/post/forces_table.py:303`, satisfied
+       by `0 == 0`
+cell   one variable moved; the control is the same build with `keep = None`
+judge  **Exactly R1063's published figure and exactly R1063's silence.** 21% low, in the
+       direction that reads safer than it is; the governing 12.5 s period gone from
+       `utilisation.csv`; 192 of 1248 `member_forces.csv` rows gone; not one `nan` anywhere.
+       The only key I had to touch beyond R1063's own injection is the one the repair added.
+```
+
+**The silently wrong result:** `U = 1.35117` in `report.md` and `utilisation.csv` where the
+file's declared window gives `1.71167`, with no diagnostic anywhere -- head one. And head
+two: the provenance sidecar declares the window as the last 5 whole periods with `dt: 0.01`
+and `lambda: 50.0`, and `report.md` goes on printing
+`governing_periods_s [12.5, 14.0, 15.0, 16.2]` -- so a window of zero instants is accepted
+and used as the five-period window the file says it is.
+
+**Closed when a lower bound is enforced, and it needs no tolerance and no new apparatus.**
+`scripts/export_f4_dynamic_inputs.py:233` is `if len(steps) < 2: raise SystemExit(...)`, an
+integer bound on the writer's side. **And `checked_joint_reactions`'s own refusal message
+already names it**: "re-export with `python scripts/export_f4_dynamic_inputs.py`, whose own
+window guard refuses a run shorter than two steps." The code states the bound it does not
+enforce. With cells at `keep = 0` and `keep = 1` on BOTH keys, and `keep = 2` as the control
+that says the bound is a bound and not a ceiling (EH4, both directions).
+
+**R1071. (BLOCKS -- FR1 head two) `sections.truss.d_over_t` AND `joint_allowance` ACCEPT A
+BOOL AND A STRING, IN A FUNCTION THAT REJECTS BOTH EXPLICITLY FOR `depths` AND `widths`.
+`joint_allowance: yes` IS `1.0`.**
+
+```
+claim  the two scalars are coerced by a bare float(...), and the bool/type rejection
+       twenty lines above them is not applied to either
+cmd    _parse_truss({**GOOD, **probe}, "sections.truss") for six probes
+out    joint_allowance = True     ACCEPTED -> joint_allowance=1.0
+       joint_allowance = "1.0"    ACCEPTED -> joint_allowance=1.0
+       d_over_t        = "24"     ACCEPTED -> d_over_t=24.0
+       joint_allowance = [1.15]   TypeError: float() argument must be a string or a real number
+       d_over_t        = None     TypeError: float() argument must be a string or a real number
+       joint_allowance = 1.15     ACCEPTED -> joint_allowance=1.15
+rule   float(raw.get("d_over_t", 24.0)) and float(raw.get("joint_allowance", 1.15)) in
+       _parse_truss, floatfea/run/config.py
+cell   the same function's _floats, twenty lines above, is
+       `if isinstance(entry, bool) or not isinstance(entry, (int, float)): raise ConfigError`
+judge  **The author knew about the bool hazard and applied the guard to the list fields
+       only.** `yes` is boolean True in YAML 1.1, float(True) is 1.0, and validate's
+       `joint_allowance < 1.0` check passes it.
+```
+
+**The silently wrong result:** a configuration declaring `joint_allowance: yes` publishes
+every `steel/m` figure in `truss_sizing.md` with **no joint allowance at all** -- chord steel
+13% low -- and the `lightest()` recommendation computed on those figures, from an input that
+was a bool and not a factor. This is the R825/R834/R837 family FR1's own text names as
+blocking: "a declared name or path arriving as a different type, accepted, and used."
+
+**I will say where this one is closest to the line, so you do not have to guess.**
+`truss_sizing.md` prints the joint allowance it used, so an attentive reader can see it became
+`1`. That is disclosure of the symptom, not of the cause, and FR1's second head is about the
+input rather than about whether anyone notices. If Xabier's reading of FR1 is narrower than
+mine, this is the one of my three that moves.
+
+**Closed when** both scalars go through the same bool-and-type rejection `_floats` already
+applies, a list or `None` raises `ConfigError` rather than `TypeError`, and the existing
+`test_FT2_5_the_truss_block_is_REFUSED_by_name` parametrisation carries a row for each.
+
+## Closure items
+
+**L1. `ordinal()`'s docstring claims every reader-facing index goes through it; four sites in
+the same commit do not.** `floatfea/run/sizing.py:71` says "Every message that shows one to a
+reader goes through here" and "One function so the stored form and the shown form cannot
+drift apart again". `git grep -n "_index + 1\|grid_index\[name\] + 1" -- floatfea` gives
+`cli.py:443`, `cli.py:458`, `cli.py:459`, `cli.py:466`. Every `+ 1` is correct, so no number
+is wrong and FR1 gives it no head -- but it is CW0 exactly: a claim about this repository in a
+docstring, refuted by a grep over a file the same commit touched. Route the four through
+`ordinal()` or delete the sentence.
+
+**L2. The replacement `np.savez` figure is wrong, in the same sentence whose previous figure I
+could not reproduce.** `floatfea/post/forces_table.py:150` says the command gives "exactly
+TWO hits: the exporter's call, and the line above." Measured: three --
+`floatfea/post/forces_table.py:148`, `:150`, and `scripts/export_f4_dynamic_inputs.py:437`,
+because the paragraph names the string twice. Report/docstring prose, no wrong result, FR1's
+third class. Recorded because this is the third revision of one sentence's count, and the fix
+is to drop the count, which is what I asked for last round.
+
+**L3. The joint allowance is applied to chord steel only; the script it is ported from applies
+it to chord AND diagonal steel.** `floatfea/run/truss.py:437` is
+`n_chords * chord_area * truss.joint_allowance + diagonal_steel_per_m`;
+`scripts/measure/f6b_truss_sizing.py:411-412` multiplies `(chord_steel + diagonal_steel)` by
+`JOINT_ALLOWANCE`. `TrussCell.steel_area_per_m`'s docstring declares the narrower meaning, so
+nothing is unstated in the source -- but `truss_sizing.md` prints the allowance with no
+statement of what it applies to, and `truss.py`'s module docstring says the mathematics came
+over "with their derivations intact", which is true of the resolutions and not of this.
+
+**L4. The triangle's inclined faces are given transverse dimension `h`, and the direction of
+that idealisation is unconservative and is not in the artifact's limitations.** `faces()`
+returns `Face(2, h, "vertical")` for the triangle, where the inclined face's own dimension is
+`hypot(h, b/2)`; the diagonal is shorter and less inclined than the real one, understating its
+force by `hypot(h, b/2)/h` -- 8% at `h = 6, b = 5`. Inherited from the source script and
+disclosed in `triangle_resolution`'s comment ("the vertical projection the chord separation
+provides"), so a declared idealisation rather than a slip. But `truss_sizing.md`'s
+"Limitations this analysis does not escape" lists five things and not this one, and this is
+the only one of the five with a sign.
+
+**L5. A member group with no `sections.candidates` entry gets no truss resolution, and the
+artifact does not say so.** `size_truss` iterates `sorted(cfg.sections.candidates)`. The
+`unsized` paragraph says those groups were "carried at their declared sections into every
+re-solve above and NOT sized" -- true of the tube, silent about the truss. One clause.
+
+## Tolerances touched
+
+**NONE.**
+
+```
+cmd    git diff 5c42611..739364a -- floatfea/tolerances.py | wc -c
+out    0
+cmd    git diff --stat 5c42611..739364a -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty)
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py        <- the pathspec resolves; an empty result here would be a
+                                   broken instruction and not a clean step
+cmd    git diff --stat 5c42611..739364a -- scripts/run_rung.sh .github tests/corpus docs/reviews docs/milestones results CLAUDE.md
+out    CLAUDE.md | 35 +++++      (FV1's standalone process: commit d91c41f, nothing else)
+cmd    git show --stat 739364a -- .claude docs/SUPERVISOR.md
+out    (empty) -- the step commit touches neither, so no STOP-class finding on that head
+rule   CLAUDE.md section Tolerances, and section "The reviewer's own instructions are not
+       edited inside a step"
+```
+
+**EU1 does not attach and I agree with your reading: no tolerance value and no declared
+counter moved.** I ran the adversarial case anyway, because a value that does not move is the
+worst case for this rather than the safest -- and it produced all three blocking findings.
+
+**FOUR NEW NUMBERS I EXAMINED AND RULE ARE NOT TOLERANCES, with the reason rather than the
+conclusion.**
+
+* `d_over_t = 24.0` and `joint_allowance = 1.15` -- **declared design parameters, in the same
+  class as `code_check.k` and `cm`**, which are already configuration options; the run reports
+  both in the artifact and another configuration may legitimately set others. Neither is a
+  factor introduced to make two numbers agree. **They are, however, the subject of R1071:** a
+  declared option whose type is unchecked is a different defect from a tolerance.
+* `diameter_search = (0.05, 6.0)` -- **a declared domain.** The sizing solves
+  `|F|/A(D) = F_a(D)`, which is implicit; the bracket is halved and the upper bound is REFUSED
+  rather than extrapolated. Both ends go through `TUBE_DIAMETER = ("m", 0.05, 50.0)`, so
+  EH4's weakening direction -- widening until a demand nobody declared is satisfied -- is
+  closed by the same bound a declared `d_outer` gets.
+* `for _ in range(200)` in `area_for_compression` -- **not a convergence threshold.** A
+  bracket at most `5.95` m wide reaches the float next-neighbour in about sixty halvings and
+  `0.5*(lo+hi)` then stops moving, so the loop terminates on the interval and there is no
+  epsilon in it that could be loosened. The docstring's claim is correct.
+
+## Every red traced, one id at a time (EG3 (i)), by the predicate and not by a list (FS1/FT1)
+
+**CI at the judged sha: run 40685604906, `lint, unit and guards` = FAILURE.** Under CA2 a red
+CI is a HOLD regardless of the local run, so this is traced rather than noted.
+
+```
+cmd    gh run view 40685604906 --json jobs -q '.jobs[] | "\(.name) | \(.status) | \(.conclusion)"'
+out    the verification ladder    | completed | success
+       lint, unit and guards      | completed | failure
+       CI determinism -- ten legs | completed | skipped
+       CI determinism -- leg      | completed | skipped
+cmd    the failing job's step-level conclusions
+out    actionlint success / ruff success / black --check success / mypy success /
+       unit tests success / **guards and meta-tests FAILURE**
+out    guards and meta-tests: 1539 failed, 1303 passed, 1 skipped in 1139.00s
+       unit tests:            401 passed in 197.07s
+cmd    the ladder job's step-level conclusions and its run_rung lines
+out    ladder 1  1276 collected, 0 failed    ladder 2    66 collected, 0 failed
+       ladder 3   314 collected, 0 failed    ladder 6   350 collected, 0 failed
+       ladder 4   345 collected, 0 failed    ladder 5    87 collected, 0 failed
+       ALL SIX RUNGS RAN. None skipped behind another -- which is the first time in several
+       rounds, and it closes the rung-4-and-5-never-ran concern I traced at verdict 26.
+```
+
+**Not CK2's exhausted-allowance state:** every job has per-step conclusions, real counts and
+real durations (`12:10:08 -> 12:46:59` for the ladder), and the two skipped jobs are the
+determinism workflow's own event gate (CK0).
+
+**AND ONE THING I CHECKED THAT NOTHING ELSE IN THE LOOP READS: FV1's PREMISE IS TRUE.** FV1
+moves the whole of `tests/regression` from the local run to CI, so I went looking for the
+hole, because the guards step is
+`pytest tests --ignore=tests/unit --ignore=tests/verification --ignore=tests/regression` and
+excludes it by name. It is not a hole: `ladder 6` is
+`sh scripts/run_rung.sh empty:tests/verification/rung6 full:tests/regression` and it reports
+**350 collected, 0 failed, 0 errored, 0 skipped** at this sha. FV1's redistribution is
+measured rather than assumed. I record it because FV1 is one turn old and nothing else at this
+commit establishes it.
+
+**THE 1539, BY THE PREDICATE.**
+
+```
+cmd    the 1539 FAILED ids from the CI job log, grouped by test function
+out    1309  tests/test_report_carried.py::test_every_named_site_is_touched_or_declared
+        218  tests/test_report_carried.py::test_the_report_carries_the_finding
+          7  tests/test_report_guard_states.py::test_the_guard_survives_the_state
+          1  ::test_the_report_carries_a_WHOLE_SUITE_count
+          1  ::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+          1  ::test_the_CI_section_is_about_the_REVIEWED_commit
+          1  ::test_the_Carried_table_is_what_the_generator_produces
+          1  ::test_the_generator_would_catch_a_row_under_the_wrong_number
+```
+
+* **1527 reach FS1 limb one.** Their ids ARE findings and sites -- `[R1001]`,
+  `[R999-floatfea/cli.py:194]`, `[R1042-floatfea/run/pipeline.py:1259]`. `_findings()` reads
+  `VERDICT_TEXT`, which is the WHOLE verdict file, so the parametrisation spans R999..R1068.
+  **This is R861's observation about my own writing: the baseline is a function of what I
+  write, and no fixed list can track it.**
+* **2 reach FT1 limb two by name in `CLAUDE.md`:**
+  `test_the_report_carries_a_WHOLE_SUITE_count` and
+  `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW`.
+* **The remaining 10 -- the seven `test_the_guard_survives_the_state` states and the three
+  report guards -- reach EG3 state (2) DIRECTLY and not through FS1's predicate.** Their
+  subject is the answering report, which does not exist. EG3 state (2) is "verdict written,
+  answering report not yet. The answering report clears them," and FS1 replaced EG3's LISTS,
+  not its states. **I note that FS1's predicate, read literally, leaves these ten without a
+  limb -- the seventh measured shortfall of a boundary-red enumeration (EH1, FN2/R813,
+  EJ2/R644, FC1, R835, verdict 26, here)** -- and that the control below is what covers them.
+
+**THE CONTROL, WHICH IS THE ONLY THING THAT SEPARATES "RED BECAUSE NO REPORT EXISTS" FROM
+"RED FOR SOME OTHER REASON".** A list of names cannot be checked against a failure message;
+running the ids at a commit in the COMPLEMENTARY state can.
+
+```
+cmd    git worktree add <scratch> bd315a1 ; python -m pytest -q -p no:randomly
+         tests/test_report_carried.py tests/test_report_guard_states.py
+out    149 passed in 143.20s     (0 failed)
+cmd    my own run of those two files plus three root guards at 739364a
+out    1539 failed, 540 passed, 1 skipped in 1011.56s
+cmd    comm, my local FAILED ids against CI's 1539
+out    local-only: 0
+rule   EG3 (i), and FS1's own adopting control
+judge  **Not one id in those two files is red at a commit where a report answers a verdict**,
+       and `bd315a1` is NOT an instance of this state -- which is the error FS1 records R1
+       step 1 making when it compared against `e001aec`. So all 1539 are state-dependent BY
+       MEASUREMENT rather than by family. CI's count and mine agree exactly, including the
+       single skip, on two different operating systems. **The waiver applies and CZ1 (iv) is
+       not reached.** My own full list is not pasted because the task buffer kept only its
+       tail; CI's full 1539 is, and it is the superset.
+```
+
+**EG3 (ii): state (1) does not clear at my verdict commit and cannot**, because 1527 of the
+1539 are parametrised over the findings and sites I have just written and the other twelve
+want a report that does not exist. That is state (2) by construction, and the answering report
+is what clears it.
+
+## FV, confirmed by diff as FV4 asks
+
+**FV4 -- CONFIRMED, AND THE DIFF SAYS WHAT YOU SAY IT SAYS.**
+
+```
+cmd    grep -c FR1 / FS1 / FT1 / CZ0 in both instruction files, before and after
+out    BEFORE (git show 5c42611:$f)  agent       FR1=0  FS1=0
+                                     SUPERVISOR  FR1=0  FS1=4
+       AFTER                         agent       FR1=4  FS1=1  FT1=1  CZ0=7
+                                     SUPERVISOR  FR1=3  FS1=4  FT1=1  CZ0=7
+rule   FV4, and FE1 -- cite, do not copy
+judge  **Confirmed on all four counts you quoted.** The EG3/EH1/EJ2/FC1 bullet that named the
+       two enumerated lists is GONE, replaced by the predicate with its reason, and the new
+       bullet says in terms that there are no hand lists. CZ0 stays at 7 in each file and both
+       now say FR1 NARROWS it rather than retires it. **It is additive on the criterion and it
+       DELETES a list, which is the one deletion FS1 asked for -- so it is not the
+       quietly-deleted-guard case the STOP rule exists for.** I read both diffs line by line,
+       which is the whole defence, and each of the four commits is standalone: d91c41f touches
+       CLAUDE.md only, 557330f and 007a9e4 the two instruction files only, b33d35a
+       scripts/write_verdict.py only.
+```
+
+**FV3 -- CONFIRMED, and I ran the tool rather than reading it.** `--judged` is required, is
+what both header lines of this entry carry, and the ancestry check fires. **Verdict 26's anchor
+is corrected in the addendum entry beside this one**, which is the part of FV3 that was mine
+and not yours. For the record, the defect's live instance is one entry further on: the addendum
+that was the newest entry carries `d11a768` on its plain line and `e5edf49` on its bold one and
+throughout its body -- the same HEAD-stamp defect, one round later. The addendum records both.
+
+**FV2 -- CONFIRMED and acted on**, with the one gap named in the header: FV2 says the tool
+commits to the branch and it writes a file.
+
+**FV1 -- premise MEASURED TRUE.** See the CI trace above.
+
+## Try to break it -- what I ran, and what it found
+
+**The chord resolutions: I derived them by hand BEFORE your message arrived, and we agree.**
+Three chords at `(+-b/2, 0)` and `(0, h)`, equal areas: `zbar = h/3`;
+`I_yy = A_c[2(h/3)^2 + (2h/3)^2] = (2/3) A_c h^2`; `I_zz = 2 A_c (b/2)^2 = A_c b^2/2`;
+`F_top = A_c My (2h/3) / ((2/3) A_c h^2) = My/h`; `F_bot = -My/(2h)`; `Mz/b` on the bottom pair
+and nothing at the apex. Box: `I_yy = 4 A_c (h/2)^2 = A_c h^2` so `My/(2h)`, and `Mz/(2b)`.
+Bredt's `q = T/(2 A_m)` with `A_m = bh` and `bh/2`, and a wall of length `l` carrying `q l`.
+**Every coefficient in both docstrings is right, and so is the asymmetry the triangle's
+docstring calls a result rather than a detail.** Your first-principles check is a second
+independent route to the same place and I endorse putting it in the suite -- in the commit that
+repairs R1069, for the reason given there.
+
+**And I accept your two other independent results** -- the bisection landing at `U = 1.000000`
+on all eight configurations with `D` recovered by a separate bisection, and the box's torque
+closing exactly from the face shears and their lever arms. Both are the right shape: a root
+rather than a bracket end, and an identity rather than a residual norm.
+
+**The adversarial cases, and which produced what:**
+
+* One panel of a braced face solved as a free body, then that identity against three candidate
+  formulas over four aspect ratios x two readings x two faces. **R1069**, including the fact
+  that the repair you proposed is right in one reading and wrong in the other -- which no
+  inspection of the line could have shown, and which neither of us would have found from the
+  other's formula.
+* The whole declared `(h, b) x shape x reading` grid, each cell computed twice. **R1069's
+  argmin flip.**
+* Six scalar type probes on `sections.truss`. **R1071.**
+* The shipped example end to end, `case1/lam` and `case1/times` emptied together, against an
+  untouched control. **R1070.**
+* `TUBE_DIAMETER`'s bound in the weakening direction (EH4): closed at both ends.
+* The exhaustion refusal's 1-based display at a two- and a three-entry grid: correct.
+* R1064's digest recomputed from the committed blobs by a different command: matches.
+
+## Corpus (EG4(e))
+
+**Zero new entries, and `tests/corpus/` is untouched by me:**
+`git diff --stat 5c42611..739364a -- tests/corpus` is empty and I added nothing. **An interim
+check writes no corpus batch (ES0)**, and neither EG4(e) exception opens -- this diff touches
+no part of F4's load-mapping gate, and EB6's label-provenance gate is about buoy-centre
+labels. **The pause held.** The date note is in `Carried` and is still not mine to decide
+inside an interim check.
+
+**The recorded substitute is what I ran, and both halves paid, for the ninth consecutive
+round:**
+
+* **A continuum grid over the parameter space a decision rule guards** -- FT2.5's own declared
+  `(h, b) x shape x reading` grid computed twice, plus four aspect ratios of the panel geometry
+  against statics, plus six type probes on the scalar truss options. **R1069 and R1071.**
+* **A regeneration / forgery check on a published deliverable** -- the shipped example driven
+  three times through the real CLI with one variable moved, and R1064's digest recomputed from
+  the commit. **R1070**, and R1064 confirmed.
+
+**R1069 is the one a batch could not have found**, and it is worth saying why: it is not a
+shape in a file. It is a variable bound to the wrong element of a tuple whose own docstring
+says which element is which, and the wrong value is a plausible length. What found it was
+recomputing the author's own grid from a free body.
+
+## Next step opens when
+
+**This is an ES0 interim check. It closes nothing, opens nothing and consumes no round (ES0,
+FK1). Step 3 stays HOLD -- 0 of 3 reviewed revisions.**
+
+1. **R1069**, in the NEXT commit as a repair commit and not folded into FT2.6's, with
+   `force = shear * _length / face.dimension`, the compression sizing passed `_length`,
+   `panel_and_diagonal`'s redundant first element removed, the comment above the call deleted
+   rather than reworded, and **a cell pinning the absolute diagonal force and length per face
+   per reading at `h != b`** -- the assertion that was missing, and the reason your R801 pair
+   passed on the defect. The published `diag A`, `steel/m` and `lightest()` figures move, so
+   BP0 attaches: every figure citing the old rule is regenerated or withdrawn in the same
+   commit.
+2. **R1070**, with the lower bound taken from the exporter's own integer bound, cells at
+   `keep = 0` and `keep = 1` on BOTH keys, and `keep = 2` as the control.
+3. **R1071**, with the bool-and-type rejection `_floats` already applies, a `ConfigError` where
+   a `TypeError` is raised now, and a refusal row for each.
+4. **Your first-principles chord cell in the SAME commit as R1069's repair.**
+5. **R867-R870 (FT2.7) remain blocking by name**, twenty-third round, cell unchanged.
+6. **FT2.5's condition 4 -- the one-sentence disclosure for Xabier -- carries**, and it has no
+   site until the report exists. It is the only part of that ruling that leaves the loop.
+7. **L1-L5 and R1065/R1066/R1068 stay ledger** and are not re-reviewed item by item.
+8. **Unchanged:** the whole-suite run and the EG3 state recorded at every commit, compared
+   against the CI list rather than a count; the FR5 schedule paragraph in the first revision.
+   **Eight days to 5 November. FT2.5 is built and the half you could check is right; all three
+   blocking findings are in the half you told me you could not check yourself, and saying so is
+   what made this round worth its cost.**
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: d11a768e275dd7c03cfbc4eb64e3c57af37cbea1
 **Reviewed commit: `d11a768e275dd7c03cfbc4eb64e3c57af37cbea1`.**
 Verdict: HOLD
