@@ -540,25 +540,47 @@ def _governing_faces(report: TrussReport) -> str:
 
 
 def _margin(group: Any) -> str:
-    """How far ahead the lightest declared cell is, in its own words.
+    """How far ahead the lightest cell is, and WHAT IT IS AHEAD OF.
 
     `lightest()` is an argmin over a grid, and the artifact publishes it where a reader
-    will take it as advice. Two readings of the same `(shape, h, b)` have finished within
-    `0.4%` of each other on the shipped deck, so the margin belongs beside the answer.
+    will take it as advice, so the margin belongs beside the answer.
+
+    **THE RUNNER-UP IS NAMED, AND IT IS USUALLY NOT ANOTHER DECLARED `(h, b)` (R1077).**
+    Each `(shape, h, b)` resolves once per READING, so a grid of one declared cell still
+    has two cells and the runner-up is the OTHER READING of the winner. An earlier version
+    of this sentence called it "the next declared cell" unconditionally: at a one-cell grid
+    it published a reading margin as though a second declared geometry had come that close,
+    and a reader comparing declared cells was told the grid was tight when it holds one
+    entry. Naming the runner-up makes the number self-describing at every grid shape.
     """
-    steels = sorted(c.steel_area_per_m for c in group.cells)
+    ranked = sorted(group.cells, key=lambda c: c.steel_area_per_m)
     # TWO conditions, TWO messages (L16). One text for both said "the only declared cell"
     # where there were two whose lightest was zero -- a guard against division by zero
-    # reported as a fact about the grid.
-    if len(steels) < 2:
-        return "the only declared cell, so there is no margin to report"
-    if steels[0] <= 0.0:
+    # reported as a fact about the grid. And ZERO cells is its own case: the old `< 2`
+    # test answered "the only declared cell" for an EMPTY grid, which is a third thing.
+    if not ranked:
+        return "not reportable: no cell resolved, so there is no lightest cell to be ahead of"
+    if len(ranked) < 2:
+        return "the only cell that resolved, so there is no margin to report"
+    best, next_up = ranked[0], ranked[1]
+    if best.steel_area_per_m <= 0.0:
         return (
             "not reportable: the lightest cell needs no steel at all, so a relative "
             "margin against it is undefined"
         )
-    gap = (steels[1] - steels[0]) / steels[0]
-    return f"ahead of the next declared cell by {gap * 100.0:.2f}%"
+    gap = (next_up.steel_area_per_m - best.steel_area_per_m) / best.steel_area_per_m
+    same_cell = (
+        next_up.shape == best.shape and next_up.depth == best.depth and next_up.width == best.width
+    )
+    what = (
+        f"the OTHER READING (`{next_up.geometry}`) of the same `{next_up.shape}` cell"
+        if same_cell
+        else (
+            f"the next cell (`{next_up.shape}`, `h = {next_up.depth:g} m`, "
+            f"`b = {next_up.width:g} m`, `{next_up.geometry}`)"
+        )
+    )
+    return f"ahead of {what} by {gap * 100.0:.2f}%"
 
 
 def _write_truss_sizing(path: Path, report: TrussReport) -> None:
@@ -655,12 +677,10 @@ def _write_truss_sizing(path: Path, report: TrussReport) -> None:
             f" and check the margin before acting on it.** It is {_margin(group)}. The two"
             f" readings of FI1's 45-degree panel can finish within a fraction of a percent"
             f" of each other, and a margin that thin is not a basis for choosing a truss"
-            f" form. (An earlier version of this sentence claimed the winner depends on the"
-            f" torsion. It does not, on this deck: sweeping the recorded torsion of the"
-            f" real governing rows over six decades leaves `per_face_45` ahead at every"
-            f" rung and WIDENS the margin from 0.39% to 17.17%. The claim came from one"
-            f" synthetic row whose shear ratios are nothing like the deck's, and whose"
-            f" torsion was some 20000x the largest the deck records -- R1075.)",
+            f" form. (An earlier version of this sentence named the torsion as what decides"
+            f" the winner. It does not, and the figures that showed so belong in the"
+            f" commit that measured them rather than in every run of this generator --"
+            f" R1075, R1077.)",
             "",
             "| shape | h (m) | b (m) | reading | chord A (m2) | chord force (N) | "
             "governing station | branch | diag A (m2) | steel/m (m2) |",
@@ -687,31 +707,34 @@ def _write_truss_sizing(path: Path, report: TrussReport) -> None:
         "  is short by the same factor -- `q h` where Bredt gives `q Lf`. **THE BOX",
         "  CLOSES EXACTLY** on every `(h, b)`, which is the control: its faces really",
         "  are vertical, so `Lf = h` and the factor is one.",
-        "* **`Lf/h` IS THE FACTOR ON THE FORCE. IT IS NOT THE FACTOR ON THE AREA, AND AN",
-        "  EARLIER VERSION OF THIS BULLET PUBLISHED IT AS BOTH (R1073).** The area factor",
-        "  depends on WHICH of the two defects is corrected, because the braced length",
-        "  reaches the area and the allocation reaches the force:",
+        "* **`Lf/h` IS THE FORCE FACTOR UNDER THE ALLOCATION-ALONE CORRECTION, AT BOTH",
+        "  READINGS -- AND THAT QUALIFICATION IS ITSELF THE FINDING (R1076).** It is exact",
+        "  there for ANY LOAD, because both terms of the shipped face shear -- `|Vz|/2` and",
+        "  `q h` -- scale by `Lf/h` together, so the ratio does not depend on the `Vz`/`T`",
+        "  mix. Under the TWO-EDIT correction, which also takes the inclined face's own",
+        "  dimension as `Lf`, it stays exact at `per_face_45`, where the diagonal force is",
+        "  `shear * sqrt(2)` and the face dimension cancels -- and it is WRONG at",
+        "  `uniform_panel`, whose panel is `min(h, b)` so the dimension does not cancel:",
+        "  at `h = 3, b = 8` the force factor there is `1.37437` where `Lf/h` is `1.66667`.",
+        "  Six previous versions of this bullet published a bare factor with neither its",
+        "  correction nor its reading named, which is what made each of them refutable.",
+        "* **THE FACTOR ON THE AREA IS NOT PUBLISHED HERE, AND THE REASON IS A FINDING",
+        "  RATHER THAN AN OMISSION (R1076, R1079).** Every version that published one",
+        "  stated a sample as a bound, and each was refuted by the next measurement:",
         "",
-        "  | `h` | `b` | `Lf/h` (force) | area, allocation alone | area, allocation and",
-        " braced length |",
-        "  |---|---|---|---|---|",
-        "  | 8.0 | 3.0 | 1.01743 | 1.00868 | 1.02625 |",
-        "  | 3.0 | 8.0 | 1.66667 | 1.52184 | 1.89083 |",
-        "  | 2.0 | 8.0 | 2.23607 | 2.07280 | 2.54724 |",
-        "  | 1.5 | 11.0 | 3.80058 | 3.53471 | 4.54706 |",
+        "  * it depends on WHICH of the two defects is corrected -- the allocation, the",
+        "    braced length, or both -- and that is the open question below;",
+        "  * it depends on the LOAD. A table measured at one `Vz` was short by up to 36%",
+        "    at another;",
+        "  * it depends on the READING (`per_face_45` against `uniform_panel`);",
+        "  * and it depends on `(h, b)`, over which a published maximum from one deck's",
+        "    grid was exceeded threefold elsewhere.",
         "",
-        "  **So `Lf/h` COVERS the area error if only the allocation is corrected and is",
-        "  SHORT of it if the braced length is corrected too** -- short at every row",
-        "  above. A reader scaling a published `diag A` by `Lf/h` is therefore safe under",
-        "  the first reading and still low under the second. The reviewer measured a",
-        "  larger shortfall again (`1.77226` at `h=3, b=8`) by a third variant of the",
-        "  correction; that figure is not reproduced here and is not published here.",
-        "* **AN EARLIER VERSION SAID NONE OF THE AREA ERROR WAS THE BRACED LENGTH. THAT",
-        "  WAS MEASURED AT THE ONE OPERATING POINT WHERE IT CANNOT REACH THE AREA.** On",
-        "  a deck whose bottom face governs, changing only the lengths moves `diag A` by",
-        "  exactly `1.0000x`; where the inclined face governs it moves it by up to",
-        "  `1.18x`. The sentence was true of the configuration it was taken at and false",
-        "  as a general claim.",
+        "  **A quantity with four free inputs has no single factor, and publishing one",
+        "  states a sample as a fact.** So this artifact gives the MECHANISM and does not",
+        "  quantify the consequence. `Lf/h` stands only where it is exact: the force.",
+        "  What that means for a reader, plainly -- **the triangle diagonal areas in the",
+        "  tables above are unconservative by an amount this tool does not bound.**",
         "* **FI1 DECLARES NOTHING HERE.** `docs/milestones/F6b.md` says shear `Vz` goes",
         "  to the VERTICAL faces, and a triangle has none. The allocation is inherited",
         "  from `scripts/measure/f6b_truss_sizing.py`, which published it in",
@@ -724,7 +747,8 @@ def _write_truss_sizing(path: Path, report: TrussReport) -> None:
         f"* **WHETHER IT REACHES A PUBLISHED NUMBER DEPENDS ON WHICH FACE GOVERNS, AND"
         f" THIS RUN IS MEASURED RATHER THAN ASSUMED (R1074).** Of the"
         f" {sum(len(g.cells) for g in report.trusses)} cells in the tables above,"
-        f" {_governing_faces(report)}. Where the BOTTOM face governs, the inclined-face"
+        f" {_governing_faces(report)}. Where a box's VERTICAL or a triangle's BOTTOM face"
+        f" governs, the inclined-face"
         f" error cannot reach `diag A` at all; where the INCLINED face governs it reaches"
         f" it in full. An earlier version of this bullet hard-coded a cell count, a"
         f" claim that every cell behaved alike, and a steel-per-metre bound -- all three"

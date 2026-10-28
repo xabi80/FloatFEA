@@ -165,11 +165,19 @@ def triangle_resolution(
         "bot_-b": axial - my / (2.0 * h) - mz / b,
     }
     q = t / (2.0 * enclosed_area("triangle", h, b))
-    # Two inclined faces carry `Vz`; the single bottom face carries `Vy`. The inclined
+    # Two INCLINED faces carry `Vz`; the single BOTTOM face carries `Vy`. The inclined
     # face's height is `h`, the vertical projection the chord separation provides.
+    #
+    # **THE KEYS ARE `inclined` AND `bottom`, NOT `vertical` AND `horizontal` (R1078).**
+    # They were the box's names, and a triangle has no vertical face -- so a caller
+    # counting faces by this key could not tell a box's GENUINELY vertical face from a
+    # triangle's inclined one, and `_governing_faces` published "15 are governed by the
+    # vertical face" on a grid where the true answer for inclined faces was 0 and all 15
+    # were box cells. A name that is false of the thing it names will eventually be
+    # believed by something; renaming makes the conflation impossible rather than caught.
     face = {
-        "vertical": abs(vz) / 2.0 + abs(q * h),
-        "horizontal": abs(vy) + abs(q * b),
+        "inclined": abs(vz) / 2.0 + abs(q * h),
+        "bottom": abs(vy) + abs(q * b),
     }
     return ChordForces(chords, face)
 
@@ -201,7 +209,7 @@ def faces(shape: str, h: float, b: float) -> tuple[Face, ...]:
     """
     if shape == "box":
         return (Face(2, h, "vertical"), Face(2, b, "horizontal"))
-    return (Face(2, h, "vertical"), Face(1, b, "horizontal"))
+    return (Face(2, h, "inclined"), Face(1, b, "bottom"))
 
 
 def chord_buckling_length(geometry: str, h: float, b: float) -> float:

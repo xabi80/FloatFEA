@@ -22,6 +22,7 @@ standing rule is that every repair's CALLER is held by a test.
 from __future__ import annotations
 
 import math
+import re
 import shutil
 from pathlib import Path
 from typing import Any
@@ -35,6 +36,7 @@ from floatfea.run.pipeline import run as run_pipeline
 from floatfea.run.sizing import governing_rows, size_truss
 from floatfea.run.truss import (
     GEOMETRIES,
+    Face,
     area_for_compression,
     area_for_tension,
     box_resolution,
@@ -137,11 +139,11 @@ def test_the_TORSION_term_is_what_distinguishes_the_two_shapes_vertical_face() -
     assert enclosed_area("box", h, b) == 2.0 * enclosed_area("triangle", h, b)
     box = box_resolution(N, VY, VZ, T, MY, MZ, h, b)
     tri = triangle_resolution(N, VY, VZ, T, MY, MZ, h, b)
-    assert tri.face_shear["vertical"] > box.face_shear["vertical"]
+    assert tri.face_shear["inclined"] > box.face_shear["vertical"]
     # And with NO torsion they coincide exactly, which is the deck's own case.
     box0 = box_resolution(N, VY, VZ, 0.0, MY, MZ, h, b)
     tri0 = triangle_resolution(N, VY, VZ, 0.0, MY, MZ, h, b)
-    assert box0.face_shear["vertical"] == tri0.face_shear["vertical"] == abs(VZ) / 2.0
+    assert box0.face_shear["vertical"] == tri0.face_shear["inclined"] == abs(VZ) / 2.0
 
 
 # ---------------------------------------------------------------------------
@@ -373,15 +375,31 @@ def test_END_TO_END_truss_sizing_writes_its_artifact_and_DISCLAIMS_the_U(tmp_pat
     # **R1074: the governing-face sentence must describe THIS run's cells**, not a figure
     # carried from another deck. The arm for it did not redden until this assertion
     # existed -- nothing read that sentence.
+    # **THE COUNT IS PER CANDIDATE GROUP, and the formula here was group-blind.** It
+    # multiplied depths x widths x shapes x readings and was green only because this
+    # fixture declares ONE group; at two groups the artifact says 16 and the formula gave
+    # 8. It is derived from the report's own structure now, which is what the sentence is
+    # derived from.
     cfg = load_config(path)
-    expected_cells = (
+    per_group = (
         len(cfg.sections.truss.depths)
         * len(cfg.sections.truss.widths)
         * len(cfg.sections.truss.shapes)
         * len(GEOMETRIES)
     )
+    expected_cells = per_group * len(cfg.sections.candidates)
     assert f"Of the {expected_cells} cells in the tables above" in text, text
     assert "60 declared cells" not in text, "a figure from another deck is published here"
+    # **AND THE FACE NAMES ARE READ, which is what nothing did (R1078).** A triangle has
+    # no vertical face; if the sentence says one governs, the count is conflating shapes.
+    # The GENERATED COUNT, not the whole document: the explanatory prose names the
+    # inclined face wherever it describes the mechanism, and should.
+    if "triangle" not in cfg.sections.truss.shapes:
+        assert "governed by the inclined face" not in text, (
+            "a box-only configuration reports an inclined face governing, which is the "
+            "shear-key conflation R1078 was about"
+        )
+    assert "governed by the" in text, text
 
 
 def test_END_TO_END_the_truss_is_resolved_at_the_ACCEPTED_forces_not_the_BASELINE(
@@ -742,7 +760,7 @@ def test_R1072_the_TRIANGLE_shear_allocation_does_NOT_close_and_the_BOX_does() -
         tri = triangle_resolution(0.0, 0.0, 1.0, 0.0, 0.0, 0.0, h, b)
         # Both shapes allocate `|Vz|/2` to each of two faces, so both SUM to Vz = 1.
         assert box.face_shear["vertical"] * 2 == 1.0
-        assert tri.face_shear["vertical"] * 2 == 1.0
+        assert tri.face_shear["inclined"] * 2 == 1.0
         # THE TRIANGLE: in-plane equilibrium needs `Lf/h` times as much, and `Lf > h`
         # strictly whenever `b > 0` -- so the shortfall is never zero and never favourable.
         # (Three assertions here used to be arithmetic about Python rather than about
@@ -750,21 +768,23 @@ def test_R1072_the_TRIANGLE_shear_allocation_does_NOT_close_and_the_BOX_does() -
         # and they are gone (L14).)
         assert lf > h
         in_plane = 2.0 * (1.0 * lf / (2.0 * h))
-        assert tri.face_shear["vertical"] * 2 < in_plane
+        assert tri.face_shear["inclined"] * 2 < in_plane
 
         # **THE TORSION HALF, which the published claim asserts and no cell covered (L14):
         # the module's share is `q h` where Bredt gives `q Lf`, short by the same factor.**
         # Driven with `T = 1` and `Vy = Vz = 0`, so the torsion term is the whole shear.
         tri_t = triangle_resolution(0.0, 0.0, 0.0, 1.0, 0.0, 0.0, h, b)
-        q = 1.0 / (2.0 * enclosed_area("triangle", h, b))
+        # **`q` IS DERIVED HERE, NOT FROM `enclosed_area` (L21).** Taking it from the code
+        # under test made this cell survive a mutation of that function's triangle branch.
+        # Bredt: `q = T / (2 A_enc)`, and a triangle's enclosed area is `b h / 2`.
+        q = 1.0 / (2.0 * (0.5 * b * h))
         # **EXACTLY, and no tolerance.** With `Vz = 0` the module's share is `abs(q*h)`
         # from the same expression computed here, so equality is exact -- and it is the
         # `h` rather than the `Lf` that this pins, which is the whole finding.
-        assert tri_t.face_shear["vertical"] == q * h
-        # Bredt wants `q Lf`, and `Lf > h > 0`, so the shortfall is strict. The RATIO
-        # being `Lf/h` follows from those two by algebra and needs no float comparison --
-        # asserting it would have been a round-off threshold standing in for a derivation.
-        assert q * lf > tri_t.face_shear["vertical"]
+        assert tri_t.face_shear["inclined"] == q * h
+        # (An assertion here that `q * lf > ...` reduced, given the line above, to `lf > h`
+        # -- already asserted a few lines up. It was the L14 defect reintroduced by the L14
+        # repair, and it is gone rather than restated (L21).)
 
 
 def test_R1072_a_TRIANGLE_diagonal_force_is_pinned_ABSOLUTELY_at_h_not_b() -> None:
@@ -791,7 +811,7 @@ def test_R1072_a_TRIANGLE_diagonal_force_is_pinned_ABSOLUTELY_at_h_not_b() -> No
     truss = TrussOptions(depths=(h,), widths=(b,), shapes=("triangle",))
     group = resolve_group("platform", rows, truss, MATERIAL)
     inclined = faces("triangle", h, b)[0]
-    assert inclined.shear_key == "vertical" and inclined.dimension == h
+    assert inclined.shear_key == "inclined" and inclined.dimension == h
 
     for cell in group.cells:
         # **THE LENGTH IS DERIVED HERE, NOT TAKEN FROM `panel_and_diagonal` (L13).** The
@@ -809,4 +829,133 @@ def test_R1072_a_TRIANGLE_diagonal_force_is_pinned_ABSOLUTELY_at_h_not_b() -> No
         expected = (shear / 2.0) * length / inclined.dimension
         assert cell.diagonal_force == expected, (cell.geometry, cell.diagonal_force)
         # The inclined face governs here: `Vy = T = 0`, so the bottom face carries nothing.
-        assert cell.diagonal_face == "vertical", cell.diagonal_face
+        assert cell.diagonal_face == "inclined", cell.diagonal_face
+
+
+def test_R1076_the_bullet_PUBLISHES_NO_AREA_FACTOR_in_either_shape_it_took(tmp_path) -> None:
+    """The area-factor bullet states the mechanism and quantifies nothing.
+
+    **THE ARM FOR R1076 DID NOT REDDEN UNTIL THIS CELL EXISTED.** Republishing a single
+    bound -- `IS 1.89083 EVERYWHERE, A SINGLE BOUND` in place of the sentence that says it
+    is not published -- left the whole suite green, which is R1074's finding again one
+    bullet over: a figure REMOVED because it could not be true is as silently restorable as
+    a figure nothing reads.
+
+    The two needles are the two shapes the six retired versions actually took, so this is a
+    check derived from the history rather than a guess at the next one: a markdown TABLE of
+    area columns (versions 4 and 5) and an `N.NNNNx` MULTIPLIER (versions 1, 2, 3 and 6).
+    What it cannot see is a third shape, and it says so rather than implying coverage.
+    """
+    from floatfea import cli
+
+    path, out_dir = _fixture(tmp_path)
+    assert cli.main(["run", str(path)]) == 0
+    text = (out_dir / "truss_sizing.md").read_text(encoding="utf-8")
+
+    # The positive half: the sentence a republication would have to displace.
+    assert "THE FACTOR ON THE AREA IS NOT PUBLISHED HERE" in text
+    assert "unconservative by an amount this tool does not bound" in text
+
+    # The negative half, over the bullet's own span rather than the whole document: the
+    # tables above legitimately carry both `|` rows and multipliers.
+    start = text.index("THE FACTOR ON THE AREA IS NOT PUBLISHED HERE")
+    bullet = text[start : text.index("FI1 DECLARES NOTHING HERE", start)]
+    assert "|" not in bullet, bullet
+    assert re.search("[0-9][.][0-9]+x", bullet) is None, bullet
+
+    # **AND THE FORCE FACTOR CARRIES ITS CORRECTION AND ITS READING.** R1076's condition
+    # asked for both and the first repair of it still said "EXACTLY" unqualified. The two
+    # figures are DERIVED here from the resolver, so a change to the resolution moves the
+    # assertion and not only the prose.
+    assert "UNDER THE ALLOCATION-ALONE CORRECTION" in text
+    h, b = 3.0, 8.0
+    lf = math.hypot(h, b / 2.0)
+    shipped = Face(2, h, "inclined")
+    widened = Face(2, lf, "inclined")
+    len0, _ = panel_and_diagonal("uniform_panel", h, b, shipped)
+    len1, _ = panel_and_diagonal("uniform_panel", h, b, widened)
+    # One unit of shipped face shear becomes `Lf/h` units under the corrected allocation.
+    two_edit = ((lf / h) * len1 / widened.dimension) / (len0 / shipped.dimension)
+    assert f"`{two_edit:.5f}`" in text, (two_edit, text)
+    assert f"`{lf / h:.5f}`" in text, (lf / h, text)
+    assert two_edit < lf / h, (two_edit, lf / h)
+
+
+def _cell_at(shape: str, h: float, b: float, geometry: str, steel: float):
+    """A `TrussCell` carrying only the four fields `_margin` reads, plus its steel."""
+    from floatfea.run.truss import TrussCell
+
+    return TrussCell(
+        shape=shape,
+        depth=h,
+        width=b,
+        geometry=geometry,
+        chord_area=0.0,
+        chord_force=0.0,
+        chord_station="ROOT",
+        chord_branch="tension",
+        chord_buckling_length=1.0,
+        diagonal_area=0.0,
+        diagonal_force=0.0,
+        diagonal_face="bottom",
+        steel_area_per_m=steel,
+    )
+
+
+def test_R1077_the_MARGIN_says_what_it_is_OVER_in_all_four_states() -> None:
+    """`_margin`'s runner-up is named, and each branch has its own state.
+
+    **THE DEFECT THIS HOLDS WAS FOUND AT THE VERDICT'S OWN NAMED CONFIGURATION AND WAS NOT
+    WHAT THE CONFIGURATION PREDICTED.** A grid of one declared `(shape, h, b)` does not
+    give one cell -- it gives one PER READING -- so `_margin` was comparing the two readings
+    of the winner and the sentence called the loser "the next declared cell". The predicted
+    `0.00%` never appears; the published figure was `0.39%` at a grid holding one entry.
+
+    Four states because the function has four answers, and a decision rule with a branch no
+    state reaches is a rule nothing holds in place.
+    """
+    from floatfea import cli
+
+    class _Group:
+        def __init__(self, cells):
+            self.cells = cells
+
+    # (1) NO cell resolved. The old `< 2` test answered "the only declared cell" here.
+    assert "no cell resolved" in cli._margin(_Group([]))
+
+    # (2) Exactly one cell.
+    one = [_cell_at("box", 8.0, 3.0, "per_face_45", 1.0)]
+    assert "the only cell that resolved" in cli._margin(_Group(one))
+
+    # (3) Two READINGS of the same declared cell -- the state that produced the defect.
+    # The expected percentage is DERIVED from the two steels this cell declares. Folding
+    # it to a constant made it a bare `0.25` that the tolerance guard could not tell from
+    # a threshold, and it was right: a number with no visible provenance in a comparison
+    # is a threshold whatever the author meant.
+    best_steel, next_steel = 1.0, 1.25
+    same = [
+        _cell_at("box", 8.0, 3.0, "per_face_45", best_steel),
+        _cell_at("box", 8.0, 3.0, "uniform_panel", next_steel),
+    ]
+    got = cli._margin(_Group(same))
+    assert "the OTHER READING (`uniform_panel`) of the same `box` cell" in got, got
+    assert "next cell" not in got, got
+    gap_pct = (next_steel - best_steel) / best_steel * 100.0
+    assert f"{gap_pct:.2f}%" in got, got
+
+    # (4) A genuinely different declared cell wins the runner-up slot.
+    other = [
+        _cell_at("box", 8.0, 3.0, "per_face_45", 1.0),
+        _cell_at("triangle", 2.0, 11.0, "uniform_panel", 1.5),
+        _cell_at("box", 8.0, 3.0, "uniform_panel", 4.0),
+    ]
+    got = cli._margin(_Group(other))
+    assert "the next cell (`triangle`, `h = 2 m`, `b = 11 m`, `uniform_panel`)" in got, got
+    assert "OTHER READING" not in got, got
+
+    # (5) And the zero-steel guard still has its own message rather than a division.
+    free = [
+        _cell_at("box", 8.0, 3.0, "per_face_45", 0.0),
+        _cell_at("box", 8.0, 3.0, "uniform_panel", 1.0),
+    ]
+    assert "needs no steel at all" in cli._margin(_Group(free))
