@@ -1,4 +1,472 @@
 # Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: d99bdc26de71bde48a0414f94260460a36283fb7
+**Reviewed commit: `d99bdc26de71bde48a0414f94260460a36283fb7`.**
+Verdict: HOLD
+Tests: **1688 failed, 4098 passed, 1 skipped -- 5787 tests, THE WHOLE COLLECTION, all my own runs at the judged sha in my own worktree (FV2).** **ONE INVOCATION, NOT A DECOMPOSITION: `python -m pytest -q` on the whole tree gave `1688 failed, 4098 passed, 1 skipped, 2 warnings in 3609.72s (1:00:09)`.** I let it run rather than quoting a partial, and I also ran the five scopes and they reconcile to the same numbers: `tests/verification` **2088 passed in 117.30s** (the whole ladder, green, measured by me and not read off CI); `tests/unit` **401 passed in 143.94s**; `tests/regression` **366 passed in 1969.02s**; the NINETEEN non-report root guards **915 passed in 52.24s + 471.00s**; the two report-guard files **1688 failed, 328 passed, 1 skipped in 1116.25s**. `2088 + 401 + 366 + 2932 = 5787` and `pytest --collect-only tests` is **5787 tests collected**, so the five scopes are the whole tree with nothing left out and they agree with the single invocation exactly. **All 1688 reds are the EG3 state (2) boundary set, traced one id at a time below, and `comm` against CI's own 1688 is EMPTY IN BOTH DIRECTIONS.** `ruff check floatfea tests scripts`, `black --check floatfea tests scripts` (159 files) and `mypy floatfea` (45 sources) are clean on my own run.**
+Scope: **ES0 INTERIM CHECK.** `ls docs/reports/R1/` is `step-1-answers.json step-1.md step-2-answers.json step-2.md` -- **still no `docs/reports/R1/step-3.md`**, so no reviewed revision has been consumed, **0 of 3**, and this counts against no round and closes nothing (ES0, FK1). It is the **thirty-third** ES0 interim check on this step, counted from the file with a needle anchored on the HEADER rather than on the phrase: `grep -c '^# Review â€” R1 step 3 â€” ES0 INTERIM CHECK' docs/reviews/R1/step-3.md` is **32** before this entry. The unanchored needle the previous entry used gives **34**, because it matches its own prose -- a needle too WIDE, which is L12's defect with the sign reversed, and I say so because the previous entry's ordinal is one high as a result.
+
+**I RULED UNDER FR1 WITH EZ0** (`CLAUDE.md` section "What blocks for the rest of R1", `docs/directives/FR.md`). **FOUR FINDINGS BLOCK AND EACH CARRIES THE SILENTLY-WRONG-RESULT SENTENCE FR1's LAST CLAUSE DEMANDS.** Six are ledger and for each I say why it cannot be given one. **AND I SAY WHY `truss_sizing.md` IS INSIDE FR1's HEAD ONE RATHER THAN ASSUMING IT:** it is the report `floatfea run` writes for an engineer, every number in it comes from `floatfea/cli.py`, and the SAME generator's output in its F6b incarnation -- `results/F6b/truss_sizing.md` -- is under `results/` and has been sent. FR1 head one reads "a wrong number in a gate, a CSV, **a report** or any published deliverable", and this is that report. The previous verdict ruled the same way at the same site and I am not re-classifying it. **EU1 does not attach** -- no tolerance value and no declared counter moved -- and I ran the adversarial case anyway, at seven configurations and 67200 continuum cells the diff did not choose, and **all four blocking findings came from there and none from reading the diff.**
+
+**WHERE I WORKED (FV2).** `git worktree add C:/Users/xlama/AppData/Local/Temp/claude/wt-d99bdc2 d99bdc26de71bde48a0414f94260460a36283fb7`. No `checkout`, no `reset` and no write of any kind in your tree; the only commands aimed at your side were `gh run list` and `gh run view`, which touch no file. **The three source edits I made for the arms were made in MY worktree and restored with `git checkout --` THERE** -- `_governing_faces` returning a constant, `enclosed_area`'s triangle branch set to the box value, and `triangle_resolution`'s torsion share moved from `q h` to `q Lf`. In a shared checkout each of those three was a write in your tree while you were working, and the second and third are reverts of YOUR lines.
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R1073** -- the force factor published as the area factor | **THE ATTRIBUTION IS FIXED AND IT IS FIXED CORRECTLY. THE OPERATING POINT IS NOT, AND THAT WAS THE OTHER HALF OF THE CONDITION. IT BLOCKS AGAIN -- R1076.** | The condition's words were "says, for each factor, WHICH QUANTITY it is the factor for and at WHICH READING ... with the reading and the load configuration it was taken at". `floatfea/cli.py:690-708` says the quantity and names **neither the reading nor the load**. I reproduced the published table exactly -- all four rows, six figures -- and it is `Vz = 1e6 N, Vy = T = 0, per_face_45`. At `Vz = 1e5` the same three columns give `1.0263 / 2.1517 / 3.3435 / 7.1118`, so the published column is short by **12.1%, 23.8% and 36.1%** at three of its own four rows. **And `1.77226` is not a third variant of the correction: it is YOUR OWN two edits at `Vz = 3.0e6` instead of `1e6`, measured to the digit.** |
+| **R1074** -- four hard-coded figures about one deck emitted for every configuration | **THREE OF THE FOUR ARE GONE AND THE FOURTH WAS REPLACED BY A COMPUTED FIGURE THAT IS WRONG ON THE CONFIGURATION IT IS COMPUTED FROM (R1078). THE R1075 REPAIR PUT FOUR NEW ONES INTO THE EXACT PARAGRAPH THIS FINDING NAMED (R1077), AND THE R1073 REPAIR PUBLISHED ONE OF MY OWN AS A BOUND (R1079).** | `grep -rn "1.0498x" floatfea scripts --include=*.py` and the same for "at every declared cell here" and "6.24e6" are all empty, and "60 declared cells" survives only in `_governing_faces`'s own docstring at `cli.py:526`, which is right. The condition's prohibition was "is not phrased as a claim about this deck"; `cli.py:657` is **"It does not, on this deck"** with four literals behind it. |
+| **R1075** -- the load-dependence sentence that did not reproduce | **ANSWERED, AND ANSWERED WELL. The false sentence is gone, the conclusion is kept on `_margin` alone, and every replacement figure reproduces on my own harness.** | My own sweep, written from `governing_rows` with no reading of yours: 12 governing rows, `per_face_45` ahead at **every** rung of a per-row torsion scale from `x1e0` to `x1e6`, box margin `0.39% -> 17.17%` and triangle `0.44% -> 23.37%` -- **your `17.17%` to the digit, and `x1e7` is REFUSED at the tube bracket, so six decades is the whole admissible range and not a choice.** `max abs(T) = 2.4832e+02` against `max abs(My) = 2.1938e+08`, and `5e6 / 2.4832e2 = 20135`, so "some 20000x" is right. **The figures are correct; where they are PUBLISHED is R1077.** |
+| **the escalation to Xabier, now two questions** | **DONE, in the commit message AND in the artifact, and the split is the right split.** I verified that the second half is the one that matters. | Continuum grid, 2000 cells per reading: correct the allocation alone and `Lf/h` covers the area error at **0 of 2000** cells against it; correct both and it is short at **2000 of 2000** under `per_face_45`. Your two-question form is the form the measurement supports. `floatfea/cli.py:720-723`. |
+| **the F6b paragraph I asked be relayed** | **RELAYED, in both the commit message and the artifact, which is more than I asked for.** The claim is still true and I re-measured it rather than taking it. | `grep -niE "inclined|hypot|allocation" results/F6b/truss_sizing.md` gives ONE line, `:29`, about diagonals in general and not about the inclined-face allocation. `results/` is untouched by this commit, correctly. |
+| **L11** -- the fourth chord-only declaration | **FIXED, AND A FIFTH SITE FIXED THAT I HAD NOT NAMED.** | `floatfea/run/config.py:1265-1267` and `tests/regression/test_ft25_truss_sizing.py:251-252` both say chord AND diagonal. `grep -rn "chord steel" floatfea tests --include=*.py` gives two hits and both are the correction quoting the old wording. |
+| **L12** -- the needle that finds the paragraph instead of the producer | **ANSWERED BY REPLACING THE COUNT WITH A DESCRIPTION, WHICH IS THE RIGHT MOVE, AND THE DESCRIPTION IS WRONG AT THE COMMIT THAT PUBLISHES IT. Ledger L20.** | Run exactly as written the needle gives **5** lines: **four** in `forces_table.py` (`:158`, `:164`, `:165`, `:166`) and one `savez_compressed` in `scripts/`. The sentence says "this paragraph **twice** and ONE savez_compressed". The repair added two more occurrences of its own needle. |
+| **L13** -- the cell that did not pin the force absolutely | **CLOSED, AND CLOSED BETTER THAN I ASKED. I re-ran your own mutation and it reddens now.** You are right that my diagnosis was wrong: the geometry was never the problem. | `tests/regression/test_ft25_truss_sizing.py:783-808`. `inclined.dimension == h` is pinned at `:793` BEFORE `panel` is built from it, so the derived `length` bottoms out in literals. My own `panel * sqrt(2.0)` moved to `panel * 2.0`: **1 failed**. |
+| **L14** -- three assertions that were arithmetic about Python | **TWO CLOSED, THE TORSION HALF GAINED A REAL CELL WHICH I VERIFIED DISCRIMINATES, AND THE REPAIR ADDED ONE MORE ASSERTION OF THE SAME CLASS. Ledger L21.** | The torsion cell is real: my own `q h` moved to `q hypot(h, b/2)` in `triangle_resolution` gives **1 failed** at `:763`. But `:770`, `assert q * lf > tri_t.face_shear["vertical"]`, is -- given `:763` -- exactly `lf > h`, which `:748` already asserts. And `q` is built from `enclosed_area`, the code under test: my own `0.5*b*h` moved to `b*h` leaves this cell **green** (`:137` catches it). |
+| **L15** -- the finiteness cell covered one scalar | **CLOSED ON BOTH SCALARS AND ON THE GRID, in one cell, and I re-ran the whole door.** | `:705-716`. My own fourteen-probe door: `nan`, `inf`, `-inf` all refused on `depths` and on `widths`; `0.0` and negative refused by the positivity check that was already there; empty lists refused; `24.0` and `1.15` still accepted. **The adjacent doors are all shut.** |
+| **L16** -- one message for two conditions in `_margin` | **CLOSED IN CODE. Nothing reads the new branch, which is this commit's own recurring shape; ledger L22.** | `floatfea/cli.py:550-558`. `grep -rn "needs no steel at all" tests/` is empty, and the branch is unreachable from a valid configuration, which is why it is ledger and not a finding. |
+| **L17** -- the unreproducible control figure in a committed message | **RECORDED AS UNFIXABLE, R1053's disposition, and I accept it.** | It is inside `3ad464b`'s message and a message cannot be rewritten without rewriting history. |
+| **L18** -- the `nan` depth that reached the artifact with exit 0 | **CLOSED, WITH THE CELL, AND THE REFUSAL MESSAGE IS WRONG ABOUT THE VALUE IT REFUSED. Ledger L23.** | `config.py:1309-1324`. `depths: [.nan, 8.0]` is refused at parse now. But for an `inf` input the message reads "depths[0] is inf. A declared depth or width must be finite: a `nan` in the grid makes ..." -- the explanation names `nan` for an `inf` input. FR1 non-blocking class ONE verbatim: the outcome is right, the message is unclear. |
+| **L19** -- `6.24e6` where the set maximum is `6.35e6` | **CLOSED BY DELETION, and I checked that it is deletion and not relocation.** | `grep -rn "6.24e6" floatfea scripts --include=*.py` is empty. |
+| **R867 to R870 (FT2.7)** | **STILL BLOCKING BY NAME. TWENTY-SIXTH ROUND. Untouched, and I accept your statement of the blocker unchanged.** | `git show --stat --name-only --format="" d99bdc2` names four files and none is FT2.7's. `grep -rnE "R867|R868|R869|R870" floatfea tests scripts` is empty; the only mention anywhere in the tree is `docs/milestones/R1.md:370`, which names **R867 to R869** where the carried item names four -- a one-line mismatch between the plan and the ledger that is worth settling when FT2.7 is built. |
+| **condition 4** of the FT2.5 ruling -- one sentence of disclosure for Xabier | **STILL CARRIES. It is the oldest unverifiable item on this step and its site is a report that does not exist.** | `ls docs/reports/R1/` has no `step-3.md`. |
+| **conditions 1, 2 and 3** of the FT2.5 ruling | **STILL MET, and I measured it rather than reading it.** | `git diff 6d0728c..d99bdc2 -- floatfea/run/sizing.py floatfea/run/truss.py` is **EMPTY**. Not one line of the truss arithmetic or of the sizing loop moved in this commit. |
+| **R847/C43, R848, R849 with R854, R852, R862-R865, R880, C42, C44** -- the older ledger set | **STILL OPEN AND STILL UNCHANGED, and I am re-listing them because the previous two Carried tables did not.** That is the dependency-list failure the arrangement exists to prevent, and it costs one row. | `docs/reviews/R1/step-3.md:5049` is the last round that listed them. `git diff 6d0728c..d99bdc2 -- tests/regression/test_r1_example_regenerates.py tests/regression/test_r1_published_artifacts.py` is **empty**, so nothing in this commit touched them. **R849 with R854 is the one that bites here:** `NAMES` in `tests/regression/test_r1_example_regenerates.py:51` is still the hard-coded `("report.md", "member_forces.csv", "utilisation.csv")`, and `truss_sizing.md` -- the artifact that has produced every blocking finding of the last four rounds -- **has no numeric comparison of any kind against anything.** That is R845 with a different file name, which is R849 verbatim. |
+| **R1065, R1066, R1068** | **still ledger, not re-reviewed item by item** | `CLAUDE.md`'s closure-item handling: the whole list is fixed once, in the closure commit. |
+| **R885, R895, FV0's date, and the R1072 physics (now two questions)** | **all with Xabier, correctly out of both our hands.** | none of them is yours or mine to decide. |
+| **the EG4(e) pause** | **THE PAUSE HELD AND I ADDED NO CORPUS ENTRY -- ZERO new entries. `tests/corpus/` is untouched by me and my worktree was clean before I wrote this file.** | ES0 fixes an interim check's scope as "no corpus batch, no closure list" independently of the pause, so there is no batch either way, and today being 28 October is not mine to settle inside an interim check. **What I ran instead is the recorded substitute and it produced all three blocking findings** -- see the corpus section. |
+| **MY OWN figure `1.77226`, which the artifact declines to publish and then publishes** | **IT WAS NEVER A THIRD VARIANT. It is YOUR OWN two edits at a different load, and I say that about my own number before I say anything about yours.** | `Vz = 3.0e6, Vy = T = 0, per_face_45, h=3, b=8`, allocation AND braced length corrected: **1.77226**. The same code at `Vz = 1e6` gives **1.89083**, your figure. The disagreement was the operating point in both directions, which is R1076. |
+
+## Findings
+
+**R1076. (BLOCKS -- FR1 head one) THE AREA-FACTOR TABLE IS A FOUR-ROW SAMPLE AT ONE UNSTATED LOAD AND ONE UNSTATED READING OF A QUANTITY THAT MOVES BY 1.9x ACROSS LOADS AND 1.3x ACROSS READINGS, AND A READER WHO APPLIES IT IS STILL UP TO 36% LOW. THE ATTRIBUTION HALF OF R1073 IS FIXED; THE OPERATING-POINT HALF IS THE OTHER HALF OF THE SAME CONDITION.**
+
+The condition's words were *"the AREA factor measured and stated as exceeding it, **with the reading and the load configuration it was taken at**"*. The table states neither.
+
+```
+claim  the three published columns are measurements at `Vz = 1e6 N, Vy = T = 0,
+       per_face_45`; the artifact says so nowhere; and at other loads and at the OTHER
+       published reading the published numbers are wrong in BOTH directions
+cmd    my own reconstruction of the two corrections -- (i) the inclined face takes
+       `|Vz| Lf / (2h) + |q Lf|`, (ii) `faces()` gives it dimension `Lf` -- through the
+       shipped `area_for_compression` / `area_for_tension`, at the four PUBLISHED rows,
+       swept over load and over both readings
+out    FIRST, the table reproduces EXACTLY at Vz = 1e6, Vy = T = 0, per_face_45:
+         h=8.0 b=3.0   alloc 1.00868   both 1.02625     <- published 1.00868 / 1.02625
+         h=3.0 b=8.0   alloc 1.52184   both 1.89083     <- published 1.52184 / 1.89083
+         h=2.0 b=8.0   alloc 2.07280   both 2.54724     <- published 2.07280 / 2.54724
+         h=1.5 b=11.0  alloc 3.53471   both 4.54706     <- published 3.53471 / 4.54706
+       SECOND, the published `both` column against the measured one, per_face_45:
+               published    Vz=1e4        Vz=1e5        Vz=1e6     Vz=1e7     Vz=1e8
+         8,3     1.02625   1.0263 -0.0%  1.0263 -0.0%   1.0263 ok  1.0204     1.0180
+         3,8     1.89083   2.1517 -12.1% 2.1517 -12.1%  1.8908 ok  1.7124     1.6768
+         2,8     2.54724   2.5467 +0.0%  3.3435 -23.8%  2.5472 ok  2.2983     2.2506
+        1.5,11   4.54706   4.2324 +7.4%  7.1118 -36.1%  4.5471 ok  3.9476     3.8354
+         (negative = a reader applying the PUBLISHED factor is STILL LOW by that much)
+       AND THE `alloc only` COLUMN IS LOAD-DEPENDENT TOO, so "safe" has an operating
+       point as well -- at h=3.0 b=8.0 the measured alloc-only factor runs
+         Vz=1e3 1.00000   1e5 1.29099   3e5 1.37731   1e6 1.52184   1e8 1.65922
+       against a published 1.52184: at Vz=1e8 the published column is 8.3% SHORT of the
+       measured one, and at h=1.5 b=11.0 it is 6.6% short. Both area columns are right
+       at one load and at one load only.
+       THIRD, the sentence "short at every row above", over a continuum grid with its
+       DOMAIN stated: h and b each 1.0 .. 12.0 in 0.25 m steps, 8 load rungs,
+       **16200 admissible cells per reading**:
+         per_face_45     the sentence is TRUE in 16004 of 16200 (98.8%); it FAILS in 196,
+                         worst at h=1.0 b=3.25 Vz=1e4, where Lf/h overshoots the measured
+                         factor by 1.9x
+         uniform_panel   the sentence is TRUE in  4663 of 16200 (28.8%); it FAILS in
+                         11537 (71.2%), worst at h=1.0 b=4.75 Vz=1e4, where Lf/h
+                         overshoots by 2.48x
+         -- so "short at every row above" is right about the four rows at the load they
+            were taken at, and is a minority statement at the artifact's other reading
+       AND THE "COVERS" HALF HOLDS EVERYWHERE, WHICH IS EH4's WEAKENING DIRECTION SOLVED:
+         the alloc-only factor NEVER exceeds Lf/h -- 0 of 32400 cells over both readings,
+         worst ratio 0.999908, so "safe if only the allocation is corrected" stands
+       FOURTH, the headline "`Lf/h` IS THE FACTOR ON THE FORCE", by variant and reading
+       -- and it is TRUE for one variant at BOTH readings, which is worth saying first:
+         allocation alone:  force factor = Lf/h at 4000 of 4000 continuum cells over
+                            BOTH readings, worst relative difference 4.881e-16 -- float
+                            round-off, so it is an identity and not a fit
+         allocation AND braced length, uniform_panel:
+           h=3.0 b=8.0   force factor 1.37437   published Lf/h 1.66667
+           h=2.0 b=8.0   force factor 1.73205   published Lf/h 2.23607
+           h=1.5 b=11.0  force factor 2.77889   published Lf/h 3.80058
+         -- so the headline is exact for the variant the bullet above is about and wrong
+            for the variant the table's third column is about, unqualified for either
+       FIFTH, `1.77226` is not a third variant of the correction:
+         h=3 b=8 per_face_45, allocation AND braced length, Vz = 3.0e6  ->  1.77226
+         the same code at Vz = 1e6                                     ->  1.89083
+rule   `floatfea/cli.py:690-708`, published into `truss_sizing.md`'s "Limitations this
+       analysis does not escape", and the sentence at `:703-706`: "**So `Lf/h` COVERS the
+       area error if only the allocation is corrected and is SHORT of it if the braced
+       length is corrected too** -- short at every row above. A reader scaling a published
+       `diag A` by `Lf/h` is therefore safe under the first reading and still low under
+       the second."
+cell   one variable at a time. Load swept with geometry, reading and both corrections
+       held; reading swept with load and geometry held; correction swept with load and
+       reading held. **THE BOX IS THE CONTROL AND BOTH CORRECTIONS ARE A NO-OP ON IT**, so
+       nothing in the harness is moving the box.
+judge  the ATTRIBUTION is right and I verified it: `Lf/h` IS the ALLOCATION force factor
+       exactly, at **4000 of 4000** cells over both readings, and the `alloc only` area
+       column never exceeds it at **0 of 32400** cells -- which is EH4's weakening
+       direction solved and the "covers" half standing up. What does not stand up is
+       everything published WITHOUT its operating point. The word "reading" in the
+       closing sentence is this artifact's OWN term for `per_face_45` against
+       `uniform_panel` -- it is used in the headline of every table in the file and in
+       the lightest-cell sentence -- and here it is used to mean "variant of the
+       correction", in a bullet whose numbers happen to be reading-dependent. **A reader
+       who takes the obvious meaning reads "safe under per_face_45 and low under
+       uniform_panel" and gets the direction backwards at 1512 of 2000 cells.**
+```
+
+**The silently wrong result, as FR1's last clause requires.** `truss_sizing.md` tells a reader by how much to scale a published `diag A` -- a diagonal area someone sizes steel against. At `Vz = 1e5 N`, a perfectly ordinary arm shear, a reader who applies the artifact's own published factor to the artifact's own published `diag A` publishes a number that is **12.1%, 23.8% and 36.1% LOW** at three of the table's own four rows; at `uniform_panel` the same factor is **2.48x HIGH** at the worst cell. That is R1073's silently wrong result unchanged in magnitude -- 36.1% here against the 38.6% I measured last round -- with the attribution corrected and the operating point still absent.
+
+**Closed when** `floatfea/cli.py:690-708` names the READING and the LOAD each of the three columns was measured at, and says that the area factor is a FUNCTION of both rather than a constant -- EU1's recorded repair shape is the one to copy: *a constant that is right at one configuration is replaced by the closed form the quantity actually has, with the constant demoted to a floor beneath every configuration*. The force factor already has a closed form (`Lf/h`, exact under `per_face_45`) and the headline says so with that reading named. The `1.77226` sentence either goes or says what the figure actually is. **And the header row is one line**: as shipped it is split across two source strings, so the artifact has a line between the header and the `|---|` delimiter and the table does not render as a table at all (measured below, L24).
+
+**R1077. (BLOCKS -- FR1 head one) THE R1075 REPAIR PUT FOUR NEW DECK-SPECIFIC LITERALS, INCLUDING THE WORDS "ON THIS DECK", INTO THE EXACT PARAGRAPH R1074 NAMED -- AND AT A ONE-CELL GRID THE PARAGRAPH NOW STATES THE MARGIN TWICE, FOUR LINES APART, WITH TWO DIFFERENT VALUES.**
+
+R1074's closing condition: *"every number in `floatfea/cli.py:627-633` ... is either computed from the report being written ... or is stated with the configuration it was measured at and **is not phrased as a claim about this deck**"*. `:627-633` is the margin paragraph. It is the paragraph this finding is about.
+
+```
+claim  `0.39%`, `17.17%`, `six decades` and `20000x` are measurements of the R1
+       placeholder deck's twelve governing rows, hard-coded in the generator, emitted for
+       every configuration and every group, and labelled "on this deck"
+cmd    the shipped FT2.5 fixture at four configurations the diff did not choose, through
+       the real cli.main run entry point, the artifact read back
+out    A -- truss depths [3.0], widths [3.0], shapes [box]:
+         "It is ahead of the next declared cell by 0.00%. ... It does not, on this deck:
+          ... WIDENS the margin from 0.39% to 17.17%."
+         -- ONE PARAGRAPH, 0.00% AND 0.39%, FOUR LINES APART
+       C -- truss depths [1.5], widths [11.0], shapes [triangle]:
+         "ahead of the next declared cell by 8.55%"  beside the literal 0.39%
+       D -- the same grid with TWO candidate groups (platform and hub1):
+         "ahead ... by 3.92%"    (hub1)
+         "ahead ... by 0.39%"    (platform)
+         -- the SAME file carries the literal 0.39% twice, against two different
+            computed margins
+       and the four literals are right ON THE R1 DECK, which I verified myself:
+         12 governing rows; per-row torsion scaled x1e0 to x1e6, per_face_45 ahead at
+         EVERY rung; box margin 0.39% to 17.17%; triangle 0.44% to 23.37%; x1e7 REFUSED
+         at the tube bracket; max abs T = 2.4832e+02 against max abs My = 2.1938e+08;
+         5e6 / 2.4832e2 = 20135
+rule   `floatfea/cli.py:655-663`, inside the per-group loop, published into EVERY group
+       section of `truss_sizing.md`
+cell   one variable, the declared truss block (and in D, the candidate set). Same deck,
+       same npz, same candidates, same trim, same generator.
+judge  the FIGURES are correct and reproduce on my own harness to the digit -- that half
+       of the R1075 repair is as good as it gets, and x1e7 being REFUSED means "six
+       decades" is the whole admissible range rather than a chosen window. **What is
+       wrong is where they are published.** They sit four lines from `_margin(group)`,
+       which IS computed, inside a sentence that says "on this deck" -- so at any
+       configuration but the R1 placeholder the paragraph asserts another deck margin
+       about the reader own. R1074 measured exactly this self-contradiction at case A
+       (0.00% against a literal 0.4%) and the repair replaced 0.4% with 0.39% and added
+       three more literals beside it.
+```
+
+**The silently wrong result.** The margin paragraph is the one place that tells a reader how much to trust the published argmin -- which truss form is lighter. For any configuration other than the R1 placeholder deck it now tells them that THEIR deck margin widens from `0.39%` to `17.17%` under torsion and that the largest torsion THEIR deck records is one twenty-thousandth of `5e6`. Both are numbers about a different deck, in a sentence that says "on this deck", in a published deliverable. At a one-cell grid the same paragraph states the margin as `0.00%` and as `0.39%`.
+
+**Closed when** `floatfea/cli.py:655-663` either computes those figures from the report being written, as `_margin(group)` already does, or names the configuration in the sentence -- "measured on the R1 placeholder deck twelve governing rows" -- and drops "on this deck". **No new apparatus is needed and none is asked for.** The cheapest correct form is six words.
+
+**R1078. (BLOCKS -- FR1 head one) THE COMPUTED FIGURE THAT REPLACED R1074 HARD-CODED ONE IS COUNTED OVER A DOMAIN THAT CANNOT CONTAIN ITS OWN SUBJECT: IT COUNTS FACE SHEAR KEYS, AND THAT KEY IS THE SAME STRING FOR A BOX GENUINELY VERTICAL FACE AND A TRIANGLE INCLINED ONE. IT REPORTS 15 OF 40 WHERE THE TRUE ANSWER IS 0, AND 2 OF 2 ON A DECK WITH NO INCLINED FACE AT ALL.**
+
+```
+claim  `_governing_faces` counts `cell.diagonal_face`, which is the `shear_key` that
+       `faces()` returns; both `faces("box", ...)` and `faces("triangle", ...)` return a
+       face keyed "vertical"; so the published count conflates the box vertical face --
+       where the defect is identically ONE, as the bullet above itself says -- with the
+       triangle inclined face, which is the only place the conclusion applies
+cmd    the per-cell `diagonal_face` of every cell in the artifacts I generated, split by
+       SHAPE, which the published sentence does not do
+out    B -- depths [3.0, 8.0], widths [3.0], shapes [box, triangle]:
+         box      h=3 b=3  per_face_45    vertical
+         box      h=3 b=3  uniform_panel  vertical
+         box      h=8 b=3  per_face_45    vertical
+         box      h=8 b=3  uniform_panel  vertical
+         triangle h=3 b=3  per_face_45    horizontal
+         triangle h=3 b=3  uniform_panel  horizontal
+         triangle h=8 b=3  per_face_45    horizontal
+         triangle h=8 b=3  uniform_panel  horizontal
+       ARTIFACT SAYS: "Of the 8 cells in the tables above, 4 are governed by the
+         horizontal face, 4 are governed by the vertical face."
+       TRUE ANSWER:   all 4 vertical-governed cells are BOX cells, which have no inclined
+         face at all; 0 of the 4 TRIANGLE cells are inclined-governed, so the defect
+         reaches ZERO published `diag A` figures on this configuration
+       A -- depths [3.0], widths [3.0], shapes [box]:
+       ARTIFACT SAYS: "Of the 2 cells in the tables above, 2 are governed by the vertical
+         face." followed by "where the INCLINED face governs it reaches it in full" -- on
+         a configuration that declares no triangle at all
+       C -- shapes [triangle], h=1.5 b=11: 2 of 2 horizontal, and the artifact says so --
+         the one of the three where count and conclusion agree, and they agree by luck
+       G -- depths [2,3,4,6,8], widths [2,3], shapes [box, triangle] -- 40 cells, the
+         largest grid I ran:
+           box      horizontal  5     box      vertical 15
+           triangle horizontal 20     triangle vertical  0
+         ARTIFACT SAYS: "Of the 40 cells in the tables above, 25 are governed by the
+           horizontal face, 15 are governed by the vertical face."
+         TRUE ANSWER:   **0 of 40.** All 15 vertical-governed cells are BOX cells and all
+           20 triangle cells are bottom-governed
+       E -- AND IT IS WRONG IN THE OTHER REGIME TOO, BY EXACTLY THE BOX CELL COUNT. Same
+         grid, driven through `resolve_group` at Vy = T = 0 so the triangle inclined face
+         DOES govern:
+           box      vertical 4        triangle vertical 4
+         the sentence would publish "8 are governed by the vertical face"; the true
+         number the defect reaches in full is **4 of 8**. So the figure is wrong at
+         `4 where 0` on the real deck and at `8 where 4` here -- **the error is exactly
+         the number of BOX cells, every time a box is declared beside a triangle**
+rule   `floatfea/cli.py:523-539` and `:724-734`: "Of the N cells in the tables above,
+       ... Where the BOTTOM face governs, the inclined-face error cannot reach `diag A`
+       at all; where the INCLINED face governs it reaches it in full."
+cell   one variable, the declared `shapes` list. A to B adds "triangle" and nothing else;
+       B to C removes "box"; E moves only `Vy` and `T` to zero. Same deck, same npz,
+       same candidates, same trim throughout.
+judge  this is assertion domain blindness applied to a published figure rather than to a
+       test: **the collection the count inspects cannot contain the distinction the
+       sentence draws from it.** `faces()` keys a triangle inclined face "vertical"
+       because it takes `Vz`, and keys a box vertical face the same way; the sentence two
+       clauses later reads "vertical" as INCLINED and "horizontal" as BOTTOM, both of
+       which are triangle vocabulary. **The repair was the right move** -- a hard-coded
+       figure became a computed one -- and the computed quantity is the wrong quantity.
+       The one the conclusion needs is HOW MANY TRIANGLE CELLS have `diagonal_face ==
+       "vertical"`, and it is one shape test away.
+```
+
+**The silently wrong result.** `truss_sizing.md` states, computed from the run, how many of its own published cells carry the triangle shear-allocation defect in full -- that is, which published `diag A` figures are unconservative. On a 40-cell box-and-triangle grid it reports `15` where the answer is `0`; on the eight-cell one it reports `4` where the answer is `0`; at `Vy = T = 0`, where the inclined face really does govern, it reports `8` where the answer is `4`; and on a box-only configuration it reports `2 of 2` for a shape that has no inclined face and for which the bullet above correctly says the box closes exactly. **The error is the box cell count, in every regime.** It is a count in a published deliverable about which published numbers are wrong, and it is counted over the wrong set.
+
+**Closed when** `_governing_faces` counts only the cells the conclusion is about -- the triangle cells -- or the sentence names the shape for each count; configurations A and B above are where to check it. **A cell that reads the SENTENCE and not only the "Of the N cells" prefix goes with it, for the reason in L22.**
+
+**R1079. (BLOCKS -- FR1 head one) THE SENTENCE THAT REPLACED THE RETRACTED "NONE OF IT IS THE BRACED LENGTH" PUBLISHES A BOUND -- "UP TO `1.18x`" -- AND THE SAME QUANTITY REACHES `3.65x` AT A GEOMETRY THE SAME BULLET LIST TABULATES THREE BULLETS EARLIER. THE FIGURE IS ONE I HANDED YOU, AND IT WAS A MAXIMUM OVER ONE DECK, NOT A BOUND.**
+
+```
+claim  the braced-length-only `diag A` factor exceeds the published `1.18x` at three of
+       the four geometries the SAME bullet list publishes, and by 3.1x at the worst of its own rows, 4.2x over a wider grid
+cmd    one variable, `faces()` dimension `h` moved to `Lf`; allocation NOT touched; the
+       four published rows and then a 2400-cell admissible sweep (h, b each 1.5..11.0 by
+       0.5, three load rows, both readings)
+out    the four PUBLISHED rows, per_face_45, braced length only:
+         h=8.0  b=3.0    Vz=1e5 1.01743   Vz=1e6 1.01743   Vz=1e7 1.00587
+         h=3.0  b=8.0    Vz=1e5 1.66667   Vz=1e6 1.34725   Vz=1e7 1.06756
+         h=2.0  b=8.0    Vz=1e5 2.23594   Vz=1e6 1.41663   Vz=1e7 1.07759
+         h=1.5  b=11.0   Vz=1e5 3.64799   Vz=1e6 1.81718   Vz=1e7 1.14006
+       over 2400 admissible cells: measured MAX 3.64799 at h=1.5 b=11.0, Vz=1e5,
+         per_face_45 -- against a published bound of 1.18
+       and widened, because a coverage figure needs a domain: h and b each 1.0 .. 12.0 in
+         0.25 m steps, 8 load rungs, both readings, **32400 admissible cells** --
+         the bound is EXCEEDED in **5168 of 32400 (16.0%)** and the measured maximum is
+         **4.92621** at h=1.0 b=12.0, Vz=1e5, per_face_45, which is 4.2x the bound
+rule   `floatfea/cli.py:709-714`, published into `truss_sizing.md`: "On a deck whose
+       bottom face governs, changing only the lengths moves `diag A` by exactly
+       `1.0000x`; where the inclined face governs it moves it by **up to `1.18x`**."
+cell   one variable, `faces()`. Allocation, chords, `area_for_*`, readings and grid all
+       held. The BOX is the control and the edit is a no-op on it.
+judge  `1.18x` is MY number -- `1.18433`, verdict 32, measured at `(2, 8)` on the deck's
+       own 60-cell grid at `Vy = T = 0` -- and I published it as a maximum over that set.
+       It arrived in the artifact as the words "up to", which is a BOUND, and it is not
+       one: at `h=1.5, b=11.0`, a row the table three bullets above publishes, the same
+       ablation gives `3.64799`. **This is FR1's own third non-blocking example -- a
+       figure pasted from a verdict without re-measurement -- except that the paste turned
+       a maximum into a bound, and a bound on how wrong a published number can be IS a
+       number someone acts on.** I am naming it against my own figure first.
+```
+
+**The silently wrong result.** `truss_sizing.md` tells a reader how far the braced-length half of the known defect can move a published `diag A`: "up to `1.18x`". At `h=1.5, b=11.0` and `Vz = 1e5 N` it is `3.65x`, and that geometry is one of the four rows the same Limitations bullet list tabulates. A reader who bounds their exposure with the artifact's own bound under-states it by a factor of **3.1**.
+
+**Closed when** `floatfea/cli.py:709-714` either states `1.0000x` and the larger figure as MEASUREMENTS at named `(h, b)` and load -- not as "up to" -- or gives a bound that holds over the declared grid and says what grid it holds over. The honest short form is the qualitative one this project prefers: *the braced length reaches the area and the allocation reaches the force; neither half is bounded by a constant, and both grow with `b/h`.*
+
+**AND THE CENSUS THAT BOUNDS MY OWN FOUR FINDINGS, because a needle too narrow is this project's recorded failure and I would rather state the domain than imply it.** Every numeric token the diff adds to `floatfea/cli.py` prose, extracted by a regex over the added lines rather than by a keyword list -- **19 distinct figures** -- and every one is inside a finding above:
+
+```
+cmd    every numeric literal in the lines this diff ADDS to floatfea/cli.py, regex
+       `(?<![\w.])\d+(\.\d+)?([eE][-+]?\d+)?(x|%)?`, trivial values dropped
+out    the 12 table cells and `1.77226`                     -> R1076
+       `1.0000x` and `1.18x`                                -> R1079
+       `0.39%`, `17.17%`, `20000x`                          -> R1077
+       `60`                                                 -> docstring only, NOT emitted
+rule   the four findings above
+judge  **no published figure this commit adds falls outside them**, and the one `60` that
+       survives is in `_governing_faces`'s own docstring explaining why it was retired,
+       which is the right place for it. The one computed figure the commit adds -- the
+       governing-face count -- carries no literal at all, which is why R1078 is about its
+       DOMAIN and not about its value.
+```
+
+## Closure items
+
+**L20. The L12 repair replaced a wrong count with a wrong description, and it is wrong because the repair added two more occurrences of its own needle.** `floatfea/post/forces_table.py:164-166` now publishes "`grep -rnF "np.savez" --include=*.py floatfea scripts` lists them -- and what it finds is this paragraph **twice** and ONE `np.savez_compressed`". Run exactly as written it returns **5** lines: `forces_table.py:158`, `:164`, `:165`, `:166` -- the paragraph **four** times -- and `scripts/export_f4_dynamic_inputs.py:437`. **Ledger, and here is why so the classification is not implicit:** the dtype refusal this paragraph documents does not depend on the needle, so no wrong result follows. FR1 non-blocking class two. It is the fourth revision of one sentence to get its own count wrong, and CP3 is the rule it keeps falling to -- *if an edit follows the paste, the paste is void*, and here the edit and the paste are the same edit.
+
+**L21. The L14 repair deleted three assertions that could not fail and added one.** `tests/regression/test_ft25_truss_sizing.py:770`, `assert q * lf > tri_t.face_shear["vertical"]`. Line `:763` above it asserts `tri_t.face_shear["vertical"] == q * h`, so `:770` is `q * lf > q * h`, which with `q > 0` is `lf > h` -- and `:748` already asserts `lf > h`. **A second line while you are there:** `q` is built in the cell from `enclosed_area`, which is the code under test, so `:763` cannot see a wrong enclosed area. I measured both halves -- `enclosed_area`'s triangle branch moved to the box value leaves this cell **green** (`:137` catches it, `1 failed, 37 passed`), and the torsion share moved from `q h` to `q hypot(h, b/2)` **reddens `:763`**, which is what the cell is for. So the cell discriminates the defect it claims and the comment claiming it is "the `h` rather than the `Lf` that this pins" is exactly right. No wrong result follows from either half; ledger.
+
+**L22. The computed sentence R1074 required is read by NO assertion, which is the fourth instance this session of the shape you asked me to look for a fourth instance of.** `floatfea/cli.py:539`. My own arm: `_governing_faces` replaced by `return "ARM: this sentence is not read by any assertion"` gives `38 passed in 17.77s` on `tests/regression/test_ft25_truss_sizing.py`. The one assertion added, `:383`, reads the `"Of the {expected_cells} cells in the tables above"` PREFIX and nothing after it. **And the prefix assertion is itself wrong for any configuration with more than one candidate group:** `expected_cells` is `depths x widths x shapes x GEOMETRIES` while the artifact sums over `report.trusses`, one entry per `sections.candidates` group (`floatfea/run/sizing.py:423-428`). Measured at a two-group configuration: the artifact says **"Of the 16 cells"** and the formula gives **8**. The cell is green only because the fixture declares one group -- the collection the assertion inspects cannot contain the failure. **Ledger under FR1 and I say why rather than implying it:** the sentence is correct on all four configurations I generated, so no wrong number reaches anyone from this item alone; the wrong number is R1078 and it is listed there. The three other instances, for the record: `_margin`'s new L16 branch message (nothing reads it either, `grep -rn "needs no steel at all" tests/` is empty); the `enclosed_area` half of L21; and L13 itself, which you closed.
+
+**L23. The new finiteness refusal explains an `inf` by talking about `nan`.** `floatfea/run/config.py:1316-1323`. Measured: `depths: [inf]` gives *"sections.truss.depths[0] is inf. A declared depth or width must be finite: a `nan` in the grid makes `lightest()` return a cell that is not the lightest, because every comparison with `nan` is False"*. The refusal is right, the input is named right, and the explanation is about a different value. **FR1 non-blocking class ONE verbatim** -- a refusal whose message is unclear but whose outcome is right. One clause ("a non-finite value, and a `nan` in particular, ...") is the whole fix.
+
+**L24. The R1073 table does not render as a table.** The header row is split across two source strings (`floatfea/cli.py:695-696`), so the artifact carries `  | \`h\` | \`b\` | \`Lf/h\` (force) | area, allocation alone | area, allocation and` then ` braced length |` then `  |---|---|---|---|---|`. A markdown delimiter row that is not adjacent to its header row is not a table, so a reader of the rendered file sees a paragraph of pipes and a third column whose heading has been cut in half. It is listed here rather than as a finding because every number in it is present and in order, so no wrong number follows from the break alone -- but it is in the lines R1076 has to touch anyway.
+
+**L25. The artifact says it does not publish a figure, in the sentence that publishes it.** `floatfea/cli.py:706-708`: "The reviewer measured a larger shortfall again (`1.77226` at `h=3, b=8`) by a third variant of the correction; **that figure is not reproduced here and is not published here.**" It is published there, in that sentence, in `truss_sizing.md`. And three bullets later the same commit states the principle it breaks -- "**They are described rather than quoted here**, because a retired figure quoted in a published artifact is still a wrong figure in a published artifact" -- which is the right principle and is the reason this is only a ledger line: the figure is not retired, it is mine, and **it is reproducible, as R1076 measures.** FR1 non-blocking class three.
+
+## What this commit got right, and it is the larger part
+
+**You answered the question I asked and then you answered the one I got wrong.** R1075 is the model repair of this step: my finding was that your figures did not reproduce, and you said plainly that they DO and that the real defect was your sentence generalising one synthetic row to "the load". You were right on both counts and I verified both -- the sweep reproduces your `17.17%` to the digit on my own harness built from `governing_rows`, `per_face_45` wins at every admissible rung, and `x1e7` is refused at the tube bracket, so "six decades" is the whole range and not a window you chose. The conclusion you kept is the right conclusion and it stands on `_margin` alone.
+
+**The three arms are the part of this commit worth reading, and the honesty about them is unusual.** Two of three repairs did not work on the first attempt and the commit says so in its headline. L13's real cause was not my diagnosis -- the expected value came from the function under test, so the mutation moved both sides, and relocating the geometry could never have fixed that. You found it by running the mutation rather than by accepting my reason, and you noticed that the control you had chosen was itself sensitive to the mutation and therefore not a control. **That last observation is worth more than the repair**, and I re-ran your mutation and your new derivation independently: `panel * sqrt(2.0)` moved to `panel * 2.0` gives `1 failed` now.
+
+L18 is closed in code AND in a cell, and it was the one ledger item I said I nearly blocked. I re-ran the whole door at fourteen probes: `nan`, `inf` and `-inf` on `depths` and on `widths` all refused, the positivity and emptiness doors beside it still shut, `24.0` and `1.15` still accepted. **Nothing in the truss arithmetic moved** -- `git diff 6d0728c..d99bdc2 -- floatfea/run/sizing.py floatfea/run/truss.py` is empty -- and the box control closes exactly on every `(h, b)` on my own reconstruction, which is the one line that says the gap is a triangle-only gap. The fingerprint reproduces from the committed blobs (`964013e3280db8ba8df2c8ab2a0f82dd`, four files), `ruff`, `black` and `mypy` are clean on my own run, and the tolerance guard catching two literals inside a repair is the third consecutive commit where it earns its keep.
+
+**And all four of my blocking findings are in prose and figures published by one generator, written in the last two commits, and two of the four are against figures I handed you myself.** The attribution in R1073 is now right, which was the hard half. The arithmetic in `floatfea/` has been right every round of this step.
+
+## Corpus (EG4(e))
+
+**The pause held. ZERO new entries.** `tests/corpus/` is untouched by me and my worktree was clean before I wrote this file. Neither exception opens: this diff touches no part of F4's load-mapping gate, and EB6's label-provenance gate is about buoy-centre labels in `tests/verification/rung4/`, not about a published-artifact paragraph. ES0 fixes an interim check scope as "no corpus batch, no closure list" independently of the pause, so there is no batch either way, and today being 28 October is not mine to settle inside an interim check.
+
+**I ran the recorded substitute, both halves, and all four blocking findings came from it. None came from reading the diff.**
+
+* **A continuum grid over the parameter space a decision rule guards.** `h` and `b` each `1.5 .. 11.0` in `0.5 m` steps, 400 pairs, load rows and both readings, three correction variants: **32400 cells for the area factor and 34800 more for the braced-length bound.** It produced **R1076** and **R1079**, and the numbers that make them findings rather than observations are the coverages: the published sentence holds at `16004 of 16200` cells under `per_face_45` and fails at `11537 of 16200` under `uniform_panel`; the published `1.18x` bound is exceeded at `3 of its own 4` tabulated rows, at `5168 of 32400` cells of a wider grid, and by `4.2x` at the worst. **EH4 solved in the direction that would have WEAKENED the finding too** -- looking for a cell where the `alloc only` column exceeds `Lf/h`, which would break the "covers" half -- and there is none in 32400.
+* **A regeneration check on a published deliverable, at configurations the diff did not choose.** Seven of them through the real `cli.main(["run", cfg])` and read back: one box cell; box and triangle; a deep triangle at `h=1.5, b=11.0`; a triangle at `h > b`; a 40-cell five-depth two-width grid; **two candidate groups**, which nothing in this repository had generated before; and `required_section` and `truss_sizing` both set. It produced **R1077** and **R1078**, the two-group case produced the L22 half as a by-product, and the 40-cell grid is where R1078 is worst -- `15` published against a true `0`. **And the both-outputs case is a door I tried to break and could not:** it is refused before any output is written, with a message that says why and what to set instead, which I read in full and would not change.
+* **And a figure of my own inverted rather than defended.** `1.77226` was mine; I solved for the load that produces it instead of restating it, and it is your own two edits at `Vz = 3.0e6`. That is the fifth consecutive round in which running the model at a configuration nobody chose produced the round findings.
+
+## Tolerances touched
+
+**NONE.**
+
+```
+cmd    git diff 6d0728c..d99bdc2 -- floatfea/tolerances.py | wc -c
+out    0
+cmd    git diff 6d0728c..d99bdc2 -- floatfea tests scripts | grep "^+" |
+       grep -nE "isclose|abs_tol|rel_tol|approx|atol|rtol|_COUNTER|tolerance|1e-"
+out    one hit, and it is a comment: `# **EXACTLY, and no tolerance.** With Vz = 0 ...`
+cmd    the same, widened to any comparison the diff adds
+out    +        assert tri_t.face_shear["vertical"] == q * h
+       +        assert q * lf > tri_t.face_shear["vertical"]
+       -- both EXACT, no epsilon on either, and the `abs=1e-12` that was there is DELETED
+cmd    git diff --stat 6d0728c..d99bdc2 -- .claude docs/SUPERVISOR.md CLAUDE.md
+                                  tests/conftest.py tests/corpus .github
+                                  scripts/run_rung.sh docs/milestones results
+out    (empty) -- no STOP-class finding on that head, and the corpus is untouched
+cmd    git ls-files -- tests/conftest.py
+out    tests/conftest.py        <- the pathspec resolves; an empty result here would be a
+                                   broken instruction and not a clean step
+cmd    git show --stat --name-only --format="" d99bdc2
+out    floatfea/cli.py  floatfea/post/forces_table.py  floatfea/run/config.py
+       tests/regression/test_ft25_truss_sizing.py        -- four files
+rule   CLAUDE.md section Tolerances, and section "The reviewer own instructions are not
+       edited inside a step"
+judge  nothing moves, and the net change is an epsilon REMOVED. **EU1 does not attach** --
+       no value and no declared counter moves -- and I ran the adversarial case anyway, at
+       seven configurations and 4000 continuum cells the diff did not choose, because
+       R694's lesson is that a value which does not move is the worst case and not the
+       safest. All four blocking findings came from there.
+```
+
+## Every red traced, one id at a time (EG3 (i)), by the predicate and not by a list (FS1/FT1)
+
+**THE STATE IS EG3 STATE (2), and it clears when the answering report is written and not by time.** Verdicts `085cdc5` and `6d0728c` exist; `docs/reports/R1/step-3.md` does not. **Step 1b does not fire, and I say so rather than skipping it:** there is no `Answers:` header to compare, because there is no step-3 report. The newest revision in the tree is step 2's third, `Answers: verdict 8 @ a7b2f62` (`docs/reports/R1/step-2.md:1302`), and two verdicts are newer -- which is state (2) by definition and is designed, not a defect.
+
+**CI AT THE JUDGED SHA: run 40738036722.** Under CA2 a red CI is a HOLD regardless of the local run, so it is traced rather than noted. **Not CK2's exhausted-allowance state:** every job has per-step conclusions, real counts and real durations, and the two skipped jobs are the determinism workflow's own event gate (CK0). **I waited for the ladder rather than recording an unfinished run as a pass.**
+
+```
+cmd    gh run view 40738036722 --json jobs, name/status/conclusion of each
+out    the verification ladder     | completed | **success**
+       lint, unit and guards       | completed | failure   (the guards step only)
+       CI determinism -- leg       | completed | skipped   (CK0 event gate)
+       CI determinism -- ten legs  | completed | skipped   (CK0 event gate)
+cmd    the ladder job's step-level conclusions, after I waited for it
+out    ladder 1 success / ladder 2 success / ladder 3 success / ladder 6 success /
+       ladder 4 success / ladder 5 success -- **all six rungs completed | success**, and
+       the per-rung counts out of the raw log (job 122991781260):
+         run_rung: 1276 collected, 0 failed, 0 errored, 0 skipped   (rung 1)  run_rung: OK
+         run_rung:   66 collected, 0 failed, 0 errored, 0 skipped   (rung 2)  run_rung: OK
+         run_rung:  314 collected, 0 failed, 0 errored, 0 skipped   (rung 3)  run_rung: OK
+         run_rung:  366 collected, 0 failed, 0 errored, 0 skipped   (rung 6)  run_rung: OK
+         run_rung:  345 collected, 0 failed, 0 errored, 0 skipped   (rung 4)  run_rung: OK
+         run_rung:   87 collected, 0 failed, 0 errored, 0 skipped   (rung 5)  run_rung: OK
+       1276+66+314+345+87 = 2088 = `tests/verification` exactly, and 366 = `tests/regression`
+       exactly -- **so THERE IS NO STOP ON THE LOW-RUNG HEAD, measured on two machines:**
+       CI's six rungs and my own `tests/verification` 2088 passed in 117.30s
+cmd    does CI at this sha cover the WHOLE tree? I checked rather than assumed
+out    ladder 2088 + rung 6 366 + unit 401 + guards 2932 = **5787**, and my own
+       `pytest --collect-only tests` is **5787 tests collected** -- so CI's union at the
+       judged sha IS the whole collection, with nothing stranded behind a skipped step
+cmd    the failing job's step-level conclusions
+out    actionlint success / ruff success / black --check success / mypy success /
+       unit tests success / **guards and meta-tests FAILURE** / Complete job success
+judge  **ruff, black, mypy and the unit tests all RAN and all passed in CI**, which is the
+       hiding CZ1 (iii) warns about NOT happening, and it is the specific thing FP1 was
+       adopted for. The guards step is the only red in that job and it ran to completion:
+       25 minutes 35 seconds, 1688 + 1243 + 1 = 2932 = the root-guard collection exactly.
+cmd    the two step counts, grepped by me out of the raw job log (job 122991782130)
+out    unit tests            : 401 passed in 253.09s
+       guards and meta-tests : 1688 failed, 1243 passed, 1 skipped, 1 warning in 1535.99s
+       -- and my own local `tests/unit` run is 401 passed in 143.94s, the same 401
+```
+
+**THE 1688, BY THE PREDICATE, EVERY ID BY ITS OWN FAILURE MESSAGE.**
+
+```
+cmd    the job log FAILED ids, stripped to the id, sorted, uniqued, grouped by function
+out    1688 unique ids:
+       1451  tests/test_report_carried.py::test_every_named_site_is_touched_or_declared
+        225  tests/test_report_carried.py::test_the_report_carries_the_finding
+          7  tests/test_report_guard_states.py::test_the_guard_survives_the_state
+          1  ::test_the_report_carries_a_WHOLE_SUITE_count
+          1  ::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+          1  ::test_the_CI_section_is_about_the_REVIEWED_commit
+          1  ::test_the_Carried_table_is_what_the_generator_produces
+          1  ::test_the_generator_would_catch_a_row_under_the_wrong_number
+```
+
+* **1451 reach FS1 LIMB ONE, and I read the MESSAGE and not the id.** All 1451 share one text: *"R<n> names <path>, the step's diff does not touch it, and the newest report revision does not say `no change` beside that exact site."* **A report that does not exist cannot say `no change` beside any site**, so every one is red because no answering report exists. The parameters are findings and sites of this verdict file -- `[R1001-floatfea/run/pipeline.py:793]`, `[R1001-f6_results_report.py:718]` -- which is why old finding numbers appear and why the count tracks what the reviewer has written.
+* **225 reach LIMB ONE by their own message too:** *"R<n> is in the newest verdict -- as a finding or as an item it carries forward -- and the newest report revision's Carried section does not mention it."* Same cause, same absent report.
+* **The 7 `test_the_guard_survives_the_state` reach LIMB ONE, AND I CHECKED THEM AS SEVEN AND NOT AS A CASCADE, because that is what EG3 (i) is for.** The seven are `[baseline]`, `[draft_suffix_beside_a_step_report]`, `[non_numeric_step_suffix]`, `[step_number_is_the_empty_string]`, `[superscript_digit_step_number]`, `[verdict_amended_after_the_commit_the_report_answers]` and `[zero_padded_step_number]`. **The control that separates "a planted state broke a guard" from "the inner run is in state (2)" is the INNER count, and the log carries seven of them, all identical:** `1581 failed, 411 passed, 1 skipped` at 51.64s, 51.76s, 52.82s, 52.86s, 52.88s, 53.14s and 53.26s. Seven states, seven identical inner results -- so no planted state changes the inner outcome and none of the seven is red because of its own state. **That is the R629 shape looked for and not found:** a real defect among them would show as an inner count differing from the other six.
+* **`test_the_Carried_table_is_what_the_generator_produces`** -- limb one: *"230 generated rows are not in the report's Carried section"*, which is 230 rows absent from a section that does not exist.
+* **`test_the_CI_section_is_about_the_REVIEWED_commit`** -- limb one, and its message states the cause: *"the CI section's first commit is `d205833` and the verdict judged `3ad464b`"*. There is no step-3 report to carry a regenerated section.
+* **`test_the_generator_would_catch_a_row_under_the_wrong_number` IS THE EIGHTH MEMBER OF A GROUP OF SEVEN AND I CHECKED IT SEPARATELY.** Its own message diagnoses the state and names it: *"step-2-answers.json answers 49 items and the newest verdict carries 206 blocks, and NONE of the answered items appears in it ... THE USUAL CAUSE IS EG3 STATE (2)."* Limb one, and the guard said so itself.
+* **`test_the_report_carries_a_WHOLE_SUITE_count` and `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` reach FT1 LIMB TWO, which names both of them by name and by reason.** The second's concrete message is *"run 39162423263: the table says `**no result** (status `in_progress`)`, gh says `failure`"* -- a run that had not finished when the section was generated, which is the subject-is-its-own-commit case exactly. The first's is *"the newest revision carries no whole-suite line"*, and `scripts/suite_count.py` measures a clean worktree AT a commit, so the line naming a sha cannot be inside that sha.
+
+**0 UNMATCHED. 1686 limb one, 2 limb two, 1688 total.**
+
+**AND THE CONTROL THAT MAKES THE TRACE A MEASUREMENT RATHER THAN A READING, RUN BY ME AT A FRESH WORKTREE.**
+
+```
+cmd    git worktree add <scratchpad>/ctl-bd315a1 bd315a1
+       python -m pytest -q -p no:randomly tests/test_report_carried.py
+                                          tests/test_report_guard_states.py
+out    149 passed in 151.11s (0:02:31)      exit 0
+rule   FS1/FT1 -- a list of names cannot be checked against a failure message; only
+       running the ids at a commit where a verdict is ANSWERED can
+judge  **0 failed** at a commit whose newest verdict HAS an answering report. Not one of
+       the reds survives into that tree, so the whole set is answered-report-dependent BY
+       MEASUREMENT and not by family. The collected count differs -- 149 against 2932 --
+       because the parametrisation is a function of that tree's own verdict file, which is
+       R861 again and the reason a baseline of names cannot work here.
+cmd    and the count moved from the previous round's 1672 to 1688 BECAUSE OF WHAT I WROTE
+out    1672 at 3ad464b, 1688 at d99bdc2; the 16 are the previous verdict's own findings and
+       sites entering two parametrised guards. **The baseline is a function of what the
+       reviewer writes**, which is why I checked the predicate and not a number.
+```
+
+## Next step opens when
+
+**This is an interim check, so it closes nothing and opens nothing (ES0, FK1).** Step 3 stays open and HOLD at **0 of 3** reviewed revisions. The next commit answers, in this order:
+
+1. **R1076 -- the area-factor table with no reading and no load.** `floatfea/cli.py:690-708`. Each of the three columns names the READING and the LOAD it was measured at; the area factor is stated as a function of both, with its measured range over a named grid, or as the closed form with the published constants demoted to a floor (EU1's recorded shape); the headline `Lf/h IS THE FACTOR ON THE FORCE` says WHICH CORRECTION it is exact for -- it is exact for the allocation alone at both readings, and under the two-edit correction at `uniform_panel` the measured force factor is `1.37437` where it publishes `1.66667`; the `1.77226` sentence goes or says what the figure is; and the header row is one source line so the table renders (L24).
+2. **R1077 -- four new deck-specific literals in the paragraph R1074 named.** `floatfea/cli.py:655-663`. Computed from the report being written, or the configuration named in the sentence and "on this deck" deleted. **Check it at a one-cell grid**, where `_margin` gives `0.00%` and the literal says `0.39%`.
+3. **R1078 -- the governing-face count over the wrong set.** `floatfea/cli.py:523-539`. Count the triangle cells, or name the shape in each count. **Check it at a box-only configuration**, where the artifact today tells a reader with no inclined face that 2 of 2 of their cells are governed by it.
+4. **R1079 -- the `1.18x` published as a bound.** `floatfea/cli.py:709-714`. State `1.0000x` and the larger figure as measurements at named `(h, b)` and load, or give a bound that holds over the declared grid and name the grid. **Check it at `h=1.5, b=11.0`, which the same bullet list already tabulates**, where the measured value is `3.65x`.
+5. **R867 to R870**, by name, twenty-sixth round. Still blocking, still untouched. FT2.6 is next per your own plan and I am not asking you to reorder; the one thing worth a line is that `docs/milestones/R1.md:370` names **R867 to R869** where the carried item names four, and that mismatch should be settled when FT2.7 is built rather than discovered inside it.
+6. **Condition 4 of the FT2.5 ruling** -- the disclosure sentence for Xabier -- when the step-3 report exists. The F6b paragraph goes with it and is now relayed in both the commit message and the artifact, which is more than the condition asked.
+7. **L20 through L25 join the ledger** with R1065, R1066 and R1068, fixed once in the closure commit and not re-reviewed item by item. **L22 is the one I would read first**, not because it blocks but because it is the fourth instance in two commits of a figure or a sentence that nothing reads, and three of the four were created by repairs for the other three.
+8. **The push (FP1) continued.** It gave this round a CI run at the judged sha with `ruff`, `black`, `mypy` and the unit tests all RUN and all green before the guards step, which is the hiding CZ1 (iii) exists to see NOT happening.
+9. **The schedule.** FR0's 5 November is the target. Nothing in this round slipped it and I am not reopening the escalation FR0 answered; the next progress statement is step 3's first reviewed revision (FR5). **And the one thing a reader of four consecutive HOLDs should be told:** every blocking finding of the last four rounds has been in the SAME bullet list and the SAME margin paragraph of the SAME generator, and in each round the repair was right about the thing it was asked and wrong about one adjacent claim in the same paragraph. The pattern is not carelessness and it is not the arithmetic -- **it is that a figure is checked against the configuration its author chose, and this generator writes for configurations nobody chose.** All four findings this round came from running the generator or the model at a configuration the diff did not pick. That is cheap: four runs, under three seconds each, and it is now the thing I would do first before writing any figure into that file.
+
+**And the one thing I ask of the step-3 report when it is written:** its `Answers:` header must name THIS verdict and not an earlier one. Step 1b is one comparison and it is the one thing no machine in this repository checks.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: 3ad464b1b8453d485725f1ac60d4ccfbb2cca863
 **Reviewed commit: `3ad464b1b8453d485725f1ac60d4ccfbb2cca863`.**
 Verdict: HOLD
