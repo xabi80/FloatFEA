@@ -70,14 +70,14 @@ moves with the section.** So hold the remainder at its published value and scale
 the arm:
 
 ```
-  g L^2 / 2                    = 1.225831e+04 N.m per (kg/m)
+  g L^2 / 2                    = 1.226250e+04 N.m per (kg/m)
   published static root |My|   = 1.916016e+08 N.m
-  of which the remainder's share = 7.667992e+07 N.m  (40.0%), constant in the section
+  of which the remainder's share = 7.664066e+07 N.m  (40.0%), constant in the section
 
 search                          mu implied       arm term    + remainder  /published
-i_min_wall_at_D_2.5              21132.441   2.590481e+08   3.357280e+08       1.752
-ii_min_diameter_at_t_180mm       13405.993   1.643348e+08   2.410148e+08       1.258
-iii_min_area                      8063.695   9.884729e+07   1.755272e+08       0.916
+i_min_wall_at_D_2.5              21132.441   2.591366e+08   3.357772e+08       1.752
+ii_min_diameter_at_t_180mm       13405.993   1.643910e+08   2.410316e+08       1.258
+iii_min_area                      8063.695   9.888106e+07   1.755217e+08       0.916
 ```
 
 **2 of the three platform answers imply a static root moment ABOVE the present total**, the worst by `75%` —

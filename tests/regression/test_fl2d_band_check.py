@@ -693,3 +693,182 @@ def test_R1051_the_CONTROL_the_shipped_float64_lam_still_publishes(tmp_path) -> 
     assert cli.main(["run", str(path)]) == 0
     written = sorted(p.name for p in out_dir.glob("*"))
     assert written == ["member_forces.csv", "report.md", "utilisation.csv"], written
+
+
+# ---------------------------------------------------------------------------
+# R1058 / R1059: THE VALUES AND THE WIDTH OF THE SAME DECLARED FIELD
+#
+# The dtype gate above decides the CONTAINER. `np.nan` is a float64, so it passed, and
+# then lost every comparison in the per-member-station peak selection -- so the polluted
+# case was silently DROPPED from the envelope rather than reddening it. Driven through
+# the real CLI by the reviewer, one variable moved:
+#
+#     finite (CONTROL)   EXIT 0   U = 1.71167  hub4_arm ROOT  T = 12.5 s  3.3.2
+#     case1/lam = NaN    EXIT 0   U = 1.35117  hub4_arm ROOT  T = 14 s    3.3.2
+#     one entry = NaN    EXIT 0   U = 1.71167 unchanged, 216 of 1248 rows nan
+#     one entry = inf    EXIT 0   U = 1.71167 unchanged, 216 of 1248 rows nan
+#
+# `U = 1.35117` where the truth is `1.71167` -- 21% LOW, in the direction that reads
+# safer than it is, with the governing period absent from `utilisation.csv` and not one
+# `nan` in its 32 rows. The existing guard is a COUNT (`len(peak) != len(static)`): it
+# catches EVERY case being NaN and cannot see one of four contributing nothing.
+
+
+GOVERNING_CASE_INDEX = 1
+"""`case1` is `T_full = 12.5 s`, the period the step-1 gate pins as governing.
+
+Asserted rather than assumed by `test_R1058_the_polluted_case_IS_the_governing_one`
+below, because the whole force of the finding is that the case dropped from the envelope
+is the one that sets it.
+"""
+
+
+def _lam_polluted(tmp_path, how: str):
+    """The shipped example with `case1/lam` made non-finite, one way of three.
+
+    ONE VARIABLE: the VALUES of that one array. Every other key, the sidecar, the deck and
+    the configuration are the shipped ones, copied by `_example_in(copy_data=True)`.
+
+    `one_nan` and `one_inf` move a SINGLE entry, which is the condition's clause (i) and
+    the shape a diverged solve produces first; `whole_case` fills the governing case,
+    which is clause (ii) and the configuration that published `1.35117`.
+    """
+    path, out_dir, npz = _example_in(tmp_path, copy_data=True)
+    key = f"case{GOVERNING_CASE_INDEX}/lam"
+    raw = np.load(npz, allow_pickle=False)
+    flat = {k: raw[k] for k in raw.files}
+    lam = np.array(flat[key], dtype=np.float64)
+    if how == "one_nan":
+        lam[0, 0] = np.nan
+    elif how == "one_inf":
+        lam[0, 0] = np.inf
+    elif how == "whole_case":
+        lam[:, :] = np.nan
+    else:  # pragma: no cover - a mutation name with no arm is a test defect, not a path
+        raise AssertionError(how)
+    flat[key] = lam
+    np.savez(npz, **flat)
+    return path, out_dir, lam.size
+
+
+@pytest.mark.parametrize(
+    "how, offending",
+    [
+        pytest.param("one_nan", 1, id="a_SINGLE_nan"),
+        pytest.param("one_inf", 1, id="a_SINGLE_inf"),
+        pytest.param("whole_case", None, id="the_WHOLE_governing_case"),
+    ],
+)
+def test_R1058_a_NON_FINITE_lam_is_REFUSED_and_writes_NOTHING(
+    tmp_path, how: str, offending: int | None
+) -> None:
+    """Clauses (i) and (ii) of the condition, each through `floatfea.cli.main`.
+
+    The refusal must name the KEY, HOW MANY entries offend, and the fault in this
+    repository's own words -- `floatfea/io/reader.py`'s `NON_FINITE` is "NaN or inf in a
+    channel" and `scripts/export_f4_dynamic_inputs.py` refuses it with "a non-finite value
+    cannot be compared, so this is a failure rather than a difference of zero". Both had
+    already ruled on this field's siblings; the one read that publishes had not.
+    """
+    from floatfea import cli
+
+    path, out_dir, size = _lam_polluted(tmp_path, how)
+    with pytest.raises(SystemExit) as caught:
+        cli.main(["run", str(path)])
+    message = str(caught.value)
+    assert f"case{GOVERNING_CASE_INDEX}/lam" in message, message
+    assert "NaN or inf in a channel" in message, message
+    assert "cannot be compared" in message, message
+    # HOW MANY, which is the clause a bare "there is a NaN" would not satisfy: one entry
+    # reads as `1 of <size>` and the whole case as `<size> of <size>`.
+    expected = size if offending is None else offending
+    assert f"{expected} of {size}" in message, message
+    written = sorted(p.name for p in out_dir.glob("*")) if out_dir.exists() else []
+    assert written == [], (
+        f"the refusal left {written} on disk; a run whose joint reactions were not finite "
+        f"must publish no utilisation at all"
+    )
+
+
+def test_R1058_the_polluted_case_IS_the_governing_one(tmp_path) -> None:
+    """`GOVERNING_CASE_INDEX` is the period the step-1 gate pins, not an index I chose.
+
+    Without this the arms above would still be red-on-revert while testing a case that
+    never set the envelope, and the finding's force -- the case that DROPS OUT is the one
+    that GOVERNS -- would be asserted nowhere.
+    """
+    path, _out_dir, npz = _example_in(tmp_path, copy_data=True)
+    cfg = load_config(path)
+    with np.load(npz, allow_pickle=False) as raw:
+        periods = tuple(float(x) for x in raw["periods_full_s"])
+    # not-a-tolerance: 12.5 s is a RECORDED period of the dynamic-inputs file and a
+    # DECLARED entry of `load_cases.governing_periods` -- an input on both sides, compared
+    # for exact equality. Nothing here is permitted to differ by it, and a window would
+    # make the cell green on a file recording some other period near 12.5 s, which is the
+    # one thing it exists to rule out.
+    assert periods[GOVERNING_CASE_INDEX] == 12.5, periods  # not-a-tolerance: recorded
+    assert (
+        12.5 in cfg.load_cases.governing_periods
+    ), cfg.load_cases.governing_periods  # not-a-tolerance: declared
+
+
+def test_R1059_a_NARROWER_FLOAT_lam_is_REFUSED_and_float64_is_ADMITTED(tmp_path) -> None:
+    """The width, both directions (EH4), because `kind == "f"` was the wrong axis.
+
+    `np.dtype("float16").kind` is `f` with eleven significand bits, so the kind test
+    admitted it: EXIT 0, `U = 1.71177` against `1.71167`, and 9535 of 16224 member-force
+    cells moved. The gate is float64 exactly -- the width
+    `scripts/export_f4_dynamic_inputs.py` writes -- and the refusal says to re-export.
+
+    **The admitting direction is asserted in the same cell**: the shipped file's `lam` IS
+    float64, so narrowing the gate cannot have made `floatfea run` unable to run. The
+    three-artifact half of that is
+    `test_R1051_the_CONTROL_the_shipped_float64_lam_still_publishes`.
+    """
+    from floatfea import cli
+
+    path, out_dir, npz = _example_in(tmp_path, copy_data=True)
+    with np.load(npz, allow_pickle=False) as raw:
+        assert raw["case0/lam"].dtype == np.dtype(np.float64), raw["case0/lam"].dtype
+
+    path, out_dir = _lam_retyped(tmp_path, "float16")
+    with pytest.raises(SystemExit) as caught:
+        cli.main(["run", str(path)])
+    message = str(caught.value)
+    assert "float16" in message, message
+    assert "WIDENS a float16 array back" in message, message
+    written = sorted(p.name for p in out_dir.glob("*")) if out_dir.exists() else []
+    assert written == [], written
+
+
+def test_R1059_a_NON_ARRAY_is_still_REFUSED_after_the_width_was_narrowed() -> None:
+    """`np.dtype(None)` is `float64`, so a bare equality test ADMITS a non-array.
+
+    The kind test R1059 replaced read
+    `getattr(getattr(lam, "dtype", None), "kind", None) != "f"`, which refused anything
+    with no `dtype`. Narrowing the width to `np.dtype(np.float64)` regressed that, because
+    `None != np.dtype(np.float64)` is **False** -- numpy resolves `None` to `float64`
+    inside its own `__eq__`. Measured on the narrowing before the repair: `[[1.0, 2.0]]`
+    and `1.0` ADMITTED, and `None` reaching `np.isfinite` and raising an uncaught
+    `TypeError`.
+
+    **Nothing in the diff pointed at it.** It came out of driving every dtype class and
+    value shape through the gate -- the configuration the commit did not choose -- which is
+    EU1's reason for running the adversarial case even where it does not formally attach.
+    The arrival path in production is an npz subscript, which always yields an ndarray, so
+    this is the public decision's contract rather than a live hole; it is held because the
+    decision is exported and called from two sites, one of which publishes an EZ0
+    deliverable.
+    """
+    from floatfea.post.forces_table import checked_joint_reactions
+
+    for probe in ([[1.0, 2.0]], 1.0, None, "1.0", {"a": 1.0}):
+        with pytest.raises(SystemExit) as caught:
+            checked_joint_reactions(probe, "case0/lam")
+        message = str(caught.value)
+        assert "the joint-reaction multipliers are" in message, message
+        assert type(probe).__name__ in message, message
+    # THE WEAKENING DIRECTION: the dtype the exporter writes is still admitted, and the
+    # object comes back unchanged rather than converted.
+    shipped = np.zeros((4, 64), dtype=np.float64)
+    assert checked_joint_reactions(shipped, "case0/lam") is shipped

@@ -85,7 +85,16 @@ ROWS_PER_JOINT_YAW_LOCKED = 4
 
 
 def checked_joint_reactions(lam: Any, where: str) -> Any:
-    """The joint-reaction array, held to the FLOATING dtype its schema declares (R1051).
+    """The joint-reaction array, held to the dtype AND the values its schema declares.
+
+    Three axes of one declared field, and they arrived in three commits rather than one.
+    `docs/load-interchange-v1.md:110` declares `lam[N,n_rows]  multipliers, dt-free,
+    physical`:
+
+        n_rows   guarded since F4 -- `ROWS_PER_JOINT_YAW_LOCKED` below, which refuses a
+                 transposed array by name
+        dtype    R1051, and NARROWED by R1059 -- see WHICH FLOATING WIDTH
+        values   R1058 -- see THE VALUES, which is the half a dtype cannot decide
 
     `docs/load-interchange-v1.md:110` declares `lam[N,n_rows]  multipliers, dt-free,
     physical`. Nothing between the npz and this module checked that, and
@@ -111,28 +120,107 @@ def checked_joint_reactions(lam: Any, where: str) -> Any:
     and it is right to: a recorded PERIOD or Froude SCALE may arrive as an integer, and
     `50` is as good a scale as `50.0`. A physical multiplier may not. An integer `lam` is a
     TRUNCATED `lam`, and the int64 arm above is what truncation looks like from outside --
-    a different governing CLAUSE at a utilisation nobody chose. So this gate asks for `f`
-    alone, and reusing the scalar decision here would have left the int64 arm exactly as it
-    was.
+    a different governing CLAUSE at a utilisation nobody chose. So reusing the scalar
+    decision here would have left the int64 arm exactly as it was.
+
+    **WHICH FLOATING WIDTH, which is R1059 and is answered here rather than left open.**
+    Kind `f` was the wrong AXIS for the reason the paragraph above gives: the
+    justification is about PRECISION and `np.dtype("float16").kind` is `f` with eleven
+    significand bits. Measured through the real CLI, one variable moved: **a float16 `lam`
+    gave EXIT 0 and `U = 1.71177` against the control's `1.71167`, with 9535 of 16224
+    cells of `member_forces.csv` changed** -- torsion at one station `1.5e-07` becoming
+    `0.032`, `Vy` at another `-0.0032 N` becoming `-11.93 N`. So the gate is **float64
+    exactly**, and the reason is not tidiness either:
+
+        the schema declares no WIDTH, so this module declares one and names it here;
+        `scripts/export_f4_dynamic_inputs.py` -- the only writer of this field in the
+        repository -- writes `np.float64`, so a narrower file did not come from the
+        exporter the refusal points at;
+        and `np.asarray(..., dtype=np.float64)` downstream WIDENS a lossy array back,
+        so nothing after this point can tell a float16 file from a float64 one.
+
+    A float32 file is therefore refused with a message that says to re-export rather than
+    being computed from quietly. If a future exporter has reason to write a narrower
+    width, that is a schema change in `docs/load-interchange-v1.md` and a change here, not
+    a silent widening at the read.
+
+    **THE VALUES, which is R1058 and is the half no dtype can decide.** `np.nan` is a
+    float64, so it passed the dtype gate above on the commit that added it. Driven through
+    the real CLI by the reviewer, one variable moved -- `case1/lam`, the GOVERNING case at
+    `T_full = 12.5 s`, filled with `np.nan`:
+
+        finite (CONTROL)   EXIT 0   U = 1.71167  hub4_arm ROOT  T = 12.5 s  3.3.2
+        case1/lam = NaN    EXIT 0   U = 1.35117  hub4_arm ROOT  T = 14 s    3.3.2
+        one entry = NaN    EXIT 0   U = 1.71167 unchanged, 216 of 1248 rows nan
+        one entry = inf    EXIT 0   U = 1.71167 unchanged, 216 of 1248 rows nan
+
+    **`U = 1.35117` where the truth is `1.71167` -- 21% low, in the direction that reads
+    safer than it is**, with the governing period absent from `utilisation.csv` and not one
+    `nan` in its 32 rows. The mechanism is that a NaN loses every comparison in the
+    per-member-station peak selection below, so the polluted case is silently DROPPED from
+    the envelope instead of reddening it, and the published governing utilisation becomes
+    the best of the cases that remain. The existing guard is a COUNT (`len(peak) !=
+    len(static)`, below): it catches EVERY case being NaN, because then no station has a
+    peak at all, and it cannot see one of four cases contributing nothing, because the
+    other three still supply a peak for all 48 stations. The collection the assertion
+    inspects cannot contain the failure.
+
+    **This repository had already ruled on it twice, in two sibling files, and the one read
+    that publishes did not share the ruling:** `floatfea/io/reader.py` carries
+    `NON_FINITE = "NaN or inf in a channel"`, and `scripts/export_f4_dynamic_inputs.py`
+    refuses it for every array by name with "a non-finite value cannot be compared, so
+    this is a failure rather than a difference of zero". The fault's words below are the
+    reader's, not new ones.
     """
-    kind = getattr(getattr(lam, "dtype", None), "kind", None)
-    if kind != "f":
+    dtype = getattr(lam, "dtype", None)
+    # **`dtype is None` IS TESTED SEPARATELY AND IT IS NOT DEFENSIVE TIDINESS.**
+    # `np.dtype(None)` is `float64`, so `None != np.dtype(np.float64)` is **False**: an
+    # object with no `dtype` at all -- a python list, a float, a dict -- passes a bare
+    # equality test. The kind test this replaced read
+    # `getattr(getattr(lam, "dtype", None), "kind", None) != "f"` and refused those, so
+    # narrowing the width to float64 REGRESSED them from refused to admitted, and the
+    # adversarial probe over every dtype class and value shape is what found it rather
+    # than anything in the diff. Measured: `[[1.0, 2.0]]` and `1.0` admitted, `None`
+    # reaching `np.isfinite` and raising an uncaught `TypeError`.
+    if dtype is None or dtype != np.dtype(np.float64):
         # `str(dtype)` and not `dtype.name`: the latter spells `<U8` as `str256`, which
         # is the bit width and not a spelling a reader would recognise from the file they
-        # exported. `bool`, `<U8` and `int64` all come back as themselves.
+        # exported. `bool`, `<U8`, `int64` and `float16` all come back as themselves.
         spelling = (
-            f"{type(lam).__name__} of dtype {lam.dtype}" if kind is not None else type(lam).__name__
+            f"{type(lam).__name__} of dtype {dtype}" if dtype is not None else type(lam).__name__
         )
         raise SystemExit(
             f"{where}: the joint-reaction multipliers are {spelling}, and "
             f"`docs/load-interchange-v1.md` declares `lam[N,n_rows]  multipliers, dt-free, "
-            f"physical` -- a floating array. This is not refused for tidiness: "
-            f"`np.asarray(..., dtype=np.float64)` converts a bool array to 1.0/0.0, a text "
-            f"array by re-parsing truncated digits, and an integer array as truncated "
-            f"multipliers, and each of those publishes a governing utilisation at exit 0. "
-            f"A bool-typed `lam` publishes `U = 0.995379` -- PASSING -- where the same file "
-            f"at float64 gives `1.71167` (R1051). Re-export the file with "
-            f"`python scripts/export_f4_dynamic_inputs.py`."
+            f"physical` -- which this module reads at float64, the width "
+            f"`scripts/export_f4_dynamic_inputs.py` writes. This is not refused for "
+            f"tidiness: `np.asarray(..., dtype=np.float64)` converts a bool array to "
+            f"1.0/0.0, a text array by re-parsing truncated digits, an integer array as "
+            f"truncated multipliers, and WIDENS a float16 array back so that nothing "
+            f"downstream can tell -- and each of those publishes a governing utilisation "
+            f"at exit 0. A bool-typed `lam` publishes `U = 0.995379` -- PASSING -- where "
+            f"the same file at float64 gives `1.71167` (R1051); a float16 one publishes "
+            f"`1.71177` with 9535 of 16224 member-force cells moved (R1059). Re-export the "
+            f"file with `python scripts/export_f4_dynamic_inputs.py`."
+        )
+    offending = int(np.count_nonzero(~np.isfinite(lam)))
+    if offending:
+        raise SystemExit(
+            f"{where}: NaN or inf in a channel -- {offending} of {lam.size} joint-reaction "
+            f"multipliers are not finite, and `docs/load-interchange-v1.md` declares "
+            f"`lam[N,n_rows]  multipliers, dt-free, physical`. A non-finite value cannot "
+            f"be compared, so this is a failure rather than a difference of zero -- which "
+            f"is `floatfea/io/reader.py`'s own NON_FINITE wording and "
+            f"`scripts/export_f4_dynamic_inputs.py`'s, both of which refuse it already. "
+            f"It is refused rather than carried because it does not redden the result, it "
+            f"LOWERS it: a NaN loses every comparison in the per-member-station peak "
+            f"selection, so this case drops out of the envelope and the published "
+            f"governing utilisation becomes the best of the cases that remain. Measured, "
+            f"with the governing case alone polluted: `U = 1.35117` published at exit 0 "
+            f"where the finite file gives `1.71167`, 21% low, with the governing period "
+            f"absent from `utilisation.csv` and not one `nan` in it (R1058). The usual "
+            f"cause is a FloatSim solve that diverged; re-run the export and check that "
+            f"its own non-finite refusal fired."
         )
     return lam
 

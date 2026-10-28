@@ -786,3 +786,136 @@ def test_R1033_the_DOOR_refuses_the_two_it_was_admitting() -> None:
     expected = tuple(float(x) for x in raw["periods_full_s"])
     assert checked_recorded_periods(raw["periods_full_s"], "committed") == expected
     assert len(expected) == 6, expected  # non-vacuous: the array is not empty
+
+
+# ---------------------------------------------------------------------------
+# FT2.4: `sections.candidates`, the declared grid FM0's loop steps through
+#
+# `docs/milestones/R1.md` section 4 is where the grid comes from -- "the candidate grid is
+# the config's declared section list" -- and it is also why the loop needs no tolerance:
+# it terminates on a list the configuration wrote rather than on a convergence threshold,
+# and FM0 forbids the tool extending it.
+
+
+def _sections_with(candidates: object) -> dict:
+    """The shipped example's `sections` block with a `candidates` key bolted on."""
+    data = yaml.safe_load(EXAMPLE.read_text(encoding="utf-8"))
+    block = copy.deepcopy(data["sections"])
+    block["candidates"] = candidates
+    return block
+
+
+def test_FT2_4_a_declared_grid_is_PARSED_in_order() -> None:
+    """Declaration order is preserved, and every entry goes through the tube door."""
+    from floatfea.run.config import _parse_sections
+
+    parsed = _parse_sections(
+        _sections_with(
+            {
+                "platform": [
+                    {"d_outer": 2.5, "wall": 0.18},
+                    {"d_outer": 2.5, "wall": 0.30},
+                    {"d_outer": 3.0, "wall": 0.30},
+                ]
+            }
+        )
+    )
+    grid = parsed.candidates["platform"]
+    assert [c.wall for c in grid] == [0.18, 0.30, 0.30]
+    assert [c.d_outer for c in grid] == [2.5, 2.5, 3.0]
+    # The default is EMPTY, which is what every configuration before FT2.4 declares, and
+    # what `required_section: false` needs it to be.
+    assert (
+        _parse_sections(yaml.safe_load(EXAMPLE.read_text(encoding="utf-8"))["sections"]).candidates
+        == {}
+    )
+
+
+@pytest.mark.parametrize(
+    "candidates, needle",
+    [
+        pytest.param(
+            {"spar": [{"d_outer": 2.5, "wall": 0.18}]},
+            "no member group `spar` is declared",
+            id="a_group_the_model_does_not_build",
+        ),
+        pytest.param(
+            {"platform": []},
+            "none was offered",
+            id="an_EMPTY_list",
+        ),
+        pytest.param(
+            {"platform": [{"d_outer": 2.5, "wall": 0.30}, {"d_outer": 2.5, "wall": 0.18}]},
+            "STEPS THE SECTION UP",
+            id="a_grid_that_shrinks",
+        ),
+        pytest.param(
+            {"platform": [{"d_outer": 2.5, "wall": 0.18}, {"d_outer": 2.5, "wall": 0.18}]},
+            "STEPS THE SECTION UP",
+            id="a_grid_that_REPEATS_a_candidate",
+        ),
+        pytest.param(
+            {"platform": {"d_outer": 2.5, "wall": 0.18}},
+            "expected a non-empty list of tubes",
+            id="a_mapping_where_a_list_belongs",
+        ),
+        pytest.param(
+            {"platform": [{"d_outer": 2.5, "wall": 1.5}]},
+            "so the bore is zero or negative",
+            id="a_candidate_that_is_not_a_tube",
+        ),
+        pytest.param(
+            {"platform": [{"d_outer": 2.5, "wall": 0.18, "depth": 3.0}]},
+            "depth",
+            id="a_candidate_with_an_unknown_key",
+        ),
+        pytest.param(
+            {"platform": [{"d_outer": 2.5}]},
+            "wall",
+            id="a_candidate_missing_a_key",
+        ),
+    ],
+)
+def test_FT2_4_the_grid_is_REFUSED_by_name(candidates: object, needle: str) -> None:
+    """Each of these would otherwise reach FM0's loop and be stepped through.
+
+    **The last three are the point of the shared tube door.** `_parse_tube` is what
+    `sections.groups` goes through, so a candidate cannot carry a diameter, a wall or a key
+    that a declared section could not -- without it the grid would have been a second,
+    looser domain for the same quantity, which is the defect R1022 found at the period
+    readers.
+
+    `a_grid_that_REPEATS_a_candidate` is the boundary solved from the side that WEAKENS the
+    check (EH4): the ordering test is `>`, not `>=`, so a repeated entry is refused too --
+    a loop that "stepped up" onto the same section would re-solve the identical model and
+    report a second iteration that moved nothing.
+    """
+    from floatfea.run.config import _parse_sections
+
+    with pytest.raises(ConfigError) as excinfo:
+        _parse_sections(_sections_with(candidates))
+    assert needle in str(excinfo.value), str(excinfo.value)
+
+
+def test_FT2_4_the_grids_ORDER_is_by_AREA_and_not_by_either_dimension() -> None:
+    """A candidate larger in area and SMALLER in diameter is admissible, and is ordered.
+
+    The thing FM0's loop steps up is the SECTION, and a tube may grow in area while its
+    diameter falls. Ordering on `d_outer` or on `wall` alone would refuse a legitimate grid
+    -- so this is the weakening direction of the ordering refusal above, and without it
+    that refusal could have been an ordering on whichever dimension the first test used.
+    """
+    from floatfea.run.config import _parse_sections, _tube_area
+
+    grid = _parse_sections(
+        _sections_with(
+            {
+                "platform": [
+                    {"d_outer": 3.0, "wall": 0.10},
+                    {"d_outer": 2.5, "wall": 0.20},
+                ]
+            }
+        )
+    ).candidates["platform"]
+    assert grid[0].d_outer > grid[1].d_outer, grid
+    assert _tube_area(grid[0]) < _tube_area(grid[1]), grid

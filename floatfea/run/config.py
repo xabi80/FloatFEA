@@ -32,6 +32,7 @@ assumed to be zero.
 
 from __future__ import annotations
 
+import math
 import numbers
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -533,6 +534,24 @@ class Sections:
 
     groups: dict[str, TubeSection]
     material: Material
+    candidates: dict[str, tuple[TubeSection, ...]] = field(default_factory=dict)
+    """FT2.4's grid: the ordered sections `outputs.required_section` may step through.
+
+    `docs/milestones/R1.md` section 4 is explicit that this is where the grid comes from
+    -- "the candidate grid is the config's declared section list" -- and that is also why
+    the loop needs no tolerance: it terminates on a list the configuration wrote, not on a
+    convergence threshold, and **it does not extend the grid on its own** (FM0).
+
+    Empty means no group is sized, which is refused when `required_section` is set rather
+    than reported as an analysis that found nothing: a sizing run with no grid has nothing
+    to step through, and "no candidate passed" and "there were no candidates" are
+    different answers.
+
+    Ordered by AREA, strictly increasing, and `_parse_sections` refuses anything else. The
+    order is not cosmetic: FM0's loop STEPS THE SECTION UP, and on a list in another order
+    the loop would still halt at the first admissible entry while every artifact described
+    it as having stepped up.
+    """
 
 
 # ---------------------------------------------------------------------------
@@ -1035,9 +1054,94 @@ def _parse_mass(block: Any) -> dict[str, MassDistribution]:
     return out
 
 
+def _parse_tube(spec: Any, here: str) -> TubeSection:
+    """One declared tube, bounds-checked and validated. Shared by `groups` and `candidates`.
+
+    One door, so a candidate cannot carry a diameter or a wall that a `groups` entry could
+    not. A second copy of these two `_checked` calls would be a second domain.
+    """
+    _reject_unknown(spec if isinstance(spec, dict) else {}, ("d_outer", "wall"), here)
+    sec = TubeSection(
+        d_outer=_checked(_require(spec, "d_outer", here), f"{here}.d_outer", TUBE_DIAMETER),
+        wall=_checked(_require(spec, "wall", here), f"{here}.wall", TUBE_WALL),
+    )
+    sec.validate(here)
+    return sec
+
+
+def _tube_area(sec: TubeSection) -> float:
+    """The steel area of a declared tube, for the grid's ordering only.
+
+    Not a section property the model uses -- `floatfea.model` derives those from its own
+    `Section`. This exists so `_parse_sections` can say whether one declared candidate is
+    larger than the one before it.
+    """
+    inner = sec.d_outer - 2.0 * sec.wall
+    return math.pi * 0.25 * (sec.d_outer * sec.d_outer - inner * inner)
+
+
+def _parse_candidates(
+    raw: Any, groups: dict[str, TubeSection], where: str
+) -> dict[str, tuple[TubeSection, ...]]:
+    """`sections.candidates`: an ordered, strictly-growing list of tubes per group.
+
+    Three refusals, and each is a thing that would otherwise reach the loop:
+
+    * a group with no entry in `sections.groups` -- the grid would be stepped through for a
+      member group the model does not have, and nothing downstream would look for it;
+    * an empty list -- a group declared for sizing with nothing to size it from, which
+      would exhaust on its first iteration and read as "nothing passed";
+    * a list that does not grow -- see `Sections.candidates`. The pair is named with both
+      areas, because the two tubes may differ in either dimension and "candidate 3 is not
+      larger than candidate 2" does not say which way.
+    """
+    if not isinstance(raw, dict) or not raw:
+        raise ConfigError(
+            f"{where}: expected a mapping of member group to a list of tubes, got "
+            f"{type(raw).__name__}. This is FT2.4's candidate grid and FM0 requires the "
+            f"tool to step through a DECLARED list rather than extend one of its own."
+        )
+    _require_name_keys(raw, where)
+    out: dict[str, tuple[TubeSection, ...]] = {}
+    for name, entries in raw.items():
+        here = f"{where}.{name}"
+        if name not in groups:
+            raise ConfigError(
+                f"{here}: no member group `{name}` is declared in sections.groups, which "
+                f"has {sorted(groups)}. A candidate grid for a group the model does not "
+                f"build would never be stepped through, and the analysis would report a "
+                f"section nothing was sized against."
+            )
+        if not isinstance(entries, list) or not entries:
+            raise ConfigError(
+                f"{here}: expected a non-empty list of tubes, got "
+                f"{type(entries).__name__}. A group named for sizing with no candidate "
+                f"behind it exhausts on its first iteration, which reads as `no candidate "
+                f"passed` when the truth is that none was offered."
+            )
+        tubes = tuple(_parse_tube(spec, f"{here}[{i}]") for i, spec in enumerate(entries))
+        for i in range(len(tubes) - 1):
+            a, b = _tube_area(tubes[i]), _tube_area(tubes[i + 1])
+            if b <= a:
+                raise ConfigError(
+                    f"{here}[{i + 1}]: d_outer {tubes[i + 1].d_outer:g} m, wall "
+                    f"{tubes[i + 1].wall:g} m has steel area {b:.6g} m^2, which is not "
+                    f"more than {here}[{i}]'s {a:.6g} m^2 (d_outer "
+                    f"{tubes[i].d_outer:g} m, wall {tubes[i].wall:g} m). FM0's loop STEPS "
+                    f"THE SECTION UP, so the grid is read in declaration order and must "
+                    f"grow: on a list in any other order the loop would halt at the first "
+                    f"admissible entry while every artifact said it had stepped up. Order "
+                    f"the list by area, or remove the entry."
+                )
+        out[name] = tubes
+    return out
+
+
 def _parse_sections(block: Any) -> Sections:
     where = "sections"
-    _reject_unknown(block if isinstance(block, dict) else {}, ("groups", "material"), where)
+    _reject_unknown(
+        block if isinstance(block, dict) else {}, ("groups", "material", "candidates"), where
+    )
     groups_raw = _require(block, "groups", where)
     if not isinstance(groups_raw, dict) or not groups_raw:
         raise ConfigError(
@@ -1047,14 +1151,7 @@ def _parse_sections(block: Any) -> Sections:
     _require_name_keys(groups_raw, f"{where}.groups")
     groups: dict[str, TubeSection] = {}
     for name, spec in groups_raw.items():
-        here = f"{where}.groups.{name}"
-        _reject_unknown(spec if isinstance(spec, dict) else {}, ("d_outer", "wall"), here)
-        sec = TubeSection(
-            d_outer=_checked(_require(spec, "d_outer", here), f"{here}.d_outer", TUBE_DIAMETER),
-            wall=_checked(_require(spec, "wall", here), f"{here}.wall", TUBE_WALL),
-        )
-        sec.validate(here)
-        groups[name] = sec
+        groups[name] = _parse_tube(spec, f"{where}.groups.{name}")
 
     mat_where = f"{where}.material"
     mat = _require(block, "material", where)
@@ -1065,7 +1162,10 @@ def _parse_sections(block: Any) -> Sections:
         rho=_checked(_require(mat, "rho", mat_where), f"{mat_where}.rho", DENSITY),
         fy=_checked(_require(mat, "Fy", mat_where), f"{mat_where}.Fy", YIELD_STRESS),
     )
-    return Sections(groups=groups, material=material)
+    candidates: dict[str, tuple[TubeSection, ...]] = {}
+    if "candidates" in (block if isinstance(block, dict) else {}):
+        candidates = _parse_candidates(block["candidates"], groups, f"{where}.candidates")
+    return Sections(groups=groups, material=material, candidates=candidates)
 
 
 def _parse_headings(raw: Any, where: str) -> tuple[float, ...]:

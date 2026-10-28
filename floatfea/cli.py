@@ -26,6 +26,7 @@ from floatfea.post.member_forces import COMPONENTS
 from floatfea.run.config import ConfigError, RunConfig, load_config
 from floatfea.run.pipeline import RunResult
 from floatfea.run.pipeline import run as run_pipeline
+from floatfea.run.sizing import SizingReport, size_required_sections
 
 __all__ = ["main"]
 
@@ -387,6 +388,130 @@ def _write_report(path: Path, result: RunResult) -> None:
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
+def _write_required_section(path: Path, report: SizingReport) -> None:
+    """FT2.4's artifact: the walk, the two `max U` values, and what was chosen.
+
+    **BOTH `max U` VALUES, SIDE BY SIDE, IS FM0's OWN REQUIREMENT AND NOT A NICETY.** The
+    fixed-force value is what the proposal was made on; the re-solved value is what the
+    answer rests on. The gap between them is the error in FG2's premise -- that section
+    choice does not change the member forces -- measured rather than assumed, and it is
+    exactly the finding the retired threshold would have hidden by either passing or
+    refusing.
+
+    **EVERY ITERATION IS LISTED, not just the accepted one.** `CLAUDE.md` forbids
+    averaging a per-case diagnostic, and the same reason applies here: a loop reported as
+    "converged in 3 iterations" hides which group was driving it and how far each step
+    moved the answer.
+    """
+    cfg = report.final.config
+    accepted = report.final.governing()
+    study = STUDY_LABEL if cfg.study_only else ""
+    lines: list[str] = [
+        f"# FloatFEA {report.analysis}",
+        "",
+        f"**{study}{LABEL}**",
+        "",
+        "Sections are PROPOSED from the declared configuration's member forces and then",
+        "**re-solved at** (directive FM0). The acceptance is API RP 2A-WSD's own",
+        "`U <= 1.0`; the grid is the configuration's declared `sections.candidates` list,",
+        "which this tool steps through and does not extend.",
+        "",
+        f"**{report.iteration_count} re-solve(s).**",
+        "",
+        f"At the sections chosen below the WHOLE model re-solves to **U = "
+        f"{float(accepted['utilisation']):.6g}** at {accepted['member']} "
+        f"{accepted['station']}, `T_full = {float(accepted['period_full_s']):g} s`, "
+        f"clause {accepted['governing_clause']} — member group `{accepted['body']}`. The "
+        f"loop does not accept a state in which any group, sized or not, is above 1.0.",
+        "",
+        "## What was chosen, and the two max U values",
+        "",
+        "| group | candidate | d_outer (m) | wall (m) | proposed from | fixed-force max U "
+        "| re-solved max U |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for g in report.groups:
+        lines.append(
+            f"| {g.group} | {g.chosen_index} of {len(g.grid)} | {g.chosen.d_outer:g} | "
+            f"{g.chosen.wall:g} | candidate {g.proposed_index} | "
+            f"{g.proposed_fixed_force_u:.6g} | {g.resolved_u:.6g} |"
+        )
+
+    lines += ["", "## The premise, measured rather than assumed", ""]
+    for g in report.groups:
+        if g.proposed_index == g.chosen_index:
+            moved = "the proposal was accepted"
+        else:
+            moved = (
+                f"the re-solve rejected the proposal and the loop stepped "
+                f"{g.chosen_index - g.proposed_index} candidate(s) up"
+            )
+        lines.append(
+            f"* **{g.group}** — fixed-force `max U = {g.proposed_fixed_force_u:.6g}` at "
+            f"candidate {g.proposed_index}, re-solved `max U = {g.resolved_u:.6g}` at "
+            f"candidate {g.chosen_index}; {moved}."
+        )
+
+    lines += ["", "## Every re-solve", ""]
+    for it in report.iterations:
+        sections = ", ".join(
+            f"`{name}` D={it.sections[name].d_outer:g} t={it.sections[name].wall:g} "
+            f"(candidate {it.grid_index[name]})"
+            for name in sorted(it.sections)
+        )
+        lines.append(f"**Re-solve {it.index}** — {sections}")
+        lines.append("")
+        for name in sorted(it.group_worst):
+            row = it.group_worst[name]
+            lines.append(
+                f"* `{name}` worst station — U = {float(row['utilisation']):.6g} at "
+                f"{row['member']} {row['station']}, T_full = "
+                f"{float(row['period_full_s']):g} s, clause {row['governing_clause']}"
+            )
+        gov = it.governing
+        lines.append(
+            f"* whole model — U = {float(gov['utilisation']):.6g} at {gov['member']} "
+            f"{gov['station']}, T_full = {float(gov['period_full_s']):g} s, clause "
+            f"{gov['governing_clause']}"
+        )
+        lines.append("")
+
+    lines += ["## Member groups this analysis did NOT size", ""]
+    if report.unsized:
+        lines.append(
+            "Their **declared** sections were carried into every re-solve above, so the "
+            "`max U` values are produced at a mixture of chosen and declared sections. "
+            "Declare a `sections.candidates` list for a group to size it."
+        )
+        lines.append("")
+        for name in report.unsized:
+            tube = cfg.sections.groups[name]
+            lines.append(
+                f"* `{name}` — declared d_outer {tube.d_outer:g} m, wall {tube.wall:g} m, "
+                f"no candidate grid"
+            )
+    else:
+        lines.append("None: every member group the model builds was sized.")
+
+    lines += [
+        "",
+        "## Limitations this analysis does not escape",
+        "",
+        "* The section is a **stiffness stand-in** for a triangulated truss of undecided",
+        "  depth (`docs/milestones/F1.md:389-390`), so these are indicative sizes.",
+        "* The builder **back-computes an equivalent density** per body so that `rho A`",
+        "  is the deck's own line mass whatever the section is, so stepping a section up",
+        "  does NOT add mass to the model. The steel a chosen section is actually made of",
+        "  is FG4's question and is not asked here.",
+        "* **No joint or connection checks**, no fatigue, no shell sub-models.",
+        "* API RP 2A-WSD is applied as a **working-stress screen**, with no one-third",
+        "  increase (EZ4 Q2, locked).",
+        "",
+    ]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
 def _cmd_run(args: argparse.Namespace) -> int:
     cfg: RunConfig = load_config(args.config)
 
@@ -396,18 +521,29 @@ def _cmd_run(args: argparse.Namespace) -> int:
     # exited 2 -- leaving three artifacts on disk that mention the refusal nowhere. A
     # refusal that arrives after the outputs is not a refusal; it is a warning with a
     # non-zero exit code.
-    if cfg.outputs.required_section or cfg.outputs.truss_sizing:
+    if cfg.outputs.truss_sizing:
         raise ConfigError(
-            "outputs.required_section / outputs.truss_sizing are FL2(b) and are not wired "
-            "in R1 step 1. Under FM0 they must propose from fixed forces and then "
-            "RE-SOLVE at the selected sections, reporting the iteration count and both "
-            "max U values; running them off a single fixed force set is what FM0 ruled "
-            "out. Refused before any output is written, so nothing on disk describes a "
-            "run that did not happen."
+            "outputs.truss_sizing is FL2(b) and is not wired yet -- it is FT2.5, and it is "
+            "the SAME loop as outputs.required_section with a different proposer (a "
+            "box/triangle sweep per group rather than a tube grid). Under FM0 it must "
+            "propose from fixed forces and then RE-SOLVE at the selected sections, "
+            "reporting the iteration count and both max U values; running it off a single "
+            "fixed force set is what FM0 ruled out. Refused before any output is written, "
+            "so nothing on disk describes a run that did not happen."
         )
 
     print(f"floatfea run {cfg.source.name}")
     result = run_pipeline(cfg, progress=lambda line: print(line, flush=True))
+
+    # **BEFORE ANY ARTIFACT IS WRITTEN, which is R809's rule and not tidiness.** The loop
+    # can refuse -- an exhausted grid is a refusal under FM0 -- and a refusal that arrives
+    # after three files are on disk is a warning with a non-zero exit code. R809 was
+    # exactly this shape at exactly this flag: the old blanket refusal sat at the END of
+    # this function, so `required_section: true` wrote member_forces.csv, utilisation.csv
+    # and report.md, printed the governing U, and THEN exited 2.
+    sizing: SizingReport | None = None
+    if cfg.outputs.required_section:
+        sizing = size_required_sections(cfg, result, progress=lambda line: print(line, flush=True))
 
     out = cfg.outputs.directory
     if cfg.outputs.member_forces_csv:
@@ -419,6 +555,9 @@ def _cmd_run(args: argparse.Namespace) -> int:
     if cfg.outputs.report:
         _write_report(out / "report.md", result)
         print(f"  wrote {out / 'report.md'}")
+    if sizing is not None:
+        _write_required_section(out / "required_section.md", sizing)
+        print(f"  wrote {out / 'required_section.md'} ({sizing.iteration_count} re-solve(s))")
 
     governing = result.governing()
     if cfg.study_only:
@@ -429,6 +568,33 @@ def _cmd_run(args: argparse.Namespace) -> int:
         f"(T = {float(governing['period_full_s']):g} s, {governing['governing_clause']})"
     )
     print(f"  total wall time {result.timings['total']:.2f} s")
+
+    # **AFTER the governing line and LABELLED as a different configuration.** The line
+    # above is the DECLARED sections -- the structure as the configuration describes it --
+    # and these are the sections the sizing chose. Printing them before it left
+    # `governing U = 1.71167` as the last word under a sizing run that had just found an
+    # admissible state, which reads as the sizing's answer.
+    if sizing is not None:
+        sized = sizing.final.governing()
+        print(f"\n  {sizing.analysis} -- a DIFFERENT configuration from the line above:")
+        for g in sizing.groups:
+            print(
+                f"    {g.group} -> candidate {g.chosen_index} of {len(g.grid)}, "
+                f"D = {g.chosen.d_outer:g} m, wall = {g.chosen.wall:g} m "
+                f"(fixed-force U = {g.proposed_fixed_force_u:.6g}, re-solved U = "
+                f"{g.resolved_u:.6g})"
+            )
+        for name in sizing.unsized:
+            tube = cfg.sections.groups[name]
+            print(
+                f"    {name} NOT SIZED (no candidate grid) -- declared D = "
+                f"{tube.d_outer:g} m, wall = {tube.wall:g} m, carried into every re-solve"
+            )
+        print(
+            f"    whole model at those sections: U = {float(sized['utilisation']):.6g} at "
+            f"{sized['member']} {sized['station']} "
+            f"(T = {float(sized['period_full_s']):g} s, {sized['governing_clause']})"
+        )
 
     return 0
 

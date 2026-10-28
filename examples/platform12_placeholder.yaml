@@ -71,6 +71,24 @@ sections:
     hub2:     {d_outer: 2.5, wall: 0.180}
     hub3:     {d_outer: 2.5, wall: 0.180}
     hub4:     {d_outer: 2.5, wall: 0.180}
+  # FT2.4's candidate grid for `outputs.required_section`, per member group, ORDERED BY
+  # AREA and strictly growing -- FM0's loop STEPS THE SECTION UP, so declaration order is
+  # the order it walks, and a list that does not grow is refused by name. The tool does
+  # not extend this grid: if it runs out with `max U > 1.0` the run refuses and names the
+  # group and the governing case. Left out here because `required_section` is off; with
+  # it on, a group with no grid is not sized and is named as such in every artifact.
+  #
+  # The two utilisations below are asserted by
+  # `tests/regression/test_ft24_required_section.py` -- the first by
+  # `test_the_TRIMMED_fixture_reproduces_the_SHIPPED_governing_figure`, the second by
+  # `test_END_TO_END_the_CLI_writes_required_section_md_with_both_max_U_values` -- so they
+  # are checkable rather than remembered.
+  #
+  # candidates:
+  #   platform:
+  #     - {d_outer: 2.5, wall: 0.180}    # the declared section; U = 1.71167, FAILS
+  #     - {d_outer: 2.5, wall: 0.300}
+  #     - {d_outer: 2.5, wall: 0.410}    # U = 0.995702, and f6a's own search answer
   material:
     E: 210000000000.0            # Pa      S355 steel
     # G is DERIVED by the model from E and nu = 0.3, and is checked here for EXACT
@@ -139,6 +157,11 @@ outputs:
   member_forces_csv: true
   utilisation_csv: true
   # FL2(b): both OFF by default. Under FM0 they propose from fixed forces and then
-  # RE-SOLVE at the selected sections; neither is part of step 1.
+  # RE-SOLVE at the selected sections.
+  #
+  # `required_section` is wired (FT2.4) and needs a `sections.candidates` grid -- see the
+  # commented block under `sections` above. It writes `required_section.md` beside the
+  # three artifacts and is left off here because step 1's gate pins this run's outputs.
+  # `truss_sizing` is FT2.5 and still refuses by name.
   required_section: false
   truss_sizing: false
