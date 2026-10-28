@@ -61,6 +61,7 @@ from floatfea.basis import E_STEEL, FY_S355  # noqa: E402
 from floatfea.checks.api_wsd import CM_JOINT_TRANSLATION, check_member  # noqa: E402
 from floatfea.model.material import Section  # noqa: E402
 from floatfea.model.platform import build_superstructure  # noqa: E402
+from floatfea.post.forces_table import checked_joint_reactions  # noqa: E402
 from floatfea.run.pipeline import validated_export_scale  # noqa: E402
 
 
@@ -205,7 +206,11 @@ def dynamic_half(shipped, sized, answers: list[dict]) -> dict[str, object]:
         for i, period in enumerate(inp.periods_full_s):
             if float(period) not in GOVERNING_PERIODS:
                 continue
-            lam = raw[f"case{i}/lam"]
+            # R1051: the same gate as `floatfea/post/forces_table.py`, which is where it
+            # is declared -- this script re-solves from the same array, so an ungated read
+            # here would publish `results/F6a/premise_check.json` from whatever the file
+            # happened to hold.
+            lam = checked_joint_reactions(raw[f"case{i}/lam"], f"case{i}/lam")
             for step in range(lam.shape[0]):
                 steps += 1
                 loads = MFT.map_joint_reactions(

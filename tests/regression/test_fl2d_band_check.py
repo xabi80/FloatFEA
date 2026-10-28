@@ -605,3 +605,91 @@ def test_END_TO_END_R1021_the_PERMUTATION_WITH_THE_SECOND_RECORDS_DELETED_REFUSE
         f"the refusal left {written} on disk; nothing should describe a run whose forces "
         f"and period labels came from different cases"
     )
+
+
+# ---------------------------------------------------------------------------
+# R1051: THE JOINT-REACTION ARRAY'S DTYPE, END TO END THROUGH THE REAL CLI
+#
+# `floatfea/post/forces_table.py` read `case{i}/lam` and converted it with
+# `np.asarray(..., dtype=np.float64)`, which converts whatever it is given. The reviewer
+# drove four dtypes through the shipped example's own recipe, one variable moved:
+#
+#     float64 (control)  EXIT 0  governing U = 1.71167  platform:hub4_arm  3.3.2
+#     bool               EXIT 0  governing U = 0.995379 platform:hub1_arm  3.3.2
+#     <U8                EXIT 0  governing U = 1.71654  platform:hub4_arm  3.3.2
+#     int64              EXIT 0  governing U = 1.73988  platform:hub4_arm  3.2.3 bending
+#
+# All four wrote all three artifacts. `U = 0.995379` reads as PASSING where the truth is
+# `1.71167` -- a failing structure published as passing.
+
+
+def _lam_retyped(tmp_path, dtype_name: str):
+    """The shipped example with every `case{i}/lam` cast to `dtype_name`.
+
+    ONE VARIABLE: the dtype of that one array. Every other key, the sidecar, the deck and
+    the configuration are the shipped ones, copied by `_example_in(copy_data=True)`.
+    """
+    path, out_dir, npz = _example_in(tmp_path, copy_data=True)
+    raw = np.load(npz, allow_pickle=False)
+    flat = {}
+    for k in raw.files:
+        v = raw[k]
+        flat[k] = v.astype(dtype_name) if k.endswith("/lam") else v
+    np.savez(npz, **flat)
+    return path, out_dir
+
+
+@pytest.mark.parametrize(
+    "dtype_name, spelled",
+    [
+        pytest.param("bool", "bool", id="bool"),
+        pytest.param("<U8", "<U8", id="U8_string"),
+        pytest.param("int64", "int64", id="int64"),
+    ],
+)
+def test_R1051_a_NON_FLOAT_lam_is_REFUSED_and_writes_NOTHING(
+    tmp_path, dtype_name: str, spelled: str
+) -> None:
+    """The three arms the condition names, each driven through `floatfea.cli.main`.
+
+    **`int64` is the arm that makes this a separate decision.** `is_recorded_number`
+    (R1033) admits dtype kinds `i` and `u`, because a recorded period or Froude scale may
+    legitimately be an integer -- so reusing that decision here would leave the int64 arm
+    exactly as it was. A physical multiplier recorded as an integer is a TRUNCATED
+    multiplier, and `docs/load-interchange-v1.md` declares the field physical.
+    """
+    from floatfea import cli
+
+    path, out_dir = _lam_retyped(tmp_path, dtype_name)
+    with pytest.raises(SystemExit) as caught:
+        cli.main(["run", str(path)])
+    message = str(caught.value)
+    assert "joint-reaction multipliers are" in message, message
+    # The dtype as the EXPORTER spells it, not as `dtype.name` does -- `<U8` is `str256`
+    # there, which is the bit width and tells a reader nothing about their file.
+    assert spelled in message, message
+    assert "multipliers, dt-free, physical" in message, message
+    written = sorted(p.name for p in out_dir.glob("*")) if out_dir.exists() else []
+    assert written == [], (
+        f"the refusal left {written} on disk; a run whose joint reactions were not numbers "
+        f"must publish no utilisation at all"
+    )
+
+
+def test_R1051_the_CONTROL_the_shipped_float64_lam_still_publishes(tmp_path) -> None:
+    """The weakening direction: the gate must not refuse the file this repository ships.
+
+    Without this the three arms above could be an unconditional refusal, which would make
+    `floatfea run` unable to run at all. The governing figure is NOT asserted here -- that
+    is `tests/regression/test_r1_example_golden.py`'s job and it would be a second copy of
+    it; what this cell holds is that the gate admits the shipped dtype and the three
+    artifacts appear.
+    """
+    from floatfea import cli
+
+    path, out_dir, npz = _example_in(tmp_path, copy_data=True)
+    with np.load(npz, allow_pickle=False) as raw:
+        assert raw["case0/lam"].dtype.kind == "f", raw["case0/lam"].dtype
+    assert cli.main(["run", str(path)]) == 0
+    written = sorted(p.name for p in out_dir.glob("*"))
+    assert written == ["member_forces.csv", "report.md", "utilisation.csv"], written

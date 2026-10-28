@@ -84,6 +84,59 @@ ROWS_PER_JOINT_YAW_LOCKED = 4
 """Three translations plus the one locked axis. `floatfea.io.froude`'s composite width."""
 
 
+def checked_joint_reactions(lam: Any, where: str) -> Any:
+    """The joint-reaction array, held to the FLOATING dtype its schema declares (R1051).
+
+    `docs/load-interchange-v1.md:110` declares `lam[N,n_rows]  multipliers, dt-free,
+    physical`. Nothing between the npz and this module checked that, and
+    `np.asarray(..., dtype=np.float64)` converts whatever it is given:
+
+        bool    -> 1.0 / 0.0
+        <U8     -> re-parsed from TRUNCATED text
+        int64   -> the truncated multipliers
+
+    Driven by the reviewer through the real CLI on the shipped example's own recipe, one
+    variable moved and everything else held:
+
+        float64 (control)  EXIT 0  governing U = 1.71167  platform:hub4_arm  3.3.2
+        bool               EXIT 0  governing U = 0.995379 platform:hub1_arm  3.3.2
+        <U8                EXIT 0  governing U = 1.71654  platform:hub4_arm  3.3.2
+        int64              EXIT 0  governing U = 1.73988  platform:hub4_arm  3.2.3 bending
+
+    All four wrote all three artifacts. **`U = 0.995379` reads as PASSING where the truth
+    is `1.71167`** -- a failing structure published as passing, which is the failure mode
+    this project exists to prevent.
+
+    **WHY NOT `is_recorded_number`.** That decision (R1033) admits dtype kinds `i` and `u`,
+    and it is right to: a recorded PERIOD or Froude SCALE may arrive as an integer, and
+    `50` is as good a scale as `50.0`. A physical multiplier may not. An integer `lam` is a
+    TRUNCATED `lam`, and the int64 arm above is what truncation looks like from outside --
+    a different governing CLAUSE at a utilisation nobody chose. So this gate asks for `f`
+    alone, and reusing the scalar decision here would have left the int64 arm exactly as it
+    was.
+    """
+    kind = getattr(getattr(lam, "dtype", None), "kind", None)
+    if kind != "f":
+        # `str(dtype)` and not `dtype.name`: the latter spells `<U8` as `str256`, which
+        # is the bit width and not a spelling a reader would recognise from the file they
+        # exported. `bool`, `<U8` and `int64` all come back as themselves.
+        spelling = (
+            f"{type(lam).__name__} of dtype {lam.dtype}" if kind is not None else type(lam).__name__
+        )
+        raise SystemExit(
+            f"{where}: the joint-reaction multipliers are {spelling}, and "
+            f"`docs/load-interchange-v1.md` declares `lam[N,n_rows]  multipliers, dt-free, "
+            f"physical` -- a floating array. This is not refused for tidiness: "
+            f"`np.asarray(..., dtype=np.float64)` converts a bool array to 1.0/0.0, a text "
+            f"array by re-parsing truncated digits, and an integer array as truncated "
+            f"multipliers, and each of those publishes a governing utilisation at exit 0. "
+            f"A bool-typed `lam` publishes `U = 0.995379` -- PASSING -- where the same file "
+            f"at float64 gives `1.71167` (R1051). Re-export the file with "
+            f"`python scripts/export_f4_dynamic_inputs.py`."
+        )
+    return lam
+
+
 def _lam_full_scale(lam_row: NDArray[np.float64], froude_lambda: float) -> NDArray[np.float64]:
     """One timestep's multipliers, model scale to FULL scale, per joint block.
 
@@ -461,7 +514,9 @@ def compute_rows(
     peak: dict[tuple[str, str, str], tuple[float, float, Any]] = {}
 
     for i, period in enumerate(inp.periods_full_s):
-        lam = raw[f"case{i}/lam"]
+        # R1051: the one bulk numeric array the solve consumes, and the only npz key read
+        # inside `floatfea/` that had no dtype gate.
+        lam = checked_joint_reactions(raw[f"case{i}/lam"], f"case{i}/lam")
         # The worst of each component over the window, per member-station, keeping the
         # max and the min separately -- `CLAUDE.md` forbids averaging a per-case
         # diagnostic, and a signed envelope needs both ends.
