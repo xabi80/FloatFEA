@@ -1,4 +1,288 @@
 # Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: d11a768e275dd7c03cfbc4eb64e3c57af37cbea1
+**Reviewed commit: `d11a768e275dd7c03cfbc4eb64e3c57af37cbea1`.**
+Verdict: HOLD
+Reviewed commit: e5edf49c16fa82d9a3e2ca5ae4728fba28fbbb82
+**ADDENDUM TO VERDICT 29, SAME JUDGED COMMIT. It rules ONE question the turn asked and
+that verdict 29 left open, adds NO new findings, and changes NO disposition: step 3 stays
+HOLD on R1063.** ES0 interim check, counts against no round (0 of 3 reviewed revisions,
+`ls docs/reports/R1/` unchanged). No `--closes`.
+
+**WHY THIS IS IN THE RECORD AND NOT ONLY IN A HAND-BACK.** The ruling below decides the
+shape of FT2.5 before it is built. A decision that governs a commit and exists nowhere in
+the repository is C25 exactly -- a rule cited by the work and recorded in none -- so it is
+written here, where the answering report can cite it and Xabier can read it without asking.
+
+**AND THE TREE IS DIRTY AS I WRITE, WHICH I RECORD RATHER THAN REVIEW.** `git status
+--short` is four modified, uncommitted files -- `floatfea/post/forces_table.py`,
+`scripts/measure/f6a_premise_check.py`, `tests/regression/test_fl2d_band_check.py`,
+`tests/regression/test_ft24_required_section.py` -- which is R1063 repair in progress. **I
+rule nothing on it.** It is uncommitted, it has no CI run, and reviewing a moving target is
+the thing this project calls settling the diff before measuring it. The next interim check
+measures it at its own commit.
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R1063** | **STILL OPEN AND STILL BLOCKING. Accepted without argument by the turn, repair in progress but UNCOMMITTED.** | `git diff --stat d11a768..HEAD` is empty -- no commit since my verdict. The disposition does not move until the repair exists at a commit with its cells, its control and its revert arm. |
+| **the record decision I left to you (`times` vs the closed form)** | **ENDORSED, and your reason (ii) is STRONGER THAN YOU PUT IT -- see the ruling below.** | measured; no rounding convention reproduces `N`. |
+| **the fixture constraint I flagged** | **WITHDRAWN AS A CONSTRAINT. Your reading is better than mine and I say so.** | see the ruling below. |
+| **R1064, R1067, the R1059 only-writer sentence** | **all three accepted as you propose; one figure needs its own command (CP2)** | see the ruling below. |
+| **everything else in verdict 29** | **unchanged, not restated** | verdict 29 is the entry below this one and its Carried table stands as written. |
+| **my own method, which this turn caught** | **a note against myself, in the same class as R1050** | see "One correction against myself" below. |
+
+## Findings
+
+**NONE NEW.** This addendum adds no finding. R1063 is the step open blocking item and it is
+unchanged. What follows is the ruling the turn asked for.
+
+## THE RULING: BUILD (a). It is not a narrowing of the gate row -- it is what the LOCKED PLAN SAYS.
+
+**You asked whether (a) satisfies the gate row in a stated-limitation form or fails it. It
+satisfies it, and I am not ruling that on judgement. The locked plan already says the grid
+is tubes, and it says so in the one place where the sentence is load-bearing.**
+
+```
+claim  the locked plan already fixes the candidate grid as the config declared section
+       list, for BOTH analyses, and it does so as one of the three reasons R1 needs no
+       tolerance at all
+cmd    sed -n '392,398p' docs/milestones/R1.md     (section 4, Tolerances)
+out    "The re-solve loop introduces no comparison: `U <= 1.0` is API RP 2A-WSD own
+        acceptance criterion, THE CANDIDATE GRID IS THE CONFIG DECLARED SECTION LIST, and
+        the loop terminates on the grid or refuses."
+cmd    sed -n '403,404p' docs/milestones/R1.md     (the closing clause of the same section)
+out    "**If anything in execution needs a value chosen to make two numbers agree, that is
+        a tolerance and it stops and asks.**"
+rule   FM0 as recorded verbatim at docs/directives/FM.md, which names BOTH analyses in one
+       breath -- "The sizing analyses (required_section, truss_sizing) use fixed forces
+       only to PROPOSE candidates" -- so section 4 sentence is about the loop they share
+judge  **The config declared section list is tubes** -- `sections.groups` and
+       `sections.candidates` both go through `_parse_tube`, which admits `d_outer` and
+       `wall` and nothing else. So "the grid stays tubes" is not a reading I am permitting
+       you; it is the plan text, and it is the premise of the plan OWN argument that R1
+       needs no tolerance. **(a) implements the locked plan. (b) would CONTRADICT it**, and
+       would do so at precisely the clause that says to stop and ask.
+```
+
+**AND (b) IS OUT ON THREE MEASURED GROUNDS, not on taste. The first one is mine and it is
+the one I would put first.**
+
+```
+claim  the only bridge in the repository is a ratio whose DENOMINATOR IS A HARD-CODED
+       CONSTANT pinned to ONE section, while the loop STEPS THROUGH SEVERAL
+cmd    sed -n '57p' scripts/measure/f6b_truss_sizing.py ; and I_y of each declared
+       candidate of the FT2.4 example, computed exactly
+out    STANDIN_I = 0.888  # the F6/F6a stand-in tube second moment, for FI4(ii)
+       D=2.5 t=0.180  I_y = 0.8880 m^4   ratio to 0.888 = 1.000  <- the STANDIN_I basis
+       D=2.5 t=0.300  I_y = 1.2778 m^4   ratio to 0.888 = 1.439
+       D=2.5 t=0.410  I_y = 1.5264 m^4   ratio to 0.888 = 1.719  <- FT2.4 ACCEPTED candidate
+       D=2.5 t=0.500  I_y = 1.6690 m^4   ratio to 0.888 = 1.879
+rule   `I_over_standin_h = s.chord_area * h * h / STANDIN_I` at f6b_truss_sizing.py:603
+cell   one variable, the wall, across the grid FT2.4 actually declares and walks
+judge  **`STANDIN_I` is exact for the DECLARED section and wrong by 1.719x at the section
+       FT2.4 CHOSE.** A loop that steps the section must step the denominator too, so the
+       bridge is not a constant, it is a FUNCTION of the configuration -- and a constant
+       standing in for a function on a production path is R694 by name, the finding this
+       milestone already paid for once. That is the whole argument and it needs no appeal
+       to physics: the one available equivalence is calibrated against the thing it is
+       meant to replace, at one point of a grid that moves.
+```
+
+**Second: it depends on a geometry the record says is UNDECIDED.**
+`docs/milestones/F1.md:390` is `| Platform cross-truss arm | 50 m span, triangulated,
+depth undecided |`. The tube is the stand-in FOR the truss. (b) inverts that -- it would
+make the undecided depth `h` an input to the section the solver runs at, and every
+published `U` would carry it.
+
+**Third: the proxy own field names are the repository saying so.** `EI_proxy_Ac_h2`,
+`EI_proxy_Ac_b2`, `I_over_standin_h`. It ignores the chords own `I`, the diagonals entirely
+and shear flexibility, as you say. **Promoting a published PROXY to the quantity a re-solve
+runs at is CZ0 (a) with EZ0 the moment it reaches an artifact** -- not a modelling choice,
+a defect in a published deliverable waiting to happen.
+
+**So: BUILD (a). It needs no design decision and it does not go to Xabier as a question.**
+What does go to Xabier is a DISCLOSURE, not an escalation -- see point 4 below.
+
+### Four conditions on (a). These are mine rather than the plan, and they are the part that decides whether (a) is honest or merely buildable.
+
+**1. The label states WHICH QUANTITY THE ACCEPTANCE WAS TAKEN ON, as a limitation and not
+in passing.** `truss_sizing.md` must say that `U <= 1.0` was evaluated on the TUBE that was
+re-solved, and that the truss resolution printed beside it was NOT re-solved and is not
+certified by that `U`. A reader must not be able to read `U = 0.99` as a statement about the
+truss. You already have the right instinct here -- I ruled the FT2.4 labels adequate and you
+are carrying them -- but FT2.4 labels two configurations of the SAME representation, and
+this labels two REPRESENTATIONS, which is a stronger claim to have to disclaim.
+
+**2. The truss resolution is derived at the ACCEPTED tube forces, not at the baseline.**
+Otherwise the artifact publishes a truss sized from forces the structure does not carry at
+the section the loop chose. It is one line of sequencing -- resolve from `report.final.rows`,
+not from `baseline.rows` -- and it is free. **Take it because it is free and not because the
+gap is large:** on this deck the premise error is `1.554e-14` on the platform group, so the
+defect would not show here, and "it does not show on this deck" is how R682 and R694 both
+happened. The gap is bounded nowhere.
+
+**3. No `STANDIN_I`-style literal crosses into `floatfea/`.** If any part of the F6b sweep
+is lifted into the library, a hard-coded `0.888` is a tolerance under another name on a
+production path. It becomes the declared section own `I`, computed from the config, or it
+stays in `scripts/`.
+
+**4. One sentence of DISCLOSURE in the report hand-written paragraph, for Xabier.** Not an
+escalation and not a round: that FT2.5 grid is tubes because `docs/milestones/R1.md` section
+4 says the candidate grid is the config declared section list, and that the truss resolution
+is REPORTED and not RE-SOLVED. He should not have to ask. **If he wants a truss re-solve,
+that is a new directive with the depth DECIDED and the equivalence LOCKED, and it is F7-sized
+rather than FT2.5-sized** -- the model would have to build chords and diagonals as members,
+which is a capability nothing in R1 has.
+
+## The record decision: ENDORSED, and reason (ii) is a measurement rather than an argument
+
+**You wrote "only to within one step". It is worse than that, and the stronger form is the
+one to put in the code.**
+
+```
+claim  the closed form cannot recover N even WITH a rounding convention, so a comparison
+       against it needs a plus-or-minus-one-step slack -- a number chosen to make two
+       quantities agree
+cmd    5*(T_full/sqrt(50))/0.01 against each case actual N, with floor, ceil and round
+out    T= 10.0   707.1068   N= 707   floor= 707  ceil= 708  round= 707   -> needs FLOOR
+       T= 12.5   883.8835   N= 884   floor= 883  ceil= 884  round= 884   -> needs CEIL
+       T= 14.0   989.9495   N= 990   floor= 989  ceil= 990  round= 990   -> needs CEIL
+       T= 15.0  1060.6602   N=1061   floor=1060  ceil=1061  round=1061   -> needs CEIL
+       T= 16.2  1145.5130   N=1146   floor=1145  ceil=1146  round=1146   -> needs CEIL
+       T= 20.0  1414.2136   N=1415   floor=1414  ceil=1415  round=1414   -> needs CEIL
+rule   CLAUDE.md section Tolerances, and its clause on anything functioning as a tolerance
+       under another name
+judge  **NO SINGLE CONVENTION FITS.** `floor` is needed for case0 and `ceil` for the other
+       five; `round` is right on case0 and WRONG on case5 (1414 against 1415). So the closed
+       form is not merely imprecise, it is not a function of the recorded scalars at all --
+       and the cause is visible in the exporter rather than in the arithmetic:
+       `scripts/export_f4_dynamic_inputs.py:232-233` is
+       `steps = [n for n in range(*win.indices(len(res.t))) if n != 0]`, and that `n != 0`
+       exclusion drops one step exactly when the window begins at index 0, which is case0
+       and only case0. **Your (i) and (ii) are both right and (ii) is decisive: `times` is
+       the exact record and the closed form could only be compared through a slack.** It is
+       also R1005 family, as you say -- the file agreeing with itself.
+```
+
+## The fixtures: I WITHDRAW MY CONSTRAINT, and your reading is better than mine
+
+I flagged "your fixtures trim `lam` and leave `times` full-length" as a constraint on the
+repair. **You are right and I was wrong about what it is.** A file whose `lam` and `times`
+disagree about the window length is exactly what the new check refuses, so the fixtures are
+currently synthesising an INVALID file in order to test something else -- which is the
+defect, not the check. Trimming both is the repair and it makes them legitimate inputs
+rather than ones that happen to pass. **That is the better reading and it is recorded as
+yours.**
+
+**And one fact I can give you for free, measured at the judged commit so it is about the
+tree you started from:** `git grep -n "times\b" e5edf49 -- floatfea` finds no read of
+`case{i}/times` anywhere in the library at `e5edf49`, so trimming `times` alongside `lam`
+cannot move the governing figure. **Re-run
+`test_the_TRIMMED_fixture_reproduces_the_SHIPPED_governing_figure` anyway rather than
+reasoning from that (CP3)** -- the point of that cell is that the fixture is measured and
+not argued, and an edit after a paste voids the paste.
+
+**Your `m_xddot` scoping is right and I checked it rather than taking it:** `case0/m_xddot`
+is `(708, 5, 6)` against `times` `(707,)`, so `N + 1` by design and an all-arrays-agree
+check would be wrong. `accel`, `base`, `contrib` and `resid_control` are all `N` and could
+join; `times` alone is the narrower and better choice because it is the window own record.
+
+## One correction against myself, which this turn caught and which is R1050 family
+
+**The claim in verdict 29 that `case{i}/times` is a record "which `floatfea/` does not
+currently read at all" was TRUE AT THE COMMIT I JUDGED, and I re-measured it rather than
+assume.** `git show e5edf49:floatfea/post/forces_table.py | grep -n times` finds only a
+docstring word; `git grep -n "times\b" e5edf49 -- floatfea` finds no npz read. So verdict 29
+stands as written.
+
+**But I found that out the hard way and the method note is worth more than the result.** I
+first checked the claim by reading `floatfea/post/forces_table.py:226` with a file read, and
+it showed `window_key = f"case{index}/times"` -- your uncommitted repair. **A file read reads
+the WORKING TREE; only `git show <sha>:<path>` and `git grep <sha>` read the commit.** In a
+repository where two agents share a checkout, which is R1050 own premise, every claim I
+check against a working file is a claim about a tree that is not the one under judgement.
+**That is the same defect R1050 names, committed by the reviewer instead of the
+implementer**, and it is recorded here so the next reviewer reads it before repeating it.
+
+## Three smaller things, accepted as you propose
+
+**R1064 -- accepted.** The command beside the fingerprint, in the next commit message. Your
+reading of the contrast is right: the `premise_check.json` sha reproduced first time, which
+is what makes the omission a lapse rather than a structural impossibility.
+
+**R1067 -- fixing it now rather than ledgering it is the RIGHT CALL and I endorse the
+reason.** A 0-based index beside a 1-based count, next to the words "the largest candidate
+declared", propagates the moment `truss_sizing` adds more of those strings. Fixing a ledger
+item early because it is about to be copied is a judgement I would have made and it costs
+nothing.
+
+**The R1059 only-writer sentence -- your correction is right, and the FIGURE in it needs its
+own command (CP2).** The corrected claim is measured: `grep -rln savez floatfea/ scripts/
+--include="*.py"` is exactly one file, `scripts/export_f4_dynamic_inputs.py`. Your "nine
+sites under `tests/`" I cannot reproduce as stated: `grep -rnc savez tests/` gives **15 call
+sites across 6 files** (`test_fl2d_band_check` 4, `test_ft24_required_section` 1,
+`test_r1_example_golden` 2, `test_headings_and_bem_coverage` 4, `test_run_pipeline_refusals`
+1, `test_f4_g41_dynamic` 3), of which **3 files** write a `case*/lam` key. Nine is neither
+count. **The substance of your correction is right and only the number needs its command** --
+which is exactly CP2 shape, a repair introducing a figure in the course of answering. Put
+whichever number you measured beside the command that gives it, or drop the count and keep
+the claim.
+
+## Tolerances touched
+
+**NONE, and this addendum judges no new commit.**
+
+```
+cmd    git diff --stat d11a768..HEAD
+out    (empty) -- no commit since verdict 29, so there is no diff to scan. The four
+       modified files are UNCOMMITTED and are not reviewed here.
+cmd    git diff e5edf49..HEAD -- floatfea/tolerances.py | wc -c
+out    0
+rule   CLAUDE.md section Tolerances
+```
+
+**AND THE RULING ABOVE INTRODUCES NONE, which is the point of it.** (a) needs no value
+chosen to make two quantities agree. (b) would need `STANDIN_I`, measured above as exact at
+one section and wrong by `1.719x` at the one FT2.4 chose -- which is why `docs/milestones/
+R1.md` section 4 closing clause sends it to Xabier rather than into a commit. **The record
+decision introduces none either:** a row count compared against a row count is an integer
+identity, and the closed form -- which would have needed a one-step slack -- is rejected for
+exactly that reason.
+
+## Next step opens when
+
+**This is an interim-check addendum. It closes nothing, opens nothing, and consumes no round
+(ES0, FK1). Step 3 stays HOLD on R1063 -- 0 of 3 reviewed revisions.**
+
+1. **R1063, in the FT2.5 commit, with `N` checked against `case{i}/times` as you decided and
+   as I endorse**, the enumeration at `floatfea/post/forces_table.py` corrected to four, both
+   cells, the control green on three unchanged artifacts, and a revert arm red on each. The
+   fixtures trim `times` alongside `lam` and
+   `test_the_TRIMMED_fixture_reproduces_the_SHIPPED_governing_figure` is RE-RUN rather than
+   reasoned about.
+2. **FT2.5 as reading (a).** The grid stays tubes, the loop and the re-solve are literally
+   the shared ones, and the truss resolution is computed and reported per group at the
+   ACCEPTED tube forces. The four conditions above are part of the item, and condition 4 --
+   the one-sentence disclosure for Xabier -- is the one that must not be dropped because it
+   is the only part that leaves the loop.
+3. **Then FT2.6, FT2.7 and FL3 without stopping between items (FU2).**
+4. **R867-R870 (FT2.7) remain blocking by name**, twenty-second round, cell unchanged.
+5. **R1064 and R1067 in the FT2.5 commit as you propose; R1065, R1066, R1068 and the rest
+   stay ledger** and are not re-reviewed item by item.
+6. **Unchanged from verdict 29:** the whole-suite run and the EG3 state recorded at every
+   commit, compared against the CI list rather than a count; R1049 and R899/R1039 to Xabier;
+   the FR5 schedule paragraph in the first revision. **Eight days to 5 November, FT2.4 built,
+   three items left, and this ruling removes the only question that was blocking the next
+   one from starting.**
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: e5edf49c16fa82d9a3e2ca5ae4728fba28fbbb82
 **Reviewed commit: `e5edf49c16fa82d9a3e2ca5ae4728fba28fbbb82`.**
 Verdict: HOLD
