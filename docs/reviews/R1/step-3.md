@@ -2,6 +2,118 @@
 Reviewed commit: 739364a5f9ccf1479d8a66be43930a4527146ea6
 **Reviewed commit: `739364a5f9ccf1479d8a66be43930a4527146ea6`.**
 Verdict: HOLD
+Scope: **ANCHOR CORRECTION ONLY, under FV3. NO NEW FINDINGS, NO CHANGE OF DISPOSITION, AND IT JUDGES NO NEW COMMIT.** ES0 interim check, counts against no round; `ls docs/reports/R1/` is unchanged and there is still no step-3 report, so **0 of 3** reviewed revisions. No `--closes`.
+
+**WHY THIS ENTRY EXISTS.** `docs/directives/FV.md`, clause FV3, asks that **verdict 26's
+anchor be corrected "by an addendum entry written with the tool (no edit of verdict
+content)"**. That is the half of FV3 that is the reviewer's: the implementer may not write,
+edit or delete a verdict, and a `PreToolUse` hook refuses any command naming the reviews
+directory. So the tool was theirs to fix and this entry is mine to write.
+
+**WHY ITS OWN ANCHOR NAMES `739364a` AND NOT THE COMMIT IT IS ABOUT.** Stamping `2a5a43c`
+here would make the NEWEST entry in this file claim to judge a commit six rounds old, and
+`scripts/ci_section.py` and the FC1 guards resolve the newest verdict's anchor to decide which
+commit a measurement describes. **That is the same class of defect FV3 exists to remove**, so
+this entry is anchored at the tree it was written against and names its subject in the body
+instead. The correction below is a statement about the record, not a claim to have judged
+`2a5a43c` afresh.
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **verdict 26's anchor** | **CORRECTED HERE, BY RECORD AND NOT BY EDIT.** | see the correction below. |
+| **the same defect's live instance, one entry later** | **ALSO RECORDED HERE, because FV3 names verdict 26 and the newer one would otherwise go unrecorded.** | see the second correction below. |
+| **everything else** | **UNCHANGED AND NOT RESTATED.** Step 3 stays HOLD on R1069, R1070 and R1071, which are the entry below this one. | that entry's `Carried` table and findings stand exactly as written. |
+
+## Findings
+
+**NONE. This entry adds no finding and withdraws none.**
+
+## THE CORRECTION
+
+**Verdict 26 is the entry headed `# Review â€” R1 step 3 â€” ES0 INTERIM CHECK` at
+`docs/reviews/R1/step-3.md:1469` in the file as it stood at `739364a`.** Both of its anchor
+lines read `06943052e157b4e5f65791506fb5a528b5f96fc7`.
+
+**THE COMMIT VERDICT 26 ACTUALLY JUDGED IS `2a5a43cc565f14fd5eed0afd547b076cd209b848`.**
+
+```
+claim  verdict 26's anchor names 0694305 and its body names 2a5a43c, and the body is right
+cmd    sed -n '1470,1471p' docs/reviews/R1/step-3.md   (the two anchor lines, at 739364a)
+out    Reviewed commit: 06943052e157b4e5f65791506fb5a528b5f96fc7
+       **Reviewed commit: `06943052e157b4e5f65791506fb5a528b5f96fc7`.**
+cmd    the same entry's own first body paragraph
+out    "**THE COMMIT THIS ENTRY JUDGES IS `2a5a43cc565f14fd5eed0afd547b076cd209b848`, AND THE
+        TOOL'S ANCHOR LINE ABOVE NAMES A DIFFERENT ONE.** `scripts/write_verdict.py` stamps
+        `HEAD`, and `HEAD` moved to `0694305` while I was writing: the implementer committed
+        the one-file repair of R1043 mid-round. **Everything below is measured at `2a5a43c`
+        unless it says otherwise.**"
+cmd    git log --oneline -1 2a5a43c ; git log --oneline -1 0694305
+out    2a5a43c R1 step 3, FT2.3 (5/5): R1033, and R1041 -- the same defect at the third site, found by census
+       0694305 R1 step 3: the stale published count in 2a5a43c, and the selection rule that let it ship
+rule   FV3, `docs/directives/FV.md`
+judge  **`0694305` is a commit written WHILE verdict 26 was being composed, and it is a repair
+       OF the commit verdict 26 judged.** Not a near miss: a different commit, with a
+       different subject, one whose content verdict 26 then verified by blob separately and
+       explicitly declined to review under EQ0. Every measurement in verdict 26 is at
+       `2a5a43c` unless its own text says otherwise, and its text says which ones do.
+```
+
+**AND THE SECOND INSTANCE, which FV3 does not name because it did not exist when FV3 was
+written.** The addendum to verdict 29 -- the entry that was the newest in this file until
+today -- carries `d11a768e275dd7c03cfbc4eb64e3c57af37cbea1` on its plain anchor line and
+`e5edf49c16fa82d9a3e2ca5ae4728fba28fbbb82` on its bold one, because `HEAD` was the previous
+round's verdict commit at the moment of writing. **The commit that addendum judges is
+`e5edf49c16fa82d9a3e2ca5ae4728fba28fbbb82`**, which its bold line and its whole body already
+say; only the plain line is wrong. Recorded here so the correction is complete rather than
+limited to the one instance a directive happened to catch.
+
+**THE DEFECT IS CLOSED AT THE SOURCE AND I VERIFIED THAT RATHER THAN READING IT.** `b33d35a`
+makes `--judged` required with no fallback to `HEAD`; the entry below this one and this entry
+are the first two in this file whose anchors are right by construction. Three refusals fire --
+a missing `--judged`, a sha git does not know, and a sha that is not an ancestor of `HEAD` --
+and the accepting direction holds too, which matters because a gate that refused every input
+would be unusable rather than strict.
+
+**NO VERDICT CONTENT WAS EDITED.** `scripts/write_verdict.py` appends newest-first under DX2
+and rewrites nothing; verdict 26 stands on the page exactly as it was written, wrong anchor
+and all, with this correction recorded above it. **A record the current reviewer can edit is
+not a record** -- which is the reason the tool works that way, and the reason FV3 asked for an
+addendum rather than a fix-up.
+
+## Tolerances touched
+
+**NONE. This entry judges no new commit.**
+
+```
+cmd    git diff --stat 739364a..HEAD -- floatfea tests
+out    (empty) -- the only commits since 739364a are mine, and they touch
+       docs/reviews/R1/step-3.md and nothing else
+cmd    git diff 739364a..HEAD -- floatfea/tolerances.py | wc -c
+out    0
+rule   CLAUDE.md section Tolerances
+```
+
+## Next step opens when
+
+**This entry closes nothing, opens nothing and consumes no round (ES0, FK1). Step 3 stays
+HOLD -- 0 of 3 reviewed revisions -- on R1069, R1070 and R1071, whose conditions are in the
+entry below this one and are not restated here.**
+
+**The one thing this entry adds to that list: nothing.** It is a correction to the record, it
+is the half of FV3 that could only be done from this side of the loop, and it is done.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: 739364a5f9ccf1479d8a66be43930a4527146ea6
+**Reviewed commit: `739364a5f9ccf1479d8a66be43930a4527146ea6`.**
+Verdict: HOLD
 Tests: **1016 passed, 1539 failed, 1 skipped** across my own runs at this commit, in my own worktree (FV2) -- and **no whole-suite local run, which I say rather than quote a partial**: `python -m pytest -q` was started first and was at 3% after 25 minutes on this machine, so I killed it and ran scopes. CI at the judged sha is the whole-tree measurement and it is traced below. Mine: `tests/unit` **401 passed**; `test_ft25_truss_sizing.py` + `test_ft24_required_section.py` **36 passed**; `test_fl2d_band_check.py` **39 passed**; the five root guards **1539 failed, 540 passed, 1 skipped**; `ruff check floatfea tests scripts`, `black --check floatfea tests`, `mypy floatfea` all clean.
 Scope: **ES0 INTERIM CHECK, the twenty-seventh on step 3.** `ls docs/reports/R1/` is `step-1-answers.json step-1.md step-2-answers.json step-2.md` -- still no `docs/reports/R1/step-3.md`, so no reviewed revision has been consumed, **0 of 3**, and this counts against no round (ES0). No `--closes`: an interim check closes nothing (FK1).
 
