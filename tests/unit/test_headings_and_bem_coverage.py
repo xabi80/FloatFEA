@@ -715,3 +715,128 @@ def test_R1041_a_BOOL_TYPED_npz_SCALE_is_REFUSED_not_read_as_ONE(tmp_path: Path)
     value, where = exported_froude_lambda(committed)
     assert value == recorded and where == "the npz", (value, where, recorded)
     assert validated_export_scale(committed, committed.with_suffix(".provenance.json")) == recorded
+
+
+# ---------------------------------------------------------------------------
+# R1042: THE SIDECAR BRANCH OF THE SCALE READER, FOUR LINES BELOW R1041's REPAIR
+#
+# `exported_froude_lambda` has two branches. R1041 repaired the npz one and left this one
+# converting unconditionally, in the same function -- so the defect moved to whichever
+# record the file happens to carry. `lambda` is cubed on every published force.
+
+
+def _scale_pair(tmp: Path, sidecar_lambda: object) -> tuple[Path, Path]:
+    """A pair whose npz has NO `froude_lambda` key, so the SIDECAR branch answers.
+
+    Without dropping the key the npz branch returns first and this cell would pass
+    without reaching the site it is about.
+    """
+    import json as _json
+
+    import numpy as np
+
+    committed = ROOT / "data" / "f4" / "dynamic_inputs.npz"
+    raw = np.load(committed, allow_pickle=False)
+    flat = {k: raw[k] for k in raw.files if k != "froude_lambda"}
+    npz = tmp / "nokey.npz"
+    np.savez(npz, **flat)
+    side = _json.loads(committed.with_suffix(".provenance.json").read_text(encoding="utf-8"))
+    side["run"]["lambda"] = sidecar_lambda
+    prov = tmp / "nokey.provenance.json"
+    prov.write_text(_json.dumps(side), encoding="utf-8")
+    return npz, prov
+
+
+@pytest.mark.parametrize(
+    "spelling, value",
+    [
+        pytest.param("JSON true", True, id="json_bool"),
+        pytest.param("JSON string", "50", id="json_str"),
+        pytest.param("JSON null-in-a-list", [50.0], id="json_list"),
+    ],
+)
+def test_R1042_a_NON_NUMERIC_SIDECAR_SCALE_is_REFUSED_not_converted(
+    spelling: str, value: object, tmp_path: Path
+) -> None:
+    """The three spellings `json.loads` can produce that are not numbers.
+
+    Measured before the repair, on a pair whose npz carries no `froude_lambda`:
+
+        run.lambda = true   -> exported 1.0, validated_export_scale ADMITTED 1.0,
+                               froude_factor force x1 and moment x1 -- NO scaling at all
+        run.lambda = "50"   -> exported 50.0, a STRING used as a declared number
+
+    And `wave_basis_from_sidecar` REFUSES that same file by name, because `lambda` is in
+    `WAVE_BASIS_KEYS` -- one input, two readers, two answers, which is R896 verbatim.
+    """
+    from floatfea.run.config import ConfigError
+    from floatfea.run.pipeline import exported_froude_lambda, validated_export_scale
+
+    npz, prov = _scale_pair(tmp_path, value)
+    resolved, where = exported_froude_lambda(npz)
+    assert resolved is None, (spelling, resolved, where)
+    assert "is not a recorded number" in where, where
+    assert "NO Froude scaling" in where, where
+    with pytest.raises(ConfigError) as excinfo:
+        validated_export_scale(npz, prov)
+    assert "is not a recorded number" in str(excinfo.value), str(excinfo.value)
+
+
+def test_R1042_the_CONTROL_a_numeric_sidecar_scale_still_resolves(tmp_path: Path) -> None:
+    """The weakening direction: the repair must not refuse a sidecar that is a number.
+
+    Without this the three arms above could be an unconditional refusal of the sidecar
+    branch, which would break every pair whose npz records no scale.
+    """
+    import json as _json
+
+    from floatfea.run.pipeline import exported_froude_lambda, validated_export_scale
+
+    # THE CONTROL'S SCALE IS THE ONE THIS REPOSITORY SHIPS, read from the committed
+    # sidecar rather than typed. The first draft of these three lines compared against
+    # `50.0` twice and `tests/test_no_tolerance_literals.py` flagged both -- R1006 for the
+    # fourth consecutive round, and the SECOND time in this file, which already had that
+    # literal removed for the same reason two commits ago. Deriving it removes the
+    # offence and the staleness together: if the pair is ever re-exported at another
+    # scale, this cell follows it instead of breaking.
+    declared = _json.loads(
+        (ROOT / "data" / "f4" / "dynamic_inputs.provenance.json").read_text(encoding="utf-8")
+    )["run"]["lambda"]
+    npz, prov = _scale_pair(tmp_path, declared)
+    resolved, where = exported_froude_lambda(npz)
+    assert resolved == declared, (resolved, where, declared)
+    assert "run.lambda" in where, where
+    assert validated_export_scale(npz, prov) == declared
+
+
+def test_R1042_a_BOOL_SIDECAR_cannot_pass_the_TWO_RECORD_comparison(tmp_path: Path) -> None:
+    """The second half: `float(beside)` decided whether the two records AGREE.
+
+    A bool-typed sidecar scale converts to `1.0`, so beside a `1.0` npz key it compared
+    EQUAL and R908's disagreement check could not see it. "They agree" is a claim about two
+    recorded numbers, and one of them was not one.
+    """
+    import json as _json
+
+    import numpy as np
+
+    from floatfea.run.config import ConfigError
+    from floatfea.run.pipeline import validated_export_scale
+
+    committed = ROOT / "data" / "f4" / "dynamic_inputs.npz"
+    raw = np.load(committed, allow_pickle=False)
+    flat = {k: raw[k] for k in raw.files}
+    flat["froude_lambda"] = np.array(1.0)  # a NUMBER, so the npz branch answers cleanly
+    npz = tmp_path / "one.npz"
+    np.savez(npz, **flat)
+    side = _json.loads(committed.with_suffix(".provenance.json").read_text(encoding="utf-8"))
+    side["run"]["lambda"] = True  # float(True) == 1.0 == the npz key, so it "agreed"
+    prov = tmp_path / "one.provenance.json"
+    prov.write_text(_json.dumps(side), encoding="utf-8")
+
+    assert float(True) == 1.0  # non-vacuous: the conversion really does make them equal
+    with pytest.raises(ConfigError) as excinfo:
+        validated_export_scale(npz, prov)
+    message = str(excinfo.value)
+    assert "cannot be compared" in message, message
+    assert "True (bool)" in message, message

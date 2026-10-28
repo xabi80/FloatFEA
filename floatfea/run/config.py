@@ -285,7 +285,14 @@ def is_recorded_number(value: Any) -> bool:
         return False
     kind = getattr(getattr(value, "dtype", None), "kind", None)
     if kind is not None:
-        return kind in "iuf"
+        # **A TUPLE, NOT A SUBSTRING (R1044).** This read `kind in "iuf"`, which also admits
+        # `''`, `'iu'`, `'uf'` and `'iuf'` -- a membership domain accepting values nobody
+        # intended, inside the repair for a finding about exactly that. The reviewer showed
+        # no wrong result follows today (every one of numpy's twenty-two dtype kinds is a
+        # single non-empty character) AND that nothing held it: an arm admitting `''` left
+        # all three touched unit files green. So the domain is written as the three
+        # characters it means.
+        return kind in ("i", "u", "f")
     return isinstance(value, numbers.Real)
 
 

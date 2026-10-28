@@ -1225,6 +1225,18 @@ def validated_export_scale(npz: Path, sidecar: Path | None = None) -> float:
         except (OSError, json.JSONDecodeError):
             recorded = {}
         beside = recorded.get("lambda")
+        # **R1042, SECOND HALF.** `float(beside)` decided whether the two records AGREE, so
+        # a bool-typed sidecar scale compared EQUAL to a `1.0` npz key and the disagreement
+        # check could not see it either. A record that is not a number is refused here
+        # rather than compared, because "they agree" is a claim about two recorded numbers
+        # and one of them is not one.
+        if beside is not None and not is_recorded_number(beside):
+            raise ConfigError(
+                f"{npz.name}: {sidecar.name} records `run.lambda` as {beside!r} "
+                f"({recorded_spelling(beside)}), which is not a recorded number, so the "
+                f"two records of the export scale cannot be compared. The npz key says "
+                f"{exported:g} (read from {where}). Re-export the file (R1042)."
+            )
         if beside is not None and float(beside) != exported:
             raise ConfigError(
                 f"{npz.name}: scale disagreement between the two records of it. The npz "
@@ -1253,9 +1265,22 @@ def exported_froude_lambda(npz: Path) -> tuple[float | None, str]:
     from it by a file copy.
 
     `run.lambda` IN THE PROVENANCE SIDECAR beside it, which that script has always
-    written. The committed `data/f4/dynamic_inputs.npz` predates the npz key and its
-    sidecar records `run.lambda = 50.0`, so the scale of the one file this repository
-    ships is a RECORDED FACT about its export and not a default anyone chose.
+    written. Either way the scale of the one file this repository ships is a RECORDED FACT
+    about its export and not a default anyone chose.
+
+    **THE SENTENCE THAT STOOD HERE WAS FALSE, AND IT IS PART OF WHY R1042 HAPPENED
+    (R1045).** It said the committed `data/f4/dynamic_inputs.npz` "predates the npz key and
+    its sidecar records `run.lambda = 50.0`". Measured:
+
+        'froude_lambda' in raw.files   True
+        raw['froude_lambda']           array(50.) float64 ndim 0
+        git log -1 -- the npz          62a8281 "R1 step 1 revision 3: ... the scale recorded"
+
+    The committed npz CARRIES the key, so the npz branch below is the live one for the file
+    this repository ships. The false clause made the SIDECAR branch read as dead code --
+    and the sidecar branch is exactly the one R1041 left unrepaired and R1042 then found.
+    A docstring that misreports which branch a reader will reach is how a repair stops one
+    line short.
     """
     try:
         with np.load(npz, allow_pickle=False) as raw:
@@ -1296,6 +1321,29 @@ def exported_froude_lambda(npz: Path) -> tuple[float | None, str]:
     value = recorded.get("run", {}).get("lambda")
     if value is None:
         return None, f"neither the npz nor {sidecar.name} records the export scale"
+    # **R1042: THE SIDECAR BRANCH CONVERTED UNCONDITIONALLY, FOUR LINES BELOW R1041.** The
+    # npz branch above was repaired and this one was not, in the same function, so the
+    # defect simply moved to whichever record the file happens to carry. Measured on a pair
+    # whose npz has no `froude_lambda` key:
+    #
+    #     run.lambda = true    -> exported 1.0, validated_export_scale ADMITTED 1.0,
+    #                             froude_factor force x1 and moment x1 -- NO scaling
+    #     run.lambda = "50"    -> exported 50.0, a STRING used as a declared number
+    #     run.lambda = 50.0    -> exported 50.0 (the control), force x125000
+    #
+    # And `wave_basis_from_sidecar` REFUSES that same file by name, because `lambda` is in
+    # `WAVE_BASIS_KEYS`. One input, two readers, two answers (R896). What shadowed it is
+    # not a guarantee: `member_forces_table.py:334` and `f6_results_report.py:458` happen
+    # to call the basis validator before resolving the scale, `f6a_premise_check.py:189`
+    # does not, and `run()` is covered only because `exported_wave_basis` runs earlier.
+    if not is_recorded_number(value):
+        return None, (
+            f"{sidecar.name} records `run.lambda` as {value!r} "
+            f"({recorded_spelling(value)}), which is not a recorded number. A scale that "
+            f"is not a number cannot be range-checked as one: a bool converts to 1.0, "
+            f"which is inside the admissible range and is NO Froude scaling at all, and "
+            f"this value is cubed on every published force (R1042). Re-export the file."
+        )
     return float(value), f"{sidecar.name} (`run.lambda`)"
 
 
