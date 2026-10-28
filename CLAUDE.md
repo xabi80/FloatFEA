@@ -792,6 +792,41 @@ Golden-file changes require a written explanation of why the numbers moved.
 Regenerating a golden file to match new output, without that explanation, is
 the same error as widening a tolerance.
 
+### What runs locally before a commit (FV1)
+
+*Adopted by directive FV1, `docs/directives/FV.md`. It **replaces R1047's local
+requirement**, which was that any diff touching `floatfea/` run the whole of
+`tests/regression` locally.*
+
+Before a commit, run locally:
+
+* the tests of every module the diff touches;
+* `tests/unit`;
+* the four root guards — `tests/test_no_tolerance_literals.py`,
+  `tests/test_tree_prose_consistent.py`, `tests/test_collected_set_golden.py`,
+  `tests/test_one_gravity.py`;
+* any regression test that reads a deliverable the diff regenerates.
+
+**The WHOLE of `tests/regression` is CI's job at the pushed sha**, which CZ1
+already requires to be green. **A CI-only red is an FF0-class item: fixed in the
+next commit, before any other work.** State the local selection in the commit,
+as R1047 already required.
+
+**Why the rule moved rather than being dropped.** R1047 came out of a real
+defect — a stale published count shipped because a selection omitted all of
+`tests/regression` — and the coverage it bought is still bought, at the pushed
+sha, by the job that was always going to run it. What it also cost was about
+half an hour of wall time per commit, serialised ahead of every commit in a
+step that has made fourteen of them in a day. FV1 keeps the coverage and stops
+paying for it twice.
+
+**What this does NOT relax.** The local selection is still stated in the
+commit, so the complement is a measurement rather than an omission; a
+deliverable the diff regenerates is still re-run locally, because that is the
+defect R1047 was adopted for and CI cannot be the first place a published
+number is checked; and a red in CI is not a lower grade of red — FF0 puts it
+in the next commit ahead of everything else.
+
 ## Style
 
 Python, type-hinted, `numpy` and `scipy.sparse` for the numerics. Vectorise
