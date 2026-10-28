@@ -89,6 +89,26 @@ sections:
   #     - {d_outer: 2.5, wall: 0.180}    # the declared section; U = 1.71167, FAILS
   #     - {d_outer: 2.5, wall: 0.300}
   #     - {d_outer: 2.5, wall: 0.410}    # U = 0.995702, and f6a's own search answer
+  # FT2.5's truss parameters for `outputs.truss_sizing`. DECLARED, not constants of the
+  # library: `scripts/measure/f6b_truss_sizing.py` holds these as module constants, which
+  # is right for a measure script and forbidden on a production path. Left out here
+  # because `truss_sizing` is off.
+  #
+  # NOTE WHAT `depths` AND `widths` ARE NOT. They are the (h, b) grid the truss is
+  # REPORTED over; they are not the candidate grid the loop steps through. That is
+  # `candidates` above and it is TUBES, because docs/milestones/R1.md section 4 fixes the
+  # candidate grid as the config's declared section list. The truss is derived from the
+  # accepted tube's forces and is never re-solved, and `truss_sizing.md` says so first.
+  #
+  # truss:
+  #   depths:  [3.0, 4.0, 5.0, 6.0, 8.0, 10.0]   # m
+  #   widths:  [3.0, 4.0, 5.0, 6.0, 8.0]         # m
+  #   shapes:  [box, triangle]                   # FI1(a) and FI1(b)
+  #   d_over_t: 24.0                             # chord/diagonal slenderness, FI's value
+  #   joint_allowance: 1.15                      # FI4's allowance on chord steel
+  #   diameter_search: [0.05, 6.0]               # m, the bisection bracket. The floor is
+  #                                              # TUBE_DIAMETER's own minimum: a chord is
+  #                                              # a tube and goes through the same bound.
   material:
     E: 210000000000.0            # Pa      S355 steel
     # G is DERIVED by the model from E and nu = 0.3, and is checked here for EXACT

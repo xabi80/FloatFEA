@@ -524,6 +524,102 @@ class Material:
 
 
 @dataclass(frozen=True)
+class TrussOptions:
+    """FT2.5's declared truss parameters (FI0-FI4, as options rather than constants).
+
+    **NONE OF THESE IS A TOLERANCE AND NONE IS A CONSTANT OF THIS LIBRARY.** They are the
+    declared parameters of a truss idealisation, in the same class as `code_check.k` and
+    `cm`: the run reports which were used, and a different configuration may legitimately
+    declare others. They live here because the ruling on FT2.5 forbids a
+    `STANDIN_I`-style literal crossing into `floatfea/` -- `scripts/measure/f6b_truss_sizing.py`
+    holds them as module constants, which is right for a measure script and wrong for a
+    production path.
+
+    `depths` and `widths` are the `(h, b)` grid the resolution is reported over. They are
+    NOT the candidate grid FM0's loop steps through -- that is `sections.candidates` and it
+    is tubes, because `docs/milestones/R1.md` section 4 fixes the candidate grid as the
+    configuration's declared section list. The truss is REPORTED at the accepted tube's
+    forces and is not re-solved; `truss_sizing.md` says so in those words.
+    """
+
+    d_over_t: float = 24.0
+    """The chord and diagonal tube slenderness the sizing holds fixed (FI's own value)."""
+
+    joint_allowance: float = 1.15
+    """FI4's allowance on chord steel for joints and laps. A declared factor, reported."""
+
+    depths: tuple[float, ...] = ()
+    widths: tuple[float, ...] = ()
+    shapes: tuple[str, ...] = ("box", "triangle")
+    """Which cross-sections to resolve. FI1(a) and FI1(b)."""
+
+    diameter_search: tuple[float, float] = (0.05, 6.0)
+    """The bracket the compression sizing bisects over, in metres.
+
+    **A DECLARED DOMAIN, NOT A TOLERANCE, AND THE DISTINCTION IS CHECKABLE.** The sizing
+    solves `|F|/A(D) = F_a(D)` for `D`, which is implicit because `F_a` depends on `KL/r`
+    and therefore on `D`. The demand falls and the allowable rises as `D` grows, so the
+    difference is monotone and has one root; the bisection halves the bracket and is exact
+    to float precision rather than to a threshold, and a demand the upper bound cannot
+    carry is REFUSED rather than extrapolated. There is no value here that could be
+    loosened to make two numbers agree -- only a domain that can be declared wider.
+
+    **THE FLOOR IS `TUBE_DIAMETER`'s OWN MINIMUM, 0.05 m, and not the measure script's
+    0.02 m.** Every value here goes through the same `_checked` bound a declared
+    `d_outer` goes through, because a chord IS a tube and may not be admissible here while
+    being refused as a section. `scripts/measure/f6b_truss_sizing.py` brackets from 0.02 m,
+    which is outside that domain -- the first run of this block was refused by its own
+    bounds check, which is the check working. A demand satisfied by a chord BELOW the floor
+    converges to the floor and returns the floor's area, which is larger than needed: the
+    conservative direction, and stated here rather than left for a reader to derive.
+    """
+
+    def validate(self, where: str) -> None:
+        if self.d_over_t <= 2.0:
+            raise ConfigError(
+                f"{where}.d_over_t = {self.d_over_t:g}, which puts the wall at or above "
+                f"half the diameter, so the chord has no bore. A solid or inverted tube "
+                f"is not a tube -- the same rule `TubeSection.validate` applies to a "
+                f"declared section."
+            )
+        if self.joint_allowance < 1.0:
+            raise ConfigError(
+                f"{where}.joint_allowance = {self.joint_allowance:g}. An allowance below "
+                f"1.0 REMOVES steel the joints need, which is the one direction this "
+                f"factor must not go; FI4 declares it as an addition."
+            )
+        lo, hi = self.diameter_search
+        if not lo < hi:
+            raise ConfigError(
+                f"{where}.diameter_search = [{lo:g}, {hi:g}], which is not an increasing "
+                f"bracket, so the bisection has no interval to halve."
+            )
+        for name, grid in (("depths", self.depths), ("widths", self.widths)):
+            if not grid:
+                raise ConfigError(
+                    f"{where}.{name} is empty, so there is no `(h, b)` grid to report the "
+                    f"truss over. `outputs.truss_sizing` publishes a resolution per grid "
+                    f"cell; with no cells it would publish an analysis that resolved "
+                    f"nothing, which cannot be told from one where nothing was admissible."
+                )
+            for value in grid:
+                if value <= 0.0:
+                    raise ConfigError(
+                        f"{where}.{name} contains {value:g} m. A depth or width must be "
+                        f"positive: the resolutions divide by `h` and by `b`."
+                    )
+        unknown = sorted(set(self.shapes) - {"box", "triangle"})
+        if unknown:
+            raise ConfigError(
+                f"{where}.shapes names {unknown}. `floatfea.run.truss` resolves `box` "
+                f"(FI1(a), four chords) and `triangle` (FI1(b), three chords, apex up) "
+                f"and nothing else; a third idealisation is a new resolution, not a label."
+            )
+        if not self.shapes:
+            raise ConfigError(f"{where}.shapes is empty, so no cross-section is resolved.")
+
+
+@dataclass(frozen=True)
 class Sections:
     """Per member group, plus the material they share.
 
@@ -534,6 +630,9 @@ class Sections:
 
     groups: dict[str, TubeSection]
     material: Material
+    truss: TrussOptions = field(default_factory=TrussOptions)
+    """FT2.5's declared truss parameters. See `TrussOptions`."""
+
     candidates: dict[str, tuple[TubeSection, ...]] = field(default_factory=dict)
     """FT2.4's grid: the ordered sections `outputs.required_section` may step through.
 
@@ -1137,10 +1236,74 @@ def _parse_candidates(
     return out
 
 
+def _parse_truss(raw: Any, where: str) -> TrussOptions:
+    """`sections.truss`, every field declared and bounds-checked. FT2.5."""
+    if not isinstance(raw, dict):
+        raise ConfigError(
+            f"{where}: expected a mapping of truss options, got {type(raw).__name__}."
+        )
+    _reject_unknown(
+        raw,
+        ("d_over_t", "joint_allowance", "depths", "widths", "shapes", "diameter_search"),
+        where,
+    )
+
+    def _floats(key: str) -> tuple[float, ...]:
+        value = raw.get(key, ())
+        if not isinstance(value, list):
+            raise ConfigError(
+                f"{where}.{key}: expected a list of lengths in metres, got "
+                f"{type(value).__name__}."
+            )
+        out: list[float] = []
+        for i, entry in enumerate(value):
+            if isinstance(entry, bool) or not isinstance(entry, (int, float)):
+                raise ConfigError(
+                    f"{where}.{key}[{i}] is {entry!r}, which is not a number. A depth or "
+                    f"width is a length in metres."
+                )
+            out.append(float(entry))
+        return tuple(out)
+
+    shapes_raw = raw.get("shapes", ["box", "triangle"])
+    if not isinstance(shapes_raw, list):
+        raise ConfigError(
+            f"{where}.shapes: expected a list of cross-section names, got "
+            f"{type(shapes_raw).__name__}."
+        )
+    shapes = tuple(
+        _require_string(entry, f"{where}.shapes[{i}]") for i, entry in enumerate(shapes_raw)
+    )
+
+    bracket_raw = raw.get("diameter_search", [0.05, 6.0])
+    if not isinstance(bracket_raw, list) or len(bracket_raw) != 2:
+        raise ConfigError(
+            f"{where}.diameter_search: expected a [lo, hi] pair of diameters in metres, "
+            f"got {bracket_raw!r}."
+        )
+    bracket = (
+        _checked(bracket_raw[0], f"{where}.diameter_search[0]", TUBE_DIAMETER),
+        _checked(bracket_raw[1], f"{where}.diameter_search[1]", TUBE_DIAMETER),
+    )
+
+    options = TrussOptions(
+        d_over_t=float(raw.get("d_over_t", 24.0)),
+        joint_allowance=float(raw.get("joint_allowance", 1.15)),
+        depths=_floats("depths"),
+        widths=_floats("widths"),
+        shapes=shapes,
+        diameter_search=bracket,
+    )
+    options.validate(where)
+    return options
+
+
 def _parse_sections(block: Any) -> Sections:
     where = "sections"
     _reject_unknown(
-        block if isinstance(block, dict) else {}, ("groups", "material", "candidates"), where
+        block if isinstance(block, dict) else {},
+        ("groups", "material", "candidates", "truss"),
+        where,
     )
     groups_raw = _require(block, "groups", where)
     if not isinstance(groups_raw, dict) or not groups_raw:
@@ -1165,7 +1328,14 @@ def _parse_sections(block: Any) -> Sections:
     candidates: dict[str, tuple[TubeSection, ...]] = {}
     if "candidates" in (block if isinstance(block, dict) else {}):
         candidates = _parse_candidates(block["candidates"], groups, f"{where}.candidates")
-    return Sections(groups=groups, material=material, candidates=candidates)
+    # The DEFAULT has empty grids, which `TrussOptions.validate` refuses -- so it is
+    # constructed unvalidated when absent and validated only when declared. A run with no
+    # `truss` block and `truss_sizing: false` must load, which is every configuration
+    # before FT2.5.
+    truss = TrussOptions()
+    if "truss" in (block if isinstance(block, dict) else {}):
+        truss = _parse_truss(block["truss"], f"{where}.truss")
+    return Sections(groups=groups, material=material, candidates=candidates, truss=truss)
 
 
 def _parse_headings(raw: Any, where: str) -> tuple[float, ...]:

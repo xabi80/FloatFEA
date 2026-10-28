@@ -47,6 +47,7 @@ from typing import Any
 from floatfea.run.config import ConfigError, RunConfig, TubeSection
 from floatfea.run.pipeline import RunResult, _utilisations, build_model
 from floatfea.run.pipeline import run as run_pipeline
+from floatfea.run.truss import GroupTruss, resolve_group
 
 __all__ = [
     "GroupSizing",
@@ -54,9 +55,25 @@ __all__ = [
     "SizingReport",
     "propose_from_fixed_forces",
     "resolve_until_admissible",
+    "TrussReport",
+    "governing_rows",
     "size_required_sections",
+    "size_truss",
     "with_group_sections",
 ]
+
+
+def ordinal(index: int, count: int) -> str:
+    """A grid position for a HUMAN: `"3 of 3"` for the last of three (R1067).
+
+    The indices on `GroupSizing` and `SizingIteration` are 0-based, which is right for
+    code. Every message that shows one to a reader goes through here, because the strings
+    said `candidate {index} of {count}` -- a 0-based index beside a 1-based count, so
+    `candidate 2 of 3` meant the third of three, and the exhaustion refusal printed that
+    next to the words "the largest candidate declared". One function so the stored form and
+    the shown form cannot drift apart again.
+    """
+    return f"{index + 1} of {count}"
 
 
 def with_group_sections(cfg: RunConfig, chosen: dict[str, TubeSection]) -> RunConfig:
@@ -231,8 +248,8 @@ def resolve_until_admissible(
         index, fixed_u = propose(cfg, baseline, group, grids[group])
         proposed[group] = (index, fixed_u)
         say(
-            f"  {analysis}: {group} proposed candidate {index} of "
-            f"{len(grids[group])} at fixed-force max U = {fixed_u:.6g}"
+            f"  {analysis}: {group} proposed candidate "
+            f"{ordinal(index, len(grids[group]))} at fixed-force max U = {fixed_u:.6g}"
         )
 
     at: dict[str, int] = {group: index for group, (index, _u) in proposed.items()}
@@ -302,8 +319,8 @@ def resolve_until_admissible(
                     f"outputs.{analysis}: the candidate grid for member group `{group}` is "
                     f"exhausted and `max U` is still above 1.0. The largest candidate "
                     f"declared -- d_outer {sections[group].d_outer:g} m, wall "
-                    f"{sections[group].wall:g} m, candidate {at[group]} of "
-                    f"{len(grids[group])} -- re-solves to U = "
+                    f"{sections[group].wall:g} m, candidate "
+                    f"{ordinal(at[group], len(grids[group]))} -- re-solves to U = "
                     f"{float(row['utilisation']):.6g} at {row['member']} {row['station']}, "
                     f"T_full = {float(row['period_full_s']):g} s, governed by clause "
                     f"{row['governing_clause']} after {len(iterations)} re-solve(s). This "
@@ -312,7 +329,10 @@ def resolve_until_admissible(
                     f"on its own. Declare larger candidates in sections.candidates."
                 )
             at[group] += 1
-            say(f"  {analysis}: {group} steps up to candidate {at[group]}")
+            say(
+                f"  {analysis}: {group} steps up to candidate "
+                f"{ordinal(at[group], len(grids[group]))}"
+            )
 
 
 def _spell(sections: dict[str, TubeSection]) -> str:
@@ -320,6 +340,82 @@ def _spell(sections: dict[str, TubeSection]) -> str:
     return ", ".join(
         f"{g} D={sections[g].d_outer:g} t={sections[g].wall:g}" for g in sorted(sections)
     )
+
+
+@dataclass(frozen=True)
+class TrussReport:
+    """FT2.5's output: the shared loop's answer, plus the truss it implies.
+
+    **TWO REPRESENTATIONS, AND THE LABEL IS NOT DECORATION.** `sizing` is the TUBE the loop
+    accepted and the `max U <= 1.0` that accepted it; `trusses` is what that tube's forces
+    imply for a parallel-chord truss of declared depth and width. **No `U` here is a
+    statement about the truss** -- it was never re-solved -- and `truss_sizing.md` has to
+    say so where a reader cannot miss it. FT2.4's artifacts label two configurations of the
+    SAME representation; this labels two REPRESENTATIONS, which is a stronger claim to have
+    to disclaim.
+    """
+
+    sizing: SizingReport
+    trusses: tuple[GroupTruss, ...]
+
+
+def governing_rows(
+    cfg: RunConfig, result: RunResult, group: str
+) -> list[tuple[str, tuple[float, ...]]]:
+    """One group's per-instant rows on the governing basis, as `(label, components)`.
+
+    `total_instant` only, and only on a declared governing period -- the same basis the
+    code check reads (EZ2/FA0). `total_max` / `total_min` max each component INDEPENDENTLY
+    over the window, so their six values do not occur together and a truss resolved from
+    them would be resolving a load case that never happens.
+    """
+    governing = set(cfg.load_cases.governing_periods)
+    return [
+        (f"{row.member} {row.station}", tuple(float(v) for v in row.values))
+        for row in result.rows
+        if row.body == group and row.basis == "total_instant" and row.period_full_s in governing
+    ]
+
+
+def size_truss(
+    cfg: RunConfig,
+    baseline: RunResult,
+    progress: Callable[[str], None] | None = None,
+) -> TrussReport:
+    """`outputs.truss_sizing` (FT2.5): FM0's loop, then the truss at the ACCEPTED forces.
+
+    **THE LOOP IS THE SAME ONE, CALLED AND NOT COPIED.** `required_section` and
+    `truss_sizing` differ in what they REPORT, not in how they converge: the grid is
+    `sections.candidates` for both, because `docs/milestones/R1.md` section 4 fixes the
+    candidate grid as the configuration's declared section list and does so as one of the
+    three reasons R1 needs no tolerance. Writing the loop twice is R983, and this step has
+    already spent three commits on that shape.
+
+    **THE RESOLUTION READS `report.final.rows`, NOT `baseline.rows`, and that is condition
+    2 of the ruling.** A truss resolved from baseline forces is sized for loads the
+    structure does not carry at the section the loop chose. It is one line of sequencing and
+    it is free; it is taken because it is free and NOT because the gap is large -- on this
+    deck the premise error is `1.554e-14` on the platform group, so the defect would not
+    show here, and "it does not show on this deck" is how R682 and R694 both happened.
+    """
+    say = progress or (lambda _line: None)
+    sizing = resolve_until_admissible(
+        cfg,
+        baseline,
+        "truss_sizing",
+        dict(cfg.sections.candidates),
+        propose_from_fixed_forces,
+        progress,
+    )
+    trusses: list[GroupTruss] = []
+    for group in sorted(cfg.sections.candidates):
+        rows = governing_rows(cfg, sizing.final, group)
+        say(
+            f"  truss_sizing: {group} resolving {len(rows)} governing-basis instants at "
+            f"the ACCEPTED section"
+        )
+        trusses.append(resolve_group(group, rows, cfg.sections.truss, cfg.sections.material))
+    return TrussReport(sizing=sizing, trusses=tuple(trusses))
 
 
 def size_required_sections(

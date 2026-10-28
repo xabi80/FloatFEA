@@ -74,6 +74,7 @@ def _fixture(
     hub_wall: float = WALL_FAILS,
     required_section: bool = False,
     truss_sizing: bool = False,
+    truss: dict[str, object] | None = None,
 ) -> tuple[Path, Path]:
     """The shipped example in `tmp_path`, with `case{i}/lam` trimmed. Returns config, out.
 
@@ -90,9 +91,16 @@ def _fixture(
     shutil.copy2(src.with_suffix(".provenance.json"), local / f"{src.stem}.provenance.json")
     npz = local / src.name
     raw = np.load(npz, allow_pickle=False)
+    # **`times` IS TRIMMED WITH `lam`, AND R1063 IS WHY.** The first version of this
+    # fixture trimmed `lam` alone and left `times` at full length -- a file disagreeing
+    # with ITSELF about how long its window is, which is exactly what
+    # `checked_joint_reactions` now refuses. So this was synthesising an invalid file to
+    # test something else, and trimming both makes it a legitimate input rather than one
+    # that happened to pass. `m_xddot` is deliberately left alone: it is `N + 1` by design.
+    trim = ("/lam", "/times")
     np.savez(
         npz,
-        **{k: (raw[k][:TRIMMED_STEPS] if k.endswith("/lam") else raw[k]) for k in raw.files},
+        **{k: (raw[k][:TRIMMED_STEPS] if k.endswith(trim) else raw[k]) for k in raw.files},
     )
     data["load_cases"]["npz"] = str(npz)
     for name in ("hub1", "hub2", "hub3", "hub4"):
@@ -103,6 +111,8 @@ def _fixture(
     data["outputs"]["directory"] = str(out_dir)
     data["outputs"]["required_section"] = required_section
     data["outputs"]["truss_sizing"] = truss_sizing
+    if truss is not None:
+        data["sections"]["truss"] = truss
     path = tmp_path / "config.yaml"
     path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
     return path, out_dir
@@ -273,6 +283,8 @@ def test_an_EXHAUSTED_grid_REFUSES_and_names_the_group_and_the_case(tmp_path) ->
     assert "exhausted" in message, message
     assert "`platform`" in message, message
     assert f"wall {WALL_FAILS_LESS:g} m" in message, message
+    # R1067: the DISPLAY is 1-based, so the second of two candidates reads "2 of 2".
+    assert "candidate 2 of 2" in message, message
     assert "platform:hub4_arm ROOT" in message, message
     assert "T_full = 12.5 s" in message, message
     assert "3.3.2 interaction" in message, message
@@ -350,7 +362,7 @@ def test_END_TO_END_the_CLI_writes_required_section_md_with_both_max_U_values(
     text = (out_dir / "required_section.md").read_text(encoding="utf-8")
     assert "**1 re-solve(s).**" in text, text
     assert "fixed-force max U" in text and "re-solved max U" in text, text
-    assert "| platform | 2 of 3 | 2.5 | 0.41 |" in text, text
+    assert "| platform | 3 of 3 | 2.5 | 0.41 |" in text, text
     # The unsized groups are named IN THE ARTIFACT, with their declared sections.
     for name in ("hub1", "hub2", "hub3", "hub4"):
         assert f"`{name}` — declared d_outer 2.5 m, wall 0.18 m" in text, text
@@ -384,22 +396,41 @@ def test_END_TO_END_an_EXHAUSTED_grid_WRITES_NOTHING(tmp_path, capsys) -> None:
     assert not out_dir.exists() or sorted(out_dir.glob("*")) == [], list(out_dir.glob("*"))
 
 
-def test_truss_sizing_is_STILL_REFUSED_and_says_it_is_FT2_5(tmp_path, capsys) -> None:
-    """The weakening direction of narrowing the blanket refusal.
+def test_truss_sizing_alone_is_WIRED_and_does_NOT_refuse(tmp_path, capsys) -> None:
+    """The weakening direction of FT2.5's wiring, and a cell that had to be REWRITTEN.
 
-    The old refusal covered both optional analyses. Narrowing it to `truss_sizing` alone
-    could have removed it altogether; this is the cell that says it did not, and that the
-    message names what is missing rather than the retired wording.
+    **IT USED TO ASSERT THE OPPOSITE, AND THE SUITE IS WHAT CAUGHT THAT.** Until FT2.5 this
+    cell asserted that `truss_sizing` was still REFUSED and that the message named FT2.5 as
+    what was missing -- and it was right at the time: FT2.4 narrowed a blanket refusal from
+    both optional analyses to `truss_sizing` alone, and the weakening direction worth
+    holding was that the narrowing had not removed the refusal altogether. FT2.5 then wired
+    the flag, which made that assertion false -- and it failed in the regression run rather
+    than being noticed, which is the behaviour a golden suite is for.
+
+    (The old cell is described rather than named, because
+    `tests/test_collected_set_golden.py` refuses prose that cites a test which no longer
+    exists -- and it caught this docstring's first draft doing exactly that.)
+
+    What is worth holding NOW is the other side: `truss_sizing: true` ALONE runs, writes
+    `truss_sizing.md`, and does not refuse. Its own file holds the rest -- the artifact's
+    content, the disclaimer, and the refusal when BOTH flags are set, which is where the
+    old cell's concern now lives.
     """
     from floatfea import cli
 
-    path, out_dir = _fixture(tmp_path, truss_sizing=True)
-    assert cli.main(["run", str(path)]) == 2
-    message = capsys.readouterr().err
-    assert "truss_sizing" in message, message
-    assert "FT2.5" in message, message
-    assert "SAME loop" in message, message
-    assert not out_dir.exists() or sorted(out_dir.glob("*")) == [], list(out_dir.glob("*"))
+    path, out_dir = _fixture(
+        tmp_path,
+        candidates={"platform": [_tube(WALL_FAILS), _tube(WALL_PASSES)]},
+        truss={"depths": [8.0], "widths": [3.0], "shapes": ["box"]},
+        truss_sizing=True,
+    )
+    assert cli.main(["run", str(path)]) == 0, capsys.readouterr().err
+    assert sorted(p.name for p in out_dir.glob("*")) == [
+        "member_forces.csv",
+        "report.md",
+        "truss_sizing.md",
+        "utilisation.csv",
+    ]
 
 
 def test_MORE_THAN_ONE_GROUP_steps_in_the_SAME_pass(tmp_path) -> None:

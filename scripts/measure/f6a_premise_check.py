@@ -210,7 +210,7 @@ def dynamic_half(shipped, sized, answers: list[dict]) -> dict[str, object]:
             # is declared -- this script re-solves from the same array, so an ungated read
             # here would publish `results/F6a/premise_check.json` from whatever the file
             # happened to hold.
-            lam = checked_joint_reactions(raw[f"case{i}/lam"], f"case{i}/lam")
+            lam = checked_joint_reactions(raw, i)
             for step in range(lam.shape[0]):
                 steps += 1
                 loads = MFT.map_joint_reactions(

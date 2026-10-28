@@ -862,13 +862,142 @@ def test_R1059_a_NON_ARRAY_is_still_REFUSED_after_the_width_was_narrowed() -> No
     """
     from floatfea.post.forces_table import checked_joint_reactions
 
+    # **THE PROBE IS THE VALUE, NOT THE ARGUMENT, and R1063's signature change is why.**
+    # The decision now owns the read -- it takes the file and an index -- so a non-array
+    # `lam` arrives the way it really would: as the value stored under the key. The first
+    # version of this cell passed the probe as the first argument, which after R1063
+    # tested that a LIST is not an npz rather than that a list is not a `lam`.
+    times = np.zeros(4, dtype=np.float64)
     for probe in ([[1.0, 2.0]], 1.0, None, "1.0", {"a": 1.0}):
         with pytest.raises(SystemExit) as caught:
-            checked_joint_reactions(probe, "case0/lam")
+            checked_joint_reactions({"case0/lam": probe, "case0/times": times}, 0)
         message = str(caught.value)
         assert "the joint-reaction multipliers are" in message, message
         assert type(probe).__name__ in message, message
     # THE WEAKENING DIRECTION: the dtype the exporter writes is still admitted, and the
     # object comes back unchanged rather than converted.
     shipped = np.zeros((4, 64), dtype=np.float64)
-    assert checked_joint_reactions(shipped, "case0/lam") is shipped
+    assert checked_joint_reactions({"case0/lam": shipped, "case0/times": times}, 0) is shipped
+
+
+# ---------------------------------------------------------------------------
+# R1063: THE WINDOW LENGTH -- the fourth property of `lam[N,n_rows]`, and the one the
+# enumeration in `forces_table.py` left out for a commit.
+#
+# `compute_rows` reads `lam.shape[0]` as the window length and compares it with nothing, so
+# a case with too few instants contributes too few per-instant rows -- or, at zero, none --
+# and drops out of the governing envelope. The reviewer drove it on the shipped, untrimmed
+# file, one variable, `case1/lam` replaced by `lam[:0]`:
+#
+#     finite (CONTROL)     EXIT 0   U = 1.71167  hub4_arm ROOT  T = 12.5 s  3.3.2
+#     case1/lam -> (0,64)  EXIT 0   U = 1.35117  hub4_arm ROOT  T = 14   s  3.3.2
+#                          member_forces.csv : 1248 rows -> 1056 rows
+#                          utilisation.csv   : 32 rows, ZERO carry nan, 12.5 s absent
+#
+# The SAME published number the NaN route produced, and strictly more silent: that route
+# left 192 of 1248 rows carrying `nan`, this one removes those same 192 rows and leaves no
+# `nan` at all. Truncation is monotone with no threshold: on a 40-step fixture k = 20 gives
+# 1.71167, k = 5 gives 1.65695, k = 2 gives 1.62136, k = 1 gives 1.60798, k = 0 gives
+# 1.35109 -- every one at exit 0.
+
+
+def _lam_windowed(tmp_path, keep: int | None, *, drop_times: bool = False, ndim: int = 2):
+    """The shipped example with `case1/lam`'s WINDOW altered, one variable.
+
+    `keep` is how many of the governing case's instants to leave; `None` means leave `lam`
+    alone. Everything else -- the dtype, the column count, every other key, the sidecar,
+    the provenance and the configuration -- is the shipped one.
+
+    **`times` IS LEFT AT FULL LENGTH ON PURPOSE HERE**, which is the opposite of what
+    `tests/regression/test_ft24_required_section.py`'s fixture does: there the point is a
+    legitimate shorter file, here the point is a file that disagrees with itself.
+    """
+    path, out_dir, npz = _example_in(tmp_path, copy_data=True)
+    raw = np.load(npz, allow_pickle=False)
+    flat = {k: raw[k] for k in raw.files}
+    key = f"case{GOVERNING_CASE_INDEX}/lam"
+    if keep is not None:
+        flat[key] = np.array(flat[key][:keep], dtype=np.float64)
+    if ndim == 0:
+        flat[key] = np.float64(1.0)
+    elif ndim == 1:
+        flat[key] = np.zeros(64, dtype=np.float64)
+    if drop_times:
+        del flat[f"case{GOVERNING_CASE_INDEX}/times"]
+    np.savez(npz, **flat)
+    return path, out_dir
+
+
+@pytest.mark.parametrize(
+    "keep, label",
+    [
+        pytest.param(0, "EMPTIED", id="the_governing_case_EMPTIED"),
+        pytest.param(37, "TRUNCATED", id="the_governing_case_TRUNCATED_short"),
+    ],
+)
+def test_R1063_an_EMPTIED_or_TRUNCATED_governing_case_REFUSES_and_writes_NOTHING(
+    tmp_path, keep: int, label: str
+) -> None:
+    """Clauses (i) and (ii) of the condition, each through `floatfea.cli.main`.
+
+    **The truncated arm is the one that matters more**, and it is why the check is against a
+    record rather than against zero: `keep = 37` is a perfectly plausible array, nonzero,
+    the right dtype, the right column count, finite throughout. Nothing about it is visible
+    to the dtype gate, the finiteness gate or the peak-count guard -- only the file's own
+    `times` says it is short.
+    """
+    from floatfea import cli
+
+    path, out_dir = _lam_windowed(tmp_path, keep)
+    with pytest.raises(SystemExit) as caught:
+        cli.main(["run", str(path)])
+    message = str(caught.value)
+    assert f"case{GOVERNING_CASE_INDEX}/lam" in message, message
+    assert f"{keep} timesteps" in message, message
+    assert f"case{GOVERNING_CASE_INDEX}/times` carries 884" in message, message
+    assert "drops out of the governing envelope" in message, message
+    written = sorted(p.name for p in out_dir.glob("*")) if out_dir.exists() else []
+    assert written == [], (
+        f"the refusal left {written} on disk; a run one of whose governing cases was "
+        f"short must publish no utilisation at all"
+    )
+
+
+def test_R1063_the_WINDOW_RECORD_must_be_present_to_check_against(tmp_path) -> None:
+    """`times` deleted: refused by name rather than abstained on.
+
+    R1021's lesson at this field -- a check that can be turned off by deleting the thing it
+    reads is not a check. Without this the window gate would be an abstention, and
+    abstention is an exit.
+    """
+    from floatfea import cli
+
+    path, out_dir = _lam_windowed(tmp_path, 0, drop_times=True)
+    with pytest.raises(SystemExit) as caught:
+        cli.main(["run", str(path)])
+    message = str(caught.value)
+    assert f"no `case{GOVERNING_CASE_INDEX}/times`" in message, message
+    assert "indistinguishable from a complete one" in message, message
+    assert not out_dir.exists() or sorted(out_dir.glob("*")) == [], list(out_dir.glob("*"))
+
+
+@pytest.mark.parametrize("ndim", [0, 1], ids=["a_0d_lam", "a_1D_lam"])
+def test_R1063_a_NON_2D_lam_is_REFUSED_rather_than_dying_in_an_index_error(
+    tmp_path, ndim: int
+) -> None:
+    """The ledger item the window check closes on its way past.
+
+    A 0-d `lam` passed the dtype and finiteness gates and died at `lam.shape[0]` in an
+    uncaught `IndexError` -- the right outcome with a traceback for a message, which is
+    FR1's first non-blocking class. The window check needs `shape[0]` to exist, so refusing
+    a non-2-D array by name is one line here rather than a ledger entry forever.
+    """
+    from floatfea import cli
+
+    path, out_dir = _lam_windowed(tmp_path, None, ndim=ndim)
+    with pytest.raises(SystemExit) as caught:
+        cli.main(["run", str(path)])
+    message = str(caught.value)
+    assert f"have {ndim} dimensions" in message, message
+    assert "dies in an index error" in message, message
+    assert not out_dir.exists() or sorted(out_dir.glob("*")) == [], list(out_dir.glob("*"))

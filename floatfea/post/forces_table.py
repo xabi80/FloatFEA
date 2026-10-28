@@ -84,17 +84,28 @@ ROWS_PER_JOINT_YAW_LOCKED = 4
 """Three translations plus the one locked axis. `floatfea.io.froude`'s composite width."""
 
 
-def checked_joint_reactions(lam: Any, where: str) -> Any:
-    """The joint-reaction array, held to the dtype AND the values its schema declares.
+def checked_joint_reactions(raw: Any, index: int) -> Any:
+    """`case{index}/lam`, held to all FOUR properties its schema declares.
 
-    Three axes of one declared field, and they arrived in three commits rather than one.
-    `docs/load-interchange-v1.md:110` declares `lam[N,n_rows]  multipliers, dt-free,
-    physical`:
+    **FOUR, and the count is the point.** This enumeration said THREE for one commit, and
+    listed `n_rows`, `dtype` and `values`. `docs/load-interchange-v1.md:110` declares
+    `lam[N,n_rows]  multipliers, dt-free, physical` -- and `N` was the property missing
+    from the list, which is how it came to be the property missing from the code. A
+    sentence that is right about the axes its author swept and silent about the one with
+    nothing on it is R755, this milestone's first blocking finding, and R1063 is it
+    recurring as the newest:
 
+        N        R1063 -- see THE WINDOW LENGTH. The axis the list omitted.
         n_rows   guarded since F4 -- `ROWS_PER_JOINT_YAW_LOCKED` below, which refuses a
                  transposed array by name
         dtype    R1051, and NARROWED by R1059 -- see WHICH FLOATING WIDTH
         values   R1058 -- see THE VALUES, which is the half a dtype cannot decide
+
+    **IT TAKES THE FILE AND AN INDEX, NOT AN ARRAY.** Two reasons, and the first is the
+    one that forced it: deciding `N` needs a SECOND key of the same case, which a caller
+    handed only `lam` cannot supply. And it makes this the one door -- the previous
+    signature let a caller reach `raw[f"case{i}/lam"]` and skip the decision entirely,
+    which is the shape R1022 found at the period readers.
 
     `docs/load-interchange-v1.md:110` declares `lam[N,n_rows]  multipliers, dt-free,
     physical`. Nothing between the npz and this module checked that, and
@@ -133,9 +144,19 @@ def checked_joint_reactions(lam: Any, where: str) -> Any:
     exactly**, and the reason is not tidiness either:
 
         the schema declares no WIDTH, so this module declares one and names it here;
-        `scripts/export_f4_dynamic_inputs.py` -- the only writer of this field in the
-        repository -- writes `np.float64`, so a narrower file did not come from the
-        exporter the refusal points at;
+        `scripts/export_f4_dynamic_inputs.py` writes `np.float64`, and it is the only
+        `np.savez` in `floatfea/` or `scripts/` -- so no TRACKED dynamic-inputs file has
+        any other producer, and a narrower one did not come from the exporter the refusal
+        points at. (`grep -rnF "np.savez" --include=*.py floatfea
+        scripts` -- `-F`, a FIXED string, so the
+        docstring carries no escape sequence of its own -- gives exactly TWO hits: the
+        exporter's call, and the line
+        above. Needling `savez(` instead would miss the exporter, whose call is the
+        compressed variant; so the self-reference is disclosed rather than engineered
+        around, and a reader matching the output against this paragraph sees both. The
+        claim is deliberately about the library and the scripts and NOT about the
+        repository: `tests/` writes this field too, at other dtypes and other values,
+        because the counter-cases below are exactly that.)
         and `np.asarray(..., dtype=np.float64)` downstream WIDENS a lossy array back,
         so nothing after this point can tell a float16 file from a float64 one.
 
@@ -171,7 +192,59 @@ def checked_joint_reactions(lam: Any, where: str) -> Any:
     refuses it for every array by name with "a non-finite value cannot be compared, so
     this is a failure rather than a difference of zero". The fault's words below are the
     reader's, not new ones.
+
+    **THE WINDOW LENGTH, which is R1063 and is what the three-item list left open.**
+    `compute_rows` uses `lam.shape[0]` as the window length and compares it with nothing.
+    So a case with ZERO rows contributes no per-instant row at all and is silently DROPPED
+    from the envelope rather than reddening it. Driven by the reviewer through the real CLI
+    on the shipped file, one variable -- `case1/lam`, the GOVERNING case at
+    `T_full = 12.5 s`, replaced by `lam[:0]` with the same dtype and column count:
+
+        finite (CONTROL)     EXIT 0   U = 1.71167  hub4_arm ROOT  T = 12.5 s  3.3.2
+        case1/lam -> (0,64)  EXIT 0   U = 1.35117  hub4_arm ROOT  T = 14   s  3.3.2
+                             member_forces.csv : 1248 rows -> 1056 rows
+                             utilisation.csv   : 32 rows, ZERO carry nan, 12.5 s absent
+
+    **That is the same published number the NaN route produced, to the digit, and it is
+    STRICTLY MORE SILENT.** The NaN route left 192 of 1248 `member_forces.csv` rows
+    carrying `nan`, so the degradation was visible in one of the three artifacts; this one
+    REMOVES those same 192 rows and leaves no `nan` anywhere, with `report.md` differing
+    from the control in exactly one substantive line while still declaring
+    `governing_periods_s [12.5, 14.0, 15.0, 16.2]` -- it says 12.5 s was screened when it
+    was not. And truncation is monotone with no threshold anywhere: on a 40-step fixture,
+    `k = 20` gives `1.71167`, `k = 5` `1.65695`, `k = 2` `1.62136`, `k = 1` `1.60798` and
+    `k = 0` `1.35109`, every one at exit 0.
+
+    The existing guard cannot see it, for the same reason it could not see the NaN route:
+    `len(peak) != len(static)` below is a COUNT, so it fires only when NO station has a
+    peak. With three of four governing cases still supplying a peak for all 48 stations,
+    the collection the assertion inspects cannot contain the failure.
+
+    **WHICH RECORD `N` IS CHECKED AGAINST, and why it is not the closed form.** The file
+    declares `N` several times over: `times`, `accel`, `base`, `contrib` and
+    `resid_control` all carry it per case, and `5 * (T_full / sqrt(lambda)) / dt` from the
+    provenance sidecar's own `window`, `dt` and `lambda` reproduces it too. **The closed
+    form reproduces it only to within one step** -- `707.1` against `707`, `883.9` against
+    `884`, `1060.7` against `1061` -- so comparing against it needs a number chosen to make
+    two quantities agree, which `CLAUDE.md` forbids by name. `case{index}/times` is exact,
+    needs no arithmetic, and makes this the same kind of check as R1005: the file agreeing
+    with ITSELF about which case is which, here about how long its window is.
+    `m_xddot` is deliberately NOT in the comparison -- it is `N + 1` by design (708 against
+    `times` 707 on case 0), so an all-arrays-agree check would be wrong.
     """
+    key = f"case{index}/lam"
+    window_key = f"case{index}/times"
+    try:
+        lam = raw[key]
+    except KeyError:
+        raise SystemExit(
+            f"{key} is absent, and `docs/load-interchange-v1.md` declares one "
+            f"`lam[N,n_rows]` per case. A case the envelope expects and the file does not "
+            f"carry would drop out of it silently, which is R1063's defect reached by a "
+            f"missing key instead of an empty one. Re-export the file with "
+            f"`python scripts/export_f4_dynamic_inputs.py`."
+        ) from None
+    where = key
     dtype = getattr(lam, "dtype", None)
     # **`dtype is None` IS TESTED SEPARATELY AND IT IS NOT DEFENSIVE TIDINESS.**
     # `np.dtype(None)` is `float64`, so `None != np.dtype(np.float64)` is **False**: an
@@ -202,6 +275,53 @@ def checked_joint_reactions(lam: Any, where: str) -> Any:
             f"the same file at float64 gives `1.71167` (R1051); a float16 one publishes "
             f"`1.71177` with 9535 of 16224 member-force cells moved (R1059). Re-export the "
             f"file with `python scripts/export_f4_dynamic_inputs.py`."
+        )
+    # **R1063, BEFORE the value check and not after.** An emptied `lam` has no non-finite
+    # value in it at all, so the finiteness gate passes it; the window length is what is
+    # wrong with it and the message has to say so.
+    if getattr(lam, "ndim", None) != 2:
+        raise SystemExit(
+            f"{where}: the joint-reaction multipliers have {getattr(lam, 'ndim', None)} "
+            f"dimensions, and `docs/load-interchange-v1.md` declares `lam[N,n_rows]` -- a "
+            f"2-D array of N timesteps by n_rows joint-block components. A 0-d or 1-D "
+            f"array reaches `lam.shape[0]` below and dies in an index error rather than "
+            f"being refused here (R1063). Re-export the file with "
+            f"`python scripts/export_f4_dynamic_inputs.py`."
+        )
+    try:
+        times = raw[window_key]
+    except KeyError:
+        raise SystemExit(
+            f"{where}: the file carries no `{window_key}`, so there is nothing to check "
+            f"the window length of {lam.shape[0]} timesteps against. Every case this "
+            f"repository exports carries `times` beside `lam` with the same first-axis "
+            f"length; without it a truncated or emptied `lam` is indistinguishable from a "
+            f"complete one, and a case that silently contributes no row DROPS OUT of the "
+            f"envelope instead of reddening it (R1063). Re-export the file with "
+            f"`python scripts/export_f4_dynamic_inputs.py`."
+        ) from None
+    if getattr(times, "ndim", None) != 1:
+        raise SystemExit(
+            f"{where}: `{window_key}` has {getattr(times, 'ndim', None)} dimensions where "
+            f"the window record is a 1-D array of instants, so it cannot say how long this "
+            f"case's window is (R1063)."
+        )
+    if lam.shape[0] != times.shape[0]:
+        raise SystemExit(
+            f"{where}: {lam.shape[0]} timesteps, and the file's own window record "
+            f"`{window_key}` carries {times.shape[0]}. The two disagree about how long "
+            f"this case is. This is refused rather than carried because a short or empty "
+            f"`lam` does not redden the result, it LOWERS it: `compute_rows` reads "
+            f"`lam.shape[0]` as the window length, so a case with too few instants "
+            f"contributes too few per-instant rows -- or, at zero, none at all -- and "
+            f"drops out of the governing envelope while every artifact goes on declaring "
+            f"it was screened. Measured, with the governing case alone emptied: "
+            f"`U = 1.35117` published at exit 0 where the whole file gives `1.71167`, 21% "
+            f"low, with the governing period absent from `utilisation.csv` and 192 of 1248 "
+            f"rows gone from `member_forces.csv` -- and not one `nan` anywhere to show it "
+            f"(R1063). The usual cause is a truncated or partially-written export; "
+            f"re-export with `python scripts/export_f4_dynamic_inputs.py`, whose own window "
+            f"guard refuses a run shorter than two steps."
         )
     offending = int(np.count_nonzero(~np.isfinite(lam)))
     if offending:
@@ -604,7 +724,7 @@ def compute_rows(
     for i, period in enumerate(inp.periods_full_s):
         # R1051: the one bulk numeric array the solve consumes, and the only npz key read
         # inside `floatfea/` that had no dtype gate.
-        lam = checked_joint_reactions(raw[f"case{i}/lam"], f"case{i}/lam")
+        lam = checked_joint_reactions(raw, i)
         # The worst of each component over the window, per member-station, keeping the
         # max and the min separately -- `CLAUDE.md` forbids averaging a per-case
         # diagnostic, and a signed envelope needs both ends.

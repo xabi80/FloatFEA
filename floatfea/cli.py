@@ -26,7 +26,13 @@ from floatfea.post.member_forces import COMPONENTS
 from floatfea.run.config import ConfigError, RunConfig, load_config
 from floatfea.run.pipeline import RunResult
 from floatfea.run.pipeline import run as run_pipeline
-from floatfea.run.sizing import SizingReport, size_required_sections
+from floatfea.run.sizing import (
+    SizingReport,
+    TrussReport,
+    ordinal,
+    size_required_sections,
+    size_truss,
+)
 
 __all__ = ["main"]
 
@@ -432,8 +438,9 @@ def _write_required_section(path: Path, report: SizingReport) -> None:
     ]
     for g in report.groups:
         lines.append(
-            f"| {g.group} | {g.chosen_index} of {len(g.grid)} | {g.chosen.d_outer:g} | "
-            f"{g.chosen.wall:g} | candidate {g.proposed_index} | "
+            f"| {g.group} | {ordinal(g.chosen_index, len(g.grid))} | "
+            f"{g.chosen.d_outer:g} | "
+            f"{g.chosen.wall:g} | candidate {g.proposed_index + 1} | "
             f"{g.proposed_fixed_force_u:.6g} | {g.resolved_u:.6g} |"
         )
 
@@ -448,15 +455,15 @@ def _write_required_section(path: Path, report: SizingReport) -> None:
             )
         lines.append(
             f"* **{g.group}** — fixed-force `max U = {g.proposed_fixed_force_u:.6g}` at "
-            f"candidate {g.proposed_index}, re-solved `max U = {g.resolved_u:.6g}` at "
-            f"candidate {g.chosen_index}; {moved}."
+            f"candidate {g.proposed_index + 1}, re-solved `max U = {g.resolved_u:.6g}` at "
+            f"candidate {g.chosen_index + 1}; {moved}."
         )
 
     lines += ["", "## Every re-solve", ""]
     for it in report.iterations:
         sections = ", ".join(
             f"`{name}` D={it.sections[name].d_outer:g} t={it.sections[name].wall:g} "
-            f"(candidate {it.grid_index[name]})"
+            f"(candidate {it.grid_index[name] + 1})"
             for name in sorted(it.sections)
         )
         lines.append(f"**Re-solve {it.index}** — {sections}")
@@ -512,6 +519,124 @@ def _write_required_section(path: Path, report: SizingReport) -> None:
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
+def _write_truss_sizing(path: Path, report: TrussReport) -> None:
+    """FT2.5's artifact. The acceptance is on the TUBE; the truss is reported, not solved.
+
+    **CONDITION 1 OF THE RULING IS THE FIRST SECTION OF THE FILE AND IT IS NOT A FOOTNOTE.**
+    A reader must not be able to read `U = 0.99` as a statement about the truss. The
+    utilisation was evaluated on the tube the loop re-solved; the truss beside it was never
+    assembled, never solved, and is not certified by that `U`. FT2.4's artifacts label two
+    configurations of the SAME representation; this labels two REPRESENTATIONS, which is a
+    stronger claim to have to disclaim.
+    """
+    sizing = report.sizing
+    cfg = sizing.final.config
+    truss = cfg.sections.truss
+    accepted = sizing.final.governing()
+    study = STUDY_LABEL if cfg.study_only else ""
+    lines: list[str] = [
+        "# FloatFEA truss_sizing",
+        "",
+        f"**{study}{LABEL}**",
+        "",
+        "## READ THIS BEFORE ANY NUMBER BELOW",
+        "",
+        "**The `U` values in this file were evaluated on the TUBE, not on the truss.**",
+        "FM0's loop proposed and re-solved over `sections.candidates`, which is a grid of",
+        "tubes -- `docs/milestones/R1.md` section 4 fixes the candidate grid as the",
+        "configuration's declared section list. The truss resolution in the tables further",
+        "down is **derived from the accepted tube's member forces and was never",
+        "re-solved**: no finite element model of chords and diagonals was assembled, and",
+        "nothing here certifies the truss against API RP 2A-WSD as a structure.",
+        "",
+        "What the truss tables ARE: the chord and diagonal areas a parallel-chord",
+        "idealisation of declared depth and width would need in order to carry the forces",
+        "the accepted tube carries, sized member by member. What they are NOT: a verified",
+        "frame. A truss re-solve needs the depth DECIDED and a stiffness equivalence",
+        "LOCKED, and `docs/milestones/F1.md` records the depth as undecided with the tube",
+        "as the stand-in for it.",
+        "",
+        f"**{sizing.iteration_count} re-solve(s).** At the accepted sections the whole",
+        f"model re-solves to **U = {float(accepted['utilisation']):.6g}** at "
+        f"{accepted['member']} {accepted['station']},",
+        f"`T_full = {float(accepted['period_full_s']):g} s`, clause "
+        f"{accepted['governing_clause']}, member group `{accepted['body']}`.",
+        "**That is the tube's utilisation.**",
+        "",
+        "## The tube the loop accepted, per group",
+        "",
+        "| group | candidate | d_outer (m) | wall (m) | fixed-force max U | " "re-solved max U |",
+        "|---|---|---|---|---|---|",
+    ]
+    for g in sizing.groups:
+        lines.append(
+            f"| {g.group} | {ordinal(g.chosen_index, len(g.grid))} | {g.chosen.d_outer:g} "
+            f"| {g.chosen.wall:g} | {g.proposed_fixed_force_u:.6g} | {g.resolved_u:.6g} |"
+        )
+    if sizing.unsized:
+        lines += [
+            "",
+            "Member groups with no candidate grid, carried at their **declared** sections "
+            "into every re-solve above and NOT sized: "
+            + ", ".join(f"`{n}`" for n in sizing.unsized)
+            + ".",
+        ]
+
+    lines += [
+        "",
+        "## The truss those forces imply",
+        "",
+        "Declared parameters, all from `sections.truss`, reported because another",
+        f"configuration may declare others: `D/t = {truss.d_over_t:g}`, joint allowance",
+        f"`{truss.joint_allowance:g}`, depths `{list(truss.depths)}` m, widths",
+        f"`{list(truss.widths)}` m, shapes `{list(truss.shapes)}`, diameter search",
+        f"`{list(truss.diameter_search)}` m.",
+        "",
+        "**Both readings of FI1's 45-degree panel are published** (`per_face_45` and",
+        "`uniform_panel`), because which one is meant changes the answer and a reader",
+        "needs to see whether the recommendation survives either. Taking the shorter",
+        "buckling length from one reading and the shorter diagonal from the other is R801.",
+        "",
+    ]
+    for group in report.trusses:
+        best = group.lightest()
+        lines += [
+            f"### `{group.group}` -- {group.rows} governing-basis instants",
+            "",
+            f"Lightest declared cell: **{best.shape}**, depth {best.depth:g} m, width "
+            f"{best.width:g} m, reading `{best.geometry}` -- "
+            f"{best.steel_area_per_m:.4f} m2 of steel per metre of truss.",
+            "",
+            "| shape | h (m) | b (m) | reading | chord A (m2) | chord force (N) | "
+            "governing station | branch | diag A (m2) | steel/m (m2) |",
+            "|---|---|---|---|---|---|---|---|---|---|",
+        ]
+        for c in group.cells:
+            lines.append(
+                f"| {c.shape} | {c.depth:g} | {c.width:g} | {c.geometry} | "
+                f"{c.chord_area:.5f} | {c.chord_force:.4e} | {c.chord_station} | "
+                f"{c.chord_branch} | {c.diagonal_area:.5f} | {c.steel_area_per_m:.4f} |"
+            )
+        lines.append("")
+
+    lines += [
+        "## Limitations this analysis does not escape",
+        "",
+        "* **The acceptance is the tube's.** See the first section of this file.",
+        "* A **pin-jointed parallel-chord idealisation** of an arm whose real form is",
+        "  undecided, with no joint or connection check.",
+        "* The chord and diagonal areas are **minimum areas at the declared `D/t`**, not",
+        "  sections from a catalogue.",
+        "* **Linear Airy waves** and a **rigid-body** FloatSim; the superstructure only.",
+        "* The grade is **assumed** (S355), not certified.",
+        "* API RP 2A-WSD is applied as a **working-stress screen**, with no one-third",
+        "  increase (EZ4 Q2, locked).",
+        "",
+    ]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
 def _cmd_run(args: argparse.Namespace) -> int:
     cfg: RunConfig = load_config(args.config)
 
@@ -521,15 +646,19 @@ def _cmd_run(args: argparse.Namespace) -> int:
     # exited 2 -- leaving three artifacts on disk that mention the refusal nowhere. A
     # refusal that arrives after the outputs is not a refusal; it is a warning with a
     # non-zero exit code.
-    if cfg.outputs.truss_sizing:
+    # **BOTH SET IS REFUSED, and it is not fussiness.** They run the SAME loop over the
+    # same `sections.candidates` grid and differ only in what they report, so running both
+    # would solve the whole model twice over and write two artifacts whose tube answer is
+    # identical by construction -- and a reader comparing them would be comparing a file
+    # with itself.
+    if cfg.outputs.required_section and cfg.outputs.truss_sizing:
         raise ConfigError(
-            "outputs.truss_sizing is FL2(b) and is not wired yet -- it is FT2.5, and it is "
-            "the SAME loop as outputs.required_section with a different proposer (a "
-            "box/triangle sweep per group rather than a tube grid). Under FM0 it must "
-            "propose from fixed forces and then RE-SOLVE at the selected sections, "
-            "reporting the iteration count and both max U values; running it off a single "
-            "fixed force set is what FM0 ruled out. Refused before any output is written, "
-            "so nothing on disk describes a run that did not happen."
+            "outputs.required_section and outputs.truss_sizing are both set. They run the "
+            "same loop over the same `sections.candidates` grid and differ only in what "
+            "they report, so running both solves the model twice for one answer. Set one: "
+            "`truss_sizing` reports everything `required_section` does and adds the truss "
+            "resolution, so it is the one to set if you want both. Refused before any "
+            "output is written."
         )
 
     print(f"floatfea run {cfg.source.name}")
@@ -542,8 +671,12 @@ def _cmd_run(args: argparse.Namespace) -> int:
     # this function, so `required_section: true` wrote member_forces.csv, utilisation.csv
     # and report.md, printed the governing U, and THEN exited 2.
     sizing: SizingReport | None = None
+    trussing: TrussReport | None = None
     if cfg.outputs.required_section:
         sizing = size_required_sections(cfg, result, progress=lambda line: print(line, flush=True))
+    elif cfg.outputs.truss_sizing:
+        trussing = size_truss(cfg, result, progress=lambda line: print(line, flush=True))
+        sizing = trussing.sizing
 
     out = cfg.outputs.directory
     if cfg.outputs.member_forces_csv:
@@ -555,7 +688,14 @@ def _cmd_run(args: argparse.Namespace) -> int:
     if cfg.outputs.report:
         _write_report(out / "report.md", result)
         print(f"  wrote {out / 'report.md'}")
-    if sizing is not None:
+    if trussing is not None:
+        _write_truss_sizing(out / "truss_sizing.md", trussing)
+        print(
+            f"  wrote {out / 'truss_sizing.md'} "
+            f"({trussing.sizing.iteration_count} re-solve(s), "
+            f"{sum(len(g.cells) for g in trussing.trusses)} truss cells)"
+        )
+    elif sizing is not None:
         _write_required_section(out / "required_section.md", sizing)
         print(f"  wrote {out / 'required_section.md'} ({sizing.iteration_count} re-solve(s))")
 
@@ -579,7 +719,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
         print(f"\n  {sizing.analysis} -- a DIFFERENT configuration from the line above:")
         for g in sizing.groups:
             print(
-                f"    {g.group} -> candidate {g.chosen_index} of {len(g.grid)}, "
+                f"    {g.group} -> candidate {ordinal(g.chosen_index, len(g.grid))}, "
                 f"D = {g.chosen.d_outer:g} m, wall = {g.chosen.wall:g} m "
                 f"(fixed-force U = {g.proposed_fixed_force_u:.6g}, re-solved U = "
                 f"{g.resolved_u:.6g})"
