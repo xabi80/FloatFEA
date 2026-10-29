@@ -528,20 +528,33 @@ def _governing_faces(report: TrussReport) -> str:
     emits for every configuration, so every figure in it is computed from the report being
     written or it is a claim about someone else's run.
     """
+    # **L46: A CELL WITH NO GOVERNING FACE GETS ITS OWN CLAUSE, NOT A FACE NAMED
+    # `(none)`.** `_cell` leaves `diagonal_face` empty when no face's area ever exceeds
+    # the running maximum -- every face carrying zero shear -- and the `or "(none)"`
+    # fallback then published "2 are governed by the (none) face", which names a face
+    # that does not exist. Pre-existing, not from the commit that found it.
     counts: dict[str, int] = {}
+    unresolved = 0
     for group in report.trusses:
         for cell in group.cells:
-            counts[cell.diagonal_face or "(none)"] = (
-                counts.get(cell.diagonal_face or "(none)", 0) + 1
-            )
-    if not counts:
+            if not cell.diagonal_face:
+                unresolved += 1
+                continue
+            counts[cell.diagonal_face] = counts.get(cell.diagonal_face, 0) + 1
+    if not counts and not unresolved:
         return "none has a governing face, because no cell was resolved"
     # `is` at one, `are` otherwise (L36): a two-group configuration printed "1 are
     # governed by the horizontal face" into a published sentence.
-    return ", ".join(
+    clauses = [
         f"{n} {'is' if n == 1 else 'are'} governed by the {face} face"
         for face, n in sorted(counts.items())
-    )
+    ]
+    if unresolved:
+        clauses.append(
+            f"{unresolved} {'has' if unresolved == 1 else 'have'} no governing face at"
+            f" all, every face carrying zero shear"
+        )
+    return ", ".join(clauses)
 
 
 def _margin(group: Any) -> str:
@@ -696,9 +709,9 @@ def _write_truss_sizing(path: Path, report: TrussReport) -> None:
             f" of each other, and a margin that thin is not a basis for choosing a truss"
             f" form. **AND WHICH CELL WINS CAN DEPEND ON THE LOAD, NOT ONLY ON THE"
             f" GEOMETRY (R1081):** the torsion alone, moved as the single variable over a"
-            f" declared grid, has been measured to flip both the winning SHAPE and the"
-            f" winning READING. So the argmin above is a property of THIS run's loads and"
-            f" this grid, and carries over to neither another deck nor another heading.",
+            f" declared grid, can flip both the winning SHAPE and the winning READING. So"
+            f" the argmin above is a property of THIS run's loads and this grid, and is"
+            f" not guaranteed to carry over to another deck or another heading (L43).",
             "",
             "| shape | h (m) | b (m) | reading | chord A (m2) | chord force (N) | "
             "governing station | branch | diag A (m2) | steel/m (m2) |",
@@ -764,7 +777,7 @@ def _write_truss_sizing(path: Path, report: TrussReport) -> None:
         "  from that published deliverable, and FI1 declares nothing to decide it by.",
         "  **Whether the inclined face should be braced over `Lf` as well is the second",
         "  half of the same question and is escalated with it.**",
-        f"* **IT REACHES EVERY TRIANGLE ROW'S PUBLISHED `steel/m`, AND THE GOVERNING"
+        f"* **IT CAN REACH ANY TRIANGLE ROW'S PUBLISHED `steel/m`, AND THE GOVERNING"
         f" FACE CANNOT BE USED TO BOUND THAT (R1080).** An earlier version of this bullet"
         f" said the error reaches `diag A` only where the INCLINED face governs, and"
         f" conditioned the reader's whole answer on the face named in the table."
@@ -772,10 +785,14 @@ def _write_truss_sizing(path: Path, report: TrussReport) -> None:
         f" face shears that the defect understates, so the attribution printed in these"
         f" tables is computed UNDER the defect and cannot delimit it.** The two published"
         f" quantities behave differently, and the reason is structural rather than"
-        f" measured, so it holds for every configuration and not just for this one."
+        f" measured, so the MECHANISM below is not a fact about this deck -- though"
+        f" whether it surfaces on any given row is, as the next sentence says (L45)."
         f" **`steel/m` SUMS the faces' diagonal steel**, so raising the inclined faces'"
-        f" share by `Lf/h > 1` raises the sum WHEREVER THOSE FACES CARRY MORE THAN THE"
-        f" SMALLEST DECLARED TUBE ALREADY COVERS, whichever face governs -- and below"
+        f" share by `Lf/h > 1` raises the sum WHEREVER THOSE FACES MUST CARRY IN PLANE"
+        f" MORE THAN THE SMALLEST DECLARED TUBE ALREADY COVERS, whichever face governs"
+        f" (L44: `carry` alone was ambiguous between what the shipped allocation GIVES"
+        f" those faces and what they MUST carry, and the condition closes only under the"
+        f" second) -- and below"
         f" that, the sizing returns `sections.truss.diameter_search`'s own floor for the"
         f" shipped and the corrected demand alike, so the published figure does not move"
         f" at all. **That exception is a function of a DECLARED input, not a corner:**"
@@ -785,7 +802,10 @@ def _write_truss_sizing(path: Path, report: TrussReport) -> None:
         f" faces**, so it moves only where the corrected inclined face overtakes the"
         f" bottom one -- which is exactly the comparison the defect biases. The direction"
         f" is one-way in both: the areas are monotone in the force and `Lf/h > 1`, so"
-        f" **every triangle figure in these tables is LOW, never high.** Of the"
+        f" **no triangle figure in these tables is ever HIGH.** It is low where the defect"
+        f" surfaces and EXACT where the bracket floor absorbs it -- `LOW, never high` was"
+        f" the previous wording and the first half of it is false at a floor-pinned cell,"
+        f" where the published figure is already right (L45). Of the"
         f" {sum(len(g.cells) for g in report.trusses)} cells in the tables above,"
         f" {_governing_faces(report)} -- reported as a fact about this run, and NOT as a"
         f" bound on the error. The box rows are unaffected: `Lf = h` there.",

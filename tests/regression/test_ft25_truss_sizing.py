@@ -985,6 +985,22 @@ def test_R1077_the_MARGIN_says_what_it_is_OVER_in_all_four_states() -> None:
     assert cli._governing_faces(_Report([one])).startswith("1 is governed by")
     assert "2 are governed by" in cli._governing_faces(_Report([one, two]))
 
+    # **L46, pre-existing: a cell with NO governing face was published as being governed
+    # by a face called `(none)`.** `_cell` leaves the field empty when every face carries
+    # zero shear. Both agreements again, and the invented face name is forbidden.
+    import dataclasses
+
+    blank = dataclasses.replace(one, diagonal_face="")
+    got = cli._governing_faces(_Report([blank]))
+    assert "(none)" not in got, got
+    assert "1 has no governing face at all" in got, got
+    got_two = cli._governing_faces(_Report([blank, dataclasses.replace(two, diagonal_face="")]))
+    assert "2 have no governing face at all" in got_two, got_two
+    # And a mixed report still names the faces it does have.
+    mixed = cli._governing_faces(_Report([one, blank]))
+    assert "1 is governed by the bottom face" in mixed, mixed
+    assert "1 has no governing face at all" in mixed, mixed
+
 
 @pytest.mark.parametrize(
     "key, grid, needle",
@@ -1055,12 +1071,16 @@ def test_R1080_the_bullet_does_NOT_bound_the_error_BY_THE_GOVERNING_FACE(tmp_pat
     # carrying the quantifier -- so the arm that replaced the quantifier left it green. A
     # needle whose domain cannot contain the failure is not a needle.
     assert (
-        "raises the sum WHEREVER THOSE FACES CARRY MORE THAN THE SMALLEST DECLARED TUBE"
-        " ALREADY COVERS" in text
+        "raises the sum WHEREVER THOSE FACES MUST CARRY IN PLANE MORE THAN THE SMALLEST"
+        " DECLARED TUBE ALREADY COVERS" in text
     ), text
     assert "whose inclined-face shear is non-zero" not in text, text
     assert "a function of a DECLARED input" in text, text
-    assert "LOW, never high" in text, text
+    # L45: `LOW, never high` was false in its first half -- at a floor-pinned cell the
+    # published figure is EXACT, not low. Only the one-way half is asserted now, and the
+    # retired wording is forbidden so it cannot come back silently.
+    assert "no triangle figure in these tables is ever HIGH" in text, text
+    assert "EXACT where the bracket floor absorbs it" in text, text
     # The face count survives as a description, explicitly disclaimed as a bound.
     assert "NOT as a" in text and "bound on the error" in text, text
 
