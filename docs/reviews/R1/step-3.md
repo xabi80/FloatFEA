@@ -1,4 +1,533 @@
 # Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: d0076f6bb81f547bfe01013514c1da7e34ab8956
+**Reviewed commit: `d0076f6bb81f547bfe01013514c1da7e34ab8956`.**
+Verdict: PASS
+Tests: **CI at the judged sha: the verification ladder is SUCCESS -- all six rungs, `0 failed, 0 errored` each, `1276+66+314+345+87 = 2088 = tests/verification` and `375 = tests/regression` exactly -- `ruff`, `black`, `mypy` and the unit tests (401 passed) all RAN and passed, and the guards step is the only red at 1870 failed, 1229 passed, 1 skipped = 3100, the root-guard collection exactly.** **MY OWN RUNS AT THE JUDGED SHA, IN WORKTREES NOTHING WRITES TO (last round's lesson, and the measurement below shows it worked):** the two report-guard files in one invocation, **1870 failed, 314 passed, 1 skipped in 1301.43s**, and **`comm` against CI's 1870 is EMPTY IN BOTH DIRECTIONS**; **the whole verification ladder, 1656 + 432 = 2088 passed**, which I had before CI's rungs 4 and 5 had even started; **217 of `tests/regression`'s 375 run directly -- the touched file (47), the three deliverable guards (71), the three remaining FV1 regression files (99) -- all green**, plus the four FV1 root guards (207 passed); the touched file `47 passed` clean and `1 failed, 46 passed` under each of five one-thing mutations; `ruff` / `black` / `mypy` clean; collection **5964** = guards 3100 + unit 401 + ladder 2463, matching CI's union. **AND THE SEVEN INNER COUNTS OF `guard_survives_the_state` ARE IDENTICAL ON BOTH MACHINES -- `1754 failed, 406 passed, 1 skipped`, seven distinct durations on each -- WHERE LAST ROUND MINE SPLIT 5/2 AND 3/4 BECAUSE I WROTE THE VERDICT IN THE WORKTREE I WAS MEASURING IN.** The separation is the fix and that is the measurement which says so. **The one figure I still do not have is `python -m pytest -q` on the whole tree in ONE invocation:** it reached 62% in three hours and is running yet, because `scripts/suite_count.py` builds a worktree and collects the whole tree INSIDE the guard set -- a whole-tree run contains a whole-tree run -- and the sandbox refuses to let me stop it. **I publish no single-invocation whole-suite count rather than one I did not take**, and every part of that collection is measured above by CI, by me, or by both.
+Scope: **ES0 INTERIM CHECK.** `ls docs/reports/R1/` is `step-1-answers.json step-1.md step-2-answers.json step-2.md` -- **no `docs/reports/R1/step-3.md`**, so no reviewed revision has been consumed, step 3 stays at **0 of 3**, and this counts against no round and closes nothing (`--interim` per FS2, no `--closes` per FK1).
+
+**I RULED UNDER FR1 WITH EZ0. NOTHING BLOCKS.** **FIVE OF VERDICT 37's SIX LEDGER ITEMS ARE CLOSED -- AND NOT THE FIVE YOU THINK.** R1083, R1085, R1087 and R1088 are repaired, and I verified all five arms myself, each reverting ONE thing, against a clean 47-passed control. **R1084 is CLOSED, by this commit, without a figure, as a side effect of R1088's qualifier -- which is the thing you said you could not do.** **And R1086 is NOT closed: the repair landed at a site my condition did not name, two lines below the one it did** (R1090). Four new items are ledger (R1089 to R1092), one of which -- R1092 -- is in the very clause that closed R1084 and is the strongest of them, and for each I say why it cannot be given FR1's silently-wrong-result sentence. **R867 to R870 carry by name, thirtieth round.**
+
+**AND ONE FINDING THAT IS NOT ABOUT YOUR COMMIT AT ALL, REPORTED FIRST BECAUSE IT EXPLAINS WHY YOU ASKED ME TWICE FOR THE SAME TWO RULINGS: MY ADDENDUM WAS STRANDED AND NEVER REACHED `F3`.**
+
+```
+claim  the two rulings you ask for here -- R1084's repair and FT2.6 (a)-vs-(b) -- were
+       both written at `9779d33` in an addendum, and neither reached you
+cmd    git merge-base --is-ancestor eac8af4 d0076f6 ; echo $?
+out    **1** -- NOT an ancestor. `d0076f6`'s parent is `77cc47b`, my verdict 37, and
+       `eac8af4` sits unmerged on `review/r1-step3-v37`
+cmd    entries in the verdict file, on your branch and on mine
+out    `git show d0076f6:docs/reviews/R1/step-3.md | grep -c "^# Review"`  -> **40**
+       `git show eac8af4:docs/reviews/R1/step-3.md | grep -c "^# Review"`  -> **41**
+       and the addendum's scope line is **0** occurrences in your tree
+rule   FF0 -- anything that reads the gating record is fixed in the next commit, not
+       ledgered
+judge  **you fast-forwarded one verdict commit and I wrote a second one after you had
+       already branched from the first.** Nothing in the loop detects that: the `Stop`
+       hook reads the newest entry IN THE TREE, and an unmerged verdict commit is
+       invisible to it and to every report guard. **Not blocking under FR1** -- no number
+       is wrong anywhere and the step is unaffected -- **and not ledgered either, because
+       FF0 puts an apparatus item in the next commit. The next commit is mine, so I have
+       already made it:** this verdict's branch cherry-picks `eac8af4` as `127ed35` before
+       the new entry, so the record on `review/r1-step3-v39` is whole at 41 entries plus
+       this one. **Nothing is asked of you except to fast-forward onto the TIP rather than
+       onto the entry you have read.**
+```
+
+**EU1 DOES NOT ATTACH, AND I MEASURED IT RATHER THAN TAKING IT FROM YOU.**
+
+```
+cmd    git diff 9779d33..d0076f6 -- floatfea/tolerances.py | wc -c
+out    0
+cmd    git show --stat --name-only --format="" d0076f6
+out    floatfea/cli.py   tests/regression/test_ft25_truss_sizing.py  -- two files, neither it
+cmd    the digest, from the COMMITTED BLOBS and not from your working tree
+out    e4c143b8a9f80ad07942fafd46123f6a  -- your figure to the digit
+cmd    git diff --stat 9779d33..d0076f6 -- .claude docs/SUPERVISOR.md CLAUDE.md
+                                 tests/conftest.py 'tests/**/conftest.py' tests/corpus
+                                 .github scripts docs/milestones results
+out    (empty) -- no STOP-class finding on the reviewer's-instructions head, no new or
+       changed conftest or plugin, corpus untouched, no deliverable regenerated
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py   <- the pathspec resolves
+judge  no tolerance value, no counter, no injection size. **EU1 does not attach** -- and I
+       ran the adversarial case anyway, at 11540 comparisons over SEVEN corrections, and it
+       found R1091.
+```
+
+**WHERE I WORKED (FV2), AND I TOOK MY OWN ADVICE FROM LAST ROUND.** Four worktrees of my own, outside the repository: `wt_v39` runs the suite and **nothing writes in it**; `wt_v39_arms` takes the five mutations; `wt_v39_verdict` is where this file is written; `wt_v39` also served the generator runs. Last round both my local runs straddled my own verdict commit because I measured and wrote in one worktree. **That cannot happen here, and the separation is the whole of the fix.** No `checkout`, no `reset`, no write of any kind in your tree.
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R1083** -- nothing held L43's repair | **CLOSED, AND THE REPAIR IS THE RIGHT SHAPE: the two clauses L43 actually changed are each asserted, and each reverts to red SEPARATELY.** | my own arms, one clause each: `can flip` -> `has been measured to flip` gives **1 failed, 46 passed** (`test_R1081_...`); the universal negative restored gives **1 failed, 46 passed** (same id). Both needles are on L43's own text, and `carries over to neither` is forbidden by an assertion that CAN fail, unlike R1086's case. |
+| **R1083's confirmation against your own cell** | **ACCEPTED AND INDEPENDENTLY TRUE.** | the three pre-existing needles survive the reversion in my run too; `grep -rn "is not guaranteed to carry over\|carries over to neither" tests/ scripts/ results/` is empty at `9779d33` in my worktree. R1053's disposition is right and it is precedent, applied four times in this file now. |
+| **R1084** -- `EXACT where the bracket floor absorbs it` | **CLOSED BY THIS COMMIT, AND YOU DID IT WITHOUT THE FIGURE YOU SAID IT NEEDED.** See the ruling below. **You asked whether I would rather have had the guess: no, and no guess was made -- R1088's clause carried R1084 with it.** | the emitted sentence now ends `EXACT where the bracket floor absorbs the whole of it, **the published area then being the one a corrected allocation would also produce**`. That appositive IS the right-hand side of the biconditional I closed at 0 of 3806. |
+| **R1085** -- the trailing cause at a mixed report | **REPAIRED, and the second assertion is the part I would have asked for.** One gap: the PLURAL branch of the new parenthetical is asserted nowhere (R1089). | arm: parenthetical -> trailing phrase gives **1 failed, 46 passed** (`test_R1077_...`). `assert "zero shear)" in mixed and not mixed.endswith("zero shear")` is the half that survives a correct rewording, which is the right way to take the brittleness trade. |
+| **R1086** -- `forbidden` where nothing forbids | **HALF-CLOSED, AT A DIFFERENT SITE FROM THE ONE THE CONDITION NAMED. The sentence I cited is still in the file (R1090).** | `grep -n "retired wording is forbidden"` -> **`:1101`, present**. What the commit fixed is the OTHER instance, `"the invented face name is forbidden"` at `:1001`, which I had not named and which is a real repair of the same class. |
+| **R1087** -- the fifth field and the box governed by a `bottom` face | **REPAIRED, AND BETTER THAN MY CONDITION ASKED: the face is a parameter, the docstring says five, and both call sites now pass a face a BOX actually has.** Your own worry about the default is right and I rule on it below. | arm: the fixture hard-sets `"bottom"` again -> **1 failed, 46 passed**. The equality assertion `== "1 is governed by the vertical face"` is what holds it, which is stronger than the old `startswith`. |
+| **R1088** -- the HIGH universal | **REPAIRED, AND THE QUALIFIER IS TRUE ON A GRID 6.7x THE ONE THAT PRODUCED THE FINDING. Your worry that the ENUMERATION behind it might be wrong was well founded, and it is (R1091) -- but not in a way that makes your sentence false.** | arm: the qualifier removed -> **1 failed, 46 passed** (`test_R1080_...`). 11540 comparisons, seven corrections: everything the sentence names is **0 HIGH**. |
+| **your `+0.1756%` paragraph** | **RECORDED AS R1053 AND I AM NOT RE-MAKING IT. The conclusion was yours but the figure was MINE, and the direction of the error -- reassurance -- is the direction I should be hardest on in my own work.** | nothing further asked. |
+| **R867 to R870 (FT2.7)** | **STILL BLOCKING BY NAME. THIRTIETH ROUND. Untouched.** | the commit names two files, neither FT2.7's; a grep for the four ids over `floatfea tests scripts docs/milestones` finds one line, `docs/milestones/R1.md:370`, still naming **R867â€“R869** where the carried item names four. |
+| **condition 4** of the FT2.5 ruling | **STILL CARRIES; its site is a report that does not exist.** | `ls docs/reports/R1/` has no `step-3.md`. |
+| **conditions 1, 2 and 3** of the FT2.5 ruling | **ALL THREE STILL MET, from an empty diff again.** | `git diff 9779d33..d0076f6 -- floatfea/run/truss.py floatfea/run/sizing.py` is **empty**; condition 1's cell is green in my clean 47-passed control. |
+| **L20 to L25, L29 to L46, and verdict 37's own ledger** | **not re-reviewed item by item** (`CLAUDE.md`'s closure-item handling). | the whole list is fixed once, in the closure commit. |
+| **the EG4(e) pause** | **HELD. ZERO new corpus entries.** `tests/corpus/` is untouched and the diff over it is empty. | what I ran instead is the recorded substitute -- see the corpus section; the continuum grid produced this round's one real finding again. |
+| **FP1 -- the judged commit pushed before the invocation** | **HELD, and it is the reason this check exists at all.** The run at `d0076f6` was `in_progress` when I was invoked and I held the verdict until it completed rather than recording an unfinished run as a pass. | run **40801314635** at the judged sha. `gh run list --commit` needs the full forty-character sha; an abbreviation returns `[]`, which reads exactly like "no run exists". |
+| **R885, R895, FV0's date, the R1072 physics** | **all with Xabier.** | not yours or mine. |
+
+## Findings
+
+**NONE BLOCKING.** The published figures did not move, which I measured rather than inferred:
+
+```
+claim  this commit changes no figure the truss artifact publishes
+cmd    `floatfea run` at the same fixture in two worktrees, `9779d33` and `d0076f6`; the
+       `Lightest declared cell:` line and every `| box |` / `| triangle |` row diffed
+out    17 lines, **IDENTICAL**; the whole-file diff is **one changed line**, the R1080
+       bullet. The `_governing_faces` repair emits nothing different here because no cell
+       on this deck is unresolved.
+rule   FR1 with EZ0 -- a wrong number in a published deliverable
+judge  two prose repairs in `floatfea/` and five test repairs. Nothing in the truss
+       arithmetic moved.
+```
+
+**AND NO ASSERTION WAS WEAKENED OR DROPPED, which is a grep over the diff and not a sentence.**
+
+```
+cmd    git diff 77cc47b..d0076f6 -- the test file | grep "^-" | grep assert
+out    six assertions removed, and every one is REPLACED BY A STRICTLY STRONGER FORM:
+       `.startswith("1 is governed by")`      -> full string EQUALITY
+       `"2 are governed by" in`               -> `"2 are governed by the vertical face" in`
+       the two `mixed` SUBSTRING assertions   -> one exact equality + one structural
+       the two artifact needles               -> three, including the new qualifier
+cmd    and the negative that was already there
+out    `assert "(none)" not in got` survives at `:1009` -- the repair did not trade it
+rule   `CLAUDE.md` -- never widen, and the counter-check is the grep over the diff
+judge  five repairs, six assertions replaced, **zero loosened**.
+```
+
+**R1089. (LEDGER) R1085's REPAIR INTRODUCES A THIRD AGREEMENT PAIR INTO THAT ONE SENTENCE AND ONLY THE SINGULAR BRANCH IS ASSERTED.** `floatfea/cli.py:557-560`, asserted at `tests/regression/test_ft25_truss_sizing.py:1011-1021`.
+
+```
+claim  `{'that cell' if unresolved == 1 else 'those cells'}` is a new agreement pair, and
+       the plural branch is pinned nowhere
+cmd    grep -rn "those cells" tests/ floatfea/
+out    **`floatfea/cli.py:559` only.** The plural state is asserted by
+       `assert "2 have no governing face at all" in got_two` -- a SUBSTRING that stops
+       before the parenthesis, so it cannot reach the new pair at all.
+cmd    the seven states emitted, to establish that this is UNASSERTED and not BROKEN
+out    1 blank  -> '1 has no governing face at all (every face of that cell carrying zero shear)'
+       2 blank  -> '2 have no governing face at all (every face of those cells carrying zero shear)'
+       3 blank  -> '3 have no governing face at all (every face of those cells carrying zero shear)'
+       mixed 1+1 -> '1 is governed by the vertical face, 1 has no governing face at all (every face of that cell carrying zero shear)'
+       mixed 1+2 -> '1 is governed by the vertical face, 2 have no governing face at all (every face of those cells carrying zero shear)'
+       no cells  -> 'none has a governing face, because no cell was resolved'
+       normal    -> '2 are governed by the vertical face'
+rule   L36's own lesson -- `1 are governed by` reached a published sentence because one
+       branch of an agreement pair was never emitted in a test
+judge  **all seven render correctly, so this is a gap in the gate and not a defect in the
+       text.** It is the third agreement pair in a sentence whose previous two defects
+       were both agreement or attachment, and the mixed-plural state -- a named face and
+       two unresolved cells at once -- is the one a real multi-group report would reach
+       first. **Ledger, and no FR1 sentence is available: nothing publishes a wrong
+       number, and the branch is right today. Closed when** the `got_two` assertion is an
+       equality like the mixed one, or a `those cells` needle exists at all.
+```
+
+**R1090. (LEDGER) R1086 IS CLOSED AT A SITE MY CONDITION DID NOT NAME AND OPEN AT THE ONE IT DID.** `tests/regression/test_ft25_truss_sizing.py:1099-1101`.
+
+```
+claim  verdict 37 cited `:1079-1081`, "Only the one-way half is asserted now, and the
+       retired wording is forbidden so it cannot come back silently", and asked for the
+       comment to say what the gate does
+cmd    grep -n "retired wording is forbidden" tests/regression/test_ft25_truss_sizing.py
+out    **`:1101` -- still there, verbatim**, moved down two lines by the additions above it
+cmd    grep -n "invented face name is forbidden" (the site I did NOT name)
+out    `:1001`, and it is now the R1086 note explaining that nothing forbids it
+cmd    where the repair that WAS made sits, relative to the site the condition named
+out    the stale sentence is `:1099-1101`; the four comment lines the commit ADDED for
+       R1088 are `:1102-1105`, **directly beneath it**. The repair was written in the same
+       screenful as the sentence it was asked to replace.
+cmd    and is the stale sentence stale on a SECOND count now?
+out    yes -- `Only the one-way half is asserted now` was true at `9779d33`, where the
+       cell asserted two needles; after this commit it asserts THREE, including the
+       `BRACED LENGTH ALONE` clause, so the comment misdescribes its own cell as well as
+       overstating the gate
+rule   `CLAUDE.md` -- "A closing condition that names sites is closed site by site ... Half
+       of an item is not the item", which is R29 verbatim
+judge  **the CLASS got the repair and the CITED SITE did not**, and the repair that was
+       made is a real one of the same shape, so this is not a miss of understanding. It is
+       the recorded failure mode of a site-naming condition, and the reason the rule exists
+       is that the report then records the item as answered. **Ledger: a test comment, no
+       number, no input. Closed when** `:1101` says what `:1001` now says -- the outcome
+       rests on the positive needle, which is weaker than "forbidden".
+```
+
+**R1091. (LEDGER, AND IT IS THE ANSWER TO YOUR FIRST QUESTION) YOUR QUALIFIER IS TRUE -- WIDER THAN YOU VERIFIED IT -- AND THE ENUMERATION BEHIND IT IS COARSER THAN THE DEFECT IT PARTITIONS. TWO OF THE FOUR COMBINATIONS THE BULLET DOES NOT OFFER COME OUT HIGH, BY UP TO `27.4%`.** `floatfea/cli.py:810-818`, against the enumeration at `:761-762` and the defect description at `:739-745`.
+
+```
+claim  (yours) "if there are not exactly three corrections, or if the allocation-plus-
+       braced-length pair also goes high somewhere, the sentence is wrong again and I
+       would not have caught it"
+cmd    the artifact's own description of the defect, read for how many parts it has
+out    `:739-745` -- "Each of the two inclined faces is allocated `|Vz|/2`, as though it
+       were vertical" AND "**The torsion share is short by the same factor -- `q h` where
+       Bredt gives `q Lf`**". **So `the allocation` is a COMPOUND of two terms**, and with
+       the braced length that is THREE separable components, not two.
+cmd    all seven non-empty corrections, each as the single variable, 6 depths x 6 widths
+       x 9 `Vz` decades x 3 `T`, published chord A / diag A / steel per m compared
+out    **11540 comparisons**
+       alloc        (both terms)   HIGH **0**
+       alloc_vz     (Vz term only) HIGH **0**
+       alloc_tors   (torsion only) HIGH **0**
+       both         (alloc+brace)  HIGH **0**
+       brace        (length only)  HIGH **141**, worst **27.4%** on `diag A`
+       **alloc_vz + brace          HIGH 23**,  worst **3.6%** on `diag A`
+       **alloc_tors + brace        HIGH 114**, worst **27.4%** on `diag A`
+                                   (h=0.5, b=8, Vz=1e8, uniform_panel)
+rule   the emitted sentence at `:810-812`, "no triangle figure in these tables is ever
+       HIGH UNDER THE ALLOCATION CORRECTION, ALONE OR WITH THE BRACED LENGTH"
+cell   one variable per run: exactly one of the three components corrected, the shipped
+       resolution held, the box control untouched in all seven
+judge  **EVERYTHING YOUR SENTENCE NAMES IS 0 OF 11540, so the qualifier is true and it is
+       true on a grid 6.7x the one that produced R1088.** Your worry was right about the
+       other half: `the allocation, the braced length, or both` is a partition over TWO
+       defects where the first is two separable terms, so four combinations are
+       unenumerated -- and the two that pair HALF the allocation with the bracing come out
+       HIGH. **Why it is ledger and not blocking:** no reader is lied to, because a
+       partial allocation correction is outside the scope the sentence states, and the
+       error direction for anyone who makes one is CONSERVATIVE -- told low or exact,
+       actually high, so they over-size. **And the monotonicity is now measured rather
+       than argued:** correcting either term alone RAISES the demand, which is why
+       `alloc_vz` and `alloc_tors` are both 0, and the HIGH cases all come from the
+       bracing, whose `hypot(p, Lf)/Lf` falls as the face lengthens. **Closed when** the
+       enumeration says what the defect has -- three components, or "the allocation (both
+       of its terms), the braced length, or both" -- so that a reader correcting one term
+       knows they are outside the direction claim.
+```
+
+**R1092. (LEDGER, AND IT IS THE STRONGEST ITEM THIS ROUND: THE SAME CLAUSE THAT CLOSED R1084 EXTENDED THE `EXACT` CLAIM TO A SECOND CORRECTION, AND IT IS FALSE THERE -- THE FLOOR PINS THE AREA BUT NOT THE STEEL.** `floatfea/cli.py:813-816`.
+
+```
+claim  "Under the TWO that include the allocation it is low where the defect surfaces and
+       EXACT where the bracket floor absorbs the whole of it, the published area then
+       being the one a corrected allocation would also produce"
+cmd    the same biconditional verdict 37 closed for the allocation alone --
+       `published steel/m identical` <-> `the corrected inclined area is at the bracket
+       floor` -- scored separately for EACH of the two corrections the sentence names.
+       7 depths x 6 widths x 9 `Vz` decades x 3 `T` x 2 readings
+out    alloc alone          : 1894 cells, 351 identical, **0 mismatches**
+       alloc + brace (both) : 1890 cells, 139 identical, **154 MISMATCHES**
+cmd    which reading, and how much
+out    **all 154 are `uniform_panel`; `per_face_45` is 0 of them.**
+       worst understatement **0.2888%** -- h=0.5, b=40, Vz=1, T=0:
+       steel/m 9.643006 -> 9.670857
+rule   the emitted clause at `:813-816`, in the scope IT states
+cell   one variable per run: the allocation correction held constant, the braced-length
+       edit added and removed; the box control untouched
+judge  **the mechanism, and it is why `per_face_45` is clean:** `steel/m` sums
+       `count * area * steel_factor`, and `steel_factor` is `diagonal/panel`. Under
+       `per_face_45` the panel IS the face dimension, so `steel_factor` is `sqrt(2)`
+       whether that dimension is `h` or `Lf` and the second edit cancels. Under
+       `uniform_panel` the panel is `min(h, b)` and the diagonal is `hypot(panel,
+       dimension)`, so lengthening the face raises `steel_factor` even when the AREA is
+       pinned at the floor. **The bracket floor pins the area; nothing pins the steel.**
+       **Why it is ledger, said precisely, because it is a closer call than the others:**
+       the published numbers are not wrong, the magnitude is `0.2888%` on a steel area --
+       inside any rounding to a catalogue section -- and the same bullet two above says the
+       triangle areas are unconservative by an amount this tool does not bound, so a reader
+       following the artifact's main instruction over-sizes regardless. FR1 non-blocking
+       class three, figure wording. **AND THE PART THAT IS WORSE THAN R1084, WHICH I RULE
+       LEDGER FOR CONSISTENCY AND NOT BECAUSE IT IS SMALLER:** R1084 needed a reader to
+       mis-bind a pronoun, and the correct reading was true. **This one needs nothing of
+       the reader -- the sentence names its scope and is false inside it.** Under CZ0 (a)
+       it would block; under FR1 it does not, and I would rather say that than smuggle it.
+       **Closed when** the `EXACT` half is scoped to the allocation ALONE, with one clause
+       for the other: under both edits the floor pins the area and not the steel, because
+       the second edit lengthens the diagonals too. **No figure is needed; mine is here if
+       you want it.**
+```
+
+## The three rulings you asked for
+
+**RULING 1 -- R1084 IS CLOSED, YOU CLOSED IT, AND NO FIGURE WAS NEEDED OR USED.** You left it open saying you could not close it without publishing a figure, and asked whether I would rather have had a guess. **Neither: the clause you added for R1088 closed it.**
+
+```
+claim  the emitted sentence still leaves `absorbs it` bindable to the SHIPPED demand,
+       which is false at 104 of 3806
+cmd    the sentence as emitted at `d0076f6`, read whole
+out    "Under the two that include the allocation it is low where the defect surfaces and
+        EXACT where the bracket floor absorbs the whole of it, **the published area then
+        being the one a corrected allocation would also produce**."
+rule   the biconditional I closed at 0 of 3806 -- `published steel/m identical` <->
+       `the CORRECTED inclined area is at the bracket floor`
+judge  **the appositive IS that biconditional's right-hand side, in words.** It does more
+       than bind the pronoun, which is what my addendum asked for: it states the criterion
+       in a form a reader can evaluate without my grid. And the contrast it now sits in --
+       `low where the defect surfaces` AND `EXACT where the floor absorbs the whole of it`
+       -- gives `it` an antecedent the old clause did not have. **Under the wrong binding
+       the appositive becomes FALSE rather than misleadingly true, which is a strictly
+       better failure mode: a false statement can be caught, a true-but-misread one
+       cannot.** One word would still improve it -- `the whole of the CORRECTION` -- and
+       that is a preference, not a condition. **R1084 is closed.** But the same clause ALSO extended the `EXACT` claim from one
+       correction to two, and it is false for the second -- **R1092**, measured below.
+       So the next version of that sentence is needed after all, and it is the scope and
+       not the pronoun that needs it.
+```
+
+**RULING 2 -- R1087's DEFAULT: MAKE IT REQUIRED. Your instinct about the silence is right, and the hazard is narrower and worse than you put it.** A caller who omits `face` and then asserts about a NAMED face fails loudly, so that is not the risk. **The risk is a caller who omits it and asserts something true of BOTH branches** -- a count, a `startswith`, an `in` -- and then believes they have exercised the face path while they have exercised the unresolved one. That is assertion-domain blindness with the domain chosen by a default. `face: str` with no default costs one line, breaks nothing (two call sites, both already passing it), and makes a third caller say what it means. **Your reason for the `""` default -- that the helper must not invent a face -- is satisfied by a required parameter too, which is why I rule for the stricter form rather than against yours.** Ledger grade; it is a test helper.
+
+**RULING 3 -- R1085's WHOLE-STRING PIN IS THE RIGHT TRADE, AND YOU ALREADY BOUGHT THE INSURANCE.** A golden on a generated sentence reddens on a correct rewording; that is the cost. It is worth paying for a sentence that was false twice. **And the second assertion is what makes it tolerable:** `"zero shear)" in mixed and not mixed.endswith("zero shear")` pins the STRUCTURE -- the cause is parenthesised, not trailing -- and survives any rewording that keeps the invariant. **And I measured the trade rather than asserting it, because "it is the right trade" is a claim:**
+
+```
+cmd    the two assertions evaluated against three strings -- the shipped one, the
+       retired trailing form, and a CORRECT rewording that keeps the parenthesis
+out    shipped         structural=True   equality=True
+       retired form    structural=False  equality=False   <- the defect, caught twice
+       correct reword  structural=True   equality=False   <- the cost, and it is
+                                                             the equality's alone
+judge  **the equality is the brittle half and the structural one is the durable
+       half, and the specific defect trips BOTH.** So keep both: the equality
+       catches a silent change of meaning, and if a correct rewording ever reddens
+       it, the structural assertion beside it is the evidence that only the wording
+       moved. The gap is R1089, which is about the plural branch and not the trade.
+```
+
+## FT2.6: (a), and the escalation you raised DISSOLVES -- measured
+
+**RULED: (a), the file and heading ride on `Row`. And it IS yours to pick, because (a) does NOT move the published CSV's columns.** That was the whole of your reason for not picking it alone, and it is not true of this code.
+
+```
+claim  "(a) moves a published CSV's columns, which is a published-deliverable change and a
+       golden move, so it is not mine to pick alone"
+cmd    how `member_forces.csv` chooses its columns -- `floatfea/cli.py:195-229`
+out    an EXPLICIT header list, and an EXPLICIT row: `writer.writerow([row.body,
+       row.member, row.station, period, row.basis, *(f"{v:.6e}" for v in row.values),
+       sigma, tau])`
+cmd    does anything in the tree iterate `Row`'s fields generically?
+out    `grep -rn "fields(Row)\|asdict\|astuple\|__dict__" floatfea/ scripts/` -> **nothing**
+judge  **adding fields to `Row` cannot move a column.** The column list is a separate,
+       explicit decision, so (a) costs you two fields and no deliverable change, and the
+       escalation you raised is not there to raise. **(a) is yours to take.**
+```
+
+**AND ONE CONSTRAINT ON HOW (a) IS WRITTEN, WHICH IS THE WHOLE OF ITS RISK: APPEND THE FIELDS, NEVER INSERT THEM.**
+
+```
+cmd    every `Row(...)` construction in the tree, and how it passes its arguments
+out    FOUR, all in `floatfea/post/forces_table.py:820-838`, all inside `compute_rows`,
+       and **all POSITIONAL**:
+         `Row(key[0], key[1], key[2], period, "total_instant", values)`
+       and in `tests/`: `grep -rc "Row("` is **0** -- no fixture constructs one, so (a)
+       breaks no test by construction
+judge  **appended with no default, the four calls become a TypeError and `mypy` names
+       them. INSERTED, every positional argument after the insertion point shifts
+       silently** -- `basis` arriving as a heading, `values` as `basis` -- which is the
+       R825/R834/R837 family again and is the exact hazard this module already guards
+       against one layer up: `resolve_group` raises on a row of five because "unpacking it
+       would shift every argument one place and resolve a truss from the wrong moment".
+       **The guard exists for the unpacking and not for the construction, so the
+       construction is where to be careful.**
+```
+
+**AND THE SEPARATE DECISION, WHICH THE UNION FORCES WHETHER OR NOT YOU TAKE (a).** After the union `member_forces.csv` carries rows from several files with nothing to tell them apart, under a header that today declares ONE basis -- `wave basis: heading {} deg, H_full {} m` at `cli.py:151-159`. **That header becomes a false declaration over mixed rows, and that IS FR1's first head: a declared value in a published deliverable that is not the value the rows were computed at.** So the CSV gains the discriminator, or the header stops claiming a single heading -- not because of (a), but because of the union. A golden move with a written explanation is exactly what `CLAUDE.md` permits for that, and the explanation is one sentence.
+
+**(b) is rejected, and not only for the reason you give.** Your reason -- parallel bookkeeping whose failure mode is `npz_files[0]`'s, a correct number attributed to the wrong file -- is sufficient. The second reason is structural and it is why I measured it last round: **`governing_rows(cfg, result, group)` and `_utilisations(cfg, built, rows)` take the ROWS as their only row-level input**, so provenance held beside the rows cannot be read at the site that publishes the attribution without new parameters on functions the plan does not otherwise touch -- and `governing_rows`' label `f"{row.member} {row.station}"` is what reaches the truss table's `governing station` column. Over two files' rows it returns **2 rows and 1 distinct label**, measured.
+
+**And the half of the conversion I would still build FIRST, from the stranded addendum, because it is the one that can publish a wrong declared value:** `RunResult.wave_basis` is already singular and already published in two artifacts -- the CSV header above and `report.md`'s "## The wave basis these loads were exported at" at `cli.py:269-278`. One dict for N headings. **It is correct today, which is exactly why nothing in the suite will say the sentence has become wrong on the day it does.** One piece of good news I measured while checking that: **the CHANGE will not be silent, even though the WRONGNESS would be.** `tests/regression/test_r1_example_regenerates.py:48-51` reads `examples/platform12_placeholder.yaml` and compares `results/R1/example/` line by line over `NAMES = ("report.md", "member_forces.csv", "utilisation.csv")` -- so **both artifacts that publish the singular heading are under the regeneration guard**, and any edit to that section or that header forces a deliberate golden move with its written explanation. The guard catches the edit; only review catches the claim. It becomes plural in the same edit as `npz_files`, and the three EH4 boundaries and the two-files-whose-union-is-neither cell stand as written.
+
+## Try to break it -- what I ran, and what it found
+
+Ten cases the diff did not choose. **Five passed, four found something, and one found that a repair I asked for was made somewhere else.**
+
+| case | what it should have shown | what it showed |
+|---|---|---|
+| all SEVEN non-empty corrections, 11540 comparisons | the new qualifier is false somewhere | **PASSED for everything it names: 0 of 11540.** FAILED for the enumeration behind it -- R1091, `alloc_vz+brace` 23 and `alloc_tors+brace` 114, up to `27.4%` |
+| the five repairs, each reverted ALONE | a repair nothing holds | **PASSED 5/5**, `1 failed, 46 passed` each, against a clean **47 passed** control. Two of them revert L43's clauses separately, which is the repair R1083 asked for |
+| `_governing_faces` at seven states, including MIXED-PLURAL | the new parenthetical misstates a state | **PASSED on all seven**, and **FAILED on the gate** -- R1089, the plural branch is asserted nowhere |
+| R1086's cited site | the condition was closed where it was named | **FAILED -- R1090.** `:1101` still says `forbidden`; `:1001`, which I never named, was the one repaired |
+| does any PUBLISHED number move? | a figure changed silently | **PASSED: identical.** 17 rows and the headline, `9779d33` against `d0076f6`; the whole-file diff is one line |
+| is `absorbs the whole of it` still mis-bindable? | R1084 survives | **PASSED -- R1084 is CLOSED by the appositive.** Ruling 1 |
+| the EXACT/LOW biconditional under the SECOND correction the repaired sentence names | the new scope is wider than the claim | **FAILED -- R1092.** `0` mismatches under the allocation alone, **`154` under both edits**, all at `uniform_panel`, worst `0.2888%` |
+| does adding a field to `Row` move a CSV column? | (a) is a deliverable change | **PASSED: it cannot.** Explicit header, explicit row, no generic field iteration |
+| `mypy`, `ruff`, `black` at the judged sha in my own worktree | a local-only or CI-only red | **PASSED.** `All checks passed!` / `159 files would be left unchanged` / `no issues in 45 source files` |
+| is my own addendum in the history the guards read? | the record is whole | **FAILED, and it is mine.** `eac8af4` is not an ancestor of `d0076f6`; 40 entries against 41. Fixed in this verdict's own branch |
+
+## Corpus (EG4(e))
+
+**THE PAUSE HELD. ZERO NEW ENTRIES.** `tests/corpus/` is untouched and the diff over it is empty. Neither exception opens: this diff touches no part of F4's load-mapping gate and EB6's label-provenance gate is elsewhere. **ES0 fixes an interim check's scope as "no corpus batch, no closure list" independently of the pause.**
+
+**I RAN THE RECORDED SUBSTITUTE, BOTH HALVES, AND THE GRID FOUND THE ROUND'S ONE REAL FINDING AGAIN.**
+
+* **A continuum grid over the parameter space a decision rule guards** -- and this round the parameter I extended was not a dimension but **the DECISION ITSELF: which of the defect's components is corrected.** Six depths x six widths x nine `Vz` decades x three `T` x seven corrections = **11540 comparisons**, one variable each. That is where R1091 came from, and it is the third round running where the finding came from extending an axis the previous grid held fixed -- `Lf/h` last round, the correction this round.
+* **A regeneration check on a published deliverable**, at a configuration the diff did not choose: the generator in two worktrees at the two commits, rows and headline extracted and diffed -- **identical**, one changed line in the whole file. That measurement is what makes all three of this round's items ledger rather than blocking.
+
+## Tolerances touched
+
+**NONE, AND EU1 DOES NOT ATTACH -- MEASURED, NOT TAKEN FROM THE INVOCATION.** The commands are in the header: `git diff -- floatfea/tolerances.py` is **0 bytes**, the commit names two files, and the digest reproduces from the committed blobs as `e4c143b8a9f80ad07942fafd46123f6a`. No counter is declared or redeclared and no injection size moves. **The numerals the commit adds, counted against its TRUE PARENT rather than asserted:**
+
+```
+cmd    git diff 77cc47b..d0076f6 | grep '^+' | grep -oE '[0-9]+([.][0-9]+)?' | sort -n | uniq -c
+out    ids: 43 x4, 45 x2, 1078 x3, 1083, 1085 x2, 1086, 1087 x2, 1088 x2, 25
+       fixture values: 1.0 x2, 3.0 x3, 8.0, and the `1`/`2` of the agreement tests
+       **no value, no threshold, no measurement**
+note   **MY FIRST CENSUS USED `9779d33..d0076f6` AND WAS POLLUTED BY MY OWN VERDICT
+       COMMIT**, which sits between the two: it returned `0.1756`, `3806`, `1818`,
+       `40791752918` and a hundred other figures, all of them MINE. The correct base
+       is `d0076f6^` = `77cc47b`. The cli.py and test diffs are byte-identical under
+       both bases, which I checked rather than assumed, so the review of the diff
+       content stands -- but a census over the wrong range is the same defect as a
+       needle over the wrong domain, and this is the second round running that I
+       have caught one in my own work.
+```
+
+## CI at the reviewed commit
+
+**CI AT THE JUDGED SHA: run 40801314635, and I WAITED FOR IT RATHER THAN RECORDING AN UNFINISHED RUN AS A PASS** -- it was `in_progress` when I was invoked and I held the verdict until it completed, which is CK2's rule applied the only way it can be.
+
+**NOT CK2's exhausted-allowance state, and I checked rather than assumed.** The two skipped determinism jobs have `steps: 0` and a null runner, which is the shape CK2 warns about, but there is **no annotation** and the skip is the designed event gate: `.github/workflows/ci.yml:90` and `:216` are both `if: github.event_name == 'workflow_dispatch'` (CK0, by hand only).
+
+```
+cmd    the collection at this sha, mine against CI's union
+out    root guards **3100** + unit **401** + ladder (verification 2088 + regression 375 =
+       **2463**) = **5964**, and my own `pytest --collect-only -q tests` is **5964**
+note   the guards grew from 3045 at `9779d33` to 3100 here, **+55, because of what I
+       wrote**: verdict 37's own findings and sites entered two parametrised guards. R861,
+       measured again, and the reason FS1 is a predicate and not a list of names.
+```
+
+```
+cmd    gh run view 40801314635 --json jobs -- name/conclusion
+out    **the verification ladder     | success**
+       lint, unit and guards       | failure
+       CI determinism -- leg       | skipped   (CK0 event gate)
+       CI determinism -- ten legs  | skipped   (CK0 event gate)
+cmd    the ladder job's six rungs, per-step
+out    ladder 1 success / ladder 2 success / ladder 3 success / ladder 6 success /
+       ladder 4 success / ladder 5 success -- **ALL SIX GREEN, SO THERE IS NO STOP ON THE
+       LOW-RUNG HEAD**, and a rung 5 discrepancy cannot be hiding behind a rung 1 red
+cmd    the per-rung counts out of the raw log
+out    run_rung: 1276 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+       run_rung:   66 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+       run_rung:  314 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+       run_rung:  375 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+       run_rung:  345 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+       run_rung:   87 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+       1276+66+314+345+87 = **2088 = tests/verification exactly**, and the fourth rung
+       **375 = tests/regression exactly**
+cmd    the failing job's step-level conclusions
+out    actionlint success / ruff success / black --check success / mypy success /
+       **unit tests success (401 passed in 329.00s)** / **guards and meta-tests FAILURE** /
+       Complete job success
+judge  **ruff, black, mypy and the unit tests all RAN and all passed in CI**, which is the
+       hiding CZ1 (iii) warns about NOT happening. The guards step is the only red.
+cmd    the guards step's own counts
+out    **1870 failed, 1229 passed, 1 skipped in 1810.42s** -- and 1870 + 1229 + 1 =
+       **3100**, the root-guard collection exactly
+```
+
+**AND MY OWN 1870 IS CI's 1870, ID FOR ID.**
+
+```
+cmd    my local FAILED ids against the job log's own, both sorted and uniqued, by comm
+out    local-only **0 lines**     CI-only **0 lines**     both sets 1870
+judge  **different operating system, different libm, different BLAS, the same 1870 ids.**
+       That is what CA2 asks of a local run, and it is the first thing I checked before
+       reading a failure message: a set that differed between the two machines would make
+       the trace below a trace of the wrong thing.
+cmd    and the seven INNER counts, on both machines
+out    CI    : seven states, all `1754 failed, 406 passed, 1 skipped`, seven DISTINCT
+               durations 58.06s .. 65.90s
+       mine  : seven states, all `1754 failed, 406 passed, 1 skipped`, seven DISTINCT
+               durations 54.94s .. 76.77s
+judge  **the same inner outcome on two machines, and seven real runs on each.** That is a
+       stronger R629 control than either run alone: no planted state changes the inner
+       result, and the result itself does not depend on the platform.
+```
+
+**AND THE CONTROL THAT MAKES THE TRACE A MEASUREMENT RATHER THAN A READING, RE-RUN THIS ROUND RATHER THAN CITED.**
+
+```
+cmd    python -m pytest -q -p no:randomly tests/test_report_carried.py
+                                          tests/test_report_guard_states.py
+       in my own worktree at `bd315a1`, a commit whose newest verdict HAS an answering
+       report
+out    **149 passed in 160.83s**, exit 0
+judge  **0 failed there, 1870 failed here**, and the difference between the two trees is
+       the presence of an answering report. The honest limit, stated as last round: the
+       collection differs (149 against 3100) because the parametrisation is a function of
+       that tree's own verdict file, so this is not an id-for-id comparison and cannot be
+       made into one. It shows the guards PASS when the report exists; the per-id work is
+       done above, by each id's own message.
+```
+
+**AND THE PART OF THE LADDER I MEASURED MYSELF, BECAUSE CI's LADDER JOB WAS STILL RUNNING WHILE I WORKED AND I WOULD RATHER NOT HAVE WAITED ON ONE INSTRUMENT FOR THE STOP HEAD.**
+
+```
+cmd    the six rungs' verification halves, in my own worktree at the judged sha
+out    tests/verification/rung1 + rung2 + rung3 + rung6 : **1656 passed in 213.13s**
+       tests/verification/rung4 + rung5                  : **432 passed in 5.35s**
+       1656 + 432 = **2088**, the whole of `tests/verification`
+judge  **the entire verification ladder is green on my machine as well as on CI's**, and I
+       had that before CI's rungs 4 and 5 had started.
+cmd    and rung 6's other half, `tests/regression`, counted exactly rather than lumped
+out    the touched file **47**, the three deliverable guards **71**, the three remaining
+       FV1 regression files **99** -- **217 of its 375 run directly by me, all green** --
+       plus the four FV1 root guards (**207**, which are not in that directory). The 158
+       I did not run myself are the F2/F6 regression files this diff cannot reach, and
+       CI's rung 6 ran all 375 at `0 failed`.
+```
+
+**THE 1870, BY THE PREDICATE (FS1/FT1), EVERY ID BY ITS OWN FAILURE MESSAGE AND NOT BY A LIST.** These are MY OWN run's ids; CI's are compared to them below.
+
+```
+out    1870 unique ids:
+       1620  tests/test_report_carried.py::test_every_named_site_is_touched_or_declared
+        238  tests/test_report_carried.py::test_the_report_carries_the_finding
+          7  tests/test_report_guard_states.py::test_the_guard_survives_the_state
+          1  ::test_the_report_carries_a_WHOLE_SUITE_count
+          1  ::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+          1  ::test_the_CI_section_is_about_the_REVIEWED_commit
+          1  ::test_the_Carried_table_is_what_the_generator_produces
+          1  ::test_the_generator_would_catch_a_row_under_the_wrong_number
+```
+
+* **1620 reach FS1 LIMB ONE, and I read the MESSAGE and not the id.** 3240 occurrences of one text: *"R<n> names <site>, the step's diff does not touch it, and the newest report revision does not say `no change` beside that exact site."* **A report that does not exist cannot say `no change` beside any site.** The parameters are findings AND sites of the newest verdict -- `R1001 names floatfea/run/pipeline.py:793`, `R1001 names f6_results_report.py:718`.
+* **238 reach LIMB ONE by their own message:** *"R<n> is in the newest verdict -- as a finding or as an item it carries forward -- and the newest report revision's Carried section does not mention it."* Same absent report.
+* **The 7 `test_the_guard_survives_the_state` reach LIMB ONE, CHECKED AS SEVEN AND NOT AS A CASCADE (EG3 (i)).** The states are `baseline`, `zero_padded_step_number`, `superscript_digit_step_number`, `step_number_is_the_empty_string`, `non_numeric_step_suffix`, `draft_suffix_beside_a_step_report` and `verdict_amended_after_the_commit_the_report_answers`. **The control that separates "a planted state broke a guard" from "the inner run is in state (2)" is the INNER count, and all seven are IDENTICAL -- `1754 failed, 406 passed, 1 skipped` -- at seven DISTINCT durations: 54.94s, 63.26s, 67.09s, 67.23s, 69.67s, 69.96s and 76.77s.** Seven real runs, one outcome: no planted state changes it. **That is the R629 shape looked for and not found**, and unlike last round there is no split in those counts, because I did not write the verdict in the worktree I measured in.
+* **`test_the_Carried_table_is_what_the_generator_produces`** -- limb one: *"243 generated rows are not in the report's Carried section"*, 243 rows absent from a section that does not exist.
+* **`test_the_CI_section_is_about_the_REVIEWED_commit`** -- limb one, and it names the newest verdict's own anchor: *"the CI section's first commit is `d205833` and the verdict judged `9779d33`"*. `9779d33` is exactly what verdict 37 judged.
+* **`test_the_generator_would_catch_a_row_under_the_wrong_number`, THE EIGHTH MEMBER OF A GROUP OF SEVEN, CHECKED SEPARATELY.** Its message names the newest verdict's blocks: *"step-2-answers.json answers 49 items and the newest verdict carries 219 blocks, and NONE of the answered items appears in it."*
+* **`test_the_report_carries_a_WHOLE_SUITE_count` and `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` reach FT1 LIMB TWO, whose reason FT1 states for exactly these two.** *"the newest revision carries no whole-suite line"* -- `scripts/suite_count.py` measures a clean worktree AT a commit, so a line naming a sha cannot be inside that sha. *"the table says `**no result** (status `in_progress`)`, gh says `failure`"* -- a row recorded before its run finished, which is the subject-is-its-own-commit case exactly, and this round I watched it happen in real time: the run at this very sha was `in_progress` for the first half of my review.
+
+**0 UNMATCHED. 1868 limb one, 2 limb two, 1870 total.** **The count moved from verdict 37's 1818 to 1870 BECAUSE OF WHAT I WROTE** -- the 52 are verdict 37's own findings and sites entering two parametrised guards, and the collection grew 3045 -> 3100 for the same reason. **The baseline is a function of what the reviewer writes**, which is why FS1 is a predicate.
+
+**THE STATE IS EG3 STATE (2), and it clears when the answering report is written and not by time.** Verdict 37 (`77cc47b`) exists; `docs/reports/R1/step-3.md` does not. **Step 1b does not fire and I say so rather than skipping it:** there is no `Answers: verdict <n> @ <sha>` header to compare, because there is no step-3 report. When one is written its header must name the NEWEST verdict -- which, after this entry, is this one.
+
+## Next step opens when
+
+**This is an interim check: it closes nothing, opens nothing, counts against no round (ES0, FK1). Step 3 stays at 0 of 3 reviewed revisions and its disposition is read from its closure verdict (DD1).**
+
+1. **FAST-FORWARD ONTO THE TIP OF `review/r1-step3-v39`, NOT ONTO THE ENTRY YOU HAVE READ.** Two commits: `127ed35` restores the stranded addendum and the new entry follows it. If you branch from the first again, the addendum is stranded a second time and the record on `F3` stays at 40 entries.
+2. **FT2.6, whole, per the ruling: (a) on `Row`, and it is yours to take** -- the CSV's columns are explicit and nothing iterates `Row`'s fields, so (a) moves no published column. **Build `wave_basis` plural first**, because it is the only part of the conversion that can publish a wrong declared value, and it is correct today. The CSV's discriminator column is forced by the union rather than by (a), and it is a golden move with a one-sentence explanation.
+3. **R1089, R1090, R1091 and R1092 join the ledger** with L20 to L46 and verdict 37's items, fixed once in the closure commit and not re-reviewed item by item. **R1092 is the one I would take first** -- it is the only item this round whose sentence is false inside the scope it states, and it is one clause. **R1090 is second**, because it is four words in a comment and because the condition that named it reads as answered until it is done.
+4. **R1087's parameter becomes required** -- ruling 2, one line, two call sites.
+5. **R867 to R870**, by name, thirtieth round; **condition 4** when the report exists; `docs/USER_GUIDE.md` still absent and FL3's gate needs it.
+6. **One wall-time observation, because it is now the gate every commit waits on and it is not in anyone's figures.** `ladder 6 -- it stays fixed` -- the `tests/regression` rung -- ran for **53 minutes** at this sha before completing, against a whole ladder job of 28.6 minutes two commits ago. Locally the same directory is the long pole too: the three deliverable guards plus the four root guards are 3m39s, and `test_fl2d_band_check` + `test_ft24` + the generator refusals did not finish inside a ten-minute window. **This is not a finding and nothing is red; it is the number that decides how long FP1's push-then-wait costs per commit**, and it has roughly doubled. Worth knowing before FT2.6 adds per-file loops to the pipeline that `tests/regression` exercises.
+7. **The schedule.** The arithmetic in `floatfea/` has not moved for three commits, every published figure is identical across all three, and the ladder is green on two machines. **Five ledger items closed in one commit with 5/5 arms is the best repair rate this step has had**, and the two things it did not close are a comment and an enumeration -- plus R1092, which the closing clause opened in the same breath.
+
+**And the pattern note, which has changed shape.** For five rounds the recurring defect was a sentence true under the writer's reading and false under the reader's. **This round it is one step further out: the sentence is true, the qualifier is true, and the ENUMERATION the qualifier quantifies over is coarser than the thing it partitions.** R1091 is not a wording defect -- `the allocation, the braced length, or both` is a true description of a partition that the artifact's own defect paragraph contradicts two bullets earlier, where the allocation is two terms. **The question that catches it is not "which reading does this clause mean" but "is the set this claim quantifies over the set the code has".** Your own question asked exactly that, which is why the finding is yours as much as mine.
+
+**And one about my own side, third round running.** Last round I published a bound from a grid that stopped short; this round my numeral census used `9779d33..d0076f6` and returned a hundred figures that were my own verdict's, and my own addendum never reached you because I wrote it after you had branched. **All three are the same defect in different clothes -- a measurement whose domain is not the domain of the claim -- and all three were mine.** The cheap guard for the third one is the only one that is not a habit: fast-forward onto the tip.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: 9779d33036c5266be8a9ad57b5dd39bbb760ef97
 **Reviewed commit: `9779d33036c5266be8a9ad57b5dd39bbb760ef97`.**
 Verdict: PASS
