@@ -1,4 +1,602 @@
 # Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: 503b256d7e536de2f1034d2dfe3fc8beaedbaac3
+**Reviewed commit: `503b256d7e536de2f1034d2dfe3fc8beaedbaac3`.**
+Verdict: HOLD
+Tests: **MY OWN RUNS AT THE JUDGED SHA, IN WORKTREES I DO NOT WRITE IN (FV2).** The whole verification ladder, **2088 passed in 223.24s** -- so there is NO STOP on the low-rung head and a rung-5 discrepancy cannot be hiding behind a rung-1 red. The two touched test files plus `tests/unit` plus the four FV1 root guards in one invocation, **664 passed in 615.65s, 0 failed**. The deliverable and generator guards of `tests/regression`, **194 passed in 4197.38s (1:09:57)**, and the four R1-example/generator files alone in a second worktree, **117 passed in 3136.52s**, both 0 failed -- **248 of `tests/regression`'s 382 run directly by me, all green**; the 134 I did not run are the F2/F6 files this diff cannot reach, and CI's rung 6 ran all 382 at `0 failed`. The new file alone, **7 passed**, three times: 70.96s / 70.55s / 71.33s. The two report-guard files, **1891 failed, 330 passed, 1 skipped in 1875.43s** -- EG3 state (2), every id traced below and `comm` against CI's 1891 empty in both directions. `ruff check floatfea tests scripts` -> `All checks passed!`; `python -m black --check` -> `160 files would be left unchanged`; `python -m mypy floatfea` -> `Success: no issues found in 45 source files`. Collection **6010** = root guards 3139 + unit 401 + ladder 2470. **I publish no single-invocation whole-suite count rather than one I did not take** -- `scripts/suite_count.py` builds a worktree and collects the whole tree INSIDE the guard set, so a whole-tree run contains a whole-tree run; every part of the collection is measured above by CI, by me, or by both.
+Scope: **ES0 INTERIM CHECK.** `ls docs/reports/R1/` is `step-1-answers.json step-1.md step-2-answers.json step-2.md` -- **no `docs/reports/R1/step-3.md`**, so no reviewed revision has been consumed, step 3 stays at **0 of 3**, this counts against no round and closes nothing (`--interim` per FS2, no `--closes` per FK1).
+
+**I RULED UNDER FR1 WITH EZ0. FOUR FINDINGS BLOCK, AND ALL FOUR ARE IN ONE FUNCTION THAT FT2.6 DID NOT CONVERT: `_write_report`.** `Row`, `member_forces.csv`'s header, `member_forces.csv`'s two new columns, the config provenance and the governing-U sentence were all converted and I verified each. **`report.md`'s own sections were not**, and three of them publish the FIRST file's values -- the wave basis, the associated-period band -- or a count of ROWS where the sentence says STATIONS, over a run whose envelope is the union. For each I give the silently wrong result FR1 requires.
+
+**THE RECORD IS WHOLE AND BOTH MY VERDICT COMMITS ARE IN IT. MEASURED, NOT TAKEN FROM YOU.** `grep -c "^# Review" docs/reviews/R1/step-3.md` at the judged sha is **42**; the addendum's own scope line is present **2** times (its heading and its body); `git merge-base --is-ancestor` is TRUE for both `d087079` and `9b506c3` against `503b256`. The thing that stranded `eac8af4` is fixed and I am the one who caused it.
+
+**EU1 DOES NOT ATTACH, AND I MEASURED IT RATHER THAN TAKING IT FROM YOU.**
+
+```
+cmd    git diff 9b506c3..503b256 -- floatfea/tolerances.py | wc -c
+out    0
+cmd    git rev-parse 503b256^
+out    9b506c36c05f4acf9743403fe389c4d2e63534f5 -- MY OWN VERDICT COMMIT IS THE PARENT, so
+       for once the diff range and the commit coincide and no census of mine can be
+       polluted by my own prose. Last round's defect cannot occur here.
+cmd    the digest, FROM THE COMMITTED BLOBS and not from your working tree:
+       git diff-tree --no-commit-id --name-only -r 503b256 | sort |
+         while read -r f; do echo "$(git rev-parse 503b256:"$f")  $f"; done | md5sum
+out    eacc92b1646a17d3da85d2c2b41209db  -- your figure to the digit; ten files
+cmd    git diff --stat 9b506c3..503b256 -- .claude docs/SUPERVISOR.md CLAUDE.md
+                                 tests/conftest.py 'tests/**/conftest.py' tests/corpus
+                                 .github scripts docs/milestones docs/reviews examples
+                                 floatfea/run/truss.py floatfea/run/sizing.py
+out    (empty) -- no STOP-class finding on the reviewer's-instructions head, no new or
+       changed conftest and no new plugin, corpus untouched, no script touched
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py   <- the pathspec resolves, as my instructions say it must
+cmd    every numeral the diff ADDS under floatfea and tests, counted
+out    ids (809, 866, 877, 805, 724, 919, 1091, 1092), headings (0, 0.0, 45, 45.0, 90, 90.0),
+       fixture scales (1.0, 4.0), the `2.6` of FT2.6 and the 1/2 of the agreement cells.
+       **No value, no threshold, no measurement, no counter, no injection size.**
+judge  **EU1 does not attach.** I ran the adversarial case anyway -- the model at seven
+       configurations the diff did not choose -- and it produced every blocking finding
+       below.
+```
+
+**WHERE I WORKED (FV2).** Four worktrees of my own outside the repository: `wt503b256` runs the suite and nothing writes in it, `wt40_arms` takes the mutations and the probes, `wt40_guards` runs the report guards, `wt40_verdict` is where this file is written. No `checkout`, no `reset`, no write of any kind in your tree. Every read of the judged commit is a read of my own worktree AT that commit, which is what makes a working-file read a read of the commit (R1050, which was mine).
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R1089** -- the third agreement pair, plural branch asserted nowhere | **CLOSED, AND THE NEEDLE CARRIES ITS OWN FAILURE.** | the new cell builds a TWO-blank state and asserts `every face of those cells carrying zero shear` with `that cell` forbidden. My arm: `{'that cell' if unresolved == 1 else 'those cells'}` -> `{'that cell'}` gives **1 failed**, against a clean **1 passed** control on the same id. |
+| **R1090** -- R1086's cited site | **STILL OPEN AT THE CLAUSE THE CONDITION WAS ABOUT, AND THE REASON IS WRITTEN TWELVE LINES ABOVE IT.** Half closed: the `only the one-way half` overstatement is gone. | `tests/regression/test_ft25_truss_sizing.py:1109` still reads `retired wording is forbidden so it cannot come back silently`. `grep -rn "LOW, never high" tests/ floatfea/` finds **two** lines and **neither is an assertion**: the comment itself at `:1105` and the artifact's own quotation at `floatfea/cli.py:888`. The only negative in that whole cell is `assert "whose inclined-face shear is non-zero" not in text` -- one count of 3 negatives in the cell, none of them this. And `:1001`, the sibling note, already states why nothing CAN forbid it: *"nor can anything, because the shipped sentence QUOTES the retired wording"*. **Same defect, one clause over, at the named site.** Ledger (a test comment; no number, no input). |
+| **R1091** -- the enumeration coarser than the defect | **CLOSED, AND THE DISCLAIMER IS ENOUGH -- RULING BELOW.** | `grep -n "three corrections" floatfea/cli.py` is **empty**, so the stale enumeration is gone and not merely disclaimed. Arm: `does not enumerate and does not speak for` -> `does not enumerate, nor speak for` gives **1 failed** against a clean **1 passed** control (17.39s). |
+| **R1092** -- `EXACT` extended to a second correction | **CLOSED, AND THE NARROWED CLAIM IS EXACTLY THE PROPOSITION I MEASURED TRUE.** No figure published, as I asked. | the emitted text now scopes it: `UNDER THE ALLOCATION ALONE it is low where the defect surfaces and EXACT where the bracket floor absorbs the whole of it`, with `THAT EXACT DOES NOT EXTEND TO THE TWO-EDIT CORRECTION` and `the floor pins the AREA and nothing pins the STEEL` beside it. Three needles. Arm: one hyphen removed from the narrowing clause gives **1 failed** against the same **1 passed** control. **The scope it now claims is `alloc alone`, which my own grid put at 1894 cells, 351 identical, 0 mismatches** -- so the claim is true over the only domain it now asserts, and you were right not to re-derive my 154 of 1890. |
+| **RULING 2 of verdict 39 -- "R1087's parameter becomes required, one line, two call sites"** | **WITHDRAWN. THE RULING WAS MINE AND ITS COUNT WAS WRONG.** You did not do it and you should not. | `ast` over the file: **13 `_cell_at` call sites, 2 pass `face` (`:992`, `:993`), 11 rely on the default.** My sentence said "breaks nothing (two call sites, both already passing it)" -- I counted the sites that PASS the argument and wrote a claim about ALL of them. Required costs eleven edits, not one. **The hazard I named is already closed where it matters**: the two cells that exercise the face path assert full string EQUALITY, so a caller cannot believe it exercised that path while exercising the other. Withdrawn with the count, which is the same defect as R755 and the fourth round running in which the defect was in MY OWN domain rather than in yours. |
+| **FT2.6 -- (a) on `Row`, per FW1 and my staging ruling** | **BUILT, AND THE HAZARD THE RENAME CANNOT CATCH IS GENUINELY HELD. The rename's justification is now a MEASUREMENT and not an argument -- mine, taken at the judged sha.** | see the findings and the arms below: `npz_files[:1]` in the compute loop gives **2 failed, 5 passed** against a clean **7 passed**. The fields are APPENDED, which was my constraint; all **four** `Row(` constructions are still the four in `compute_rows` and three carry the provenance. |
+| **"Build `wave_basis` plural FIRST, because it is the only part of the conversion that can publish a wrong declared value"** (verdict 39, item 2) | **HALF ANSWERED, AND THE UNANSWERED HALF IS THIS ROUND'S WHOLE BLOCKING LIST.** `wave_bases` exists and `_header_lines` reads it, so BOTH CSVs name every file. `_write_report` was not converted. | R1093 to R1096 below, each measured through the real CLI at two declared files. |
+| **the CSV discriminator the union forces** | **DONE, AND FW1's NO-CELL-MOVED CONDITION VERIFIED BY ME FROM THE COMMITTED BLOBS.** | 41 comment lines identical; 1248 data rows both sides; 13 -> 15 columns with the first 13 names unchanged and `['source', 'heading_deg']` appended; **rows where any PRE-EXISTING cell differs: 0**; `source` = `{'dynamic_inputs.npz': 1200, '': 48}`; the 48 empty-`source` rows are exactly the 48 `static` rows AND the 48 empty-`heading_deg` rows. `utilisation.csv` byte-identical (empty `git diff --stat`); `report.md` moved in two lines, both wall clock (`solve 181.16 -> 179.48`, `total 181.28 -> 179.61`). |
+| **R867 to R870 (FT2.7)** | **STILL BLOCKING BY NAME. THIRTY-FIRST ROUND. Untouched.** | `git diff 9b506c3..503b256 \| grep -cE "R86[789]\|R870"` is **0**. |
+| **condition 4** of the FT2.5 ruling | **STILL CARRIES; its site is a report that does not exist.** | `ls docs/reports/R1/` has no `step-3.md`. |
+| **conditions 1, 2 and 3** of the FT2.5 ruling | **ALL THREE STILL MET, from an empty diff.** | `git diff 9b506c3..503b256 -- floatfea/run/truss.py floatfea/run/sizing.py` is **empty**. |
+| **L20 to L46 and verdicts 37 and 39's ledgers** | **not re-reviewed item by item** (`CLAUDE.md`'s closure-item handling). | fixed once, in the closure commit. |
+| **the EG4(e) pause** | **HELD. ZERO new corpus entries** -- and ES0 fixes an interim check's scope at "no corpus batch" independently of the pause, so nothing turns on the date here. **But say this once: EG4(e) pauses batches "until 28 October" and today IS 28 October.** Nothing in the tree fires on that date and no clause says what happens next. That is for the plan or for Xabier, not for me inside a round. | `tests/corpus/` diff is empty. What I ran instead is the recorded substitute -- see the corpus section. |
+| **FP1 -- the judged commit pushed before the invocation** | **HELD, and it is again the reason this check could be made at all.** | run **40824561100** at the full forty-character sha. I waited for it rather than recording an unfinished run as a pass (CK2). |
+| **R885, R895, FV0's date, the R1072 physics, FW2's three texts** | **all with Xabier, and FW2 asks for them FIRST in your next message to him.** | not yours or mine to resolve here. |
+
+## Findings
+
+**FOUR BLOCK. ALL FOUR ARE IN `_write_report`, ALL FOUR WERE FOUND BY RUNNING THE MODEL AT A CONFIGURATION THE DIFF DID NOT CHOOSE, AND NONE OF THEM IS VISIBLE IN A GREEN SUITE.** The shipped example declares ONE file, so every one of them is invisible in `results/R1/example/` and in every cell of `test_ft26_multi_npz.py`, whose report assertion reads the `**U = ` line and nothing else. That is assertion-domain blindness with the domain chosen by the fixture.
+
+**AND FIRST, THE PART THAT IS RIGHT, because it is most of the commit and I checked it rather than taking it.** The rename did what FR1's second head needs, and I measured BOTH sides of it:
+
+```
+claim  (yours) "the rename finds every unconverted FIELD read -- 13 errors, 11 in
+       pipeline.py and 2 in cli.py"
+cmd    `config.py` at 503b256, the other three files at 9b506c3, then `python -m mypy
+       floatfea`
+out    **13 errors in 2 files** -- pipeline.py 1499, 1512, 1525, 1532, 1535, 1544, 1564,
+       1571, 1577, 1588, 1615 and cli.py 945, 948, each `"LoadCases" has no attribute
+       "npz"`. **Your figure reproduces on my machine, to the file and the count.**
+cmd    AND THE COUNTER YOU DID NOT TAKE, which is what makes the rename a measurement:
+       the same TYPE change under the SAME name (`npz_files` renamed back to `npz`, the
+       tuple type kept), everything else at the parent
+out    **10 errors.** `comm` on the two site sets gives the three the rename catches and
+       the type change does NOT:
+         floatfea/cli.py:945            `if cfg.load_cases.npz is not None:` in `_cmd_export`
+         floatfea/cli.py:948            the message that interpolates it
+         floatfea/run/pipeline.py:1499  `if cfg.load_cases.npz is None:` in `run()`
+cell   one variable: the field's NAME. The type, the parent files and the checker held.
+rule   FR1's second head -- an input accepted and used other than as declared
+judge  **the three silent sites are exactly the `is None` truthiness tests, and the worst
+       of them is the EMPTY-SET refusal.** A tuple is never `None`, so under the type
+       change `run()`'s "refused, not defaulted and not skipped" branch becomes dead code
+       and an empty declared set reaches `np.load`; and `floatfea export` refuses
+       unconditionally while printing a tuple. **The rename was the right call and the
+       reason is now a number: 13 against 10, and the 3 are the ones that would have been
+       silent.**
+```
+
+**AND NO ASSERTION WAS WEAKENED, which is a grep over the diff and not a sentence.**
+
+```
+cmd    git diff 9b506c3..503b256 -- tests | grep "^-" | grep assert
+out    THREE removed, each REPLACED BY AN EQUAL OR STRICTLY STRONGER FORM:
+         `cfg.load_cases.npz == (...)`                 -> the one-tuple equality
+         `exported_wave_basis(cfg.load_cases.npz)` x2  -> `...npz_files[0]`, same object
+         R1011's `isinstance(passed, ast.Call)`        -> `ast.Subscript` PLUS three new
+           assertions that the `bases` list is built from this module's own reader
+       and in the truss cell six positives became nine, with the old `ALONE OR WITH THE
+       BRACED LENGTH` needle replaced by the NARROWER `APPLIED ALONE`.
+rule   `CLAUDE.md` -- never widen; the counter-check is the grep over the diff
+judge  **zero loosened**, and the new file adds 7 cells of which 3 are EH4 boundaries
+       taken in the direction that weakens the change.
+```
+
+---
+
+**R1093. (BLOCKS) `report.md` PUBLISHES THE FIRST FILE'S WAVE BASIS AS "THE WAVE BASIS THESE LOADS WERE EXPORTED AT", IN THE SAME DOCUMENT THAT NAMES A DIFFERENT FILE AND A DIFFERENT HEADING AS THE GOVERNING ONE.** `floatfea/cli.py:333-346`, `basis = result.wave_basis` at `:334`, which is `per_file[0][3]` by `pipeline.py:1791`.
+
+```
+claim  the report's own basis section was not converted, so it states file one's heading
+       and height for a run whose envelope is the union
+cmd    the real CLI, two declared files -- `p000.npz` at heading 0 and `p045.npz` at
+       heading 45 carrying 4x the loads -- `report.md` read whole
+out    '## The wave basis these loads were exported at'
+       '* **heading** - 0.0 deg'
+       '* **wave height** - 24.2 m full scale (0.484 m model)'
+       and twenty lines further down, in the same file:
+       '**U = 5.74062** ... from `p045.npz` at heading 45 deg.'
+       **`p045.npz` appears nowhere in that section.** Both CSVs, by contrast, are right:
+       `# wave basis [p000.npz]: ...` and `# wave basis [p045.npz]: ...`
+rule   FR1 head one -- a wrong number in a report and in a published deliverable (EZ0);
+       and the plan's own FT2.6 row, "the report names the governing heading AND file"
+cell   one variable: the number of declared files. At ONE file the section is correct and
+       the committed `results/R1/example/report.md` is unchanged but for wall clock.
+judge  **THE SILENTLY WRONG RESULT: a reader of `report.md` takes heading 0 deg and
+       H_full 24.2 m as the sea state the published utilisations were computed at, and
+       the governing utilisation was computed at heading 45 from a file that section does
+       not name.** The report contradicts itself inside one document and the half that is
+       right is not the half anyone sizes steel from. **This is the item verdict 39 asked
+       for FIRST, in those words**, because it is the only part of the conversion that can
+       publish a wrong DECLARED value. **Closed when** the section reads
+       `result.wave_bases` and states one entry per file, with the one-file output
+       byte-identical -- the same shape `_header_lines` already has at `:155-179`, which
+       is why this is a few lines and not a design question.
+```
+
+**R1094. (BLOCKS) THE FL2(d) SECTION STATES ONE FILE'S ASSOCIATED-PERIOD BAND AS THE BAND, OVER A TABLE CONCATENATED FROM EVERY FILE, WITH NO COLUMN SAYING WHICH ROW IS WHICH.** `floatfea/cli.py:358-372`, `screen[0].band_low_s` / `screen[0].band_high_s` at `:363`.
+
+```
+claim  `screen[0]` is the FIRST file's screen entry and the band is a function of THAT
+       file's recorded height -- which the new helper's own docstring says
+cmd    the real CLI, two declared files recording DIFFERENT heights (24.2 m and 26.62 m),
+       both admitting the declared governing set so the run reaches exit 0
+out    'The associated-period band at the recorded height is `12.542 .. 16.316 s` ...'
+       | 10   | 0.1550 | breaking                  | -2.542 | sensitivity only |
+       | 12.5 | 0.0992 | too short for this height | -0.042 | **GOVERNING ...** |
+       ... four more ...
+       | 10   | 0.1705 | breaking                  | -3.154 | sensitivity only |
+       | 12.5 | 0.1091 | too short for this height | -0.654 | **GOVERNING ...** |
+       **TWELVE rows, each case twice, no file column, ONE stated band.**
+rule   FR1 head one; and `_band_screen_over_files`' own docstring, "the screen is a
+       function of the file's own recorded HEIGHT, so one file's basis cannot answer for
+       another's"
+cell   one variable: the second file's recorded height. At equal heights the twelve rows
+       are identical in pairs and the stated band is true of both.
+judge  **THE SILENTLY WRONG RESULT: `outside by -0.654 s` is not derivable from the band
+       the sentence above it states.** A reader who checks that arithmetic -- the only
+       reason the column exists -- gets `-0.042` and concludes the table is wrong rather
+       than that the band is one of two. Six of twelve rows are screened against a band
+       the report never prints. **Closed when** the band is stated per file, or the table
+       carries the `source` column the rows beside it already have. Same edit as R1093's.
+```
+
+**AND R1093 HAS A SECOND SITE, WHICH IS THE SENTENCE THAT WOULD HAVE STOPPED A READER LOOKING.** `floatfea/run/pipeline.py:1694` and `:1710-1712`.
+
+```
+claim  `run()` carries two comments saying no first-file read survives in it, and two do
+cmd    every `[0]` inside `run()` (lines 1650-1800)
+out    :1694  "# ... because there is no branch on `npz_files[0]` anywhere in this
+               function."
+       :1710  "# ... and therefore that no `npz_files[0]` survives in this function."
+       :1724  `cfg.load_cases.npz_files[0].name` -- DELIBERATE, the one-file refusal
+              message, which is EH4's boundary and is right
+       :1791  `wave_basis=per_file[0][3]` -- **THE FIRST-FILE READ R1093 PUBLISHES**
+rule   CW0 -- prose in the source tree does not claim things about the code
+judge  **the narrow claim is true and the written one is not:** `ruff` proved there is no
+       first-file read of the RAW ARRAY, which is what the draft's `raw = per_file[0][1]`
+       was, and the comment generalised that to the whole function. The generalisation is
+       refuted by one `grep` over the same function, and `:1791` is the read that puts a
+       wrong heading in a published report. **I am recording it under R1093 rather than
+       as its own item because it is the same repair**: the sentence goes when the read
+       goes, and if the read goes and the sentence stays, the sentence becomes true by
+       accident rather than by check. **Closed when** `:1791` is gone (R1093) and the two
+       comments say what `ruff` actually proved -- no first-file read of the array.
+```
+
+**R1095. (BLOCKS, AND IT IS THE STRONGEST ITEM THIS ROUND) A MIXED SET -- ONE FILE THAT RECORDS A HEIGHT AND ONE THAT DOES NOT -- PUBLISHES A COMPLETE-LOOKING PER-CASE SCREEN THAT OMITS THE UNSCREENED FILE ENTIRELY, AND THE OMITTED FILE IS THE ONE THAT GOVERNS. R1007's MEASURED FAILURE IS REACHABLE AGAIN THROUGH A NEW DOOR.** `floatfea/cli.py:350-357` (the `if not screen:` disclosure) against `_band_screen_over_files` in `pipeline.py:707-719`.
+
+```
+claim  `refuse_cases_that_cannot_govern` returns `()` when no height is recorded, so a
+       file with no sidecar contributes NOTHING to `band_screen`; with another file in
+       the list the aggregate is non-empty, the `if not screen` disclosure is skipped,
+       and nothing else says a file went unscreened
+cmd    the real CLI with `q000.npz` (sidecar, heading 0) and `qNONE.npz` (NO sidecar, 4x
+       the loads); then the same `qNONE.npz` ALONE
+out    [q000, qNONE] -> EXIT 0; the FL2(d) section is a SIX-row table under
+                        'The associated-period band at the recorded height is
+                         `12.542 .. 16.316 s`', every row q000's; **no sentence anywhere
+                        about qNONE**; and, in the same report,
+                        '**U = 5.74062** ... from `qNONE.npz` at an unrecorded heading.'
+       [qNONE] alone -> '* **the screen was NOT performed.** The band is a function of
+                        the recorded wave height and this dynamic-inputs file records
+                        none ... Every case below is reported with no admissibility
+                        verdict.'
+cell   one variable: whether a second, SCREENED file is declared beside it. The
+       disclosure the single-file path makes is LOST by adding a file.
+rule   FR1 head one; and `pipeline.py:1255-1263`'s own record of R1007 -- "FL2(d)'s
+       `refuse_cases_that_cannot_govern` took its `if height is None: return ()` exit, so
+       the whole sea-state screen was skipped at EXIT 0 beside the EZ2 caveat denying
+       that a breaking case can govern"
+judge  **THE SILENTLY WRONG RESULT: the report publishes a per-case admissibility table
+       that reads as complete, and the case that SET THE ENVELOPE was never screened at
+       all.** A reader concludes the governing period was tested against the sea state. It
+       was not tested, and at one file the tool would have said so in a sentence it
+       already owns. R1007's measured consequence for exactly this skip was a governing
+       utilisation 63% high at exit 0. **A green suite is furthest from this one:**
+       `band_screen` is non-empty, so no branch, no assertion and no refusal fires, and
+       the section's own heading ("per case") is the claim that is false. **Closed when**
+       the report names any declared file that was NOT screened -- the disclosure becomes
+       per file, exactly as the screen now is. The cell is the mixed pair above, asserting
+       the unscreened file's name appears in that section.
+```
+
+**R1096. (BLOCKS) `Checked stations: 64. Over unity: 16.` ON A MODEL WITH 32 STATIONS, 12 OF THEM OVER UNITY. THE COUNTS MULTIPLY BY THE NUMBER OF DECLARED FILES.** `floatfea/cli.py:417-418`.
+
+```
+claim  `len(result.utilisations)` is now one record per (station, FILE), and the two
+       published counts were written when it was one per station
+cmd    the two-file run above, the published line against the CSV it was computed from
+out    report.md        : 'Checked stations: 64. Over unity: 16.'
+       utilisation.csv  : 64 rows, **32 distinct (body, member, station)**;
+                          16 rows over unity, **12 distinct stations over unity**
+       the ONE-file run of the same deck : 'Checked stations: 32. Over unity: 12.'
+       the committed example             : 'Checked stations: 32. Over unity: 4.'
+cell   one variable: the number of declared files. 32 -> 64 over the same 32 stations.
+rule   FR1 head one -- a wrong number in a report
+judge  **THE SILENTLY WRONG RESULT: the report states that 64 stations were checked on a
+       platform that has 32, and counts 16 over unity where 12 members are over unity.**
+       The over-unity count is the number a reader acts on, and counting a station twice
+       because it fails at two headings is not conservatism -- it is a wrong census of the
+       failures. **Closed when** the counts are over DISTINCT stations, or the sentence
+       says what it counts ("64 station-cases over 2 files, 32 stations"). Either is one
+       line and the choice of wording is yours.
+```
+
+---
+
+**R1097. (LEDGER) `_governing_provenance`'s DOCSTRING STILL DESCRIBES THE IMPLEMENTATION THE REPAIR DELETED, AND ASSERTS THE PROPOSITION THE COMMIT MESSAGE PROVES FALSE.** `floatfea/cli.py:294-296`.
+
+```
+claim  the function no longer looks anything up, and the docstring's last paragraph says
+       it does -- on the five fields, and that they identify a row uniquely
+cmd    the function read whole at the judged sha
+out    docstring: "The lookup is on the five fields that identify a row uniquely, and it
+                  RETURNS EMPTY rather than guessing if no row matches"
+       body     : `source = str(governing.get("source") or "")` -- no lookup, no five
+                  fields, no no-match branch
+       and your own commit message, four paragraphs up: "those five fields do NOT identify
+       a row once there are several files"
+rule   CW0 -- prose in the source tree does not claim things about the code; and CP2, a
+       repair's own prose inherits the discipline applied to the fix
+judge  **the repair removed the lookup and kept the paragraph that justified it**, so the
+       next reader of this function is told the five fields are unique by the docstring of
+       the function that exists because they are not. **Why ledger:** no number is wrong
+       and no input is used other than as declared; it is a docstring. **Closed when** the
+       paragraph says what the body does -- the attribution is read off the governing
+       record, which carries it from the row.
+```
+
+**R1098. (LEDGER) "THE FIELDNAMES ARE STATED EXPLICITLY RATHER THAN INFERRED FROM THE RECORD" IS FALSE, AND I MEASURED IT RATHER THAN READING IT.** `floatfea/cli.py:262-271`, and the same claim in the commit message.
+
+```
+claim  only two names are denied; every other new key in the utilisation record still
+       becomes a column in the published CSV with no edit here
+cmd    `_write_utilisations` called with a record carrying one extra key, header read
+out    `body,member,station,utilisation,A_BRAND_NEW_FIELD`
+rule   CW0; and the comment's own second sentence, "A reader adding a column must add it
+       here, which is the point of naming them"
+judge  `fieldnames=[k for k in rows[0] if k not in hidden]` is a DENYLIST over an inferred
+       list, not a stated list, so the property the comment claims -- that a future column
+       is an edit someone makes on purpose -- is precisely the one it does not have. **The
+       true half stands and I verified it: `utilisation.csv` IS byte-identical.** **Why
+       ledger:** the regeneration guard reddens on a schema change, so nothing is silently
+       wrong today. **Closed when** the fieldnames are a literal tuple, or the comment says
+       denylist.
+```
+
+**R1099. (LEDGER, AND IT IS THE ANSWER TO YOUR QUESTION 2) YOUR READING OF FW1's SCOPE IS RIGHT. THE CONSEQUENCE IS THAT `utilisation.csv` NOW CARRIES 32 PAIRS OF ROWS WITH IDENTICAL KEYS, DIFFERENT NUMBERS AND NOTHING TO TELL THEM APART.** `floatfea/cli.py:268-271`.
+
+```
+claim  FW1 reads "the file and heading go ON Row ... The published CSV gains those two
+       columns", whose subject is `Row` and therefore `member_forces.csv`. It does not
+       reach `utilisation.csv`, so withholding the columns was yours to decide and you
+       decided it the way the directive reads. **But the union makes the deliverable
+       ambiguous, which is a consequence FW1 did not have in front of it.**
+cmd    the two-file run; `utilisation.csv` keyed on its own five identifying columns
+out    64 rows, **32 distinct keys, 32 duplicate pairs**; a dict keyed on the published
+       identifying columns keeps **32 of 64**; for instance
+       ('hub1', 'hub1:buoy1_arm', 'ROOT', '14', 'total_instant') -> U = 0.7115 AND 0.819965
+rule   FW1 as written, and FR1 head one
+judge  **RULED: extend it, under the same conditions FW1 put on `member_forces.csv`** --
+       appended, no pre-existing cell moved, the golden regenerated in the same commit,
+       one sentence in the cover note. The reason is not symmetry: two rows under one key
+       with different utilisations is the `npz_files[0]` ambiguity moved into the
+       deliverable a code check is read from. **Why ledger and not blocking:** every number
+       in the file is right, and `grep -rn "utilisation.csv" --include=*.py floatfea tests
+       scripts` finds writers and docstrings and **no reader**, so nothing in the tree
+       silently keeps 32 of 64 today. The only wrong NUMBER this duplication produces is
+       R1096's, which blocks on its own. **Closed when** the two columns are there, or the
+       header states that a station appears once per declared file.
+```
+
+**R1100. (LEDGER) THE ONE-FILE AND MULTI-FILE HEADING COMPARISONS ARE DIFFERENT FUNCTIONS WITH DIFFERENT ARITHMETIC, AND THE SAME DECLARATION FLIPS FROM ACCEPTED TO REFUSED WHEN A SECOND FILE IS ADDED.** `floatfea/run/pipeline.py:698-708` (`_same_heading`) against `:586-600` (`uncovered_headings`).
+
+```
+claim  the delegation makes ONE file exact by construction, and the second file switches
+       to a comparison that is not the one the single-file path uses
+cmd    both rules at the wrap value, then the real refusal at one file and at two
+out    uncovered_headings((360.0,), (0.0,)) -> ()      <- COVERED, modulo 360
+       _same_heading(360.0, 0.0)            -> False   <- NOT covered, plain ==
+       ONE file at heading 0, declaring 360  -> ACCEPTED
+       TWO files at 0 and 45, declaring 360  -> REFUSED by name
+cell   one variable: the number of declared files. The declared set, the recorded headings
+       and the question asked are held.
+rule   `HEADING: Final[Bound] = ("deg", 0.0, 360.0)` at `config.py:194` -- **360 is INSIDE
+       the declared domain** -- and `uncovered_headings`' own comment names `360.0 % 360.0`
+       as the case it handles: "THIS IS ARITHMETIC AND NOT SLACK, WHICH IS WHY THERE IS NO
+       TOLERANCE HERE"
+judge  `_same_heading`'s docstring is right that an epsilon here would be a tolerance under
+       another name -- and it is a SECOND implementation of a question that already had a
+       function, which is R866/R877's class: two checks, one of which quietly stops being
+       the one that runs. **Why ledger:** the direction is OVER-refusal, so the outcome is
+       loud (exit 2, nothing written) and nothing is silently wrong. **Closed when**
+       `refuse_headings_no_file_covers` asks `uncovered_headings` over the union's covered
+       set and `_same_heading` is deleted -- one rule for both paths, which also makes the
+       one-file delegation unnecessary rather than merely correct.
+```
+
+**R1101. (LEDGER) A REFUSAL THIS COMMIT ADDS HAS AN AGREEMENT PAIR WITH NO SINGULAR BRANCH, AND NOTHING ASSERTS EITHER BRANCH.** `floatfea/run/pipeline.py:690-694`.
+
+```
+claim  `f" {', '.join(unrecorded)} record no heading at all and cover nothing."` has one
+       verb for both counts
+cmd    `refuse_headings_no_file_covers((45.0,), [(a.npz, a basis at 0 deg), (b.npz, {})])`
+out    "... The declared files carry: 0 deg (a.npz). **b.npz record no heading at all** and
+       cover nothing. ..."
+rule   L36's own lesson -- one branch of an agreement pair never emitted in a test. This is
+       the fourth instance of that class in this step (L36, R1085, R1089).
+judge  both branches of the surrounding refusal DO fire and are otherwise right, which I
+       checked by calling them directly -- the `NO declared ... file records a heading at
+       all` branch and the `no declared ... file covers [45.0]` branch. **Neither is
+       reached by any cell in `test_ft26_multi_npz.py`:** its only heading cell declares
+       two files that both record one. **Why ledger:** FR1's non-blocking class one, a
+       refusal whose wording is imperfect and whose outcome is right. **Closed when** the
+       clause has a singular branch, and ideally when one cell reaches the mixed branch.
+```
+
+**R1102. (LEDGER) `Row.source` AND `Row.heading_deg` CARRY DEFAULTS, SO MY "APPEND WITH NO DEFAULT" CONSTRAINT BOUGHT THE SAFE POSITIONAL ORDER AND NOT THE `mypy` CALL-SITE CENSUS.** `floatfea/post/forces_table.py:73-91`.
+
+```
+claim  the fields are APPENDED -- which was the whole of the hazard -- but carry defaults,
+       so the four `Row(` constructions did not become TypeErrors and `mypy` named none
+cmd    every `Row(` construction in the tree
+out    FOUR, all still inside `compute_rows`: `:847`, `:859` and `:884` carry the
+       provenance, `:890` (the static rows) deliberately does not
+cmd    is each converted site HELD by a cell that reddens? -- armed, not assumed
+out    `"source": row.source` -> `npz_files[0].name`   gives **1 failed, 6 passed**
+       the compute loop -> `per_file[:1]`              gives **2 failed, 5 passed**
+       both against a clean **7 passed** control on the same file
+rule   verdict 39's constraint -- "appended with no default, the four calls become a
+       TypeError and `mypy` names them. INSERTED, every positional argument after the
+       insertion point shifts silently"
+judge  **the dangerous half of that constraint was honoured and the cheap half was not**,
+       and the dangerous half is the one that mattered: nothing shifted, and the two fields
+       sit after `values`. **Why ledger:** all four sites exist today, each is converted or
+       deliberately not, and three are held by arms I ran myself, so no wrong result
+       follows. The default is the mechanism by which a FUTURE construction would be silent
+       -- and the published rule for reading the column (`cli.py:209-211`, "both are empty
+       on the `static` rows, which are gravity alone and belong to no file") would then
+       attribute a dynamic row to gravity. **Closed when** the fields have no default, or
+       the pipeline asserts `source == "" iff basis == "static"` where the rows are
+       concatenated, rather than only inside a two-file test fixture.
+```
+
+**R1103. (LEDGER) TWO OF THE THREE ARTIFACTS' SHARED CAVEATS ARE SINGULAR PROSE ABOUT A PLURAL RUN, AND ONE OF THEM POINTS THE READER AT THE WRONG LINE.** `floatfea/cli.py:89-94` -- `TABLE_CAVEATS`, emitted into both CSVs at `:185` and into `report.md` at `:405`.
+
+```
+claim  the EX3/R724 caveat tells the reader where to find THE heading, and at two
+       declared files there are two; the EZ2 caveat says "this wave height" and there
+       are two of those as well
+cmd    the two-file report, every line mentioning a heading
+out    ':24  * **heading** - 0.0 deg'                                    <- R1093
+       ':77  * EX3 / R724: where a run covers a SINGLE heading ... **The heading itself
+              is in the wave-basis line above WHEN THE EXPORT RECORDED ONE; that line
+              says so either way.**'
+       ':85  **U = 5.74062** ... from `p045.npz` at heading 45 deg.'
+       -- and in both CSVs the "wave-basis line above" is now TWO lines, so `that line`
+       has no referent there either
+rule   FR1 non-blocking class three, report prose and figure wording
+judge  the first clause is a conditional and survives -- a two-heading run is simply not
+       the case it describes -- **but its second sentence is unconditional and sends the
+       reader to a line that states one heading of two.** `EZ2`'s "the associated-period
+       range for this wave height" is the same shape and is the sentence R1094's table
+       sits under. **Why ledger:** no number, and FR1 names figure wording explicitly.
+       **Closed when** both caveats read in the plural, which is cheapest done in the
+       same edit as R1093 and R1094 -- the three sentences are about the same fact.
+```
+
+## The four things you asked to be read hardest
+
+**1 -- THE ARM FIGURE YOU COULD NOT REPRODUCE. I CANNOT REPRODUCE IT EITHER, AND WITH A PROPER PER-ARM CONTROL THE ARM IS CLEAN.** You did the right thing saying it out loud rather than polishing it.
+
+```
+cmd    the new file, three times in isolation, nothing mutated
+out    **7 passed** in 70.96s / 70.55s / 71.33s -- no flake in three runs
+cmd    the repeated-file arm with a control it does not touch: `if path in seen:` ->
+       `if False:`
+out    **1 failed, 6 passed** -- exactly `test_the_SAME_file_twice_is_REFUSED...`, and the
+       six cells that are its controls all pass
+cmd    `--randomly-seed` and `-p randomly`
+out    both refused -- `pytest-randomly` is NOT installed in this environment, so test
+       ORDER is not a variable and a flake cannot come from ordering
+judge  **no finding about `config.py`.** The mechanism you already found is sufficient and
+       I would not look further: with the EMPTY cell serving as every arm's control, the
+       repeated-file arm's "control" line was reporting on a cell your other arm breaks.
+       I say "sufficient" and not "the cause", because I have no cell that isolates it and
+       neither do you -- which is the honest end of it. **What I will take from it is the
+       apparatus repair, not the figure:** per-arm controls, which is what you did.
+```
+
+**2 -- `utilisation.csv`: YOUR READING OF FW1 IS RIGHT, AND I STILL RULE THAT THE COLUMNS GO IN.** The directive's subject is `Row` and "the published CSV" in a sentence about the table of rows; `utilisation.csv` is not in it, and a reviewer who told you it was would be reading a directive the way the last six rounds were spent. **What FW1 did not have in front of it is the duplicate-key deliverable the union produces** -- R1099, 32 pairs of identical keys with different utilisations and nothing to tell them apart. So: extend it, appended, no pre-existing cell moved, golden regenerated in the same commit, one sentence in the cover note. **It is a LEDGER item and it does not cost a round.**
+
+**3 -- R1092's REPAIR IS ACCEPTED, THE NARROWING IS THE RIGHT ONE, AND YOU WERE RIGHT NOT TO RE-DERIVE MY 154 OF 1890.** The clause now claims `EXACT` only `UNDER THE ALLOCATION ALONE`, which is the domain my own grid scored at **1894 cells, 351 identical, 0 mismatches**. Taking the finding and narrowing the claim is what "one clause, no figure" asked for, and the three needles hold it -- I armed one and it reddens. **The one thing I would still watch:** the bullet now uses "the allocation" in two senses two sentences apart -- as a compound of two terms when it disclaims R1091, and as a single correction when it scopes the `EXACT`. Both readings make the sentence TRUE, so this is a preference and not a condition.
+
+**4 -- R1091's DISCLAIMER IS ENOUGH. RULED, AND THE REASON IS NOT TASTE.** My closing condition's purpose was that a reader correcting one term knows they are outside the direction claim, and the disclaimer says exactly that in the reader's own position in the sentence. **And it did more than disclaim: it deleted the false half.** `grep -n "three corrections" floatfea/cli.py` is **empty** -- the enumeration that contradicted the defect paragraph two bullets up is gone, which is the part that could mislead. Enumerating four combinations inside a generator would put three more sentences in a published artifact for a case no reader of this tool is in; your reason for choosing the disclaimer is the better engineering and it is also what the last six rounds argue for.
+
+## Try to break it -- what I ran, and what it found
+
+**Fourteen cases the diff did not choose. Seven passed, seven found something, and four of the findings block.** Every one of them is the model run at a configuration the commit's own fixtures do not reach -- which is EU1's lesson applied where EU1 does not attach.
+
+| case | what it should have shown | what it showed |
+|---|---|---|
+| **two declared files, `report.md` read WHOLE** (not just the `**U = ` line) | a section still reading the first file | **FAILED -- R1093, R1094 and R1096 in one document.** The basis section says heading 0 while the governing row says 45; the band sentence is file one's; `Checked stations: 64` on 32 stations |
+| **two files recording DIFFERENT heights, both admitting the declared set** | the band sentence is one of two | **FAILED -- R1094.** `outside by -0.654` under a stated band that gives `-0.042` |
+| **one file with a sidecar, one WITHOUT, and the sidecar-less file carries 4x the loads** | the FL2(d) disclosure survives the mix | **FAILED -- R1095, and it is R1007's own failure.** EXIT 0, a six-row table that reads complete, no sentence about the unscreened file, and the governing U is from it |
+| the SAME pair as one file alone | the control for the above | **PASSED -- the single-file path says "the screen was NOT performed"**, which is the sentence the pair loses. One variable moved |
+| two files whose RECORDED PERIOD SETS differ | a declared governing period silently covered by one heading only | **PASSED, REFUSED BY NAME** -- `refuse_cases_that_cannot_govern` catches it per file and names the file's own carried set. The union's `unknown` check is weaker and this one closes the gap |
+| the wrap value of the declared heading domain, 360 against a recorded 0 | the two paths ask the same question | **FAILED -- R1100.** ACCEPTED at one file, REFUSED at two, one variable moved |
+| the two unreached branches of the new heading refusal, called directly | a branch that cannot fire, or a wrong message | **PASSED on the outcome, FAILED on the wording -- R1101.** Both fire with the right content; `b.npz record no heading at all` |
+| a new key in the utilisation record | the fieldnames are stated, as the comment says | **FAILED -- R1098.** `body,member,station,utilisation,A_BRAND_NEW_FIELD` |
+| `utilisation.csv` keyed on its own identifying columns at two files | the deliverable is unambiguous | **FAILED -- R1099.** 32 duplicate key pairs, a dict keeps 32 of 64 |
+| **the rename's own justification, measured from BOTH sides** | the rename bought nothing a type change would not | **PASSED, AND IT IS NOW A NUMBER: 13 sites against 10**, and the three are the `is None` tests -- including the EMPTY-SET refusal, which the type change would have left dead |
+| the compute loop reduced to `per_file[:1]` | an `npz_files[0]` nothing holds | **PASSED: 2 failed, 5 passed** against a clean 7 passed |
+| the utilisation record's `source` taken from the first file | the one-layer-up hazard nothing holds | **PASSED: 1 failed, 6 passed** |
+| the repeated-file refusal removed, with a control it does not touch | your unreproducible control line | **PASSED: 1 failed, 6 passed.** I cannot reproduce your figure; ruling 1 |
+| `ruff`, `black`, `mypy`, and the whole verification ladder at the judged sha | a local-only or CI-only red | **PASSED.** `All checks passed!` / `160 files would be left unchanged` / `no issues in 45 source files` / **2088 passed in 223.24s** |
+
+**And the three arms on the ledger repairs, each with a control it does not touch (FW3's standing rule, which is R1083's lesson):** R1089's plural needle **1 failed** against **1 passed**; R1091's disclaimer needle **1 failed** against **1 passed**; R1092's narrowing needle **1 failed** against the same **1 passed** control at 17.39s. **3/3 reverted-red, 3/3 controls clean** -- which is the thing last round's apparatus could not show.
+
+## CI at the reviewed commit
+
+**CI AT THE JUDGED SHA: run 40824561100, AND I WAITED FOR IT TO FINISH RATHER THAN RECORDING AN UNFINISHED RUN AS A PASS (CK2).** It was `in_progress` for most of this review -- `ladder 6` alone ran past the hour -- and `gh run view --log` refuses while a run is in progress, so there was no shortcut available.
+
+**NOT CK2's exhausted-allowance state, and I checked rather than assumed.** The two skipped determinism jobs have no steps and a null runner, which is the shape CK2 warns about, but there is **no annotation** and the skip is the designed event gate (`.github/workflows/ci.yml`, `if: github.event_name == 'workflow_dispatch'`, CK0, by hand only).
+
+```
+cmd    gh run view 40824561100 --json jobs -- name/conclusion
+out    **the verification ladder     | SUCCESS**
+       lint, unit and guards       | failure
+       CI determinism -- ten legs  | skipped   (CK0 event gate)
+       CI determinism -- leg       | skipped   (CK0 event gate)
+cmd    the ladder job's six rungs, per step
+out    ladder 1 success / ladder 2 success / ladder 3 success / ladder 6 success /
+       ladder 4 success / ladder 5 success -- **ALL SIX GREEN, SO THERE IS NO STOP ON THE
+       LOW-RUNG HEAD**, and a rung-5 discrepancy cannot be hiding behind a rung-1 red
+cmd    the per-rung counts out of the raw log
+out    run_rung: 1276 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+       run_rung:   66 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+       run_rung:  314 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+       run_rung:  382 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+       run_rung:  345 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+       run_rung:   87 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+       1276+66+314+345+87 = **2088 = tests/verification exactly**, and the fourth rung
+       **382 = tests/regression exactly -- up from 375, which is the SEVEN cells
+       `test_ft26_multi_npz.py` adds.** The new file is in CI's rung 6 and green there.
+cmd    the failing job's step-level conclusions
+out    actionlint success / ruff success / black --check success / mypy success /
+       **unit tests success (401 passed in 330.53s)** / **guards and meta-tests FAILURE** /
+       Complete job success
+judge  **ruff, black, mypy and the unit tests all RAN and all passed in CI**, which is the
+       hiding CZ1 (iii) warns about NOT happening. The guards step is the only red.
+cmd    the guards step's own counts
+out    **1891 failed, 1247 passed, 1 skipped, 1 warning in 1668.30s**, and
+       1891 + 1247 + 1 = **3139**
+cmd    the collection at this sha, mine against CI's union
+out    `pytest --collect-only -q tests` -> **6010**; unit **401**, verification **2088**,
+       regression **382**, so the root guards are 6010 - 401 - 2088 - 382 = **3139** --
+       CI's guards collection exactly. The union matches on both machines.
+note   the guards grew from 3100 at `d0076f6` to 3139 here, **+39, because of what I
+       wrote**: verdict 39's own findings and sites entered two parametrised guards. R861,
+       measured again, and the reason FS1 is a predicate and not a list of names.
+```
+
+**AND MY OWN 1891 IS CI's 1891, ID FOR ID.**
+
+```
+cmd    my local FAILED ids against the job log's own, both sorted and uniqued, by comm
+out    local-only **0 lines**     CI-only **0 lines**     both sets **1891**
+note   CI's log lines carry CR. I say so because the first attempt without stripping it
+       reported 1891 on each side and **0 in common** -- a comparison that looked like a
+       catastrophic divergence and was an encoding artifact. A `comm` whose inputs differ
+       in line endings answers a different question than the one asked.
+judge  **different operating system, different libm, different BLAS, the same 1891 ids.**
+       That is what CA2 asks of a local run, and it is the first thing I checked before
+       reading a failure message: a set that differed between the two machines would make
+       the trace below a trace of the wrong thing.
+cmd    and the SEVEN INNER counts of `guard_survives_the_state`, on both machines
+out    CI    : seven states, all **1774 failed, 423 passed, 1 skipped**, seven DISTINCT
+               durations 56.14s .. 59.74s
+       mine  : seven states, all **1774 failed, 423 passed, 1 skipped**, seven DISTINCT
+               durations 91.56s .. 100.51s
+judge  **the same inner outcome on two machines, seven real runs on each.** A stronger
+       R629 control than either run alone: no planted state changes the inner result, and
+       the result does not depend on the platform.
+```
+
+**THE 1891, BY THE PREDICATE (FS1/FT1), EVERY ID BY ITS OWN FAILURE MESSAGE AND NOT BY A LIST.**
+
+```
+out    1891 unique ids:
+       1637  tests/test_report_carried.py::test_every_named_site_is_touched_or_declared
+        242  tests/test_report_carried.py::test_the_report_carries_the_finding
+          7  tests/test_report_guard_states.py::test_the_guard_survives_the_state
+          1  ::test_the_report_carries_a_WHOLE_SUITE_count
+          1  ::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+          1  ::test_the_CI_section_is_about_the_REVIEWED_commit
+          1  ::test_the_Carried_table_is_what_the_generator_produces
+          1  ::test_the_generator_would_catch_a_row_under_the_wrong_number
+```
+
+* **1637 reach FS1 LIMB ONE, and I read the MESSAGE and not the id.** One text, 1637 times: *"R<n> names {site}, the step's diff does not touch it, and the newest report revision does not say `no change` beside that exact site."* **A report that does not exist cannot say `no change` beside any site.** The parameters are findings AND sites of the newest verdict -- `[R1001-floatfea/run/pipeline.py:793]`, `[R999-scripts/measure/member_forces_table.py...]`.
+* **242 reach LIMB ONE by their own message:** *"R<n> is in the newest verdict -- as a finding or as an item it carries forward -- and the newest report revision's Carried section does not mention it."* Same absent report.
+* **The 7 `test_the_guard_survives_the_state` reach LIMB ONE, CHECKED AS SEVEN AND NOT AS A CASCADE (EG3 (i)).** The states are `baseline`, `zero_padded_step_number`, `superscript_digit_step_number`, `step_number_is_the_empty_string`, `non_numeric_step_suffix`, `draft_suffix_beside_a_step_report` and `verdict_amended_after_the_commit_the_report_answers`. Two fail with *"expected a clean run"* and five with *"a file that is not a numbered step must be stepped over, not reacted to"* -- **and the control that separates "a planted state broke a guard" from "the inner run is in state (2)" is the INNER count, identical across all seven on both machines.** Seven real runs, one outcome. **That is the R629 shape looked for and not found.**
+* **`test_the_Carried_table_is_what_the_generator_produces`** -- limb one: *"247 generated rows are not in the report's Carried section"*, 247 rows absent from a section that does not exist.
+* **`test_the_CI_section_is_about_the_REVIEWED_commit`** -- limb one, and it names the newest verdict's own anchor: *"the CI section's first commit is `d205833` and the verdict judged `d0076f6`"*. `d0076f6` is exactly what verdict 39 judged.
+* **`test_the_generator_would_catch_a_row_under_the_wrong_number`, THE EIGHTH MEMBER OF A GROUP OF SEVEN, CHECKED SEPARATELY.** Its message names the newest verdict's own block count: *"step-2-answers.json answers 49 items and the newest verdict carries 223 blocks, and NONE of the answered items appears in it"*.
+* **`test_the_report_carries_a_WHOLE_SUITE_count` and `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` reach FT1 LIMB TWO, whose reason FT1 states for exactly these two.** *"the newest revision carries no whole-suite line"* -- `scripts/suite_count.py` measures a clean worktree AT a commit, so a line naming a sha cannot be inside that sha. *"run 39162423263: the table says no result, status in_progress, gh says failure"* -- a row recorded before its run finished, which is the subject-is-its-own-commit case exactly, and I watched the same thing happen to me in real time: the run at THIS sha was `in_progress` for most of this review.
+
+**0 UNMATCHED. 1889 limb one, 2 limb two, 1891 total.**
+
+**THE STATE IS EG3 STATE (2), and it clears when the answering report is written and not by time.** Verdict 39 (`9b506c3`) exists; `docs/reports/R1/step-3.md` does not. **Step 1b does not fire and I say so rather than skipping it:** there is no `Answers: verdict <n> @ <sha>` header to compare, because there is no step-3 report. When one is written, its header must name the NEWEST verdict -- which, after this entry, is this one.
+
+## Corpus (EG4(e))
+
+**THE PAUSE HELD. ZERO NEW ENTRIES.** `tests/corpus/` is untouched and the diff over it is empty. Neither exception opens: this diff touches no part of F4's load-mapping gate and EB6's label-provenance gate is elsewhere. **ES0 fixes an interim check's scope at "no corpus batch, no closure list" independently of the pause, so nothing here turns on the date** -- and I note once, because nothing in the tree says it, that EG4(e) pauses batches "until 28 October" and today IS 28 October. No clause says what happens on the 29th. That is for the plan or for Xabier.
+
+**I RAN THE RECORDED SUBSTITUTE, BOTH HALVES, AND THIS ROUND BOTH HALVES FOUND BLOCKING ITEMS.**
+
+* **A continuum grid over the parameter space a decision rule guards.** The parameter I extended is the one the commit held fixed: **the number of declared files, and what each file records.** Seven configurations -- one file, two files at equal heights, two at different heights, two at different headings, one sidecar-less beside one with a sidecar, the sidecar-less file alone, two with different period sets -- plus the declared-heading domain at its wrap value. **R1093, R1094, R1095 and R1100 all came from configurations nobody chose**, and R1095 came from the one that mixes a recorded basis with an unrecorded one, which is the only configuration in which the FL2(d) disclosure can be lost.
+* **A regeneration check on a published deliverable.** `member_forces.csv` compared column by column from the COMMITTED BLOBS at both commits -- 0 rows with a changed pre-existing cell, 41 identical comment lines, two appended columns -- and `report.md` regenerated at two declared files and read whole rather than grepped for one line. **The second half is what found R1093 and R1096: reading the deliverable instead of the assertion about it.**
+
+**AND THE COVERAGE MEASUREMENT, STATED AS WHAT I ACTUALLY MEASURED.** I planted no defects this round, so there is no shapes-caught ratio to give and I will not manufacture one. What I measured instead is the only number available and it is the sharper one: **the suite is GREEN at a commit where all four blocking findings are live.** `test_ft26_multi_npz.py` is `7 passed` three times over; the touched files plus `tests/unit` plus the four FV1 root guards are `664 passed, 0 failed`; the whole verification ladder is `2088 passed`. **Four of four blocking findings are caught by no existing cell**, and the reason is one sentence: the report is asserted at ONE line -- `**U = ` -- and published in ELEVEN sections (`grep -c "^## "` on the two-file report). That is not a criticism of the cells, which are good and which my arms show carry their own failure. It is where the next cell goes.
+
+## Tolerances touched
+
+**NONE, AND EU1 DOES NOT ATTACH -- MEASURED, NOT TAKEN FROM THE INVOCATION.** `git diff 9b506c3..503b256 -- floatfea/tolerances.py` is **0 bytes**; the commit names ten files and that is not one of them; the digest reproduces from the committed blobs as `eacc92b1646a17d3da85d2c2b41209db`. No counter is declared or redeclared, no injection size moves, and the numeral census over the diff's `floatfea` and `tests` halves returns only ids, headings, fixture scales and the 1/2 of the agreement cells.
+
+**ONE THING THAT IS COMPARISON-SHAPED AND IS NOT A TOLERANCE, CHECKED RATHER THAN WAVED THROUGH.** `_same_heading` (`pipeline.py:698-708`) is a new comparison on the load path. It is plain `==` with a docstring saying that an `isclose` here would be a comparison epsilon under another name, which is the right call and is `CLAUDE.md`'s own rule. **The finding against it is not that it is slack -- it is that it is a SECOND rule where one already existed, and the two disagree at the wrap value (R1100).**
+
+## Next step opens when
+
+**This is an interim check: it closes nothing, opens nothing, and counts against no round (ES0, FK1). Step 3 stays at 0 of 3 reviewed revisions and its disposition is read from its closure verdict (DD1).** HOLD here means the four blocking items are answered -- it does not mean stop building. **The sequencing is the plan's, not mine:** FR3 says "only FR1-blocking items from those checks are fixed in flight; everything else is ledgered", and FW3 says continue FT2.6 -> FT2.7 -> the step-3 report -> FL3 without stopping between items. So:
+
+1. **R1093, R1094, R1095 and R1096 are fixed IN FLIGHT, in the next commit, before FT2.7.** All four are in `_write_report` and all four are the same omission -- the function was not converted when everything around it was. **R1095 first**, because it is the one that loses a disclosure the tool already owns and because R1007 measured what that costs. Then R1093, which verdict 39 asked for first and which is the shape of `_header_lines` at `:155-179`. R1094 and R1096 are a line each.
+2. **AND THE CELL THAT WOULD HAVE CAUGHT ALL FOUR, which is one cell and not four.** `test_ft26_multi_npz.py` asserts the report at one line. **A cell that reads `report.md` WHOLE at two declared files** -- the basis section naming both files, the band sentence per file, the station count equal to the distinct stations, and the mixed recorded/unrecorded pair naming the unscreened file -- is the gate this step is missing. It is not new apparatus: it is a test in the file FT2.6 already added, and the no-new-apparatus rule does not reach it.
+3. **The ledger grows by six: R1097, R1098, R1099, R1100, R1101, R1102, and R1090 carries unclosed.** Fixed once in the closure commit, not re-reviewed item by item. **R1099 and R1100 are the two I would take first** -- R1099 because it is a published deliverable's schema and the regeneration conditions make it cheaper to do with the others, R1100 because deleting `_same_heading` removes a second rule rather than documenting one.
+4. **RULING 2 of verdict 39 is WITHDRAWN, with its count.** Do not make `_cell_at`'s `face` required: 13 call sites, 2 pass it. My sentence was about a domain I had not swept and that is the fourth time in four rounds that the defect has been in my own measurement rather than in yours.
+5. **R867 to R870 (FT2.7)**, by name, thirty-first round, still blocking and still untouched. **Condition 4** when the report exists. `docs/USER_GUIDE.md` still does not exist and FL3's gate needs it.
+6. **The schedule, against FW0's date.** R1 is **10 November**, full scope, FT2.7 included; today is 28 October. FT2.6's mechanism is built and the hard half of it -- the per-file checks, the union, the provenance on `Row`, the rename -- is right, which I verified rather than took. **What is not built is the half that publishes it**, and that is four edits in one function plus one test cell. I do not read this as slippage: nothing here reopens a design question, FW1's ruling held, and the arithmetic in `floatfea/` did not move (`utilisation.csv` byte-identical, `member_forces.csv` exact on every pre-existing cell, the ladder green on two machines). **What I would say to Xabier if asked is that the risk in R1 is not FT2.6 and not FT2.7 -- it is that `report.md` has ELEVEN sections and ONE LINE of one of them is asserted.**
+
+**And the pattern note, because it has moved again.** For five rounds the recurring defect was a sentence true under the writer's reading and false under the reader's; last round it was an enumeration coarser than the thing it partitioned. **This round it is neither: the sentences are fine and the CONVERSION STOPPED ONE FUNCTION SHORT.** `Row`, `config.py`, both CSV headers, the two new columns, the provenance block, the governing-U clause and thirteen `mypy` sites were all converted, carefully, with arms. `_write_report` was not, and nothing in the loop could say so, because the one cell that reads the report reads the one line the conversion DID reach. **The question that catches this is not "is this sentence true" but "which readers of the renamed thing did the rename not reach" -- and the rename's own measurement answers it: `mypy` finds a FIELD read, and `result.wave_basis`, `screen[0]` and `len(result.utilisations)` are not field reads of `LoadCases`.** That is why 13 sites were found and four were not.
+
+**And one about my own side, fourth round running.** Verdict 39's ruling 2 counted the call sites that PASS an argument and wrote a claim about all of them. Round 37 published a bound from a grid that stopped short; round 38's numeral census used the wrong base; round 39 stranded its own addendum. **All four are the same defect -- a measurement whose domain is not the domain of the claim -- and all four were mine.** The one guard that would have caught this one is the cheapest: before writing "two call sites", count the call sites.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: d0076f6bb81f547bfe01013514c1da7e34ab8956
 **Reviewed commit: `d0076f6bb81f547bfe01013514c1da7e34ab8956`.**
 Verdict: PASS
