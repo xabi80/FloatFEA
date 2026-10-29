@@ -1515,6 +1515,7 @@ def _parse_load_cases(block: Any, base: Path) -> LoadCases:
                 f"or several, or use `cases` to declare the FloatSim runs instead."
             )
         seen: dict[Path, int] = {}
+        by_name: dict[str, tuple[Path, int]] = {}
         for i, entry in enumerate(entries):
             at = f"{where}.npz[{i}]" if isinstance(npz_raw, list) else f"{where}.npz"
             path = Path(_require_string(entry, at))
@@ -1536,6 +1537,35 @@ def _parse_load_cases(block: Any, base: Path) -> LoadCases:
                     f"named twice in every artifact that reports which files were read."
                 )
             seen[path] = i
+            # **AND A COLLIDING BASENAME IS REFUSED FOR THE SAME REASON, ONE LEVEL UP
+            # (R1104).** The check above is on the RESOLVED PATH, and its stated reason is
+            # that a repeat "would be named twice in every artifact that reports which
+            # files were read". Two different paths sharing one basename satisfy that
+            # reason exactly -- a declared file is carried into every artifact by its NAME,
+            # not by its path -- and a check on the path cannot see it. The layout that
+            # produces it is the ordinary one: one export directory per sea state, the file
+            # name fixed by the exporter.
+            #
+            # claim: the pipeline carries a declared file into the artifacts by `npz.name`,
+            #        in the band-screen label and in the `source` column, so the name is
+            #        what the published identifier is
+            # cmd:   files("floatfea/**/*.py", "source=npz.name")
+            # ctl:   source_column_name_site
+            # out:   floatfea/run/pipeline.py
+            if path.name in by_name:
+                other, j = by_name[path.name]
+                raise ConfigError(
+                    f"{at}: {path} has the SAME FILE NAME as the file already declared at "
+                    f"index {j}, {other}. A declared file is identified by its name in "
+                    f"every artifact -- the per-file wave-basis block and period-band "
+                    f"table in `report.md`, and the `source` column of "
+                    f"`member_forces.csv` and `utilisation.csv` -- so two files called "
+                    f"`{path.name}` publish two different sea states under one label, and "
+                    f"neither the basis a utilisation was computed at nor the band an "
+                    f"`outside by` cell was measured against could be attributed to a "
+                    f"declared file. Give the files distinct names."
+                )
+            by_name[path.name] = (path, i)
             npz_files.append(path)
     cases: list[WaveCase] = []
     for i, item in enumerate(cases_raw or []):

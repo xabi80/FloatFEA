@@ -758,3 +758,89 @@ def test_R1102_the_PROVENANCE_fields_carry_NO_DEFAULT() -> None:
         assert fields[name].default_factory is dataclasses.MISSING, name
     # And they are LAST, so nothing positional shifted when they were added.
     assert [f.name for f in dataclasses.fields(Row)][-2:] == ["source", "heading_deg"]
+
+
+def test_R1104_two_DIRECTORIES_one_BASENAME_is_REFUSED(tmp_path, source_npz, capsys) -> None:
+    """The layout a user writes -- one export directory per sea state, the name fixed by
+    the exporter -- defeated all three of verdict 40's per-file repairs at once, at exit 0.
+
+    **THE DUPLICATE CHECK WAS KEYED ON THE RESOLVED PATH AND EVERY ARTIFACT KEYS ON THE
+    NAME (R1104).** Two declared paths sharing one basename published two sea states, two
+    associated-period bands and two different utilisations under one label. Verdict 41
+    measured that state at `609f9ac` and its figures are its own, quoted rather than
+    re-taken here: `U = 1.71167` and `U = 5.74062` under one identical published key, and
+    1200 such keys in `member_forces.csv`.
+
+    **The variable is the DIRECTORY the two files sit in**, and the verdict found it by
+    moving that variable and holding everything else -- which is why the fixture below
+    builds two directories rather than two names in one.
+    """
+    from floatfea import cli
+
+    state_000 = tmp_path / "state_000"
+    state_045 = tmp_path / "state_045"
+    state_000.mkdir()
+    state_045.mkdir()
+    one = _write_npz(source_npz, state_000 / "dynamic_inputs.npz", scale=1.0, heading=0.0)
+    two = _write_npz(
+        source_npz, state_045 / "dynamic_inputs.npz", scale=4.0, heading=45.0, height_full=26.62
+    )
+    assert one.name == two.name and one.parent != two.parent, (one, two)
+
+    cfg, out = _config(tmp_path, [str(one), str(two)])
+    assert cli.main(["run", str(cfg)]) == 2
+    message = capsys.readouterr().err
+    # **BOTH PATHS, not the shared name alone.** A message naming only `dynamic_inputs.npz`
+    # cannot tell a reader which two of their declared files collided, which is the whole
+    # difficulty the collision creates.
+    assert str(one) in message, message
+    assert str(two) in message, message
+    assert "SAME FILE NAME" in message, message
+    assert "`source` column" in message, message
+    # AND NOTHING IS ON DISK. R809: a refusal that arrives after the artifacts is a
+    # warning with an exit code, and this one is at configuration time, before any solve.
+    assert not out.exists() or not list(out.glob("*"))
+    with pytest.raises(ConfigError) as caught:
+        load_config(cfg)
+    assert "SAME FILE NAME" in str(caught.value), str(caught.value)
+
+
+def test_R1104_two_DIRECTORIES_with_DISTINCT_names_still_RUN(tmp_path, source_npz) -> None:
+    """EH4's other direction: the refusal keys on the NAME, not on the DIRECTORY.
+
+    A refusal added to catch a collision is a refusal that can over-refuse, and the
+    configuration it would wrongly reject is the same per-sea-state layout with the names
+    kept distinct. **So this is the two-directory pair that must RUN**, and it carries
+    R1104's two published properties over the deliverables rather than over a fixture: the
+    `### ` sub-headings are DISTINCT WITHIN EACH SECTION of `report.md`, and
+    `utilisation.csv`'s published key INCLUDING `source` is unique.
+
+    The per-section reading is the point and it is not a style choice. The two assertions
+    below require exactly two `### ` lines in EACH of the two sections, so the document
+    carries four of them in the correct case -- which means a distinctness assertion taken
+    over the whole file would be false here, would have to be weakened to pass, and in its
+    weakened form is what a collision hides in.
+    """
+    from floatfea import cli
+
+    state_000 = tmp_path / "state_000"
+    state_045 = tmp_path / "state_045"
+    state_000.mkdir()
+    state_045.mkdir()
+    one = _write_npz(source_npz, state_000 / "v000.npz", scale=1.0, heading=0.0)
+    two = _write_npz(source_npz, state_045 / "v045.npz", scale=4.0, heading=45.0, height_full=26.62)
+    assert one.name != two.name and one.parent != two.parent, (one, two)
+
+    cfg, out = _config(tmp_path, [str(one), str(two)])
+    assert cli.main(["run", str(cfg)]) == 0
+
+    text = (out / "report.md").read_text(encoding="utf-8")
+    for heading in ("The wave basis", "Sea-state"):
+        subs = [ln for ln in _section(text, heading).splitlines() if ln.startswith("### ")]
+        assert subs == ["### `v000.npz`", "### `v045.npz`"], (heading, subs)
+
+    rows = _utilisation_rows(out)
+    cols = list(rows[0])
+    with_source = {tuple(r[k] for k in [*cols[:5], "source"]) for r in rows}
+    assert len(with_source) == len(rows), (len(with_source), len(rows))
+    assert {r["source"] for r in rows} == {"v000.npz", "v045.npz"}
