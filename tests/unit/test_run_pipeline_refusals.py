@@ -658,7 +658,12 @@ def test_FQ2_R817_the_HEADER_carries_the_basis_the_reader_returned(built: Any) -
         utilisations=[],
         mass=(),
         timings={},
-        wave_basis=basis,
+        # **`wave_bases`, PLURAL, SINCE R1093 DELETED THE SINGULAR FIELD.** It held the
+        # FIRST file's basis so a one-file run reproduced byte for byte, and
+        # `_write_report` read it -- so a two-file run published file one's heading under
+        # "the wave basis these loads were exported at" while naming a different file as
+        # governing. The one-file guarantee is this tuple having ONE entry.
+        wave_bases=((cfg.load_cases.npz_files[0].name, basis),),
     )
     blob = " ".join(_header_lines(stub))
     assert "heading 0.0 deg" in blob, blob[:200]
@@ -695,7 +700,7 @@ def test_FQ3_R832_an_EMPTY_basis_says_so_AND_no_caveat_contradicts_it(built: Any
         utilisations=[],
         mass=(),
         timings={},
-        wave_basis={},
+        wave_bases=((cfg.load_cases.npz_files[0].name, {}),),
     )
     blob = " ".join(_header_lines(stub))
     assert "NOT RECORDED by the export" in blob, blob[:400]
@@ -724,7 +729,12 @@ def test_FQ3_R832_a_RECORDED_basis_still_states_it(built: Any) -> None:
         utilisations=[],
         mass=(),
         timings={},
-        wave_basis=exported_wave_basis(cfg.load_cases.npz_files[0]),
+        wave_bases=(
+            (
+                cfg.load_cases.npz_files[0].name,
+                exported_wave_basis(cfg.load_cases.npz_files[0]),
+            ),
+        ),
     )
     blob = " ".join(_header_lines(stub))
     assert "heading 0.0 deg" in blob, blob[:300]

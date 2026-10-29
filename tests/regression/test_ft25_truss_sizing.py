@@ -1105,8 +1105,14 @@ def test_R1080_the_bullet_does_NOT_bound_the_error_BY_THE_GOVERNING_FACE(tmp_pat
     # L45: `LOW, never high` was false in its first half -- at a floor-pinned cell the
     # published figure is EXACT, not low. Three needles are asserted now -- the one-way
     # half, the correction it holds under, and the floor clause -- which is more than the
-    # "only the one-way half" an earlier version of this comment claimed (R1090), and
-    # retired wording is forbidden so it cannot come back silently.
+    # "only the one-way half" an earlier version of this comment claimed (R1090).
+    # **NOTHING FORBIDS THE RETIRED WORDING AND NOTHING CAN (R1086, R1090).** An earlier
+    # version of this comment said it was forbidden. There is no `not in` assertion for
+    # it here and none is possible, because the shipped sentence QUOTES `LOW, never high`
+    # in the course of correcting it -- the same reason the sibling note a hundred lines
+    # above gives for the invented face name. The three positives below are the whole
+    # guarantee: if the sentence regresses to the bare claim they go red, which is a
+    # weaker thing than forbidding the words and is the true one.
     # **AND THE DIRECTION CLAIM NAMES WHICH CORRECTION IT HOLDS UNDER (R1088).** "no
     # triangle figure is ever HIGH" is false under the BRACED LENGTH ALONE, which is one
     # of the three corrections the same bullet enumerates -- so the unqualified sentence

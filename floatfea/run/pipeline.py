@@ -102,30 +102,41 @@ class RunResult:
     utilisations: list[dict[str, Any]]
     mass: tuple[MassReport, ...]
     timings: dict[str, float]
-    wave_basis: dict[str, Any] = field(default_factory=dict)
-    """R817. The heading and wave height the dynamic inputs were exported at.
-
-    Carried on the result so every artifact can state them. They are the subjects of two
-    caveats the artifacts already carried -- EX3/R724 on the heading, EZ2/FA0 on the
-    height's associated-period band -- and neither value appeared in any of them.
-    """
-
     wave_bases: tuple[tuple[str, dict[str, Any]], ...] = ()
-    """(file name, that file's recorded basis) for EVERY declared file, in order (FT2.6).
+    """(file name, that file's basis) for EVERY declared file, in order (R817, FT2.6).
 
-    `wave_basis` above is the FIRST file's, kept because every existing artifact reads it
-    and a one-file run must reproduce byte for byte. This is the whole set, and it is what
-    an artifact naming the governing heading AND FILE reads. A run over one file has one
-    entry here and the two agree.
+    The heading and wave height each dynamic-inputs file was exported at, carried on the
+    result so every artifact can state them. They are the subjects of two caveats the
+    artifacts already carried -- EX3/R724 on the heading, EZ2/FA0 on the height's
+    associated-period band -- and before R817 neither value appeared in any of them.
+
+    **THERE IS NO SINGULAR `wave_basis` BESIDE THIS, AND THAT IS R1093.** One existed: the
+    FIRST file's, kept so that a one-file run reproduced byte for byte. `report.md` read
+    it, so a two-file run published file one's heading and height under the heading "the
+    wave basis these loads were exported at" while naming a DIFFERENT file as governing
+    twenty lines below. The one-file guarantee is a property of this tuple having one
+    entry, not of a second field holding the first entry.
     """
 
     notes: tuple[str, ...] = ()
-    band_screen: tuple[CaseBand, ...] = ()
-    """FL2(d): the admissibility screen, one entry per case in the dynamic-inputs file.
+    band_screens: tuple[tuple[str, tuple[CaseBand, ...]], ...] = ()
+    """FL2(d): (file name, that file's screen) for EVERY declared file, in order.
 
-    Empty when the export recorded no wave height, in which case there is no band and
-    the report says the screen was not performed rather than printing one computed from
-    an assumed height.
+    One inner entry per case in that file. A file's inner tuple is EMPTY when its export
+    recorded no wave height, in which case there is no band for it and the report says
+    the screen was not performed for that file rather than printing one computed from an
+    assumed height.
+
+    **GROUPED BY FILE, AND THAT IS R1094 AND R1095.** The screen is a function of the
+    file's OWN recorded height, so a flat concatenation published two things that were
+    not true of it: one stated band over a table of every file's cases, with `outside by`
+    figures no reader could derive from the band printed above them; and -- the worse
+    half -- a file recording NO height contributed nothing to a flat tuple, so beside any
+    screened file the aggregate was non-empty, the "the screen was NOT performed"
+    disclosure the single-file path owns was skipped, and the table read as complete while
+    omitting the file that set the envelope. R1007 measured that same skip at 63% high on
+    the governing utilisation. An unscreened file is an EMPTY ENTRY here rather than no
+    entry, which is what lets the report name it.
     """
 
     section_properties: dict[str, tuple[float, float, float, float, float]] = field(
@@ -674,7 +685,15 @@ def refuse_headings_no_file_covers(
             unrecorded.append(path.name)
             continue
         covered.setdefault(recorded, path.name)
-    missing = [d for d in declared if not any(_same_heading(d, r) for r in covered)]
+    # **ONE RULE FOR BOTH PATHS, WHICH IS R1100.** This asked its own question with a
+    # plain `==` while the single-file path asks `uncovered_headings`, which is modulo
+    # 360 -- so `headings: [360.0]` against an export at 0 was ACCEPTED at one file and
+    # REFUSED at two, with the number of declared files the only variable. 360 is inside
+    # `HEADING`'s declared domain and names the direction 0 names, so the modulo is the
+    # correct rule and the duplicate was the defect: two checks of one question is the
+    # shape where one of them quietly stops being the one that runs. No epsilon enters
+    # with it -- `uncovered_headings` is exact, and its own comment says why.
+    missing = list(uncovered_headings(declared, tuple(covered)))
     if not missing:
         return
     if not covered:
@@ -687,8 +706,11 @@ def refuse_headings_no_file_covers(
             f"declared set. Export a file per heading, or drop the declaration."
         )
     have = ", ".join(f"{h:g} deg ({name})" for h, name in sorted(covered.items()))
+    # **BOTH BRANCHES OF THE AGREEMENT PAIR (R1101).** One file is `records`, several are
+    # `record`; the fourth instance of this class in this step (L36, R1085, R1089).
+    verb = "records" if len(unrecorded) == 1 else "record"
     extra = (
-        f" {', '.join(unrecorded)} record no heading at all and cover nothing."
+        f" {', '.join(unrecorded)} {verb} no heading at all and cover nothing."
         if unrecorded
         else ""
     )
@@ -699,18 +721,6 @@ def refuse_headings_no_file_covers(
         f"envelope short of what the configuration claims, so it is refused before "
         f"anything is built or written (R809)."
     )
-
-
-def _same_heading(declared: float, recorded: float) -> bool:
-    """EXACT equality on the recorded degrees, deliberately and with no epsilon.
-
-    A heading is a DECLARED number compared with a RECORDED one, and both are written by
-    hand or by the exporter at the same precision. An `isclose` here would be a comparison
-    epsilon in the load path under another name, which `CLAUDE.md` forbids outright; a
-    configuration that means 45 writes 45. If a real export ever records 44.999999, that
-    is a finding about the exporter and not a reason to widen this.
-    """
-    return declared == recorded
 
 
 def refuse_scale_disagreement(cfg: Any, npz: Path) -> None:
@@ -760,18 +770,24 @@ def refuse_scale_disagreement(cfg: Any, npz: Path) -> None:
 
 def _band_screen_over_files(
     cfg: Any, per_file: list[tuple[Path, Any, tuple[float, ...], Any]]
-) -> tuple[CaseBand, ...]:
-    """FL2(d)'s screen, per file, combined rather than replaced (FT2.6).
+) -> tuple[tuple[str, tuple[CaseBand, ...]], ...]:
+    """FL2(d)'s screen, per file, KEYED BY FILE rather than concatenated (FT2.6, R1094).
 
     The screen is a function of the file's own recorded HEIGHT, so one file's basis cannot
-    answer for another's and the screens are concatenated. `refuse_cases_that_cannot_govern`
-    refuses on the spot, so a run that reaches the end of this loop has every file's cases
-    screened and no file's screen standing in for another's.
+    answer for another's. `refuse_cases_that_cannot_govern` refuses on the spot, so a run
+    that reaches the end of this loop has every file's cases screened and no file's screen
+    standing in for another's.
+
+    **EVERY DECLARED FILE GETS AN ENTRY, INCLUDING ONE THAT WAS NOT SCREENED (R1095).** A
+    file with no recorded height screens to `()`, and the first version of this helper
+    concatenated, so such a file simply vanished from the result -- which made the
+    "not performed" disclosure a property of whether ANY file had a height. Keyed, a file
+    that was not screened is an empty entry and the report can name it.
     """
-    out: list[CaseBand] = []
-    for _npz, _raw, periods_one, basis_one in per_file:
-        out.extend(refuse_cases_that_cannot_govern(cfg, periods_one, basis_one))
-    return tuple(out)
+    return tuple(
+        (npz.name, refuse_cases_that_cannot_govern(cfg, periods_one, basis_one))
+        for npz, _raw, periods_one, basis_one in per_file
+    )
 
 
 @dataclass(frozen=True)
@@ -965,7 +981,8 @@ def refuse_cases_that_cannot_govern(
     recorded height and the configuration has not said otherwise.
 
     **THE CAVEAT WAS ALREADY PUBLISHED AND NOTHING ENFORCED IT.** `floatfea/cli.py`'s
-    `EZ2` caveat has shipped on every artifact since F4 -- "only the declared governing
+    `EZ2` caveat has shipped on every artifact since F4 -- in the wording it carried THEN,
+    which R1103 has since made plural: "only the declared governing
     periods may set the envelope. Cases outside the associated-period range for this
     wave height -- and any exceeding the deep-water breaking steepness -- are reported
     as SENSITIVITY ONLY and cannot govern" -- while no code checked that the declared
@@ -987,7 +1004,9 @@ def refuse_cases_that_cannot_govern(
     distribution, and a band computed from a guessed height is the R902 defect exactly
     (a module constant decided a band while the header printed a recorded value). The
     artifacts already say "wave basis: NOT RECORDED by the export" in that case, and the
-    report's band section says the screen was not performed and why.
+    report's band section says the screen was not performed and why -- **naming the file,
+    since R1095, because beside a file that WAS screened an empty screen used to vanish
+    into a concatenation and the disclosure with it.**
     """
     height = _recorded_height(basis)
     if height is None:
@@ -1689,9 +1708,16 @@ def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunRes
     t0 = time.perf_counter()
     # ===================================================================== FT2.6
     # **EVERY CHECK BELOW RUNS PER FILE AND NOT ONE OF THEM IS RELAXED.** The union is
-    # taken of what they produce; it is never taken of whether they passed. A reader
-    # looking for the place a second file could slip through unchecked will not find one,
-    # because there is no branch on `npz_files[0]` anywhere in this function.
+    # taken of what they produce; it is never taken of whether they passed.
+    #
+    # **THE HAZARD IS A FIRST-FILE READ, AND IT TYPE-CHECKS.** `per_file[0]` is legal
+    # everywhere below, so what holds this is a cell whose answer DIFFERS from the first
+    # file's alone -- `test_the_union_is_not_either_file_alone` and
+    # `test_R1093_the_BASIS_SECTION_states_EVERY_declared_file_and_not_the_FIRST`, each of
+    # which goes red when a first-file read is put back. **A comment COUNTING the reads is
+    # what used to be here, and it was wrong (R1093):** it generalised `ruff`'s proof about
+    # the raw ARRAY to the whole function, while `wave_basis=per_file[0][3]` was publishing
+    # the first file's heading as the run's sea state a hundred lines below it.
     per_file: list[tuple[Path, Any, tuple[float, ...], Any]] = []
     for npz in cfg.load_cases.npz_files:
         raw_one: Any = np.load(npz, allow_pickle=False)
@@ -1705,11 +1731,14 @@ def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunRes
     # The UNION of the recorded periods, which is what a declared governing period is
     # checked against now: a period carried by the second file is carried by the run.
     periods = tuple(sorted({p for _n, _r, ps, _b in per_file for p in ps}))
-    # There is deliberately NO `raw = per_file[0][1]` here. The first draft kept one, and
-    # `ruff` reported it unused -- which is the mechanical proof that nothing downstream
-    # reads a single file's array any more, and therefore that no `npz_files[0]` survives
-    # in this function. Keeping the binding would have re-created the hazard silently for
-    # the next person who needed "the" raw array.
+    # There is deliberately NO `raw = per_file[0][1]` here. The first draft kept one and
+    # `ruff` reported it unused, which at that commit was a mechanical proof about the raw
+    # ARRAY and nothing wider. **AN EARLIER VERSION OF THIS COMMENT MADE IT WIDER, AND
+    # THAT IS R1093:** it read "therefore no `npz_files[0]` survives in this function",
+    # while `wave_basis=per_file[0][3]` survived a hundred lines from here and `report.md`
+    # published it as the run's sea state. Keeping the binding would have re-created the
+    # array hazard for the next person who needed "the" raw array; the cells named above
+    # are what holds the rest.
 
     unknown = sorted(set(cfg.load_cases.governing_periods) - set(periods))
     if unknown:
@@ -1740,7 +1769,7 @@ def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunRes
     # with a non-zero exit code.
     # Per file, because the screen is a function of that file's own recorded HEIGHT: one
     # basis cannot answer for another. The screens are combined, not replaced.
-    band_screen = _band_screen_over_files(cfg, per_file)
+    band_screens = _band_screen_over_files(cfg, per_file)
     timings["load"] = time.perf_counter() - t0
 
     t0 = time.perf_counter()
@@ -1788,14 +1817,13 @@ def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunRes
     return RunResult(
         config=cfg,
         built=built,
-        wave_basis=per_file[0][3],
         wave_bases=tuple((p.name, b) for p, _r, _ps, b in per_file),
         rows=computed.rows,
         utilisations=utilisations,
         mass=mass,
         timings=timings,
         notes=notes,
-        band_screen=band_screen,
+        band_screens=band_screens,
         section_properties={
             body.name: _section_properties(body.members[0].section) for body in built.bodies
         },

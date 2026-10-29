@@ -70,8 +70,16 @@ class Row:
     period_full_s: float
     basis: str
     values: NDArray[np.float64]  # (6,) N, Vy, Vz, T, My, Mz
-    source: str = ""
+    source: str
     """The dynamic-inputs file this row came from, by name (FT2.6, FW1).
+
+    **NO DEFAULT, AND THAT IS R1102.** The fields were APPENDED rather than inserted,
+    which was the dangerous half of the constraint and is why nothing shifted silently --
+    but with defaults the four `Row(` constructions stayed legal and `mypy` named none of
+    them. A FUTURE construction that forgot the provenance would then publish a dynamic
+    row with an empty `source`, and `cli.py`'s published rule for reading the column says
+    an empty `source` means gravity -- so the row would be attributed to the static case.
+    With no default that construction does not compile.
 
     **SELF-DESCRIBING BY RULING, AND THE ALTERNATIVE'S FAILURE MODE IS WHY.** FW1 rules
     the file and heading onto the row rather than alongside it. Provenance held in a
@@ -83,7 +91,7 @@ class Row:
     Empty for a row that has no file behind it -- the `static` rows, which are gravity
     only and are computed once for the whole run rather than per file.
     """
-    heading_deg: float = float("nan")
+    heading_deg: float
     """That file's own recorded heading, in degrees. `nan` where none was recorded.
 
     One file records ONE heading (`exported_wave_basis`), which is why the envelope over
@@ -885,8 +893,11 @@ def compute_rows(
         )
 
     for key, values in sorted(static.items()):
-        # NO `source` AND NO `heading_deg`: the static rows are gravity alone,
-        # computed once for the run and not per dynamic-inputs file (FT2.6).
-        rows.append(Row(key[0], key[1], key[2], float("nan"), "static", values))
+        # NO `source` AND NO `heading_deg`: the static rows are gravity alone, computed
+        # once for the run and not per dynamic-inputs file (FT2.6). **PASSED EXPLICITLY
+        # RATHER THAN DEFAULTED (R1102):** the empty string and the `nan` are a statement
+        # about these rows, and a construction that omitted them would be a TypeError
+        # rather than a dynamic row silently published as gravity.
+        rows.append(Row(key[0], key[1], key[2], float("nan"), "static", values, "", float("nan")))
 
     return ComputedForces(rows=rows, static=static, instant=instant, instant_sens=instant_sens)

@@ -87,11 +87,14 @@ TABLE_CAVEATS = (
     "whose bending term is a measured 4.0% approximation, unverified against a refined "
     "mesh (R730).",
     "EZ2: only the declared governing periods may set the envelope. Cases outside the "
-    "associated-period range for this wave height -- and any exceeding the deep-water "
-    "breaking steepness -- are reported as SENSITIVITY ONLY and cannot govern.",
+    "associated-period range for the wave height RECORDED BY THEIR OWN DECLARED FILE -- "
+    "and any exceeding the deep-water breaking steepness -- are reported as SENSITIVITY "
+    "ONLY and cannot govern. Where a declared file records no height its cases are "
+    "screened against nothing and carry NO verdict; the report names any such file.",
     "EX3 / R724: where a run covers a SINGLE heading the heading dependence is UNTESTED, "
-    "and no column here is evidence about any other heading. The heading itself is in the "
-    "wave-basis line above WHEN THE EXPORT RECORDED ONE; that line says so either way.",
+    "and no column here is evidence about any other heading. Each declared file's own "
+    "heading is in its wave-basis line above WHEN THAT EXPORT RECORDED ONE; those lines "
+    "say so either way, and `member_forces.csv` carries the file and heading per ROW.",
     "FA0: a governing period sitting just below the associated-period band's lower "
     "bound is admitted by FA0's ruling rather than by rounding. Which period governs is "
     "a RESULT of this run and is in the period column; it is not a property of the "
@@ -152,7 +155,7 @@ def _header_lines(result: RunResult) -> list[str]:
     # emitted before, unprefixed, so the committed deliverable reproduces byte for byte;
     # a multi-file run names each file on its own line, because the whole point of the
     # union is that these values DIFFER between them and one line cannot carry two.
-    bases = result.wave_bases or ((("", result.wave_basis),) if result.wave_basis else ())
+    bases = result.wave_bases
     if not bases:
         lines.append(
             "wave basis: NOT RECORDED by the export of this dynamic-inputs file. The "
@@ -253,28 +256,147 @@ def _write_member_forces(path: Path, result: RunResult) -> int:
     return len(result.rows)
 
 
+UTILISATION_COLUMNS: Final[tuple[str, ...]] = (
+    "body",
+    "member",
+    "station",
+    "period_full_s",
+    "basis",
+    "f_a_MPa",
+    "F_a_MPa",
+    "f_b_MPa",
+    "F_b_MPa",
+    "f_v_MPa",
+    "f_vt_MPa",
+    "axial_branch",
+    "bending_branch",
+    "interaction_form",
+    "u_axial",
+    "u_bending",
+    "u_shear",
+    "u_torsion",
+    "u_combined",
+    "utilisation",
+    "governing_clause",
+)
+"""`utilisation.csv`'s UNCONDITIONAL columns, in published order.
+
+Named here so that adding one is an edit someone makes on purpose (R1098). This tuple is
+the part that is always written; the two sensitivity columns follow it when the
+configuration declares them, and the two provenance columns follow those. So it is not
+the whole published header and `_utilisation_columns` is what assembles that.
+"""
+
+UTILISATION_PROVENANCE_COLUMNS: Final[tuple[str, ...]] = ("source", "heading_deg")
+"""The declared file a utilisation came from, and that file's recorded heading (R1099).
+
+APPENDED, after the sensitivities, so every pre-existing column keeps its index and the
+golden comparison on those columns stays exact -- FW1's condition on `member_forces.csv`,
+applied to this deliverable for the reason FW1 did not have in front of it: with several
+declared files every station appears once per file under an identical key.
+"""
+
+
+def _utilisation_columns(rows: list[dict[str, Any]]) -> list[str]:
+    """Every column of `utilisation.csv`, NAMED, in published order (R1098, R1099).
+
+    **A STATED LIST AND NOT A DENYLIST OVER AN INFERRED ONE.** The first version read
+    `[k for k in rows[0] if k not in hidden]`, which denies two names and admits every
+    other key the record happens to carry -- so a new key became a published column with
+    no edit here, which is the exact property the comment beside it claimed it had. A
+    record carrying a key this list does not name is REFUSED below rather than dropped:
+    silently dropping it would lose a column, and silently publishing it is how a schema
+    changes without anyone deciding to.
+
+    The two sensitivity columns are conditional on the configuration, which is why this
+    is a function and not a module constant.
+    """
+    optional = [c for c in ("utilisation_K_sens", "utilisation_Cm_sens") if c in rows[0]]
+    return [*UTILISATION_COLUMNS, *optional, *UTILISATION_PROVENANCE_COLUMNS]
+
+
 def _write_utilisations(path: Path, result: RunResult) -> int:
     """F6's screen, from this run."""
     path.parent.mkdir(parents=True, exist_ok=True)
     rows = result.utilisations
+    columns = _utilisation_columns(rows)
+    # **THE SCHEMA IS CHECKED, NOT ASSUMED (R1098).** A key the list above does not name
+    # is a schema change someone made elsewhere, and this is the one place that can see
+    # it. Refused by name: `extrasaction="ignore"` would have published a CSV short of a
+    # column that exists on every record.
+    # **EVERY RECORD, NOT `rows[0]`.** A census over one element is the shape that keeps
+    # missing the instance that matters; `DictWriter` would raise on a later row's extra
+    # key, but with a ValueError that names neither the column list nor the decision.
+    unnamed = sorted(set().union(*(set(r) for r in rows)) - set(columns))
+    if unnamed:
+        raise ConfigError(
+            f"the utilisation record carries {unnamed}, which `UTILISATION_COLUMNS` does "
+            f"not name. A column is added by naming it there, so that adding one is a "
+            f"decision and not a side effect of a new dictionary key."
+        )
     with path.open("w", newline="", encoding="utf-8") as fh:
         _write_header(fh, result)
-        # **THE TWO PROVENANCE KEYS ARE CARRIED ON THE RECORD AND NOT WRITTEN HERE.**
-        # FW1 authorised the column change on `member_forces.csv`, which is the table of
-        # ROWS; extending `utilisation.csv` as well is a separate schema decision and it
-        # is not taken here. So the fieldnames are stated explicitly rather than inferred
-        # from the record, and this CSV stays byte-identical. A reader adding a column
-        # must add it here, which is the point of naming them.
-        hidden = {"source", "heading_deg"}
-        writer = csv.DictWriter(
-            fh, fieldnames=[k for k in rows[0] if k not in hidden], extrasaction="ignore"
-        )
+        # **THE TWO PROVENANCE COLUMNS ARE APPENDED, AND THAT IS R1099 UNDER FW1's OWN
+        # CONDITIONS.** FW1 ruled the file and heading onto `Row`, whose published table
+        # is `member_forces.csv`; this deliverable was left alone on that reading. What
+        # the reading did not have in front of it is what the union does to THIS file:
+        # one record per (station, FILE), so every station appears once per declared file
+        # under an IDENTICAL key with a DIFFERENT utilisation and nothing to tell the two
+        # apart. A code check is read from this file. Appended, so no pre-existing column
+        # moves and the golden stays exact on all of them.
+        writer = csv.DictWriter(fh, fieldnames=columns)
         writer.writeheader()
         for row in rows:
-            writer.writerow(
-                {k: (f"{v:.6g}" if isinstance(v, float) else v) for k, v in row.items()}
-            )
+            writer.writerow({k: _utilisation_cell(v) for k, v in row.items()})
     return len(rows)
+
+
+def _utilisation_cell(value: Any) -> Any:
+    """One cell, formatted. `nan` prints EMPTY rather than `nan` (R1099).
+
+    An unrecorded heading is absent, not a number, and `nan` in a published column is a
+    value a consumer can read as one. That no published row reaches the empty branch is
+    asserted rather than claimed here --
+    `test_R1099_the_UTILISATION_CSV_rows_are_UNIQUELY_KEYED_at_two_files` requires every
+    row's `source` and `heading_deg` to be non-empty, because a utilisation row is a
+    `total_instant` row and comes from a declared file. The branch exists because the
+    alternative to an empty cell is the string `nan` in a deliverable someone sizes steel
+    from, and a cell held by nothing is how that arrives.
+    """
+    if isinstance(value, float):
+        return "" if value != value else f"{value:.6g}"
+    return value
+
+
+def _checked_stations_line(result: RunResult) -> str:
+    """ "Checked stations: 32. Over unity: 4." -- over DISTINCT stations (R1096).
+
+    **THE COUNTS WERE OVER RECORDS, AND SINCE FT2.6 THE RECORDS MULTIPLY BY THE NUMBER OF
+    DECLARED FILES.** `len(result.utilisations)` is one record per (station, FILE), so a
+    two-file run published `Checked stations: 64` for a platform that has 32 and
+    `Over unity: 16` where 12 members are over unity. The over-unity count is the number a
+    reader acts on, and counting one station twice because it fails under two headings is
+    a wrong census of the failures rather than conservatism.
+
+    The station-case count is stated too, rather than dropped, because it is the number
+    of rows in `utilisation.csv` and a reader comparing the two should not have to
+    discover the difference.
+    """
+    stations = {(r["body"], r["member"], r["station"]) for r in result.utilisations}
+    over = {
+        (r["body"], r["member"], r["station"])
+        for r in result.utilisations
+        if float(r["utilisation"]) > 1.0
+    }
+    line = f"Checked stations: {len(stations)}. Over unity: {len(over)}."
+    if len(result.utilisations) != len(stations):
+        line += (
+            f" That is {len(result.utilisations)} station-cases over "
+            f"{len(result.wave_bases)} declared files -- a station over unity under more "
+            f"than one of them is counted ONCE above, and every case is in "
+            f"`utilisation.csv` with its own `source`."
+        )
+    return line
 
 
 def _governing_provenance(result: RunResult, governing: dict[str, Any]) -> str:
@@ -291,9 +413,12 @@ def _governing_provenance(result: RunResult, governing: dict[str, Any]) -> str:
     deliverable for no new information. EH4's one-file boundary is that a single file
     reproduces today's output; this clause is how that stays true.
 
-    The lookup is on the five fields that identify a row uniquely, and it RETURNS EMPTY
-    rather than guessing if no row matches -- a sentence that names the wrong file is
-    worse than one that names none.
+    **THERE IS NO LOOKUP HERE, AND THE PARAGRAPH THAT SAID THERE WAS IS WHY (R1097).** An
+    earlier version of this function matched the governing row on its five identifying
+    fields and this docstring justified that on their being unique. They are not: both
+    files produce the same (body, member, station, period, basis), which is the defect
+    above. The attribution is read off the governing RECORD, which carries it from the row
+    it was computed from, so there is nothing to match and nothing to get wrong.
     """
     if len(result.wave_bases) < 2:
         return ""
@@ -330,60 +455,134 @@ def _write_report(path: Path, result: RunResult) -> None:
     for key, value in cfg.provenance().items():
         lines.append(f"* **{key}** — {value}")
 
+    # ===================================================================== R1093
+    # **ONE BLOCK PER DECLARED FILE.** This section read the FIRST file's basis and
+    # published it under this heading for the whole run, so a two-file run stated
+    # `heading 0 deg` here and `from p045.npz at heading 45 deg` as the governing row
+    # twenty lines below -- one document contradicting itself, with the half a reader
+    # sizes steel against being the wrong half. At ONE file there is one block, no
+    # sub-heading, and the three bullets are exactly today's.
     lines += ["", "## The wave basis these loads were exported at", ""]
-    basis = result.wave_basis
-    if basis:
-        lines += [
-            f"* **heading** — {basis.get('heading_deg', '(not recorded)')} deg",
-            f"* **wave height** — {basis.get('wave_height_full_m', '(not recorded)')} m "
-            f"full scale ({basis.get('wave_height_model_m', '(not recorded)')} m model)",
-            f"* **window** — {basis.get('window', '(not recorded)')}",
-        ]
-    else:
+    bases = result.wave_bases
+    if not bases:
         lines.append(
             "* the dynamic-inputs file records no wave basis, so the heading and height "
             "of these loads are **not stated by this run**."
         )
+    else:
+        for i, (name, basis) in enumerate(bases):
+            block: list[str] = [f"### `{name}`", ""] if len(bases) > 1 else []
+            if basis:
+                block += [
+                    f"* **heading** — {basis.get('heading_deg', '(not recorded)')} deg",
+                    f"* **wave height** — "
+                    f"{basis.get('wave_height_full_m', '(not recorded)')} m "
+                    f"full scale ({basis.get('wave_height_model_m', '(not recorded)')} m "
+                    f"model)",
+                    f"* **window** — {basis.get('window', '(not recorded)')}",
+                ]
+            elif len(bases) > 1:
+                block.append(
+                    f"* `{name}` records no wave basis, so the heading and height of ITS "
+                    f"loads are **not stated by this run**. The headings stated for the "
+                    f"other declared files are theirs and say nothing about this one."
+                )
+            else:
+                block.append(
+                    "* the dynamic-inputs file records no wave basis, so the heading and "
+                    "height of these loads are **not stated by this run**."
+                )
+            if i:
+                lines.append("")
+            lines += block
 
+    # ============================================================== R1094 and R1095
+    # **ONE TABLE PER DECLARED FILE, UNDER THAT FILE'S OWN BAND.** The band is a function
+    # of the file's own recorded height, and this section stated `screen[0]`'s band over a
+    # table concatenated from every file -- so half the rows were screened against a band
+    # the report never printed, and their `outside by` column was not derivable from the
+    # one it did (`-0.654` under a band giving `-0.042`).
+    #
+    # **AND THE WORSE HALF, R1095: A FILE THAT WAS NOT SCREENED IS NAMED HERE.** A file
+    # recording no height screens to nothing, so beside any screened file the aggregate
+    # was non-empty, the `if not screen` disclosure below was skipped, and the table read
+    # as complete while omitting a file whose case SET THE ENVELOPE. R1007 measured that
+    # skip at 63% high on the governing utilisation.
     lines += ["", "## Sea-state admissibility, per case (FL2(d) / EZ2)", ""]
-    screen = result.band_screen
-    if not screen:
+    screens = result.band_screens
+    several = len(screens) > 1
+    declared_governing = set(result.config.load_cases.governing_periods)
+    declared_override = set(result.config.load_cases.out_of_band_governing)
+    if not any(screen for _name, screen in screens):
+        # NO declared file records a height, so there is no band anywhere. At one file
+        # this is the sentence that has always been here, word for word.
+        which = (
+            "none of the declared dynamic-inputs files record one"
+            if several
+            else "this dynamic-inputs file records none"
+        )
         lines.append(
-            "* **the screen was NOT performed.** The band is a function of the recorded "
-            "wave height and this dynamic-inputs file records none, so there is no band "
-            "to test against. No height was assumed: a band computed from a guessed "
-            "height would be indistinguishable in this report from one computed from a "
-            "recorded one. Every case below is reported with no admissibility verdict."
+            f"* **the screen was NOT performed.** The band is a function of the recorded "
+            f"wave height and {which}, so there is no band "
+            f"to test against. No height was assumed: a band computed from a guessed "
+            f"height would be indistinguishable in this report from one computed from a "
+            f"recorded one. Every case below is reported with no admissibility verdict."
         )
     else:
-        declared_governing = set(result.config.load_cases.governing_periods)
-        declared_override = set(result.config.load_cases.out_of_band_governing)
-        lines += [
-            f"The associated-period band at the recorded height is "
-            f"`{screen[0].band_low_s:.3f} .. {screen[0].band_high_s:.3f} s`, and the "
-            f"deep-water breaking limit is `H/lambda = 1/7 = "
-            f"{BREAKING_STEEPNESS_LIMIT:.4f}`.",
-            "",
-            "| T_full (s) | H/lambda | admissibility | outside by (s) | in the envelope |",
-            "|---|---|---|---|---|",
-        ]
-        for case in screen:
-            if case.period_full_s not in declared_governing:
-                role = "sensitivity only"
-            elif case.period_full_s in declared_override:
-                role = "**GOVERNING, admitted out of band by declaration**"
+        for i, (name, screen) in enumerate(screens):
+            group: list[str] = [f"### `{name}`", ""] if several else []
+            if not screen:
+                group.append(
+                    f"* **`{name}` was NOT screened.** The band is a function of the "
+                    f"recorded wave height and this file's export records none, so there "
+                    f"is no band to test its cases against and no height was assumed. "
+                    f"**Its cases are in `member_forces.csv`, in `utilisation.csv` and in "
+                    f"the envelope regardless, carrying NO admissibility verdict -- the "
+                    f"governing utilisation below may be one of them.** Any band stated "
+                    f"for another declared file is that file's own and says nothing about "
+                    f"this one."
+                )
             else:
-                role = "governing"
-            margin = f"{case.margin_s:+.3f}" if case.margin_s else "—"
-            lines.append(
-                f"| {case.period_full_s:g} | {case.steepness:.4f} | "
-                f"{case.verdict.value} | {margin} | {role} |"
-            )
+                group += [
+                    f"The associated-period band at the recorded height is "
+                    f"`{screen[0].band_low_s:.3f} .. {screen[0].band_high_s:.3f} s`, and "
+                    f"the deep-water breaking limit is `H/lambda = 1/7 = "
+                    f"{BREAKING_STEEPNESS_LIMIT:.4f}`.",
+                    "",
+                    "| T_full (s) | H/lambda | admissibility | outside by (s) "
+                    "| in the envelope |",
+                    "|---|---|---|---|---|",
+                ]
+                for case in screen:
+                    if case.period_full_s not in declared_governing:
+                        role = "sensitivity only"
+                    elif case.period_full_s in declared_override:
+                        role = "**GOVERNING, admitted out of band by declaration**"
+                    else:
+                        role = "governing"
+                    margin = f"{case.margin_s:+.3f}" if case.margin_s else "—"
+                    group.append(
+                        f"| {case.period_full_s:g} | {case.steepness:.4f} | "
+                        f"{case.verdict.value} | {margin} | {role} |"
+                    )
+            if i:
+                lines.append("")
+            lines += group
         if declared_override:
+            # **`the band` IS SINGULAR AND THERE MAY BE TWO (R1103's class, in this
+            # paragraph).** The override is declared once for the run while the band is a
+            # property of each file's own recorded height, so a declared period can be
+            # out of band under one file and inside it under another. One file keeps the
+            # sentence word for word, which is EH4's boundary.
+            whose = (
+                "the band of at least one declared file excludes it"
+                if several
+                else "the band excludes it"
+            )
             lines += [
                 "",
-                f"**{sorted(declared_override)} s is admitted to the envelope although the band "
-                f"excludes it**, by `load_cases.out_of_band_governing`. That is a "
+                f"**{sorted(declared_override)} s is admitted to the envelope although "
+                f"{whose}**, by `load_cases.out_of_band_governing`. That is a "
                 f"declaration in the configuration, not a widened band: the band edges "
                 f"are unchanged for every other case and at every other height. FA0 is "
                 f"the ruling behind the shipped example's entry.",
@@ -414,8 +613,7 @@ def _write_report(path: Path, result: RunResult) -> None:
         f"`{governing['basis']}`, governing clause {governing['governing_clause']}"
         f"{_governing_provenance(result, governing)}.",
         "",
-        f"Checked stations: {len(result.utilisations)}. "
-        f"Over unity: {sum(1 for r in result.utilisations if float(r['utilisation']) > 1.0)}.",
+        _checked_stations_line(result),
         "",
         "## Mass, per body",
         "",

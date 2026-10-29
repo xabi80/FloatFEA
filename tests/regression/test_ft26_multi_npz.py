@@ -47,6 +47,8 @@ def _write_npz(
     scale: float,
     heading: float | None,
     froude_lambda: float | None = None,
+    height_full: float | None = None,
+    sidecar: bool = True,
 ) -> Path:
     """A copy of `src` with its reactions scaled and its recorded heading replaced.
 
@@ -72,13 +74,51 @@ def _write_npz(
             value = np.asarray(froude_lambda, dtype=value.dtype)
         out[key] = value
     np.savez(dest, **out)
+    if not sidecar:
+        # **NO PROVENANCE SIDECAR AT ALL, WHICH FL1(a) ADMITS.** Such a file records no
+        # heading and no height, so it cannot be screened -- and R1095 is what the report
+        # did with that beside a file that could be.
+        return dest
     side = json.loads(src.with_suffix(".provenance.json").read_text(encoding="utf-8"))
-    if heading is not None:
-        for block in ("run", "wave", "basis"):
-            if isinstance(side.get(block), dict) and "heading_deg" in side[block]:
-                side[block]["heading_deg"] = heading
+    for block in ("run", "wave", "basis"):
+        if not isinstance(side.get(block), dict):
+            continue
+        if heading is not None and "heading_deg" in side[block]:
+            side[block]["heading_deg"] = heading
+        if height_full is not None and "wave_height_full_m" in side[block]:
+            # The MODEL height moves with it, from the sidecar's own declared lambda --
+            # not from a constant here, which would be R895 written into a fixture.
+            lam = float(side[block]["lambda"])
+            side[block]["wave_height_full_m"] = height_full
+            side[block]["wave_height_model_m"] = height_full / lam
     dest.with_suffix(".provenance.json").write_text(json.dumps(side), encoding="utf-8")
     return dest
+
+
+def _section(text: str, heading: str) -> str:
+    """One `## ` section of a report, whole.
+
+    **THE ASSERTION DOMAIN IS THE POINT (R1093 to R1096).** Every cell in this file read
+    `report.md` at the `**U = ` line and nothing else, and the four blocking findings of
+    verdict 40 were all in the ELEVEN OTHER sections -- a basis section stating the first
+    file's heading, a band sentence stating the first file's band over every file's rows,
+    a per-case table silently omitting an unscreened file, and two counts multiplied by
+    the number of declared files. A green suite was furthest from all four.
+    """
+    lines = text.splitlines()
+    starts = [k for k, ln in enumerate(lines) if ln.startswith(f"## {heading}")]
+    assert len(starts) == 1, f"{heading}: {starts}"
+    i = starts[0]
+    j = next((k for k in range(i + 1, len(lines)) if lines[k].startswith("## ")), len(lines))
+    return chr(10).join(lines[i:j]).rstrip()
+
+
+def _utilisation_rows(out: Path) -> list[dict[str, str]]:
+    import csv
+
+    text = (out / "utilisation.csv").read_text(encoding="utf-8")
+    body = [ln for ln in text.splitlines() if not ln.startswith("#")]
+    return list(csv.DictReader(body))
 
 
 def _example_froude_lambda() -> float:
@@ -346,3 +386,375 @@ def test_the_REPORT_names_the_governing_HEADING_and_FILE(tmp_path, source_npz) -
     solo_governing = [ln for ln in solo_report.splitlines() if ln.startswith("**U = ")]
     assert len(solo_governing) == 1, solo_governing
     assert "from `" not in solo_governing[0], solo_governing[0]
+
+
+def test_R1093_the_BASIS_SECTION_states_EVERY_declared_file_and_not_the_FIRST(
+    tmp_path, source_npz
+) -> None:
+    """`report.md`'s basis section read WHOLE, at two files recording different headings.
+
+    **THE SECTION PUBLISHED FILE ONE'S HEADING AS THE RUN'S, IN A DOCUMENT THAT NAMED
+    FILE TWO AS GOVERNING TWENTY LINES BELOW (R1093).** `* **heading** -- 0.0 deg` under
+    "the wave basis these loads were exported at", with `from `p045.npz` at heading 45
+    deg` as the governing row. One document contradicting itself, and the half a reader
+    sizes steel against was the wrong half.
+
+    The assertion is on BOTH names and on the agreement between the two sections, not on
+    a needle: a repair that named the second file and kept the first file's heading
+    against it would pass a name check and fail this.
+    """
+    from floatfea import cli
+
+    local = tmp_path / "data"
+    local.mkdir()
+    one = _write_npz(source_npz, local / "p000.npz", scale=1.0, heading=0.0)
+    two = _write_npz(source_npz, local / "p045.npz", scale=4.0, heading=45.0)
+    cfg, out = _config(tmp_path, [str(one), str(two)])
+    assert cli.main(["run", str(cfg)]) == 0
+
+    text = (out / "report.md").read_text(encoding="utf-8")
+    basis = _section(text, "The wave basis")
+    assert "p000.npz" in basis, basis
+    assert "p045.npz" in basis, basis
+    # Each file's own heading sits inside that file's own block, and nowhere else.
+    blocks = basis.split("### ")
+    by_name = {b.splitlines()[0].strip("`"): b for b in blocks[1:]}
+    assert set(by_name) == {"p000.npz", "p045.npz"}, sorted(by_name)
+    assert "0.0 deg" in by_name["p000.npz"], by_name["p000.npz"]
+    assert "45.0 deg" in by_name["p045.npz"], by_name["p045.npz"]
+    assert "45.0 deg" not in by_name["p000.npz"], by_name["p000.npz"]
+    assert "0.0 deg" not in by_name["p045.npz"], by_name["p045.npz"]
+
+    # AND THE GOVERNING SENTENCE AGREES WITH THE BLOCK THAT NAMES ITS FILE.
+    governing = next(ln for ln in text.splitlines() if ln.startswith("**U = "))
+    assert "from `p045.npz` at heading 45 deg" in governing, governing
+    assert "45.0 deg" in by_name["p045.npz"], by_name["p045.npz"]
+
+    # **AND THE PUBLISHED RULE FOR READING AN EMPTY `source` IS TRUE OF EVERY ROW.**
+    # `cli.py` tells a reader that an empty `source` means gravity, which is the sentence
+    # a defaulted `Row.source` would have falsified for a dynamic row (R1102). Asserted
+    # over the deliverable rather than inside a fixture.
+    rows = _rows(out)
+    head = rows[0]
+    src, bas = head.index("source"), head.index("basis")
+    pairs = [(r[src] == "", r[bas] == "static") for r in rows[1:]]
+    assert all(empty == static for empty, static in pairs), [
+        r for r in rows[1:] if (r[src] == "") != (r[bas] == "static")
+    ][:3]
+    assert any(static for _e, static in pairs), "no static row reached the check"
+    assert any(not static for _e, static in pairs), "no dynamic row reached the check"
+
+
+def test_R1094_EVERY_band_row_is_DERIVABLE_from_the_band_printed_above_it(
+    tmp_path, source_npz
+) -> None:
+    """Two files recording DIFFERENT heights, and `outside by` checked against its band.
+
+    **ONE STATED BAND OVER TWELVE ROWS FROM TWO HEIGHTS (R1094).** The section said
+    `12.542 .. 16.316 s` and a row said `outside by -0.654`, which that band gives as
+    `-0.042`. A reader who checks the arithmetic -- the only reason the column exists --
+    concludes the table is wrong rather than that the band is one of two.
+
+    This does not look for a sentence. It re-derives every row's margin from the band
+    printed in that row's own block, so a repair that prints two bands and puts the rows
+    under the wrong one fails.
+    """
+    import re
+
+    from floatfea import cli
+
+    local = tmp_path / "data"
+    local.mkdir()
+    one = _write_npz(source_npz, local / "r242.npz", scale=1.0, heading=0.0, height_full=24.2)
+    two = _write_npz(source_npz, local / "r266.npz", scale=2.0, heading=45.0, height_full=26.62)
+    cfg, out = _config(tmp_path, [str(one), str(two)])
+    assert cli.main(["run", str(cfg)]) == 0
+
+    section = _section((out / "report.md").read_text(encoding="utf-8"), "Sea-state")
+    bands = re.findall(r"`([0-9.]+) \.\. ([0-9.]+) s`", section)
+    assert len(bands) == 2, section
+    assert bands[0] != bands[1], bands
+
+    blocks = section.split("### ")[1:]
+    assert len(blocks) == 2, section
+    checked = 0
+    for block in blocks:
+        low, high = (float(v) for v in re.findall(r"`([0-9.]+) \.\. ([0-9.]+) s`", block)[0])
+        for row in re.findall(r"^\| ([0-9.]+) \|.*\| ([-+0-9.]+|—) \|", block, re.M):
+            period, margin = float(row[0]), row[1]
+            # **NO EPSILON HERE, AND THE GUARD IS WHY.** My first version compared
+            # `abs(got - want) < 5e-4`, which is a comparison tolerance in a test and
+            # `CLAUDE.md` forbids one outright --
+            # `test_no_undeclared_tolerance_reaches_a_comparison` caught it, on the sixth
+            # consecutive commit where that guard has caught a literal in a repair rather
+            # than in original work. The published cell is a STRING the report formats
+            # `{:+.3f}` from the band printed above it, so the exact question is whether
+            # that string is the one THIS block's own band gives.
+            want = (
+                "—"
+                if low <= period <= high
+                else f"{period - low:+.3f}" if period < low else f"{period - high:+.3f}"
+            )
+            assert margin == want, (block, period, margin, want, low, high)
+            checked += 1
+    assert checked == 12, checked
+
+
+def test_R1095_a_file_that_was_NOT_SCREENED_is_NAMED_beside_one_that_was(
+    tmp_path, source_npz
+) -> None:
+    """The mixed pair: one file with a sidecar, one without, carrying the larger loads.
+
+    **R1007's MEASURED FAILURE, REACHABLE AGAIN THROUGH A NEW DOOR (R1095).** A file with
+    no recorded height screens to nothing. Concatenated, it vanished -- so beside a
+    screened file the aggregate was non-empty, the "the screen was NOT performed"
+    disclosure the single-file path owns was skipped, the six-row table read as complete,
+    and the governing utilisation came from the file the table never mentioned. R1007
+    measured that same skip at 63% high on the governing utilisation at exit 0.
+
+    The control is the same unscreened file ALONE, which must still make the disclosure
+    the pair lost. One variable: whether a second, screened file is declared beside it.
+    """
+    from floatfea import cli
+
+    local = tmp_path / "data"
+    local.mkdir()
+    screened = _write_npz(source_npz, local / "q000.npz", scale=1.0, heading=0.0)
+    bare = _write_npz(source_npz, local / "qNONE.npz", scale=4.0, heading=None, sidecar=False)
+
+    pair_dir = tmp_path / "pair"
+    pair_dir.mkdir()
+    cfg, out = _config(pair_dir, [str(screened), str(bare)])
+    assert cli.main(["run", str(cfg)]) == 0
+    text = (out / "report.md").read_text(encoding="utf-8")
+    section = _section(text, "Sea-state")
+    assert "qNONE.npz" in section, section
+    assert "was NOT screened" in section, section
+    # The governing row IS the unscreened file's, which is what makes the omission matter.
+    governing = next(ln for ln in text.splitlines() if ln.startswith("**U = "))
+    assert "qNONE.npz" in governing, governing
+
+    # THE CONTROL: the same file alone still says the screen was not performed.
+    solo_dir = tmp_path / "solo"
+    solo_dir.mkdir()
+    solo_cfg, solo_out = _config(solo_dir, [str(bare)])
+    assert cli.main(["run", str(solo_cfg)]) == 0
+    solo = _section((solo_out / "report.md").read_text(encoding="utf-8"), "Sea-state")
+    assert "the screen was NOT performed" in solo, solo
+    assert "###" not in solo, solo
+
+
+def test_R1096_the_CHECKED_STATION_counts_are_over_DISTINCT_stations(tmp_path, source_npz) -> None:
+    """`Checked stations: 64. Over unity: 16.` on a platform with 32 stations.
+
+    **THE COUNTS MULTIPLIED BY THE NUMBER OF DECLARED FILES (R1096).** The records are
+    one per (station, FILE) since FT2.6 and the two published counts were written when
+    they were one per station. The over-unity count is the number a reader acts on, and
+    counting a station twice because it fails under two headings is a wrong census of the
+    failures rather than conservatism.
+
+    Both counts are re-derived from `utilisation.csv`, so this cannot be satisfied by a
+    sentence: the published numbers must equal the distinct counts in the deliverable.
+    """
+    from floatfea import cli
+
+    local = tmp_path / "data"
+    local.mkdir()
+    one = _write_npz(source_npz, local / "c000.npz", scale=1.0, heading=0.0)
+    two = _write_npz(source_npz, local / "c045.npz", scale=4.0, heading=45.0)
+    cfg, out = _config(tmp_path, [str(one), str(two)])
+    assert cli.main(["run", str(cfg)]) == 0
+
+    rows = _utilisation_rows(out)
+    key = ("body", "member", "station")
+    stations = {tuple(r[k] for k in key) for r in rows}
+    over = {tuple(r[k] for k in key) for r in rows if float(r["utilisation"]) > 1.0}
+    assert len(rows) == 2 * len(stations), (len(rows), len(stations))
+
+    text = (out / "report.md").read_text(encoding="utf-8")
+    line = next(ln for ln in text.splitlines() if ln.startswith("Checked stations:"))
+    assert f"Checked stations: {len(stations)}." in line, (line, len(stations))
+    assert f"Over unity: {len(over)}." in line, (line, len(over))
+    # And the station-case count is stated rather than dropped, so a reader comparing
+    # the report with the CSV's row count does not have to discover the difference.
+    assert f"{len(rows)} station-cases over 2 declared files" in line, line
+
+
+def test_R1099_the_UTILISATION_CSV_rows_are_UNIQUELY_KEYED_at_two_files(
+    tmp_path, source_npz
+) -> None:
+    """The two provenance columns, appended, and the duplicate keys they resolve.
+
+    **THE UNION MADE THIS DELIVERABLE AMBIGUOUS (R1099).** Without them every station
+    appears once per declared file under an IDENTICAL published key with a DIFFERENT
+    utilisation -- `U = 0.7115` and `0.819965` under one key -- and a code check is read
+    from this file. FW1's conditions are asserted in the direction that weakens the
+    change: the two names are LAST, so no pre-existing column moved.
+    """
+    from floatfea import cli
+
+    local = tmp_path / "data"
+    local.mkdir()
+    one = _write_npz(source_npz, local / "u000.npz", scale=1.0, heading=0.0)
+    two = _write_npz(source_npz, local / "u045.npz", scale=4.0, heading=45.0)
+    cfg, out = _config(tmp_path, [str(one), str(two)])
+    assert cli.main(["run", str(cfg)]) == 0
+
+    rows = _utilisation_rows(out)
+    assert list(rows[0])[-2:] == ["source", "heading_deg"], list(rows[0])
+    keys = {tuple(r[k] for k in list(rows[0])[:5]) for r in rows}
+    assert len(keys) * 2 == len(rows), (len(keys), len(rows))
+    with_source = {tuple(r[k] for k in [*list(rows[0])[:5], "source"]) for r in rows}
+    assert len(with_source) == len(rows), (len(with_source), len(rows))
+    assert {r["source"] for r in rows} == {"u000.npz", "u045.npz"}
+    assert {r["heading_deg"] for r in rows} == {"0", "45"}
+    # No utilisation row is ever gravity, so none may carry an empty provenance.
+    assert all(r["source"] and r["heading_deg"] for r in rows), rows[0]
+
+
+def test_R1098_a_utilisation_key_the_COLUMN_LIST_does_not_name_is_REFUSED(
+    tmp_path, source_npz
+) -> None:
+    """A new key in the record is refused, not silently published and not dropped.
+
+    **"THE FIELDNAMES ARE STATED EXPLICITLY" WAS FALSE (R1098).** It was a denylist over
+    an inferred list -- two names denied, every other key admitted -- so the property the
+    comment claimed, that a future column is an edit someone makes on purpose, was
+    precisely the one it did not have. Measured then: `body,member,station,utilisation,
+    A_BRAND_NEW_FIELD`.
+    """
+    from floatfea import cli
+    from floatfea.run.pipeline import RunResult
+
+    # **A REAL `RunResult` AND THE REAL WRITER, because the CALLER is what FT2 asks to be
+    # held.** My first version of this cell passed a stub carrying only `utilisations` and
+    # `wave_bases`, and `_write_header` -- which every artifact goes through -- raised
+    # `AttributeError: '_R' object has no attribute 'config'`. A stub thin enough to pass
+    # would have been a stub that does not reach the writer under test.
+    cfg_path, _ = _config(tmp_path, str(source_npz))
+    built = type("_B", (), {"label": "", "assumptions": (), "bodies": ()})()
+    record: dict[str, Any] = {name: "x" for name in cli.UTILISATION_COLUMNS}
+    record["utilisation"] = 0.5
+    record["source"] = "a.npz"
+    record["heading_deg"] = 0.0
+
+    def _result(rows: list[dict[str, Any]]) -> RunResult:
+        return RunResult(
+            config=load_config(cfg_path),
+            built=built,
+            rows=[],
+            utilisations=rows,
+            mass=(),
+            timings={},
+            wave_bases=(("a.npz", {}),),
+        )
+
+    # The named set writes, with the two provenance columns last.
+    clean = tmp_path / "clean.csv"
+    cli._write_utilisations(clean, _result([dict(record)]))
+    header = next(
+        ln for ln in clean.read_text(encoding="utf-8").splitlines() if not ln.startswith("#")
+    )
+    assert header.endswith(",source,heading_deg"), header
+    assert header.split(",")[: len(cli.UTILISATION_COLUMNS)] == list(cli.UTILISATION_COLUMNS)
+
+    # And one extra key is a refusal naming it, with no file written.
+    record["A_BRAND_NEW_FIELD"] = 1.0
+    with pytest.raises(ConfigError) as caught:
+        cli._write_utilisations(tmp_path / "dirty.csv", _result([dict(record)]))
+    assert "A_BRAND_NEW_FIELD" in str(caught.value), str(caught.value)
+    assert not (tmp_path / "dirty.csv").exists()
+
+
+def test_R1100_the_WRAP_VALUE_360_is_accepted_at_ONE_file_AND_at_TWO(
+    tmp_path, source_npz, capsys
+) -> None:
+    """`headings: [360.0]` against exports at 0, at one declared file and at two.
+
+    **THE SAME DECLARATION FLIPPED FROM ACCEPTED TO REFUSED WHEN A SECOND FILE WAS ADDED
+    (R1100).** The one-file path asks `uncovered_headings`, which is modulo 360 and whose
+    own comment says so; the multi-file path asked a plain `==`. 360 is inside `HEADING`'s
+    declared domain and names the direction 0 names, so the modulo is the correct rule and
+    the second implementation was the defect.
+
+    Both directions. The declared heading no file covers must STILL be refused at two
+    files, which is the half a modulo could have broken.
+    """
+    from floatfea import cli
+
+    local = tmp_path / "data"
+    local.mkdir()
+    one = _write_npz(source_npz, local / "w000.npz", scale=1.0, heading=0.0)
+    two = _write_npz(source_npz, local / "w045.npz", scale=4.0, heading=45.0)
+
+    solo_dir = tmp_path / "solo"
+    solo_dir.mkdir()
+    solo_cfg, _ = _config(solo_dir, [str(one)], headings=[360.0])
+    assert cli.main(["run", str(solo_cfg)]) == 0
+
+    both_dir = tmp_path / "both"
+    both_dir.mkdir()
+    both_cfg, _ = _config(both_dir, [str(one), str(two)], headings=[360.0])
+    assert cli.main(["run", str(both_cfg)]) == 0
+
+    # AND THE OTHER DIRECTION: a heading genuinely uncovered is still refused at two.
+    bad_dir = tmp_path / "bad"
+    bad_dir.mkdir()
+    bad_cfg, bad_out = _config(bad_dir, [str(one), str(two)], headings=[90.0])
+    # `cli.main` CATCHES `ConfigError` and returns 2, with the message on stderr.
+    assert cli.main(["run", str(bad_cfg)]) == 2
+    message = capsys.readouterr().err
+    assert "90" in message, message
+    assert not bad_out.exists() or not list(bad_out.glob("*"))
+
+
+def test_R1101_the_UNRECORDED_clause_agrees_in_BOTH_numbers(tmp_path, source_npz) -> None:
+    """`records no heading at all` for one file, `record` for two.
+
+    **THE FOURTH INSTANCE OF THIS CLASS IN THIS STEP (L36, R1085, R1089, R1101).** One
+    branch of an agreement pair, never emitted by any cell. Both are emitted here, and
+    the branch is reached through the real refusal rather than by calling the helper.
+    """
+    from floatfea.run.config import ConfigError
+    from floatfea.run.pipeline import refuse_headings_no_file_covers
+
+    local = tmp_path / "data"
+    local.mkdir()
+    has = _write_npz(source_npz, local / "has.npz", scale=1.0, heading=0.0)
+    bare_a = local / "barea.npz"
+    bare_b = local / "bareb.npz"
+
+    from floatfea.run.pipeline import exported_wave_basis
+
+    basis = exported_wave_basis(has)
+    with pytest.raises(ConfigError) as one:
+        refuse_headings_no_file_covers((45.0,), [(has, basis), (bare_a, {})])
+    assert "barea.npz records no heading at all" in str(one.value), str(one.value)
+
+    with pytest.raises(ConfigError) as two:
+        refuse_headings_no_file_covers((45.0,), [(has, basis), (bare_a, {}), (bare_b, {})])
+    assert "barea.npz, bareb.npz record no heading at all" in str(two.value), str(two.value)
+
+
+def test_R1102_the_PROVENANCE_fields_carry_NO_DEFAULT() -> None:
+    """`Row.source` and `Row.heading_deg` have no default, so an omission will not compile.
+
+    **THE APPEND WAS THE DANGEROUS HALF AND IT WAS HONOURED; THIS IS THE CHEAP HALF THAT
+    WAS NOT (R1102).** With defaults, all four `Row(` constructions stayed legal and
+    `mypy` named none of them, so a FUTURE construction that forgot the provenance would
+    publish a dynamic row with an empty `source` -- and `cli.py`'s published rule says an
+    empty `source` means gravity. The row would be attributed to the static case.
+
+    The `static` construction passes the empty string and the `nan` explicitly, which is a
+    statement about those rows rather than a default nobody chose.
+    """
+    import dataclasses
+
+    from floatfea.post.forces_table import Row
+
+    fields = {f.name: f for f in dataclasses.fields(Row)}
+    for name in ("source", "heading_deg"):
+        assert fields[name].default is dataclasses.MISSING, name
+        assert fields[name].default_factory is dataclasses.MISSING, name
+    # And they are LAST, so nothing positional shifted when they were added.
+    assert [f.name for f in dataclasses.fields(Row)][-2:] == ["source", "heading_deg"]

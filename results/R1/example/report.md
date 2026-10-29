@@ -67,8 +67,8 @@ The associated-period band at the recorded height is `12.542 .. 16.316 s`, and t
 * R739: the N column is TENSION-POSITIVE (docs/conventions.md:320). Published compression-positive it put every over-unity station on section 3.3.1 instead of 3.3.2.
 * R740: a utilisation must be read from the `total_instant` rows -- the six components AT the step where sigma peaks. `total_max` / `total_min` max each component INDEPENDENTLY over the window, so their six values do not occur together and a stress formed from them is an UPPER BOUND, not a stress at any instant.
 * FA3: ROOT and TIP are the element's two ends and are exact. MID is a closed form whose bending term is a measured 4.0% approximation, unverified against a refined mesh (R730).
-* EZ2: only the declared governing periods may set the envelope. Cases outside the associated-period range for this wave height -- and any exceeding the deep-water breaking steepness -- are reported as SENSITIVITY ONLY and cannot govern.
-* EX3 / R724: where a run covers a SINGLE heading the heading dependence is UNTESTED, and no column here is evidence about any other heading. The heading itself is in the wave-basis line above WHEN THE EXPORT RECORDED ONE; that line says so either way.
+* EZ2: only the declared governing periods may set the envelope. Cases outside the associated-period range for the wave height RECORDED BY THEIR OWN DECLARED FILE -- and any exceeding the deep-water breaking steepness -- are reported as SENSITIVITY ONLY and cannot govern. Where a declared file records no height its cases are screened against nothing and carry NO verdict; the report names any such file.
+* EX3 / R724: where a run covers a SINGLE heading the heading dependence is UNTESTED, and no column here is evidence about any other heading. Each declared file's own heading is in its wave-basis line above WHEN THAT EXPORT RECORDED ONE; those lines say so either way, and `member_forces.csv` carries the file and heading per ROW.
 * FA0: a governing period sitting just below the associated-period band's lower bound is admitted by FA0's ruling rather than by rounding. Which period governs is a RESULT of this run and is in the period column; it is not a property of the band.
 * FA1: a generic 0.6*Fy reference stress is NOT the API bending allowable and is SUPERSEDED by the clause results in these columns. Section 3.2.3's branches decide the bending allowable from D/t, not from 0.6*Fy.
 * R741 / R742 / FQ0: section 3.2.2(b) local buckling is implemented and applies for 60 < D/t <= 300. Section 3.2.3's third range ends at a FLAT D/t <= 300 -- not a grade-dependent limit -- above which the section is refused rather than extrapolated. F_b = 0.75*Fy IS the compact allowable; section 3.2.3's reductions apply above the compact limit, not below it. Every clause is verified against an independent hand calculation in tests/verification/rung5/.
@@ -100,9 +100,9 @@ body rather than summed, because two bodies out in opposite directions would can
 |---|---|
 | build | 0.12 |
 | load | 0.00 |
-| solve | 179.48 |
+| solve | 190.07 |
 | code_check | 0.00 |
-| total | 179.61 |
+| total | 190.20 |
 
 ## Declared, and what became of it
 

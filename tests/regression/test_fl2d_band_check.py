@@ -1,7 +1,8 @@
 """FL2(d): the period-band check, per case, and the set that cannot govern.
 
 **WHAT THIS CLOSES, MEASURED BEFORE IT WAS BUILT.** `floatfea/cli.py`'s EZ2 caveat has
-shipped on every artifact since F4 -- "only the declared governing periods may set the
+shipped on every artifact since F4 -- in the wording it carried THEN, which R1103 has
+since made plural: "only the declared governing periods may set the
 envelope. Cases outside the associated-period range for this wave height -- and any
 exceeding the deep-water breaking steepness -- are reported as SENSITIVITY ONLY and
 cannot govern" -- while nothing in `floatfea/` checked that the declared set was inside
@@ -203,12 +204,18 @@ def test_the_report_SAYS_the_screen_was_not_performed_rather_than_omitting_it(
     from floatfea.cli import _write_report
     from floatfea.run.pipeline import RunResult
 
-    # One utilisation row, carrying exactly the six keys `_write_report` reads off the
+    # One utilisation row, carrying exactly the keys `_write_report` reads off the
     # governing row. The section under test comes BEFORE that block, but the report is
     # written whole, so a stub without it fails on `governing()` rather than on anything
     # FL2(d) does -- and the point of going through `_write_report` instead of calling
     # the section builder is that the CALLER is what FT2 asks to be held.
+    #
+    # **`body` IS ONE OF THEM SINCE R1096.** The checked-station counts are over DISTINCT
+    # `(body, member, station)` now rather than over records, so the stub carries the key
+    # the real record always has. A `.get("body", "")` in the counter would have kept this
+    # stub unchanged and made a missing body indistinguishable from an empty one.
     one_row = {
+        "body": "platform",
         "member": "platform:hub4_arm",
         "station": "ROOT",
         "period_full_s": 12.5,
@@ -223,8 +230,8 @@ def test_the_report_SAYS_the_screen_was_not_performed_rather_than_omitting_it(
         utilisations=[one_row],
         mass=(),
         timings={},
-        wave_basis={},
-        band_screen=(),
+        wave_bases=(("dynamic_inputs.npz", {}),),
+        band_screens=(("dynamic_inputs.npz", ()),),
     )
     out = tmp_path / "report.md"
     _write_report(out, result)
@@ -259,6 +266,13 @@ def test_the_report_RENDERS_the_table_and_the_override_note_from_the_SCREEN(
         rows=[],
         utilisations=[
             {
+                # **`body` HERE TOO (R1096), AND MY FIRST REPAIR MISSED THIS ONE.** The
+                # checked-station counts are over distinct `(body, member, station)` now,
+                # so every stub record needs the key -- and this file has TWO record
+                # literals. I added it to the first and not to its sibling thirty lines
+                # down, which is the census-too-narrow shape again: the site I found got
+                # the fix and the one I did not look for did not.
+                "body": "platform",
                 "member": "platform:hub4_arm",
                 "station": "ROOT",
                 "period_full_s": 12.5,
@@ -269,8 +283,8 @@ def test_the_report_RENDERS_the_table_and_the_override_note_from_the_SCREEN(
         ],
         mass=(),
         timings={},
-        wave_basis=BASIS,
-        band_screen=screen,
+        wave_bases=(("dynamic_inputs.npz", BASIS),),
+        band_screens=(("dynamic_inputs.npz", screen),),
     )
     out = tmp_path / "report.md"
     _write_report(out, result)
@@ -566,8 +580,14 @@ def test_END_TO_END_a_SIDECAR_LESS_npz_still_RUNS_and_says_the_screen_was_not_pe
     npz.with_suffix(".provenance.json").unlink()
 
     result = run_pipeline(load_config(path))
-    assert result.band_screen == (), "no height is recorded, so no band can be decided"
-    assert result.wave_basis == {}, result.wave_basis
+    # **ONE ENTRY, AND IT IS EMPTY -- not NO entry (R1095).** A file that records no
+    # height must be PRESENT in the screen with an empty screen of its own, because that
+    # is what lets the report name it as unscreened when a second, screened file is
+    # declared beside it. A concatenated screen made the two states indistinguishable.
+    assert result.band_screens == (
+        (npz.name, ()),
+    ), "no height is recorded, so no band can be decided -- but the file is still named"
+    assert result.wave_bases == ((npz.name, {}),), result.wave_bases
 
 
 def test_END_TO_END_R1021_the_PERMUTATION_WITH_THE_SECOND_RECORDS_DELETED_REFUSES(
