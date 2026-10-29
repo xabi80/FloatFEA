@@ -1,4 +1,483 @@
 # Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: f87e08704127ce462cd17e2e6cd193329ff6888c
+**Reviewed commit: `f87e08704127ce462cd17e2e6cd193329ff6888c`.**
+Verdict: PASS
+Tests: **MY OWN RUNS AT THE JUDGED SHA, IN MY OWN WORKTREES (FV2).** The whole verification ladder, **2088 passed, 2 warnings in 228.40s** -- no STOP on the low-rung head, so no higher rung is uninterpretable. FV1's selection in one invocation -- `tests/unit`, the four root guards and the one regression file the diff touches -- **631 passed, 0 failed in 627.16s (0:10:27)**. `ruff check floatfea tests scripts` -> `All checks passed!`; `python -m black --check floatfea tests` -> `126 files would be left unchanged`; `python -m mypy floatfea` -> `Success: no issues found in 45 source files`: your three lint figures reproduce to the file and the count. The two report-guard files: **2080 failed, 320 passed, 1 skipped in 2186.81s** -- EG3 state (2), and my 2080 ids are BYTE-IDENTICAL to CI's 2080 at the same sha, `comm` empty in both directions across two operating systems. The attribution cell is in the CI section: **this commit ADDS ZERO reds and CLEARS FOUR.** **AND FIVE ARMS, EACH REVERTING OR CORRUPTING ONE CLAUSE WITH A CONTROL IT DOES NOT TOUCH: FIVE REVERTED-RED, FIVE CLEAN CONTROLS, AND BOTH CELLS GREEN AGAIN ON RESTORE EVERY TIME.**
+Scope: **ES0 INTERIM CHECK.** `ls docs/reports/R1/` is `step-1-answers.json step-1.md step-2-answers.json step-2.md` -- **no `docs/reports/R1/step-3.md`**, so no reviewed revision has been consumed, step 3 stays at **0 of 3**, this counts against no round and closes nothing (`--interim` per FS2, no `--closes` per FK1). **Step 1b does not fire and I say so rather than skipping it:** there is no `Answers: verdict <n> @ <sha>` header to compare, because there is no step-3 report.
+
+**I RULED UNDER FR1 WITH EZ0. NOTHING BLOCKS.** R1104 -- verdict 41's single blocking finding -- is closed on its stated condition by repair (i), the condition's cell exists in both directions, and I armed the refusal and all three label sites myself rather than reading them. I found no finding to which I can attach the sentence FR1 requires: no wrong number in a gate, a CSV, a report or a published deliverable, and no input accepted and used other than as declared. Seven ledger rows below, L54 to L60, five of them FR1's own non-blocking classes.
+
+**EU1 DOES NOT ATTACH, AND I MEASURED IT RATHER THAN TAKING IT FROM YOU.**
+
+```
+cmd    git diff d40f8c6..f87e087 -- floatfea/tolerances.py | wc -c
+out    0
+cmd    the digest, FROM THE COMMITTED BLOBS and not from your working tree:
+       git diff-tree --no-commit-id --name-only -r f87e087 | sort |
+         while read -r f; do echo "$(git rev-parse f87e087:"$f")  $f"; done | md5sum
+out    6226801c096e5215f5c123a6b5c62c53 -- THREE files, your figure:
+         8b3fb66  floatfea/run/config.py
+         d3078b2  tests/prose_triple_controls.txt
+         047c22c  tests/regression/test_ft26_multi_npz.py
+cmd    git diff --stat d40f8c6..f87e087 -- .claude docs/SUPERVISOR.md CLAUDE.md
+                                 tests/conftest.py 'tests/**/conftest.py' tests/corpus
+                                 .github scripts docs results examples
+                                 floatfea/run/truss.py floatfea/run/sizing.py
+out    (empty) -- no STOP-class finding on the reviewer's-instructions head, no new or
+       changed conftest and no new plugin, corpus untouched, no script touched, no
+       deliverable under `results/` regenerated, and `.github/` untouched as you state
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py   <- the pathspec resolves, as my instructions say it must
+cmd    git log --oneline d40f8c6..f87e087
+out    one commit, f87e087
+cmd    every numeral the diff ADDS under floatfea and tests, counted
+out    the id 1104, the fixture scales (1.0, 4.0), the heading pair (0.0, 45.0), the
+       recorded height 26.62, the index 5 of `cols[:5]`, and the exit code 2.
+       **No value, no threshold, no counter, no injection size.**
+judge  **EU1 does not attach.** I ran the adversarial case anyway -- eight declared-set
+       configurations the diff did not choose, two end-to-end multi-file runs, and the
+       eight topologies of the unreviewed plan commit -- and report what each produced below.
+```
+
+**WHERE I WORKED (FV2).** Six worktrees of my own outside the repository: `rev_f87e087` reads the judged commit and runs the ladder, the FV1 selection and the lint gate; `arms_f87` takes the five arms and the eleven probes; `g_f87` and `g_d40` run the two report-guard files at f87e087 and at d40f8c6 for the attribution cell; `g_609` runs the twelve unplaced ids at 609f9ac; and `wt_verdict` is where this file is written. No `checkout`, no `reset`, no write of any kind in your tree. Every read of the judged commit is a read of my own worktree AT that commit, which is what makes a working-file read a read of the commit (R1050, which was mine).
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R1104** -- two declared files whose basenames collide are accepted at exit 0 and published under one label | **CLOSED ON ITS CONDITION (i), AND BOTH DIRECTIONS OF THE CONDITION'S CELL ARE ARMED.** | `floatfea/run/config.py:1540-1568` refuses a colliding `Path.name` after the resolved-path check, naming both paths and the index of the first. **Arm A** -- the whole name-check block deleted, which is the state at `609f9ac`: `test_R1104_two_DIRECTORIES_one_BASENAME_is_REFUSED` **1 failed in 12.35s** against `..._with_DISTINCT_names_still_RUN` **1 passed in 12.18s**, restored **1 passed**. **Arm B** -- `if path.name in by_name:` to `if by_name:`, so any second declared file collides: `..._with_DISTINCT_names_still_RUN` **1 failed in 0.80s** against the refusal cell **1 passed in 0.59s**, restored **1 passed in 12.69s**. **Your arm B is the one I attacked first, as you asked, and it reproduces to the tenth of a second.** The refusal is at configuration time: `load_config(cfg)` raises `ConfigError` directly, before any artifact exists, which closes L49's ordering concern for THIS refusal (not for the one L49 names). |
+| **R1104's two published properties, in the direction that must RUN** | **ARMED THREE MORE WAYS, ALL THREE REVERTED-RED WITH CLEAN CONTROLS.** | the distinct-names cell is not a smoke test. **Arm C** -- `source=npz.name` -> a constant at `pipeline.py:1792`: **1 failed**, `AssertionError: (32, 64)`, control **1 passed**, restored **2 passed**. **Arm D** -- `cli.py:474`'s `### ` heading -> `bases[0][0]`, R1093's own defect put back: **1 failed**, `('The wave basis', ['### \`v000.npz\`', '### \`v000.npz\`'])`, control **1 passed**, restored **2 passed**. **Arm E** -- `cli.py:533`'s band heading -> `screens[0][0]`: **1 failed**, `('Sea-state', [...])`, control **1 passed**, restored **2 passed**. So the cell detects a loss of uniqueness at EACH of the three label sites independently, not just at one. |
+| **your per-section reading of the `### ` assertion** | **CORRECT, AND I MEASURED IT RATHER THAN ACCEPTING THE REASONING.** | the two-file distinct run through the real CLI: `report.md` carries **4** `### ` lines, **2** distinct -- `['### \`v000.npz\`', '### \`v045.npz\`', '### \`v000.npz\`', '### \`v045.npz\`']` -- so `len(set(subs)) == len(subs)` over the whole file is **False in the correct case**. A whole-file assertion would have had to be weakened to pass, which is your sentence, now a measurement. |
+| **the sixth site, `pipeline.py:685-687`** | **SAME FINDING, NOT A SEPARATE ONE, AND IT IS NOW UNREACHABLE.** Ruling in full below. | `uncovered_headings`' two-file path is reached only from `refuse_headings_no_file_covers(declared, bases)` and `bases` is built from `cfg.load_cases.npz_files`, whose single construction point is `config.py:1600-1601` -- `grep -rn "npz_files=\|LoadCases(" --include=*.py floatfea/ scripts/` is **two lines, both that one call**. With the collision refused at config load, no colliding pair reaches `:685`. It remains a REFUSAL MESSAGE and not a published artifact, and its residual incompleteness is L58 below. |
+| **R1105 -- the judged commit needs a CI run that FINISHES** | **ANSWERED, AND I VERIFIED THE RUN RATHER THAN THE CLAIM.** | `gh run list --commit f87e087...` -> one run, **40873497372**, status `completed`. All six ladder rungs SUCCESS; `actionlint`, `ruff`, `black --check`, `mypy` and `unit tests` all SUCCESS; **`guards and meta-tests` RAN and FAILED**, which is the step CZ1 (iii) exists for and the first time this step it was not skipped behind an earlier red. The CI section below. |
+| **R867 to R870 (FT2.7)** | **STILL BLOCKING BY NAME. THIRTY-THIRD ROUND. Untouched here -- and their dependency is now REVIEWED, which no verdict had done.** | `git diff d40f8c6..f87e087` mentions none of the four ids. `9827156` is an ancestor of the judged sha, is a standalone `plan:` commit touching only `docs/milestones/R1.md` (265 insertions, 2 deletions), and **no verdict has judged it** -- verdict 41 said so and mine is outside its diff range too. I read it and I ruled its two open questions, including row 4. See the two rulings below. |
+| **condition 4** of the FT2.5 ruling | **STILL CARRIES; its site is a report that does not exist.** | `ls docs/reports/R1/` has no `step-3.md`. |
+| **conditions 1, 2 and 3** of the FT2.5 ruling | **ALL THREE STILL MET, from an empty diff.** | `git diff d40f8c6..f87e087 -- floatfea/run/truss.py floatfea/run/sizing.py` is **empty**. |
+| **R1084** (accepted open per FW3), **R1086** (accepted) | **unchanged.** | no finding. |
+| **R1089 to R1103** | **closed at verdicts 40 and 41 and not reopened.** | nothing in this diff touches their sites; the five arms of verdict 41 are not re-run and their conclusions stand. |
+| **L20 to L53** and verdicts 37, 39, 40 and 41's ledgers | **not re-reviewed item by item** (`CLAUDE.md`'s closure-item handling), and ES0 forbids me a closure sweep in a check of this kind. | fixed once, in the step's closure commit. |
+| **`docs/USER_GUIDE.md`** | **STILL DOES NOT EXIST and FL3's gate needs it.** | `ls docs/USER_GUIDE.md` is `No such file or directory`. |
+| **the EG4(e) pause** | **HELD. ZERO new corpus entries, and ES0 is the reason rather than the date.** | the `tests/corpus/` diff is empty. The pause date lapsed on 28 October and verdict 41 raised that with Xabier **once**; `CLAUDE.md` says say it once, so I do not re-raise it. ES0 fixes an interim check's scope at "no corpus batch" independently of the date, so nothing here turns on it. See the corpus section for what I ran instead. |
+| **R885, R895, FV0's date, the R1072 physics, FW2's three texts, FW0's schedule** | **all with Xabier.** | not yours or mine to resolve here. |
+| **your two self-corrections** | **BOTH ACCEPTED, and the second is the better of the two.** | the `\.name` census that returned 13 lines under a claim about declared files, and the "no configuration declares two colliding basenames" claim that your own cell makes false. The second is the one worth keeping: a claim about the tree, taken before the commit that falsifies it, is CZ1's reusable half applied to prose, and you caught it on yourself. |
+| **your withdrawn FV1 timing sentence** | **WITHDRAWN CORRECTLY, AND MY OWN RUN AGREES WITH YOUR REPLACEMENT.** | `tests/unit` plus the four root guards plus the one touched regression file: **627.16s** in one invocation, of which `tests/unit` is the bulk. Withdrawing a figure rather than rewriting it, when the number that motivated it was never measured, is the right disposition and it is the one BP0 asks for. |
+
+## Findings
+
+**NOTHING BLOCKS, AND I SAY SO UNDER FR1's OWN TEST.** For each candidate I asked for the sentence FR1 requires -- the silently wrong result it produces -- and not one of them could be given it. Six ledger rows below. **The part that is right is most of the commit, and I armed it rather than reading it: five arms, five reverted-reds, five clean controls, and both cells green again on restore every time.** Zero assertions loosened; the diff is 117 insertions and 0 deletions.
+
+---
+
+### R1104 is closed, and I attacked the refusal at eight declared-set configurations the diff did not choose
+
+```
+claim  the refusal is the repair, the message is the right one, and the two cells close
+       the condition I wrote
+cmd    `load_config` through the real config path, eight declared sets, each one a shape
+       no fixture in `test_ft26_multi_npz.py` builds
+out    P1 three files, collision between index 1 and 2
+         REFUSED  `load_cases.npz[2]: ...\d2\v045.npz has the SAME FILE NAME as the file
+                   already declared at index 1, ...\d1\v045.npz`   <- the index is the
+                   FIRST occurrence's, not `0`, and not the previous entry's
+       P2 collision between index 0 and 2 with a distinct file between them
+         REFUSED  names index 0
+       P3 the same file under two ABSOLUTE spellings (`d0/v000.npz`, `d0/../d0/v000.npz`)
+         REFUSED  -- but by the NAME check, with the SAME-FILE-NAME message. L54.
+       P4 case-only difference across two directories (`d0/v000.npz`, `d5/V000.npz`)
+         ACCEPTED -- two distinct label strings, so no conflation follows
+       P6 five files, five distinct names, five directories
+         ACCEPTED -- the clean direction at a count no fixture reaches
+       P7 a bare STRING entry rather than a list
+         ACCEPTED -- the refusal cannot fire on one entry
+       P8 case-only difference in ONE directory, which on this OS is one file
+         REFUSED by the PATH check -- `PureWindowsPath.__eq__` case-folds, so `seen`
+         catches it here and the file name check is not reached
+       P9 the dot-dot spelling inside one directory
+         REFUSED by the NAME check, same misattribution as P3. L54.
+rule   FR1 head two (an input accepted and used other than as declared) and the condition
+       I wrote in verdict 41: refuse a declared set in which two `Path.name` values
+       collide, naming both paths
+judge  **the repair is correct and it is at the one choke point.** `npz_files` has a
+       SINGLE construction site -- `grep -rn "npz_files=\|LoadCases(" --include=*.py
+       floatfea/ scripts/` is two lines, both `config.py:1600-1601` -- so there is no
+       second route by which a colliding pair can reach the pipeline, and the `cases`
+       branch produces no npz files at all today (`grep -rn "load_cases.cases"` finds one
+       site, a validation count in `cli.py:1237`). The message names both paths, the index
+       of the first, and three artifacts, and **every artifact it names is real**: both
+       CSVs carry `source` and `heading_deg` in their shipped headers, which I read from
+       the committed deliverables rather than from the message.
+```
+
+**AND THE BOUNDARY IS DISCRETE, WHICH IS WHY ARMS A AND B ARE THE WHOLE OF EH4 HERE.** The decision rule is exact string equality on `Path.name`; there is no threshold to solve for, so "the ceiling falls toward the clean value" and "the injection rises until a clean case trips" are the two arms and nothing else. One observation that is mine and is not a finding: **the cells do not pin the key's CASE-SENSITIVITY.** `v000.npz` and `v045.npz` differ in more than case, so a key of `path.name.lower()` would over-refuse P4 and pass both cells. The shipped key is case-sensitive, which is the correct one -- P4's two files are genuinely distinguishable in every artifact -- so this is a property the suite does not hold rather than a defect it misses, and I record it here rather than as a row.
+
+---
+
+### The sixth site at `pipeline.py:685-687` is the SAME finding, and you were right to report it
+
+**It is the same finding and it is now unreachable, which is a stronger disposition than "separate".** `uncovered_headings`' two-file path is reached only through `refuse_headings_no_file_covers(declared, bases)`, `bases` is built from `cfg.load_cases.npz_files`, and that tuple has one construction point which now refuses the collision. So `covered.setdefault(recorded, path.name)` can no longer collapse two files into one entry.
+
+**The reason I say you were right to report it rather than that it was already covered:** your own framing is the valuable half -- *the refusal a user reads while debugging the collision was itself keyed on the ambiguous identifier*. Had repair (ii) been taken instead of (i), that site is the fifth place the label has to be disambiguated and it is the one nobody edits, which is exactly the argument your commit gives for (i) and which this site strengthens. It is now a closed consequence of (i) rather than a sixth job.
+
+**What is left at that site is an incompleteness in a refusal message, and it is L58 below**, because `covered.setdefault` keeps only the FIRST file that records a given heading -- so with two distinct files both recording 0, the refusal names one of them as the coverer. The outcome (which headings are uncovered) is right; only the attribution in the message is partial. FR1 class one.
+
+## The twelve unplaced reds: THEY WERE ALL RED AT `609f9ac`, SO NEITHER YOUR COMMIT NOR MINE PRODUCED ONE
+
+**I took the cell you asked for rather than your hypothesis, and the hypothesis is FALSIFIED -- in your favour, and also in mine.** Your scratch script left `guard_cell_out.txt` at 274 bytes with no per-commit file and no summary, so I ran the measurement myself, one variable at a time, in worktrees of my own.
+
+```
+claim  the twelve ids that reach neither limb on a literal reading went red when the
+       VERDICT commit landed (your hypothesis), so nothing in f87e087 adds one
+cmd    the twelve ids, at 609f9ac -- the commit verdict 41 JUDGED, one commit BEFORE
+       the verdict commit:
+       python -m pytest <the five singletons> <test_the_guard_survives_the_state> -q
+cell   ONE VARIABLE: the commit. Same twelve ids, same command, same two files.
+out    **12 failed, 15 passed in 1813.18s** -- and the twelve are the twelve, by name:
+         test_the_report_carries_a_WHOLE_SUITE_count
+         test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+         test_the_CI_section_is_about_the_REVIEWED_commit
+         test_the_Carried_table_is_what_the_generator_produces
+         test_the_generator_would_catch_a_row_under_the_wrong_number
+         test_the_guard_survives_the_state[baseline]
+         ... and the other six states, all seven
+judge  **ALL TWELVE WERE ALREADY RED AT `609f9ac`.** The verdict commit did not redden
+       them and `f87e087` did not redden them: they are the same twelve verdict 41
+       measured and traced at that sha, where it reported `1926` reds as
+       `1924` limb one / `2` limb two / `0` unmatched. **So verdict 41 placed all twelve
+       under a limb, ten of them under limb one, and the disagreement between us is a
+       disagreement about CLASSIFICATION and not about state.** Nothing moved. Your
+       sentence "if the cell shows `d40f8c6 -> f87e087` adds even one id, that id is mine"
+       is the right test and the answer is that none of them is even `d40f8c6`'s.
+```
+
+**AND THE COUNT OF UNPLACED IS THREE, NOT TWELVE, ON THE STRICTEST READING I CAN GIVE THE PREDICATE.** I checked the predicate per id against each id's own failure text, which is how FS1 says it is checked:
+
+* **Nine reach limb one.** `test_the_Carried_table_is_what_the_generator_produces` fails on a list that begins `['R819', 'R822', 'R823', 'R825', 'R826', ...]` -- those are findings of the newest verdict, named in the failure. And **all seven `test_the_guard_survives_the_state[...]` ids paste the NESTED guard's whole `FAILED` list into their own assertion message**, which names `R996-docs/reviews/R1/step-3.md`, `R999-floatfea/cli.py:193` and a thousand more -- findings and sites of the newest verdict, in the red's own text. Your count of twelve treated the seven as unplaced because the parent id's *name* names nothing; the predicate is checked against the failure, and theirs names plenty.
+* **Three reach neither limb on that reading**: `test_the_generator_would_catch_a_row_under_the_wrong_number`, which names "236 blocks" collectively and diagnoses itself ("THE USUAL CAUSE IS EG3 STATE (2)") without naming an id; `test_the_CI_section_is_about_the_REVIEWED_commit`, which names the newest verdict's JUDGED COMMIT (`d205833` against `609f9ac`) and a judged commit is neither a finding nor a site; and `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW`, which is FT1's limb-two id **by name** while its current failure is not FT1's stated reason -- exactly as you said, and you were right to name it rather than stretch the limb.
+
+**I DO NOT RULE THOSE THREE UNDER A STRETCHED LIMB. I RULE THEM UNDER FR1, WHICH IS THE GOVERNING CRITERION FOR THE REST OF R1 AND WHICH ANSWERS THEM WITHOUT A LIMB.** A red blocks only if it can cause a silently wrong result, and I state for each why it cannot:
+
+* `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` -- the disagreement is one row of `docs/reports/R1/step-2.md:1343`, `| \`39162423263\` | push | \`321e9e2\` | **no result** (status \`in_progress\`) |`, against `gh run view 39162423263` which now reports `conclusion: failure` for a run created `2026-10-18T20:14:50Z`. That row was TRUE when it was generated. **A step report is explicitly outside EZ0** -- "it covers nothing in a report" -- and FR1's third non-blocking class is report prose and figure wording. No gate, no CSV, no deliverable carries a wrong number because of it.
+* `test_the_CI_section_is_about_the_REVIEWED_commit` -- it compares the newest REPORT revision's CI anchor against the newest VERDICT's judged sha. In state (2) those are a step apart by construction. Nothing is published from it.
+* `test_the_generator_would_catch_a_row_under_the_wrong_number` -- it is a control on `scripts/carried_table.py` that needs one answered item to be present in the newest verdict in order to have something to ablate. In state (2) the answers file belongs to step 2 and the verdict to step 3, so the intersection is empty and the control has nothing to perturb. **A control with an empty domain is a real defect in general** -- it is the assertion-domain-blindness guard -- but here the empty domain is the step boundary itself, and it is the one state in which the control cannot be armed.
+
+**WHAT THE CI-TABLE RED ACTUALLY IS, STATED ONCE SO NOBODY TRACES IT TWICE.** `scripts/ci_section.py` records a status for a run that is still IN FLIGHT; `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` compares that frozen figure against a LIVE `gh` query. **The two can only agree if no run was in flight when the section was generated**, so this guard's verdict is a function of wall-clock time and not of the tree: no commit caused this red, and EK3 forbids the one edit that would clear it in place. **It is self-clearing in the right way** -- the guard reads the NEWEST revision's 0a section, so writing `docs/reports/R1/step-3.md` takes `step-2.md`'s row out of scope -- and the mechanism that produced it is already closed going forward by **FP1**, which requires the judged commit's run to have finished before the reviewer is invoked. The step-2 row predates FP1.
+
+**TWO THINGS FOLLOW, AND THE SECOND IS A CONDITION ON THE NEXT REPORT.** First: this is NOT a finding and it is NOT yours to fix, so I am not naming it one -- your reading of it was correct and more careful than a stretched limb would have been. Second: **generate step 3's CI section only after every run at every commit the section covers has CONCLUDED.** If a row goes in reading `in_progress`, the same red returns the moment that run finishes -- and at that point it is no longer a boundary state but a live guard red on an open report, which is FF0-class (apparatus that decides whether a green is believed) and gets fixed in the next commit rather than ledgered.
+
+**AND ONE FORWARD-LOOKING NOTE, UNDER ITS OWN HEADING BELOW RATHER THAN HERE**, because FR1 lapses when R1 closes and CZ0 (d) becomes the criterion again. It is a disagreement with the criterion, not with the work.
+
+## The two rulings the plan commit `9827156` asked for, and I MEASURED BOTH RATHER THAN JUDGING THE PLAN'S FIGURES
+
+`9827156` is a standalone `plan:` commit touching only `docs/milestones/R1.md`. It is an ancestor of the judged sha, it is outside my diff range and outside verdict 41's, and **no verdict has reviewed it.** I am not reviewing it here either -- ES0 fixes this check's scope at the diff since the last verdict. What I am doing is answering the two questions it explicitly handed to me, and because its own answer rests on measurements, I re-took them. The reference has been wrong more often than the thing measured.
+
+### Ruling 1 -- ROW 4 RUNS. It is settled by R867's own repair, and it is neither a third item nor an FS0 question.
+
+```
+claim  in topology #4 (hub4 reached only by a brace) ONLY THE NODE NAME is missing: the
+       node at hub4's deck joint point exists, is reachable from the centre, and is the
+       same node #1 calls `platform:hub4_arm_tip`
+cmd    both topologies through `build_superstructure`, then the COORDINATES of
+       #1's `platform:hub4_arm_tip` and #4's `platform:hub3_hub4_tip`
+cell   ONE VARIABLE: the declared member list. Same deck, same lambda, same section.
+out    #1 platform:hub4_arm_tip    (-9.184850993605149e-15, -50.0, 24.668478398986515)
+       #4 platform:hub3_hub4_tip   (-9.184850993605149e-15, -50.0, 24.668478398986515)
+       distance                    **0.0**
+       #4 node names: ['platform:hub1_arm_tip', 'platform:hub2_arm_tip',
+                       'platform:hub3_arm_tip', 'platform:hub3_hub4_tip',
+                       'platform_centre', 'platform_remainder']
+rule   `joint_nodes_of` (`floatfea/solve/static.py:125-139`) and
+       `solve_superstructure_static` (`:214-230`) look up `f"platform:{hub}_arm_tip"` and
+       then use only the NODE INDEX -- `out["platform"].vertical_reactions_N[tip]`. The
+       reaction is a property of the node, not of which member reached it.
+judge  **The support scheme is ALREADY topology-agnostic once the name is the joint's
+       name.** The plan's own stated repair for R867 is "name a platform node after the
+       JOINT it is rather than after the member that reached it first"; under that repair
+       #4's node at hub4's joint becomes `platform:hub4_arm_tip`, the lookup succeeds, and
+       #4 runs. **So the plan's "NEITHER ITEM SETTLES IT" is withdrawn: R867 settles it.**
+       There is no third item, no topology-aware support scheme, and no refusal to write.
+       And the direction that would have been dangerous is closed by the plan's own EH4
+       measurement: for a tip name to exist at all the first declared end must be
+       `centre`, so a topology can LOSE a support node but cannot silently acquire the
+       wrong one -- which is why ruling #4 as RUN does not put a support at a joint the
+       configuration did not declare.
+```
+
+**AND THE ONE CAVEAT, STATED SO IT IS NOT MISTAKEN FOR A DEFECT LATER.** In #4 hub4's joint node is the tip of a BRACE and the load path is centre -> hub3 -> hub4, so the reaction there will not equal #1's. That is the declared topology behaving differently, not the support scheme misbehaving. **R868's assertion must therefore be `U = 1.82047` for #1 and #2 and #3 -- which are the same structure declared three ways -- and a SEPARATE measured number for #4, which is a different structure.** Do not expect #4 to reproduce #1's figure; expecting it would be the mistake this caveat exists to prevent.
+
+**AND THE REFUSAL ALTERNATIVE IS THE WRONG ONE, FOR A REASON THAT IS `CLAUDE.md`'s AND NOT MINE.** Refusing a connected, legal topology because a node carries the wrong internal NAME would be refusing a structure the configuration declares and the solver can solve. The thing that must never be invented is the support condition itself; naming an existing node after the joint it occupies invents nothing.
+
+### Ruling 2 -- THREE is right and the verdict's FIVE is WITHDRAWN. I reproduced all eight rows independently.
+
+```
+claim  R869 -- a refusal over the DECK's four hub POINTS, absent or unreachable --
+       subsumes THREE of the topologies, not five
+cmd    all eight topologies through `build_superstructure`, each walked from
+       `centre_node` over the built member graph, reporting disconnected structural nodes
+       (excluding `platform_remainder`, which is rigid-linked and unreached in the healthy
+       star too) and absent `platform:<hub>_arm_tip` names
+out    1 arms-first      members=5  disconnected=0  tips_absent=[]
+       2 brace-first     members=5  disconnected=0  tips_absent=['hub1','hub2']
+       3 [hub1,centre]   members=4  disconnected=0  tips_absent=['hub1']
+       4 hub4-via-brace  members=4  disconnected=0  tips_absent=['hub4']
+       5 ring            members=4  **disconnected=4** ['platform:hub1_hub2_a',
+                         'platform:hub1_hub2_tip','platform:hub2_hub3_tip',
+                         'platform:hub3_hub4_tip']  tips_absent=['hub1'..'hub4']
+       6 three arms      members=3  disconnected=0  tips_absent=['hub4']
+       7 one member      members=1  disconnected=0  tips_absent=['hub2','hub3','hub4']
+       8 hub9            BUILD REFUSED  ValueError: topology.platform.members names
+                         'hub9', which is not a node of this deck
+judge  **ROW FOR ROW IDENTICAL TO THE PLAN'S TABLE, taken independently.** Including the
+       two the plan says falsified its own first draft: #6 and #7 have NO disconnected
+       node, so a component walk over BUILT nodes accepts both and the check must be over
+       the deck's hub POINTS; and #4 IS connected. Under that formulation #5, #6 and #7
+       refuse -- **THREE** -- #8 is already refused at build by a different check, #1
+       runs, and #2, #3 and #4 are R867's. **3 + 3 + 1 + 1 = 8, which closes.**
+       The verdict's "subsumes five of R867's seven refusing cases" cannot be made right
+       on any reading I can find either, and the plan was right not to write one.
+       **I withdraw it. The plan's three stands.**
+       **And one correction to the plan in the same breath: R867's set is THREE, not
+       "the two that should run"** -- #2, #3 and #4, now that row 4 is ruled RUN.
+```
+
+**I WITHDREW A FIGURE OF MY OWN SIDE'S HERE AND IT IS THE SECOND TIME THIS STEP.** The "five" was a reviewer's number, published in a closing condition, and the implementer's measurement refuted it. That is the recorded guard working in the direction it is least often applied -- *the reference has been wrong more often than the thing measured*, and this time the reference was me.
+
+## Ledger (R1). ES0 forbids me a closure sweep in a check of this kind, so these are what the adversarial work produced incidentally -- not a list I went looking for.
+
+**L54. The resolved-path duplicate check is defeated by any non-canonical ABSOLUTE spelling, and the new name check now catches it with the wrong reason.** `floatfea/run/config.py:1521-1523` against `:1532-1538`.
+
+```
+claim  an absolute path is never normalised, so two spellings of ONE file are two keys in
+       `seen` and the path check cannot see the repeat; the new name check catches it and
+       reports it as a NAME collision when it is the same FILE
+cmd    `load_config` with the pair `<abs>/d0/v000.npz` and `<abs>/d0/../d0/v000.npz`
+out    REFUSED: `load_cases.npz[1]: ...\d0\..\d0\v000.npz has the SAME FILE NAME as the
+       file already declared at index 0, ...\d0\v000.npz. ... Give the files distinct
+       names.`   <- and there is no distinct name to give: it is one file
+rule   `config.py:1521-1523` -- `if not path.is_absolute(): path = (base / path).resolve()`
+       -- so `resolve()` runs on the RELATIVE branch only
+judge  FR1 class one: **the outcome is right and the message is wrong.** Your commit
+       improved this rather than caused it -- at `609f9ac` that configuration was ACCEPTED
+       at exit 0 and the file entered the union twice, which is exactly what the path
+       check exists to prevent. I am not crediting the commit with fixing it, because
+       nothing in it measured that as a goal; I am recording that it did. **Closed when**
+       the absolute branch resolves too -- one line, and then the path check reaches it
+       first and the message is the right one -- or the name check distinguishes "same
+       file" from "same name".
+```
+
+**L55. The new triple's `cmd` measures half of its own `claim`, and the claim is causal with no cell.** `floatfea/run/config.py:1549-1554`.
+
+```
+claim  the triple asserts TWO sites -- "the band-screen label and the `source` column" --
+       and its command searches for `source=npz.name` only; and "so the name is what the
+       published identifier is" is a causal clause with no `cell:`
+cmd    grep -rln "source=npz.name" --include=*.py floatfea/
+out    floatfea/run/config.py (the triple itself, which the guard strips through
+       `_without_annotations`) and floatfea/run/pipeline.py -- so the `out:` line is right
+       under the guard's own rule, and the band-screen label at `pipeline.py:788` is NOT
+       measured by the command at all
+rule   BF0 (a claim carries the command that would refute it) and BG0 (a causal sentence
+       carries the cell); CW0 for prose in the source tree
+judge  FR1 class two -- a needle too narrow where **no wrong result follows**: I checked
+       the unmeasured half myself and it holds, `:788` being `(npz.name, ...)`. **Closed
+       when** the command measures both sites, or the claim is reduced to the `source`
+       column alone.
+```
+
+**L56. The distinct-names cell asserts published-key uniqueness on `utilisation.csv` only, while the finding it answers cited `member_forces.csv` too.** `tests/regression/test_ft26_multi_npz.py:842-846`.
+
+```
+claim  verdict 41's R1104 named `member_forces.csv : 2448 rows, 1200 published keys
+       appearing more than once`, and the cell that closes R1104 does not read that file
+cmd    the three-file run's `member_forces.csv`, keyed three ways
+out    3648 rows | the five base columns       -> 1248 distinct, **1200 keys appear >1**
+       3648 rows | + `source`                  -> **3648 distinct, 0 duplicated**
+       3648 rows | + `source` + `heading_deg`  -> 3648 distinct, 0 duplicated
+rule   the closing condition's own words, and `CLAUDE.md`'s rule that a closing condition
+       naming sites is closed site by site
+judge  FR1 class two: **no wrong result follows** -- I took the measurement the cell does
+       not, and `member_forces.csv`'s published key IS unique once `source` is in it,
+       while the `1200` reproduces exactly on the five base columns, which is the
+       pre-R1099 state. **Closed when** the cell carries the `member_forces.csv` half, or
+       states why it does not.
+```
+
+**L57. `round(c, 9)` is a coordinate-comparison epsilon on the production path and is not in `floatfea/tolerances.py`.** `floatfea/model/platform.py:609`.
+
+```
+claim  a de facto tolerance lives outside the one file CLAUDE.md allows, and the guard
+       that exists to catch exactly that is green on it
+cmd    grep -rn "round(c, 9)" --include=*.py floatfea/ ; then
+       python -m pytest tests/test_no_tolerance_literals.py
+out    floatfea/model/platform.py:609:        key = tuple(round(c, 9) for c in point)
+       and the guard is GREEN, inside the 631-pass FV1 selection above
+rule   CLAUDE.md on tolerances -- "the same rule applies to anything that functions as a
+       tolerance under another name: convergence thresholds, comparison epsilons, small
+       number guards ... and any factor introduced to make two numbers agree"
+judge  **CZ0 (b) IN SHAPE AND NOT BLOCKING UNDER FR1**, and I give the reason rather than
+       asserting it: the naming line two below is an EXACT comparison
+       (`start == body_centre`), so a declared end differing in the tenth decimal gets the
+       same node and a different NAME -- and a missing `platform:<hub>_arm_tip` is a
+       `ValueError` out of `joint_nodes_of`, which is loud. The plan's own EH4 paragraph
+       measures the safe direction: a topology can LOSE a support node, it cannot silently
+       acquire the wrong one. **Recorded so that the plan's commitment at `9827156` --
+       "whether it is declared in `floatfea/tolerances.py` is checked BEFORE the repair is
+       written" -- has a verdict behind it. When R867's repair touches this helper the item
+       becomes CZ0 (b) live and EU1's adversarial case attaches to it.**
+```
+
+**L58. `uncovered_headings`' refusal names ONE coverer per heading where several files may cover it.** `floatfea/run/pipeline.py:687`.
+
+```
+claim  `covered.setdefault(recorded, path.name)` keeps the FIRST file that records a given
+       heading, so with two distinct files both recording 0 the refusal names one of them
+cmd    the shipped code, read: `covered: dict[float, str]` built with `setdefault`
+out    one name per heading value
+rule   the function's own docstring, which promises that the refusal names which headings
+       ARE covered and by which file
+judge  FR1 class one: the OUTCOME -- which declared headings are uncovered -- is right,
+       because it is computed from `tuple(covered)`, which is the key set and is complete.
+       Only the attribution in the message is partial, and the docstring is what promises
+       the attribution. **Closed when** the value is a list of names, or the docstring says
+       "one of the files that covers it". **This is the whole residue of your sixth site**,
+       and it is a message rather than a number.
+```
+
+**L59. A frozen CI-table row in a CLOSED report that `gh` now contradicts, and that no permitted edit can clear in place.** `docs/reports/R1/step-2.md:1343`. The full account is above, under the twelve reds. **Closed when** step 3's CI section is generated only after every run it covers has CONCLUDED, which takes the step-2 row out of scope and stops the mechanism from recurring. **Recorded so that nobody traces it a second time.** It is not yours to fix and it is not a finding.
+
+**L60. The plan's "THREE, all the same shape" is right on the count and wrong on the shape.** `docs/milestones/R1.md`, the R867-cost paragraph, which says three readers all shaped `f"platform:{hub}_arm_tip"`. `floatfea/post/forces_table.py:502` is `f"{parent}:{child}_arm_tip"` -- parameterised on the PARENT BODY rather than fixed to `platform` -- while `solve/static.py:135` and `:227` are the stated shape. Three sites, TWO shapes, and the third generalises over bodies, which is the one a repair keyed on the literal `platform:` would miss. FR1 class three. **Closed when** the sentence says "three sites, two shapes", or names the third separately. (The plan commit is unreviewed and outside my diff range; this is recorded because I read it to answer your question 4.)
+
+## CI at the reviewed commit: RED, 2080 reds, AND THE ATTRIBUTION CELL SHOWS THIS COMMIT ADDS NONE AND CLEARS FOUR
+
+**FP1 HELD AND R1105 IS ANSWERED.** The judged commit was pushed alone, its run finished before I was invoked, and I verified the run rather than the claim.
+
+```
+cmd    gh run list --commit f87e08704127ce462cd17e2e6cd193329ff6888c
+out    one run, **40873497372**, workflow CI, status **completed**, conclusion failure
+cmd    the job- and step-level conclusions
+out    the verification ladder | **SUCCESS**
+         ladder 1 success / ladder 2 success / ladder 3 success /
+         ladder 6 success / ladder 4 success / ladder 5 success  -- ALL SIX
+         and rung 6 is `empty:tests/verification/rung6 full:tests/regression`, so the
+         WHOLE of `tests/regression` ran green at the pushed sha, which is what FV1
+         makes CI's job and what my local selection deliberately does not duplicate
+       lint, unit and guards | failure
+         actionlint success / ruff success / black --check success / mypy success /
+         **unit tests SUCCESS (401 passed in 136.21s)** /
+         **guards and meta-tests RAN and FAILED**
+       CI determinism -- leg / ten legs agree | skipped  (CK0 event gate, by hand only)
+cmd    NOT CK2's exhausted-allowance state, measured rather than assumed
+out    real runner, real steps, real conclusions, four substantive steps green ahead of
+       the red one, and no annotation about payments or a spending limit
+judge  **NOT CK2 and NOT a cancellation: a genuine red, in one step, with everything
+       ahead of it green.** This is the first commit this step at which
+       `guards and meta-tests` was not skipped behind an earlier red, which is the
+       hiding CZ1 (iii) exists for, and your `401 passed` reproduces to the test.
+```
+
+**THE RED SET, BY NAME AND BY COUNT, AND IT IS THE SAME SET ON TWO MACHINES.**
+
+```
+cmd    the FAILED ids of run 40873497372, deduplicated
+out    **2080** ids, in two files only: 2073 `tests/test_report_carried.py`,
+       7 `tests/test_report_guard_states.py`
+         1813  test_every_named_site_is_touched_or_declared[<Rid>-<site>]
+          255  test_the_report_carries_the_finding[<Rid>]
+            7  test_the_guard_survives_the_state[...]
+            5  the five singletons
+       -- your breakdown to the id.
+cmd    the SAME two files, run by me locally at the SAME sha, in my own worktree
+out    **2080 failed, 320 passed, 1 skipped in 2186.81s**
+cmd    comm, both directions, my 2080 against CI's 2080
+out    **EMPTY BOTH WAYS.** Not one id differs across Windows/Linux, a different libm and
+       a different machine.
+judge  **so this red set is a function of the commit graph and not of the machine**, which
+       is the property that makes the attribution cell below meaningful. CI's step also
+       runs `pytest tests --ignore=tests/unit --ignore=tests/verification
+       --ignore=tests/regression`, 3321 collected -- so the 920 root-level guard tests
+       beyond these two files are all GREEN in CI, and all 2080 reds are inside the two.
+```
+
+**AND THE ATTRIBUTION CELL, ONE VARIABLE AT A TIME, WHICH IS THE ANSWER TO YOUR QUESTION 2.**
+
+```
+claim  f87e087 reddens nothing the verdict commit had not already reddened
+cmd    the same two files, the same command, three commits, three worktrees of mine:
+       609f9ac (the commit verdict 41 judged) -- the twelve unplaced ids only
+       d40f8c6 (verdict 41 itself)            -- both files whole
+       f87e087 (your repair)                  -- both files whole
+cell   ONE VARIABLE: the commit. Same files, same invocation, same machine, same session.
+out    609f9ac   **12 failed, 15 passed in 1813.18s**  -- all twelve, by name
+       d40f8c6   **2084 failed, 316 passed, 1 skipped in 2041.98s**
+       f87e087   **2080 failed, 320 passed, 1 skipped in 2186.81s**
+       comm d40f8c6 -> f87e087, ADDED:    **(empty)**
+       comm d40f8c6 -> f87e087, CLEARED:  **four, and every one a site you touched**
+         test_every_named_site_is_touched_or_declared[R1101-test_ft26_multi_npz.py]
+         test_every_named_site_is_touched_or_declared[R1104-test_ft26_multi_npz.py]
+         test_every_named_site_is_touched_or_declared[R1105-test_ft26_multi_npz.py]
+         test_every_named_site_is_touched_or_declared[R905-tests/prose_triple_controls.txt]
+judge  **ZERO ADDED, FOUR CLEARED, AND NOT ONE OF THE TWELVE IS EVEN THE VERDICT
+       COMMIT'S.** Your hypothesis is falsified in your own favour: all twelve were red at
+       `609f9ac`, which is where verdict 41 measured 1926 reds and traced them 1924 limb
+       one / 2 limb two / 0 unmatched -- so verdict 41 placed all twelve under a limb and
+       the whole disagreement between us is about CLASSIFICATION, not about state. **There
+       is no CZ1 (iv) red attributable to this commit.** The four it cleared are the
+       mechanism working as designed: a verdict names a site, the commit touches it, the
+       id goes green.
+```
+
+## Try to break it -- what I ran, and what it found
+
+**EIGHT DECLARED-SET CONFIGURATIONS, TWO END-TO-END MULTI-FILE RUNS, EIGHT TOPOLOGIES AND A COORDINATE MEASUREMENT. FIVE ARMS. AND ONE PROBE OF MINE THAT WAS INVALID, WHICH I REPORT AS INVALID RATHER THAN AS A RESULT.**
+
+* **The eight declared sets** are in the R1104 block above (P1 to P9, P5 unused). Two are worth repeating: a collision between indices 1 and 2 names index **1** and not `0`, so the message points at the right pair when there are three files; and the two spellings of one file are refused by the NAME check with the SAME-FILE-NAME reason, which is L54.
+* **The three-file end-to-end run, an axis NO fixture in the tree chooses** -- every one of the 22 fixture files sits in a one- or two-file configuration. Three directories, three distinct names, three recorded headings (0, 45, 90) and three recorded heights (24.2, 26.62, 28.0): **EXIT 0**, `report.md` carries six sub-headings as three distinct per section, three distinct basis blocks, three distinct bands (`12.542 .. 16.316`, `13.154 .. 17.112`, `13.491 .. 17.550`), the governing sentence reads **from v090.npz at heading 90 deg** -- the file at scale 4.0, correctly -- `Checked stations: 32. Over unity: 12. That is 96 station-cases over 3 declared files`, and 96 of 96 published keys distinct. **Nothing is wrong at three files.**
+* **A refusal I did not go looking for and found anyway**, worth one line because it confirms L50's reading from last round: at a third file recording `H = 20 m` the run REFUSED, because `out_of_band_governing: [12.5]` is INSIDE that file's band (`11.402 .. 14.832 s`). The check really does run per file, so an override survives only if EVERY file with a recorded band excludes it. L50 is a wording item and the code is stricter than the wording, as verdict 41 said.
+* **The whole-file heading count**, which is your justification for the per-section reading: 4 lines, 2 distinct, so whole-file distinctness is **False in the correct case**. Measured, not reasoned.
+* **The eight topologies and the coordinate measurement**, in the two rulings above.
+* **AND MY OWN INVALID PROBE, STATED AS INVALID.** My first three-file probe wrote `heading_deg` and `height_full_m` into the npz; the code reads the provenance SIDECAR (`_write_npz`, `test_ft26_multi_npz.py:82-95`). So all three of my files recorded heading 0 at 24.2 m, the report printed heading 0 and one band three times, and for about a minute I had what looked like a wrong heading in a deliverable. **It was my fixture, not the code.** The second version imports your own `_write_npz` and is the run reported above. The lesson is the one my own last five rounds keep producing: a measurement whose domain is not the domain of the claim -- here, a fixture writing a value nothing reads.
+
+## Corpus (EG4(e))
+
+**THE PAUSE HELD. ZERO NEW ENTRIES, AND ES0 IS THE REASON RATHER THAN THE DATE.** `tests/corpus/` is untouched and the diff over it is empty. Neither exception opens: this diff touches no part of F4's load-mapping gate, and EB6's label-provenance gate is elsewhere. **ES0 fixes an interim check's scope at "no corpus batch, no closure list" independently of the pause, so nothing here turns on the date.** The lapsed date was raised with Xabier once, in verdict 41; CLAUDE.md says say it once, so I do not re-raise it.
+
+**I RAN THE RECORDED SUBSTITUTE, BOTH HALVES.**
+
+* **A continuum grid over the parameter space a decision rule guards.** The rule this commit adds is exact string equality on `Path.name`, whose space is discrete, so the grid is the eight declared sets plus the two end-to-end runs: the number of declared files, the directory each sits in, the spelling of each path -- relative, absolute, dot-dot, case-variant -- whether the names collide and at which indices, and each file's recorded heading and height. **It produced L54 and confirmed the refusal at every other point.**
+* **A regeneration check on a published deliverable.** `git diff --stat d40f8c6..f87e087 -- results/` is empty, so nothing published moved -- and I did not take that as sufficient. I regenerated all three artifacts at the three-file configuration and read them WHOLE rather than grepping one line: the six sub-headings and three bands of `report.md`, `utilisation.csv`'s 96 rows with 96 distinct published keys, and `member_forces.csv`'s 3648 rows keyed three ways, which produced L56.
+
+**AND THE COVERAGE MEASUREMENT, STATED AS WHAT I ACTUALLY MEASURED.** I planted no defects, so there is no shapes-caught ratio and I will not manufacture one. The number available is sharper: **five arms, five reverted-reds, five clean controls, and both cells green on restore every time** -- and the three that matter most are arms C, D and E, because they show the distinct-names cell detects a loss of label uniqueness at EACH of the three published label sites independently, not only at the one a fixture happens to exercise. Last round the gap was that twenty-two fixture files shared one `mkdir`; this round that gap is closed by two `mkdir`s and the cell that needed them.
+
+## Tolerances touched
+
+**NONE.** `git diff d40f8c6..f87e087 -- floatfea/tolerances.py | wc -c` is **0**, and the numeral census over everything the diff adds under `floatfea` and `tests` finds no value, no threshold, no counter and no injection size -- ids, two fixture scales, two headings, one recorded height, a slice index and an exit code, plus three figures quoted FROM verdict 41 with their provenance named in the docstring rather than re-taken, which is the right disposition for a figure about a state that is now history. **EU1 does not attach**, and I ran the adversarial case anyway. **One tolerance-shaped item EXISTS in the tree and is not this commit's**: `round(c, 9)` at `floatfea/model/platform.py:609`, which is L57, and which becomes CZ0 (b) live the moment R867's repair touches that helper.
+
+## Where I disagree with the CRITERION rather than with the work (said once, for Xabier)
+
+**FS1/FT1's predicate has no exit for a red whose cause IS the step boundary but whose text names neither a finding, nor a site, nor its own commit.** Measured here: three of the twelve. FR1 answers them -- none can cause a silently wrong result -- so nothing in this verdict turns on it, and I ruled under FR1 and said so. **But FR1 lapses when R1 closes and CZ0 (d) becomes the criterion again**, at which point those three have no exit under the predicate and a tree in exactly this state is blocked by rule with nothing for the implementer to fix. The two I would name are structural rather than incidental: a guard that compares the newest REPORT's CI anchor against the newest VERDICT's judged sha is red in state (2) BY CONSTRUCTION, and a control that needs one answered item present in the newest verdict has an EMPTY DOMAIN in state (2) by construction. Neither names a finding, a site, or its own commit. **This goes to Xabier through you, as a possible third limb or as an explicit statement that FR1's test governs CZ0 (d) as well. It is not a round and it is not a HOLD.**
+
+## Next step opens when
+
+**This is an interim check: it closes nothing, opens nothing, and counts against no round (ES0, FK1). Step 3 stays at 0 of 3 reviewed revisions and its disposition is read from its closure verdict (DD1).** PASS here means R1104 is closed and nothing blocks, so the step continues -- FR3 and FW3 govern the sequencing, not me.
+
+1. **R1104 is CLOSED. Do not reopen it and do not re-arm it.** Repair (i) is at the one choke point, the message is accurate against the shipped deliverables, and both directions of the condition's cell are armed -- by you and independently by me, five arms, five reverted-reds. Your sixth site is a closed consequence of (i); its residue is L58.
+2. **FT2.7 is unblocked on the question that was blocking it. ROW 4 RUNS**, settled by R867's own repair and by a coordinate measurement at distance `0.0`; **R869 subsumes THREE (#5, #6, #7)** and the verdict's "five" is withdrawn; **R867's set is THREE (#2, #3, #4)**, not two. Build against that, and carry the R868 caveat: #4 is a DIFFERENT structure, so do not expect it to reproduce `U = 1.82047`. **R867 to R870 remain blocking by name, thirty-third round.**
+3. **The plan commit `9827156` has still not been REVIEWED by any verdict.** I answered its two questions and recorded L57 and L60 from reading it, which is not the same thing. If its FT2.7 section is to be relied on as locked, say so in the step report and I will review it in full at the next invocation; if it is to be amended by rulings 1 and 2 above, amend it in the report's own commit and the amendment is what I will read.
+4. **Before R867's repair: check `round(c, 9)` against `floatfea/tolerances.py` (L57), and settle `round(c, 9)` against `start == body_centre` BEFORE writing the repair rather than inside it.** The plan already commits to both; this gives the first a verdict behind it, and EU1's adversarial case attaches to whatever moves it.
+5. **Step 3's CI section is generated only after every run it covers has CONCLUDED (L59).** A row that goes in reading `in_progress` brings the same red back the moment that run finishes, and at that point it is not a boundary state any more.
+6. **The schedule, against FW0's date.** R1 is **10 November**, full scope, FT2.7 included; today is 29 October. **I do not read anything here as slippage, and I now read FT2.7 as CHEAPER than the plan estimated** -- which is a change of direction worth saying plainly rather than leaving in a ruling: row 4 is answered with no new design, R867's repair is one naming rule plus three internal lookups with no published cell behind it (`_arm_tip` is `0` and `0` in both shipped CSVs, which I verified from the committed deliverables), and R869's refusal is over four deck points. **What I would say to Xabier if asked is that the only genuinely open-ended thing left in R1 is R867's choice of coordinate-comparison rule, because that is a tolerance decision and not a naming one.**
+
+**And the pattern note, because it moved again and this time it moved in the right direction.** Last round the fixture stopped one `mkdir` short of the axis that mattered. This round the fixture moves that axis, the cell carries its own failure at all three label sites, the refusal sits at the single construction point rather than at five consumers, and the two figures you could not take honestly -- the collision state's numbers, and your own timing sentence -- were quoted with provenance and withdrawn with a replacement measurement respectively. **What found this round's seven ledger rows was not the diff. It was running the tool at three declared files, at five, at a dot-dot path, at a case-variant path and at eight topologies -- none of which the diff chooses.** That is the method and it remains the only one that has found anything in this step.
+
+**And one about my own side, sixth round running.** My first three-file probe wrote the heading into the npz instead of the sidecar, so for about a minute I had what looked like a wrong heading in a deliverable and it was entirely mine. Same shape as the five before it: **a measurement whose domain is not the domain of the claim** -- here a fixture writing a value nothing reads. The guard is cheap and I will keep it: when a fixture is meant to vary what the code READS, import the shipped writer rather than writing a second one.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: 609f9acee29296397f55cce8ca3ee4de3d643a7e
 **Reviewed commit: `609f9acee29296397f55cce8ca3ee4de3d643a7e`.**
 Verdict: HOLD
