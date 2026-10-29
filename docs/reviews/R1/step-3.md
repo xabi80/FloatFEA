@@ -1,4 +1,583 @@
 # Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: 609f9acee29296397f55cce8ca3ee4de3d643a7e
+**Reviewed commit: `609f9acee29296397f55cce8ca3ee4de3d643a7e`.**
+Verdict: HOLD
+Tests: **MY OWN RUNS AT THE JUDGED SHA, IN WORKTREES I DO NOT WRITE IN (FV2).** The whole verification ladder, **2088 passed, 2 warnings in 229.74s** -- so there is NO STOP on the low-rung head and a rung-5 discrepancy cannot be hiding behind a rung-1 red. `tests/unit` plus the four FV1 root guards plus the three touched regression files, in one invocation: **716 passed, 0 failed in 1279.21s (0:21:19)**. The THREE regression files that read a deliverable this diff regenerates -- `test_r1_published_artifacts.py`, `test_r1_example_regenerates.py` and `test_generators_refuse_mismatched_inputs.py`, which is FV1's own requirement and the one I would not take from you because the caveats changed in all three artifacts: **103 passed, 0 failed in 3039.59s (0:50:39)**. The two report-guard files, **1926 failed, 436 passed, 1 skipped in 1853.54s** -- EG3 state (2), YOUR FIGURE TO THE ID, every id traced below by the predicate and the seven inner counts extracted. `ruff check floatfea tests scripts` -> `All checks passed!`; `python -m black --check floatfea tests` -> `126 files would be left unchanged`; `python -m mypy floatfea` -> `Success: no issues found in 45 source files` -- your three figures reproduce to the file and the count. **AND SIX ARMS, EACH REVERTING ONE CLAUSE WITH A CONTROL IT DOES NOT TOUCH: FIVE VALID, ALL FIVE REVERTED-RED WITH CLEAN CONTROLS; THE SIXTH WAS INVALID AND I REPORT IT AS INVALID RATHER THAN AS A RESULT.**
+Scope: **ES0 INTERIM CHECK.** `ls docs/reports/R1/` is `step-1-answers.json step-1.md step-2-answers.json step-2.md` -- **no `docs/reports/R1/step-3.md`**, so no reviewed revision has been consumed, step 3 stays at **0 of 3**, this counts against no round and closes nothing (`--interim` per FS2, no `--closes` per FK1). **Step 1b does not fire and I say so rather than skipping it:** there is no `Answers: verdict <n> @ <sha>` header to compare, because there is no step-3 report.
+
+**I RULED UNDER FR1 WITH EZ0. ONE FINDING BLOCKS, AND IT IS NOT A NEW SUBJECT -- IT IS R1093, R1094 AND R1099 STILL REACHABLE THROUGH THE ONE AXIS NOBODY HAS SWEPT.** All four of verdict 40's blocking items are closed on their stated conditions and I armed every one of them. But the three repairs that publish a value PER FILE identify a file by `Path.name`, and `config.py` refuses only a repeated resolved PATH -- so two DIFFERENT declared files whose basenames collide are accepted at EXIT 0 and published under one label in every artifact. I give the silently wrong result FR1 requires, measured through the real CLI.
+
+**EU1 DOES NOT ATTACH, AND I MEASURED IT RATHER THAN TAKING IT FROM YOU.**
+
+```
+cmd    git diff 1a942b1..609f9ac -- floatfea/tolerances.py | wc -c
+out    0
+cmd    the digest, FROM THE COMMITTED BLOBS and not from your working tree:
+       git diff-tree --no-commit-id --name-only -r 609f9ac | sort |
+         while read -r f; do echo "$(git rev-parse 609f9ac:"$f")  $f"; done | md5sum
+out    d4f285eea7a6423710b5200463628413  -- your fingerprint to the digit; ten files
+cmd    git diff --stat 1a942b1..609f9ac -- .claude docs/SUPERVISOR.md CLAUDE.md
+                                 tests/conftest.py 'tests/**/conftest.py' tests/corpus
+                                 .github scripts docs
+                                 floatfea/run/truss.py floatfea/run/sizing.py
+out    (empty) -- no STOP-class finding on the reviewer's-instructions head, no new or
+       changed conftest and no new plugin, corpus untouched, no script touched, and the
+       plan untouched inside the step
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py   <- the pathspec resolves, as my instructions say it must
+cmd    git log --oneline 1a942b1..609f9ac
+out    one commit, 609f9ac
+cmd    every numeral the diff ADDS under floatfea and tests, counted
+out    ids (1007, 1085, 1086, 1089, 1090, 1093-1103, 817, 895, 724), headings
+       (0, 0.0, 45, 45.0, 90, 90.0, 360, 360.0), fixture scales (1.0, 2.0, 4.0), the
+       recorded heights of the two new fixtures (24.2, 26.62) and the band figures those
+       heights give (12.542, 16.316, 0.042, 0.654), the counts in the prose (12, 16, 32,
+       64, 63), and the `2.6` of FT2.6.
+       **No value, no threshold, no counter, no injection size.** The four band figures
+       are the OUTPUT of `refuse_cases_that_cannot_govern` quoted in a comment, not an
+       input to a comparison; and the `abs(got - want) < 5e-4` your own account says the
+       tolerance guard caught is not in the tree --
+       `grep -rn "5e-4" tests/regression/test_ft26_multi_npz.py` is empty.
+judge  **EU1 does not attach.** I ran the adversarial case anyway -- the model at twelve
+       configurations the diff did not choose -- and it produced the blocking finding.
+```
+
+**WHERE I WORKED (FV2).** Eight worktrees of my own outside the repository: `wt41` reads the judged commit and runs the lint gate, `wt41_suite` runs the ladder and the FV1 selection, `wt41_guards` runs the report guards, `arm_a1` to `arm_a4` take one mutation each and then the probes, `wt41_verdict` is where this file is written. No `checkout`, no `reset`, no write of any kind in your tree. Every read of the judged commit is a read of my own worktree AT that commit, which is what makes a working-file read a read of the commit (R1050).
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R1095** -- the mixed pair's lost disclosure | **CLOSED ON ITS CONDITION, AND IT CARRIES ITS OWN FAILURE.** | `band_screens` is one entry per declared file and `_band_screen_over_files` (`pipeline.py:787-790`) builds it with no filter -- so an unscreened file is an EMPTY ENTRY and there is no state in which a file is absent. My arm: `return tuple((n, s) for n, s in out if s)` appended to that helper gives **1 failed, 1 passed** -- `test_R1095_...` red against a clean `test_R1094_...` control in the same invocation, 26.61s. The two assertions this commit REPLACED are strictly stronger, not weaker: `result.band_screen == ()` became `result.band_screens == ((npz.name, ()),)`. |
+| **R1093** -- `report.md` published the FIRST file's basis | **CLOSED ON ITS CONDITION. ARMED. AND THE LABEL IT INTRODUCES IS NOT UNIQUE -- R1104.** | the field is DELETED: `git grep -nE "\bwave_basis\b" 609f9ac -- floatfea tests scripts` is **3 hits, all prose explaining the deletion**, so your census claim 3 holds with the right needle -- a keyword argument has no dot, which is why `\.wave_basis\b` could not see the three stubs. The section reads `result.wave_bases` and emits one block per file. One-file output byte-identical: the committed `report.md` moved in **four** lines, two caveats and two wall-clock figures, and nothing else. My arm: `bases = tuple((n, result.wave_bases[0][1]) for n, _b in result.wave_bases)` -- a repair that NAMES every file and publishes file one's basis against it -- gives **1 failed, 1 passed** against a clean `test_R1096_...` control, 27.26s. **So the `run()` comment's claim, "each of which goes red when a first-file read is put back", is a measurement now and not a sentence.** |
+| **R1094** -- one band over every file's rows | **CLOSED ON ITS CONDITION. ARMED. SAME LABEL CAVEAT -- R1104.** | one table per file under that file's own band. My arm: `screen[0].band_*` to `screens[0][1][0].band_*`, which prints the FIRST file's band in every block, gives **1 failed, 1 passed** against a clean `test_R1093_...` control, 27.30s. The cell re-derives every `outside by` cell as a STRING from its own block's band and needs no epsilon, which I read rather than took. |
+| **R1096** -- `Checked stations: 64` on 32 stations | **CLOSED ON ITS CONDITION, AND BOTH COUNTS ARE RE-DERIVED FROM THE DELIVERABLE.** | `_checked_stations_line` (`cli.py:371-399`) counts distinct `(body, member, station)`; the committed one-file example still reads `Checked stations: 32. Over unity: 4.` unchanged. My arm: both counts back over records gives **1 failed, 1 passed** against a clean `test_R1099_...` control, 26.56s. |
+| **R1097** -- the docstring describing a deleted lookup | **CLOSED.** | the last paragraph of `_governing_provenance` now says there is no lookup and why the five fields are not unique; `grep -n "five fields that identify a row uniquely" floatfea/cli.py` is empty. |
+| **R1098** -- "the fieldnames are stated explicitly" was false | **CLOSED IN THE EXTRA-KEY DIRECTION, OPEN IN THE OTHER -- L48 BELOW.** | `UTILISATION_COLUMNS` is a literal tuple and the census is over EVERY record, which I armed: an extra key on the SECOND record only is **REFUSED by name**, so the `rows[0]` narrowness is genuinely gone. The missing-column direction is not covered: a record lacking `u_shear` publishes an all-empty `u_shear` column with no refusal. |
+| **R1099** -- `utilisation.csv`'s duplicate keys | **THE SCHEMA CHANGE IS DONE UNDER FW1's CONDITIONS, VERIFIED FROM THE COMMITTED BLOBS AND NOT FROM YOUR FIGURE. THE UNIQUENESS IT CLAIMS IS FALSE ON ONE AXIS -- R1104.** | 41 comment lines both sides, two caveats changed; 32 data rows both sides; **23 to 25 columns, the first 23 names unchanged, appended `['source','heading_deg']`**; **rows where any PRE-EXISTING cell differs: 0**; `max(utilisation)` **1.71167** both sides; **0 empty cells and 0 `nan` cells either side**; `source` is `{'dynamic_inputs.npz': 32}` and `heading_deg` is `{'0': 32}`. **Your question 2 answered: every figure holds.** |
+| **R1100** -- two rules for one question | **CLOSED, AND BOTH DIRECTIONS ARE IN THE CELL.** | `_same_heading` is gone (`grep -c _same_heading floatfea/run/pipeline.py` is 0) and `refuse_headings_no_file_covers` calls `uncovered_headings`. I checked the half a modulo could have broken quietly, by calling it rather than reading its comment: `u((360.0,),(0.0,))` and `u((0.0,),(360.0,))` are both `()`; `u((44.9,),(45.0,))` is `(44.9,)` -- a near miss is still REFUSED and the function returns the DECLARED value, so the message still names `90` rather than a normalised one; `u((90.0,),(0.0,45.0))` is `(90.0,)`. `u((405.0,),(45.0,))` is `()`, which is outside `HEADING`'s declared domain and is refused by `_checked` at config load before it can arrive here. |
+| **R1101** -- the agreement pair with no singular branch | **CLOSED.** | `verb = "records" if len(unrecorded) == 1 else "record"`, and both branches are reached through the real refusal in `test_R1101_...`. |
+| **R1102** -- defaults on `Row`'s two new fields | **CLOSED, AND THE APPEND IS STILL THE APPEND.** | `dataclasses.fields(Row)[-2:]` is `['source','heading_deg']`, both `MISSING` in default and default_factory, and the `static` construction passes `""` and `nan` explicitly rather than relying on anything. **ARMED:** restoring a default on BOTH fields gives **1 failed, 1 passed** -- `test_R1102_...` red against a clean `test_R1093_...` control, 68.98s. |
+| **R1103** -- the two singular caveats | **CLOSED, AND THE OVERRIDE PARAGRAPH TOO -- with one understatement, L50.** | both caveats read in the plural in all three artifacts, verified in the committed blobs; the override paragraph branches on the file count and the one-file sentence is word for word what it was. |
+| **R1090** -- R1086's cited site | **CLOSED, AND YOUR CORRECTION TO MY CITATION IS RIGHT.** | `grep -rn "retired wording is forbidden" tests/ floatfea/ scripts/` is **empty**; the comment now says nothing forbids it and nothing can, citing the sibling note by TEXT -- which is at `:1002`, as you say, and not `:1001` as I wrote. `grep -rn "LOW, never high"` finds **two comments and the shipped sentence at `cli.py:1086`**, and no assertion, which is exactly what the comment now claims. |
+| **R867 to R870 (FT2.7)** | **STILL BLOCKING BY NAME. THIRTY-SECOND ROUND. Untouched.** | the diff since my last verdict mentions none of the four ids. The standalone `plan:` commit you name is `9827156`; it exists, it is one commit ahead of the judged sha, I have not reviewed it, and this verdict does not judge it -- see the CI section, because it is also what cancelled this commit's CI run. |
+| **condition 4** of the FT2.5 ruling | **STILL CARRIES; its site is a report that does not exist.** | `ls docs/reports/R1/` has no `step-3.md`. |
+| **conditions 1, 2 and 3** of the FT2.5 ruling | **ALL THREE STILL MET, from an empty diff.** | `git diff 1a942b1..609f9ac -- floatfea/run/truss.py floatfea/run/sizing.py` is **empty**. |
+| **R1084** (accepted open per FW3), **R1086** (accepted) | **unchanged, as you state and as FW3 allows.** | no finding. |
+| **R1089, R1091, R1092** | **closed at verdict 40 and not reopened.** | `grep -n "three corrections" floatfea/cli.py` still empty; R1092's three needles still present at `test_ft25_truss_sizing.py:1130-1134`. |
+| **L20 to L46 and verdicts 37, 39 and 40's ledgers** | **not re-reviewed item by item** (`CLAUDE.md`'s closure-item handling). | fixed once, in the closure commit. |
+| **`docs/USER_GUIDE.md`** | **STILL DOES NOT EXIST and FL3's gate needs it.** | `ls docs/USER_GUIDE.md` is `No such file or directory`. |
+| **the EG4(e) pause** | **HELD. ZERO new corpus entries.** | the `tests/corpus/` diff is empty. See the corpus section for the date and for what I ran instead. |
+| **FP1 -- the judged commit pushed before the invocation** | **HELD IN FORM AND LOST IN SUBSTANCE. NEW ITEM: R1105.** | the commit was pushed and run **40859781311** started on it -- and was **CANCELLED** three minutes later by `concurrency: cancel-in-progress` when `9827156` was pushed. |
+| **R885, R895, FV0's date, the R1072 physics, FW2's three texts** | **all with Xabier.** | not yours or mine to resolve here. |
+
+## Findings
+
+**ONE BLOCKS. IT WAS FOUND BY RUNNING THE MODEL AT A CONFIGURATION NEITHER THE DIFF NOR ANY FIXTURE IN THE TREE CHOOSES, AND IT IS THE SAME SUBJECT AS THREE OF THE FOUR ITEMS THIS COMMIT CLOSED.**
+
+**AND FIRST, THE PART THAT IS RIGHT, because it is most of the commit and I armed it rather than reading it.** Five one-line reverts, five reds on the matching cell with a clean control each time -- R1093, R1094, R1095, R1096 and R1102 -- and the four blocking ones cost about 27 seconds each, because `TRIMMED_STEPS = 40` makes the real CLI cheap. That is the thing last round's apparatus could not show, and it is shown five times out of five. Zero assertions loosened: the only two removed were replaced by strictly stronger per-file forms.
+
+**AND A SIXTH ARM WAS INVALID, WHICH I SAY RATHER THAN COUNTING IT.** Dropping `UTILISATION_PROVENANCE_COLUMNS` from `_utilisation_columns` reddened `test_R1099_...` AND my intended control `test_R1096_...`, in `2 failed` with nothing passing -- because the record still carries `source` and `heading_deg`, so R1098's own census refuses the write and every cell that runs the CLI goes red together. **The arm is not a reverted-red/control-green pair and I will not report it as one.** What it does show, as a side effect worth having: **the two columns cannot be silently dropped, because the schema check this commit added holds them in place.** That is the same lesson your own account records three times -- an arm whose mutation breaks a path rather than a clause measures the path.
+
+---
+
+**R1104. (BLOCKS) TWO DIFFERENT DECLARED FILES WHOSE BASENAMES COLLIDE ARE ACCEPTED AT EXIT 0, AND EVERY ARTIFACT IDENTIFIES A FILE BY `Path.name` -- SO R1093's PER-FILE BLOCK, R1094's PER-FILE BAND AND R1099's PER-ROW PROVENANCE ARE ALL KEYED ON A LABEL THAT IS NOT UNIQUE.** `floatfea/run/config.py:1532` (the duplicate check is on the resolved PATH), against `floatfea/run/pipeline.py:788` (`(npz.name, ...)` in `_band_screen_over_files`), `:1792` (`source=npz.name`), `:1820` (`wave_bases=tuple((p.name, b) ...)`), and `floatfea/cli.py:474` and `:533` (the `### ` sub-heading).
+
+```
+claim  the layout a user will actually write -- one export directory per sea state, the
+       file name fixed by the exporter -- defeats all three repairs at once, with no
+       refusal and no warning
+cmd    the real CLI, two declared files: `.../h000/dynamic_inputs.npz` recording heading
+       0 at H_full 24.2 m, and `.../h045/dynamic_inputs.npz` recording heading 45 at
+       26.62 m; `report.md` and both CSVs read whole
+out    EXIT = 0, 383.2 s of solve, all three artifacts written
+       `report.md` carries FOUR `### ` sub-headings and they are the same string:
+         '### `dynamic_inputs.npz`'  twice in the basis section
+         '### `dynamic_inputs.npz`'  twice in the FL2(d) section
+       the two bands printed under them:
+         'The associated-period band at the recorded height is `12.542 .. 16.316 s`'
+         'The associated-period band at the recorded height is `13.154 .. 17.112 s`'
+       the two basis blocks under them:
+         '* **heading** - 0.0 deg'   '* **wave height** - 24.2 m full scale'
+         '* **heading** - 45.0 deg'  '* **wave height** - 26.62 m full scale'
+       the governing sentence:
+         '**U = 1.71167** ... from `dynamic_inputs.npz` at heading 0 deg.'
+cmd    AND THE SAME PAIR AT THE SAME RECORDED HEADING, differing only in load magnitude
+       (`sea_calm` at 1.0, `sea_storm` at 4.0) -- which is what makes BOTH columns R1099
+       appended identical as well; `utilisation.csv` keyed on its own published
+       identifying columns PLUS `source` PLUS `heading_deg`
+out    EXIT = 0
+       utilisation.csv   : 64 rows, **32 distinct published keys, all 32 duplicated**
+         ('platform','platform:hub2_arm','ROOT','12.5','total_instant',
+          'dynamic_inputs.npz','0')  ->  **U = 1.71167 AND U = 5.74062**
+       member_forces.csv : 2448 rows, **1200 published keys appearing more than once**
+       report.md         : 'Checked stations: 32. Over unity: 12. That is 64
+                            station-cases over 2 declared files'
+cell   ONE VARIABLE: the DIRECTORY the two files sit in. Every fixture in
+       `test_ft26_multi_npz.py` writes EVERY file into the same `local /` directory and all
+       22 of its basenames are DISTINCT -- the nine two-file pairs are a000/a045,
+       c000/c045, g000/g045, h000/h045, p000/p045, q000/qNONE, r242/r266, u000/u045,
+       w000/w045 -- so the collision is excluded by the fixture design and not by
+       anything in `floatfea/`. Move one file into its own
+       directory, keep the name, hold everything else: the outputs above.
+rule   FR1 head one -- a wrong number in a report and in a published deliverable (EZ0);
+       FR1 head two -- an input accepted and used other than as declared; the plan's own
+       FT2.6 row, "the report names the governing heading AND file"
+       (`docs/milestones/R1.md:396-400`); and `config.py:1532-1537`'s OWN stated reason
+       for refusing a repeated path -- "would be named twice in every artifact that
+       reports which files were read"
+judge  **THE SILENTLY WRONG RESULT, and it is R1093's and R1094's own, after the commit
+       that closed them.** `report.md` publishes two different sea states and two
+       different associated-period bands under four identical `### dynamic_inputs.npz`
+       headings, so neither the basis a published utilisation was computed at nor the band
+       a published `outside by` cell was measured against can be attributed to a declared
+       file: `outside by -0.654 s` sits under a heading that also heads the table whose
+       band gives `-0.042`, which is R1094's sentence verbatim. And the governing line
+       names `dynamic_inputs.npz`, a name both declared files answer to, so the plan's
+       "names the governing heading AND file" is not met.
+       **The deliverable half I rule SEPARATELY and more weakly, because that is what
+       verdict 40's own reasoning requires of me:** `utilisation.csv` publishing `1.71167`
+       and `5.74062` -- 3.35x apart -- under one identical published key, and
+       `member_forces.csv` 1200 such keys, would be a LEDGER item on its own, by the same
+       measurement I ruled R1099 on and which I re-took here: `grep -rn "utilisation.csv"
+       --include=*.py floatfea tests scripts` finds writers, docstrings and no reader, and
+       `scripts/measure/*` read `docs/F4_member_forces.csv` and `docs/F6_utilisation.csv`,
+       not `results/R1/example/`. **It blocks on the report and on head two, not on the
+       CSV**, and I say so rather than borrowing the CSV's weight.
+       **The refusal that should catch this already exists and is keyed one level too
+       deep.** `config.py` refuses a repeated resolved PATH, giving as its reason that the
+       file "would be named twice in every artifact that reports which files were read".
+       Two different paths with one basename ARE named identically in every artifact,
+       which is that reason exactly, satisfied by a case the check cannot see. **A check
+       narrower than the next shape, which is the fourth instance this step has produced
+       and the three before it are all in your own account of it:** `rows[0]` in R1098,
+       `\.wave_basis\b` missing three keyword arguments, `"body"` added to one of two
+       fixture literals -- and now a duplicate check on the PATH where every artifact
+       keys on the NAME.
+```
+
+**Closed when** either (i) `config.py` REFUSES a declared set in which two `Path.name` values collide, naming both paths and saying that every artifact identifies a file by name -- which is cheapest, is where the existing refusal already lives, and is what `CLAUDE.md`'s "never let a validation failure degrade to a warning" asks for; or (ii) every artifact identifies a file by something unique, with the one-file output byte-identical. Either way the cell is the two-directory pair above, asserting that `report.md`'s `### ` headings are DISTINCT and that `utilisation.csv`'s published key including `source` is unique -- **and the fixture must put the two files in DIFFERENT directories, because that is the variable no fixture in the file moves.**
+
+**AND THE REFUSAL BREAKS NOTHING IN THE TREE, which I measured rather than assumed, because "add a refusal" is cheap to say and expensive if it reddens something.**
+
+```
+claim  no configuration in this repository declares two files whose basenames collide,
+       so the refusal in (i) costs no existing green
+cmd    every `_write_npz(source_npz, local / ...)` in the FT2.6 file, and every `npz:` in
+       `examples/`
+out    **22 `_write_npz` calls, every one into `local /`, and all 22 basenames DISTINCT** --
+       nine two-file pairs among them (a000/a045, c000/c045, g000/g045, h000/h045,
+       p000/p045, q000/qNONE, r242/r266, u000/u045, w000/w045) and four singletons
+       `examples/platform12_placeholder.yaml:129` -> `npz: ../data/f4/dynamic_inputs.npz`,
+       a SCALAR; no YAML in the tree declares a list of npz at all
+judge  nothing goes red. **And the second line is why this configuration is the natural
+       one rather than a contrivance:** the shipped example's file is named
+       `dynamic_inputs.npz`, `floatfea export` writes that name per run directory, and the
+       whole purpose of FT2.6 is an envelope over several export runs. A user following
+       the example and exporting two headings declares two `dynamic_inputs.npz`. That is
+       the first thing anyone will write, and it is the state above.
+```
+
+**AND THE FOURTH REPAIR IS DEFEATED BY THE SAME LABEL, WHICH COMPLETES THE SET -- R1095 TOO, NOT ONLY R1093, R1094 AND R1099.**
+
+```
+claim  a report can both screen and not screen a file of a given name, in one section,
+       and the disclosure R1095 added becomes unattributable rather than absent
+cmd    the real CLI, `with_sidecar/dynamic_inputs.npz` (heading 0, H 24.2 m) and
+       `no_sidecar/dynamic_inputs.npz` (NO sidecar, 4x the loads); the FL2(d) section and
+       both CSV headers read whole
+out    EXIT = 0
+       '### `dynamic_inputs.npz`'
+       'The associated-period band at the recorded height is `12.542 .. 16.316 s`' + the
+       complete six-row table
+       '### `dynamic_inputs.npz`'
+       '* **`dynamic_inputs.npz` was NOT screened.** ... **the governing utilisation below
+         may be one of them.** Any band stated for another declared file is that file's
+         own and says nothing about this one.'
+       '**U = 5.74062** ... from `dynamic_inputs.npz` at an unrecorded heading.'
+       and in BOTH CSV headers, two lines:
+       '# wave basis [dynamic_inputs.npz]: heading 0.0 deg; H_full 24.2 m; ...'
+       '# wave basis [dynamic_inputs.npz]: NOT RECORDED by the export of this
+          dynamic-inputs file. ...'
+rule   FR1 head one; and `_header_lines`' OWN recorded defect at `cli.py:146-153`, R829 /
+       FQ3 -- "a sidecar-less npz produced a file carrying BOTH 'the heading ... is in the
+       provenance above' and 'heading (not recorded) deg' -- two sentences that cannot
+       both be true"
+judge  **the disclosure fires, says the right thing, and points at itself.** "Any band
+       stated for ANOTHER declared file" is a sentence whose referent is a block with the
+       SAME heading, and the governing line attributes `U = 5.74062` to a name that also
+       belongs to the file that DID record a heading. **And both CSV headers now carry two
+       `wave basis [dynamic_inputs.npz]:` lines, one stating a heading and one stating NOT
+       RECORDED -- R829/FQ3's own "two sentences that cannot both be true", reintroduced
+       through the label rather than through the branch.** That the per-file conversion is
+       right and the label is not is exactly why this is one finding and not four.
+```
+
+## Closure items
+
+Seven, none blocking under FR1, each with its site and what would close it. Not re-reviewed item by item; fixed once in the step's closure commit.
+
+**L47. `_utilisation_cell`'s docstring asserts a universal that this commit's own fixture refutes.** `floatfea/cli.py:354-368`, the sentence at `:358-362`.
+
+```
+claim  "That no published row reaches the empty branch is asserted rather than claimed
+       here -- `test_R1099_...` requires every row's `source` and `heading_deg` to be
+       non-empty, because a utilisation row is a `total_instant` row and comes from a
+       declared file."
+cmd    the real CLI at the MIXED PAIR -- `q000.npz` with a sidecar, `qNONE.npz` without,
+       which is the configuration `test_R1095_...` itself runs; `utilisation.csv` read
+       whole
+out    EXIT = 0; 64 rows; **rows with an EMPTY `heading_deg`: 32**, every one of them from
+       `qNONE.npz`; distinct `(source, heading_deg)` is
+       [('q000.npz','0'), ('qNONE.npz','')]
+rule   CW0 -- prose in the source tree does not claim things about the code; and the
+       assertion-domain guard, because the cell cited holds over a domain that excludes
+       the case
+judge  the cited assertion is real and TRUE OF ITS FIXTURE, where both files record a
+       heading. The sentence it is offered as evidence for is about every published row,
+       and 32 of 64 reach the branch in a configuration the same commit added a cell for.
+       **And the branch is wider than its justification in a second direction:** it fires
+       on ANY nan float, so `f_vt_MPa` and `period_full_s` publish as `''` where they
+       published `nan` before -- I measured both. No number is wrong today (an empty cell
+       for an unrecorded heading is the honest value, and no production float in that
+       record is nan -- 0 empty and 0 `nan` cells in the committed CSV, both sides), which
+       is why this is a ledger item. **Closed when** the sentence says what is true -- a
+       row from a declared file that records no heading DOES reach it -- or a cell asserts
+       the empty cell at the mixed pair.
+```
+
+**L48. `_utilisation_columns`' refusal is one-directional, and the direction it leaves open is the one the OLD code made visible (EH4).** `floatfea/cli.py:300-315`.
+
+```
+claim  the docstring's reason for refusing is "silently dropping it would lose a column",
+       and a NAMED column absent from the record loses one silently
+cmd    `_write_utilisations` with a record carrying every `UTILISATION_COLUMNS` name
+       except `u_shear`
+out    **WROTE.** Header complete, `u_shear` = `''` on every row, no refusal.
+cell   one variable: which direction the record differs from the list. An EXTRA key IS
+       refused by name -- I armed that, and the census over every record catches it on the
+       SECOND record too, which is the half you got right.
+rule   EH4 -- every boundary is solved in BOTH directions
+judge  under the old `fieldnames=[k for k in rows[0] ...]` a dropped key produced a
+       MISSING HEADER, which a reader sees. Under the stated list it produces a complete
+       header over an empty column, which a reader does not. **The repair inverted the
+       visibility of one of the two directions**, which is the shape my own notes keep
+       flagging: a stricter check admitting what the looser one refused. Reachable only by
+       a future edit to the record in `pipeline.py`, so no wrong number follows today.
+       **Closed when** a record missing a named column is refused as well, or the
+       docstring says the check is one-directional and why.
+```
+
+**L49. A refusal this commit adds fires AFTER a published deliverable is on disk.** `floatfea/cli.py:330-336` against the write order at `:1146-1152`.
+
+```
+claim  `member_forces.csv` is written before `_write_utilisations` can raise
+cmd    grep -n "_write_member_forces\|_write_utilisations\|_write_report" floatfea/cli.py
+out    :1146 member_forces.csv   :1149 utilisation.csv   :1152 report.md
+rule   R809's rule as this repository states it -- "a refusal that arrives after the
+       artifacts is a warning with an exit code" -- which
+       `test_END_TO_END_a_breaking_governing_period_REFUSES_AND_WRITES_NOTHING` asserts
+       for the pre-solve checks
+judge  the new `ConfigError` leaves `member_forces.csv` on disk at exit 2 with the other
+       two absent. The R1098 cell asserts only that `dirty.csv` was not written, not that
+       the directory is clean. Reachable only by a future edit to the record, so ledger.
+       **Closed when** the schema check runs before any artifact is written.
+```
+
+**L50. The override paragraph's plural branch understates what the code enforces.** `floatfea/cli.py:577-581`.
+
+```
+claim  "the band of at least one declared file excludes it" is weaker than the guarantee
+cmd    `refuse_cases_that_cannot_govern` with an override period INSIDE the band, per file
+out    REFUSED by name: "load_cases.out_of_band_governing names [14.0] s, which at the
+       recorded H = 24.2 m is INSIDE the band ... An override for a case inside the band
+       admits nothing"
+rule   FR1 non-blocking class three, figure wording
+judge  the check runs per file, so an override survives only if EVERY file with a recorded
+       band excludes it. "At least one" is TRUE and reads as if some other declared file
+       might admit it, which the code refuses outright. The weaker form is right for a
+       MIXED set -- an unscreened file has no band at all -- so this is a wording choice
+       and not a defect, and I say so rather than making it a condition. **Closed when**
+       the sentence says which files it speaks for.
+```
+
+**L51. The station-case sentence has an agreement pair with no singular branch -- the fifth instance of the class this commit cites four times.** `floatfea/cli.py:392-398`.
+
+```
+claim  "over {n} declared files" has one form for both counts
+cmd    `_write_report` with ONE declared file and two records per station
+out    "That is 2 station-cases over **1 declared files**"
+rule   L36's lesson; R1085, R1089 and R1101 are the same class in this step
+judge  unreachable in production -- one file gives one record per station, which the
+       committed example confirms at 32 and 32 and which is why the sentence does not
+       appear there at all -- so no published artifact can carry it today. Ledger rather
+       than a finding about a number. **Closed when** the clause has a singular branch.
+```
+
+**L52. At several files NONE of which record a height, the FL2(d) section names no file.** `floatfea/cli.py:516-530`.
+
+```
+claim  the EZ2 caveat says "the report names any such file"; this branch names none
+cmd    `_write_report` with two declared files, neither recording a basis
+out    FL2(d): "* **the screen was NOT performed.** ... none of the declared
+       dynamic-inputs files record one ..."  -- `a.npz` in that section: False;
+       `b.npz`: False
+       the basis section: "* `a.npz` records no wave basis ...", and the same for `b.npz`
+rule   CW0
+judge  **the caveat survives**, because the basis section names both and the caveat speaks
+       of "the report" -- I checked that before writing this, rather than ruling on the
+       section alone. The sentence is true and the outcome is right. What is missing is
+       the per-file "its cases are in the envelope regardless, carrying NO admissibility
+       verdict" warning that the MIXED branch makes and this one does not. **Closed when**
+       the all-unscreened branch names the files, or the asymmetry is deliberate and said
+       to be.
+```
+
+**L53. `_utilisation_columns` raises `IndexError` on an empty record list.** `floatfea/cli.py:314`.
+
+```
+claim  `rows[0]` with no rows
+cmd    `_write_utilisations` with `utilisations=[]`
+out    IndexError: list index out of range
+rule   "empty parameter set is an error, not a skip" -- it IS an error here, just an
+       unnamed one
+judge  the same shape the old code had, carried into a new helper; loud, and not reachable
+       by any configuration I could find. **Closed when** it raises a `ConfigError` naming
+       the state, or the docstring says the list is non-empty by construction and why.
+```
+
+## CI at the reviewed commit
+
+**THE RUN AT THE JUDGED SHA WAS CANCELLED MID-FLIGHT. I RECORD IT AS UNAVAILABLE RATHER THAN SKIP OVER IT, AND IT IS NOT CK2's EXHAUSTED-ALLOWANCE STATE -- I CHECKED RATHER THAN ASSUMED.**
+
+```
+cmd    gh run list --commit 609f9acee29296397f55cce8ca3ee4de3d643a7e
+out    run **40859781311**, status completed, conclusion **cancelled**
+cmd    the job- and step-level conclusions
+out    lint, unit and guards | CANCELLED
+         actionlint success / ruff success / black --check success / mypy success /
+         **unit tests CANCELLED** / **guards and meta-tests SKIPPED**
+       the verification ladder | CANCELLED
+         ladder 1 success / ladder 2 success / ladder 3 success /
+         **ladder 6 CANCELLED** / **ladder 4 SKIPPED** / **ladder 5 SKIPPED**
+       CI determinism -- ten legs / leg | skipped   (CK0 event gate, by hand only)
+cmd    NOT the exhausted-allowance state, measured: the jobs ran 10:43:23Z to 10:46:38Z
+       with real steps and real conclusions, which is not `runner_name: ""`, no steps and
+       two seconds, and there is no annotation about payments or a spending limit
+out    three minutes and fourteen completed steps per job -- a cancellation, not a
+       never-started job
+judge  **NEITHER GREEN NOR RED. Five of the gate's TWELVE substantive steps at this sha
+       did not run at all, and two of them are the two CZ1 (iii) exists for.** It does not
+       HOLD on its own (CK2), and it is not what I HOLD on.
+```
+
+**R1105. (LEDGER, AND IT IS A PROCESS ITEM RATHER THAN A DEFECT IN `floatfea/`) WHAT CANCELLED THE RUN IS A PUSH FROM YOUR SIDE, AND THE MECHANISM WILL DO IT EVERY TIME.** Recorded because it defeats FP1 silently and FP1 was adopted four days ago for exactly the class of red only CI can see.
+
+```
+claim  `9827156` was pushed three minutes into this commit's run and the concurrency
+       group killed it
+cmd    gh run list --branch F3, then grep -n concurrency .github/workflows/ci.yml
+out    40860182336  9827156  10:46:22Z   plan: FT2.7's four items and the eight ...
+       40859781311  609f9ac  10:43:21Z   **cancelled**
+       .github/workflows/ci.yml:41-43
+         concurrency:
+           group: ci-${{ github.ref }}
+           cancel-in-progress: true
+       and it has happened before on this branch: 40772192874 at c80df75f, also cancelled
+cell   one variable: whether a later commit is pushed to the same ref while the run is
+       alive. Nothing about the judged commit changed.
+rule   FP1 -- "the report commit and the verdict commit are PUSHED BEFORE the reviewer is
+       invoked, SO THE COMMIT UNDER JUDGEMENT ALWAYS HAS A CI RUN"
+judge  FP1 was satisfied in form -- the commit was pushed and a run started -- and the
+       substance it was adopted for was lost anyway, because a push AFTER the invocation
+       destroys it. The directive's own measurement, the `types-PyYAML` red that only CI
+       could see, is exactly what a cancelled `unit tests` step cannot report. **Closed
+       when** the next commit on the ref waits for the judged commit's run to finish, or
+       the invocation names a run that FINISHED.
+```
+
+**SO I TOOK THE SUBSTITUTE MEASUREMENT CK2 ASKS FOR: the last run that executed, and whether the code has moved since.**
+
+```
+cmd    gh api repos/:owner/:repo/compare/609f9ac...9827156 -- files and commits
+out    ahead_by 1, behind_by 0; ONE file: `modified docs/milestones/R1.md +265-2`
+judge  **`floatfea`, `tests`, `scripts` and `.github` are byte-identical between the
+       judged sha and `9827156`**, so run 40860182336 at `9827156` measures exactly the
+       code under review. The one caveat I attach rather than hide: the two report guards
+       are parametrised over the newest verdict and the newest report, and `R1.md` is a
+       file those guards can name as a site -- so their COUNT at `9827156` need not equal
+       the count at `609f9ac`, while every other step's result transfers exactly.
+```
+
+**AND MY OWN RUNS ARE WHAT CARRY THE ABSENT STEPS.** The whole ladder is `2088 passed` on my machine at the judged sha; `tests/unit` plus the four FV1 root guards plus the three touched regression files is **716 passed, 0 failed**; the R1 deliverable and generator guards are **103 passed, 0 failed in 3039.59s**. And `ruff`, `black` and `mypy` RAN AND PASSED in CI at the judged sha itself, which is the one thing the cancellation did not take -- and it is the step FP1's own measurement was about.
+
+```
+cmd    gh run view 40860182336 -- job and step conclusions
+out    lint, unit and guards | FAILURE -- and it FINISHED
+         actionlint success / ruff success / black --check success / mypy success /
+         **unit tests SUCCESS (401 passed in 326.12s)** / **guards and meta-tests FAILURE**
+       the verification ladder | **SUCCESS -- ALL SIX RUNGS**, so there is NO STOP on
+         the low-rung head and a rung-5 discrepancy cannot be hiding behind a
+         rung-1 red:
+         ladder 1 success / ladder 2 success / ladder 3 success / ladder 6 success /
+         ladder 4 success / ladder 5 success
+       CI determinism -- ten legs / leg | skipped   (CK0 event gate, by hand only)
+cmd    the guards step's own counts, out of the raw job log
+out    **1922 failed, 1358 passed, 1 skipped** = 3281, the root-guard collection
+cmd    **MY 1926 AGAINST CI's 1922, ID FOR ID, BY `comm` ON THE TWO SORTED SETS**
+out    CI-only   **0 lines**
+       mine-only **4 lines**, and all four name the same file:
+         test_every_named_site_is_touched_or_declared[R854-docs/milestones/R1.md]
+         test_every_named_site_is_touched_or_declared[R880-docs/milestones/R1.md]
+         test_every_named_site_is_touched_or_declared[R893-docs/milestones/R1.md]
+         test_every_named_site_is_touched_or_declared[R894-docs/milestones/R1.md]
+       both sets **1922**
+judge  **the four are the ONE FILE the intervening commit touches.** `docs/milestones/R1.md`
+       is `9827156`'s only change, and that guard asks whether the step's diff touches a
+       site the newest verdict names -- so four sites named in `R1.md` are untouched at the
+       judged sha and touched at `9827156`. The difference between the two runs is
+       accounted for id for id by the only thing that differs between the two trees.
+       **Different operating system, different libm, different BLAS: 1922 identical ids,
+       0 in CI that are not in mine, and a named cause for each of the 4 that differ.**
+       The caveat I attached to the substitute above is now a measurement rather than a
+       caveat, and it is what CA2 asks of a local run -- a set that differed otherwise
+       would make the trace below a trace of the wrong thing.
+cmd    and the INNER counts of `guard_survives_the_state`, on both machines
+out    CI    : **1805 failed, 533 passed, 1 skipped**, every occurrence in the log identical
+       mine  : **1809 failed, 529 passed, 1 skipped**, seven runs, seven DISTINCT durations
+               93.05s to 120.01s
+judge  the same 4, in the same direction, from the same file. **The inner outcome does not
+       depend on the planted state and does not depend on the platform**, which is a
+       stronger R629 control than either run alone.
+```
+
+```
+cmd    the per-rung counts out of the raw ladder log
+out    run_rung: 1276 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+       run_rung:   66 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+       run_rung:  314 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+       run_rung:  391 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+       run_rung:  345 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+       run_rung:   87 collected, 0 failed, 0 errored, 0 skipped   run_rung: OK
+judge  1276+66+314+345+87 = **2088 = tests/verification exactly**, which is my own figure
+       at the judged sha; and rung 6 is **391 = tests/regression exactly**, up from 382 --
+       the NINE cells this commit adds. **So CI ran all 391 regression tests green, which
+       covers my own 103-test deliverable selection a second time and on another machine.**
+       And the forgery channel CH2/CI0 warns about is shut by measurement, not by trust:
+       the conftest diff since my last verdict is empty and no plugin was added, so
+       nothing in a rung's own directory can have rewritten the record `run_rung` reads.
+```
+**AND THE COLLECTION AGREES ON BOTH MACHINES, WHICH IS WHAT MAKES THE TWO RUNS COMPARABLE AT ALL.**
+
+```
+cmd    pytest --collect-only -q, mine at the judged sha
+out    whole tree **6161**; tests/unit **401**; tests/verification **2088**;
+       tests/regression **391** -- up from 382, which is the NINE cells this commit adds
+       to `test_ft26_multi_npz.py` (7 before, 16 now)
+cmd    the root guards by subtraction, against CI's own guards-step total
+out    6161 - 401 - 2088 - 391 = **3281**, and CI's guards step reports
+       1922 + 1358 + 1 = **3281**. The union matches exactly on both machines.
+```
+
+**THE REPORT GUARDS: EG3 STATE (2), AND MY 1926 IS YOUR 1926.** Verdict `1a942b1` exists; `docs/reports/R1/step-3.md` does not. The state clears when the answering report is written and not by time.
+
+```
+cmd    the two report-guard files in a worktree of my own, nothing else running in it
+out    **1926 failed, 436 passed, 1 skipped in 1853.54s** -- your figure to the id
+cmd    the 1926 by id
+out    1661  tests/test_report_carried.py::test_every_named_site_is_touched_or_declared
+        253  tests/test_report_carried.py::test_the_report_carries_the_finding
+          7  tests/test_report_guard_states.py::test_the_guard_survives_the_state
+          1  ::test_the_report_carries_a_WHOLE_SUITE_count
+          1  ::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+          1  ::test_the_CI_section_is_about_the_REVIEWED_commit
+          1  ::test_the_Carried_table_is_what_the_generator_produces
+          1  ::test_the_generator_would_catch_a_row_under_the_wrong_number
+```
+
+**EVERY ID BY THE PREDICATE (FS1/FT1), READ FROM ITS OWN FAILURE MESSAGE AND NOT FROM A LIST.**
+
+* **1661 reach LIMB ONE.** One text: *"R<n> names {site}, the step's diff does not touch it, and the newest report revision does not say `no change` beside that exact site."* The parameters are findings AND sites OF THE NEWEST VERDICT -- `[R1001-floatfea/run/pipeline.py:793]`, `[R992-floatfea/post/forces_table.py:405]`, `[R996-docs/reports/R1/step-3.md]`. **A report that does not exist cannot say `no change` beside any site.**
+* **253 reach LIMB ONE by their own message:** *"R845 is in the newest verdict -- as a finding or as an item it carries forward -- and the newest report revision's Carried section does not mention it."* Same absent report.
+* **The 7 `test_the_guard_survives_the_state` reach LIMB ONE, CHECKED AS SEVEN AND NOT AS A CASCADE (EG3 (i)).** The states are `baseline`, `zero_padded_step_number`, `superscript_digit_step_number`, `step_number_is_the_empty_string`, `non_numeric_step_suffix`, `draft_suffix_beside_a_step_report` and `verdict_amended_after_the_commit_the_report_answers`. Two fail with *"expected a clean run"* and five with the stepped-over message -- **and the control that separates "a planted state broke a guard" from "the inner run is in state (2)" is the INNER count, which I extracted: seven runs, all `1809 failed, 529 passed, 1 skipped`, with seven DISTINCT durations 93.05s to 120.01s.** Seven real runs, one outcome. **That is the R629 shape looked for and not found.**
+* **`test_the_Carried_table_is_what_the_generator_produces`** -- limb one: *"258 generated rows are not in the report's Carried section"*, 258 rows absent from a section that does not exist, generated from the newest verdict.
+* **`test_the_generator_would_catch_a_row_under_the_wrong_number`, THE EIGHTH MEMBER OF A GROUP OF SEVEN, CHECKED SEPARATELY.** Its message names the newest verdict's own block count AND diagnoses the state itself: *"step-2-answers.json answers 49 items and the newest verdict carries 234 blocks ... THE USUAL CAUSE IS EG3 STATE (2)"*.
+* **`test_the_CI_section_is_about_the_REVIEWED_commit`** -- limb one, and it names the newest verdict's own anchor: *"the CI section's first commit is `d205833` and the verdict judged `503b256`"*. `503b256` is exactly what verdict 40 judged.
+* **`test_the_report_carries_a_WHOLE_SUITE_count` and `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` reach FT1 LIMB TWO, whose reason FT1 states for exactly these two.** *"the newest revision carries no whole-suite line"* -- `scripts/suite_count.py` measures a clean worktree AT a commit, so a line naming a sha cannot be inside that sha. *"run 39162423263: the table says `no result` (status `in_progress`), gh says `failure`"* -- a row recorded before its run finished, which is the subject-is-its-own-commit case exactly, **and I watched it happen to me in real time this round: the run at `9827156` was `in_progress` for the whole of this review.**
+
+**0 UNMATCHED. 1924 limb one, 2 limb two, 1926 total. No red fails the predicate, so there is no CZ1 (iv) red and the waiver applies.**
+
+**AND THE TWO COUNTS THAT GREW SINCE VERDICT 40 GREW BECAUSE OF WHAT I WROTE.** 1891 to 1926, 247 generated rows to 258, 223 verdict blocks to 234 -- verdict 40's own findings and sites entered two parametrised guards. **R861, measured a third time, and the reason FS1 is a predicate and not a list of names: the baseline is a function of what the reviewer writes.**
+
+## Try to break it -- what I ran, and what it found
+
+**TWELVE CONFIGURATIONS THE DIFF DID NOT CHOOSE, PLUS SIX ARMS. NINE OF THE TWELVE PRODUCED A FINDING AND THREE WERE CLEAN; ONE FINDING BLOCKS AND SIX ARE LEDGER ROWS (the seventh, L49, came from reading the write order rather than from a probe).** Every one is the model run through the real CLI or the real writer at a configuration the commit's own fixtures do not reach.
+
+| case | what it should have shown | what it showed |
+|---|---|---|
+| **two declared files, SAME basename, different directories, different recorded heights** | the per-file label identifies the file | **FAILED -- R1104.** EXIT 0; four identical `### dynamic_inputs.npz` headings; `12.542 .. 16.316 s` and `13.154 .. 17.112 s` under them; `heading 0.0 / 24.2 m` and `heading 45.0 / 26.62 m` under them |
+| **the same pair at the SAME recorded heading, 4x loads** | the published key is unique | **FAILED -- R1104, and this is the half that measures it.** 64 rows, 32 distinct published keys INCLUDING `source` and `heading_deg`, all 32 duplicated; `U = 1.71167` and `5.74062` under one key; `member_forces.csv` 1200 duplicated keys |
+| the mixed pair (sidecar + sidecar-less), `utilisation.csv` read | `_utilisation_cell`'s "no published row reaches the empty branch" | **FAILED -- L47.** 32 of 64 rows carry an EMPTY `heading_deg`, all from `qNONE.npz` -- the commit's own R1095 configuration |
+| a NAMED column absent from the utilisation record | refused, as an extra key is | **FAILED -- L48.** wrote, `u_shear` = `''`, no refusal |
+| an extra key on the SECOND record only | the census is over every record and not `rows[0]` | **PASSED, REFUSED BY NAME.** The narrow-needle half of R1098 is genuinely closed |
+| two declared files, NEITHER recording a basis | the all-unscreened branch is right and names them | **PASSED on the sentence, partial on the naming -- L52.** the FL2(d) section names neither; the basis section names both, so the caveat survives |
+| an override period INSIDE the band, at two files and at one | the paragraph's "at least one" is the enforced guarantee | **PASSED, REFUSED PER FILE BY NAME.** L50 is the wording: the code enforces every file with a band |
+| ONE declared file, two records per station | the station-case sentence agrees in number | **FAILED on wording -- L51.** "over 1 declared files"; unreachable in production |
+| `utilisations` empty | a refusal, or a header | **IndexError -- L53**, the old code's shape in a new helper |
+| a `utilisation` value arriving as a STRING | the over-unity count still counts it | **PASSED.** `float(r["utilisation"])` handles it and the count is right |
+| the declared heading domain at its wrap value, 360 against a recorded 0, at one file and at two; and `uncovered_headings` called directly at six points | one rule for both paths, both directions | **PASSED.** accepted at both; `(360,0)` and `(0,360)` both `()`; `(44.9,45)` is `(44.9,)` -- a near miss still REFUSED; `(90,(0,45))` is `(90.0,)`; the DECLARED value is what comes back, so the message names `90` |
+| **five arms: R1093, R1094, R1095, R1096 and R1102 each reverted one line, with a control each** | each cell reddens; the control does not | **PASSED 5/5.** `1 failed, 1 passed` five times, 26.5s to 69.0s; controls `test_R1096`, `test_R1093`, `test_R1094`, `test_R1099`, `test_R1093` |
+| **a SIXTH arm: `UTILISATION_PROVENANCE_COLUMNS` dropped from `_utilisation_columns`** | `test_R1099` reddens, the control does not | **ARM INVALID, and I report it as invalid.** `2 failed`, nothing passing: the record still carries both keys, so R1098's census refuses the write and every CLI cell reddens together. **Side effect worth having: the two columns cannot be silently dropped -- the schema check holds them in place.** |
+| the three committed deliverables, blob to blob at `503b256` and `609f9ac` | no pre-existing cell moved | **PASSED.** `utilisation.csv` 23 to 25, first 23 names unchanged, **0 rows with a changed pre-existing cell**, `U = 1.71167` unmoved, 0 empty and 0 `nan` cells either side; `member_forces.csv` no non-comment line changed; `report.md` four lines, all caveat or wall clock |
+| the `wave_basis` census with a WORD-BOUNDARY needle | a reader left behind | **PASSED.** 3 hits, all prose explaining the deletion |
+| every assertion the diff REMOVES from `tests/` | one loosened | **PASSED.** two removed, both replaced by strictly stronger per-file forms; zero loosened |
+| `ruff`, `black`, `mypy`, the whole verification ladder | a local-only red | **PASSED.** `All checks passed!` / `126 files would be left unchanged` / `no issues in 45 source files` / **2088 passed in 229.74s** |
+| **two declared files, SAME basename, one WITH a sidecar and one WITHOUT** | the R1095 disclosure survives the collision | **FAILED -- R1104's fourth limb.** one section carries a complete six-row band table AND "`dynamic_inputs.npz` was NOT screened" under two identical headings; both CSV headers carry two `wave basis [dynamic_inputs.npz]:` lines, one with a heading and one NOT RECORDED |
+| every configuration in the tree, against the refusal R1104 asks for | an existing green would break | **PASSED.** 22 fixture destinations, one directory, all 22 basenames distinct; the one shipped example declares a SCALAR `npz`; no YAML in the tree declares a list at all -- the refusal costs nothing |
+
+## Tolerances touched
+
+**NONE, AND EU1 DOES NOT ATTACH -- MEASURED, NOT TAKEN FROM THE INVOCATION.** `git diff 1a942b1..609f9ac -- floatfea/tolerances.py` is **0 bytes**; the commit names ten files and that is not one of them; the digest reproduces from the committed blobs as `d4f285eea7a6423710b5200463628413`. No counter is declared or redeclared, no injection size moves. The numeral census above returns ids, headings, fixture scales, two recorded heights, the four band figures those heights produce as OUTPUT, and prose counts -- no value, no threshold.
+
+**ONE THING THAT IS COMPARISON-SHAPED AND IS NOT A TOLERANCE, CHECKED RATHER THAN WAVED THROUGH.** `_same_heading`'s plain `==` is DELETED and `uncovered_headings`' `h % 360.0` is now the one rule for both paths, which is R1100's repair. I checked the half a modulo could have weakened quietly: the modulo is exact on the declared domain, `44.9 % 360.0` is `44.9` and is still refused, and the function returns the DECLARED value so the refusal names `90` rather than a normalised one. No epsilon entered with it. `test_no_undeclared_tolerance_reaches_a_comparison` is green in my FV1 selection, and the `abs(got - want) < 5e-4` your own account says it caught is not in the tree.
+
+## Corpus (EG4(e))
+
+**THE PAUSE HELD. ZERO NEW ENTRIES.** `tests/corpus/` is untouched and the diff over it is empty -- 49 files, 1983 non-comment entries, unchanged from last round. Neither exception opens: this diff touches no part of F4's load-mapping gate, and EB6's label-provenance gate is elsewhere. **ES0 fixes an interim check's scope at "no corpus batch, no closure list" independently of the pause, so nothing here turns on the date.**
+
+**But the date has now PASSED rather than merely arrived, and I say it once.** EG4(e) pauses batches "until 28 October"; today is **29 October**. Nothing in the tree fires on it, no clause says what the pause becomes, and on a literal reading it has lapsed while ES0 still forbids a batch in a check of this kind. **That is a disagreement with the criterion rather than with the work, so under its own heading, once: it goes to Xabier through you. Nothing in this verdict turns on it** -- I ruled under `CLAUDE.md` as written and the substitute is what I ran either way.
+
+**I RAN THE RECORDED SUBSTITUTE, BOTH HALVES, AND THE FIRST HALF FOUND THE BLOCKING ITEM.**
+
+* **A continuum grid over the parameter space a decision rule guards.** Twelve configurations. The axis I added is the one neither the diff nor any fixture in the tree moves: **the DIRECTORY the declared files sit in, and therefore whether two declared files share a basename** -- plus whether their recorded headings agree, which is what makes the two columns R1099 appended collide as well. **R1104 came from it.** The other axes -- file count, what each file records, the override's position relative to each file's band, the shape of the utilisation record, the wrap value of the declared heading domain -- produced the seven ledger rows and confirmed four repairs.
+* **A regeneration check on a published deliverable.** All three R1 artifacts compared from the COMMITTED BLOBS at `503b256` and `609f9ac`, column by column and row by row: `utilisation.csv` 23 to 25 columns with 0 pre-existing cells moved and `U = 1.71167` unmoved; `member_forces.csv` with no non-comment line changed; `report.md` moved in four lines, two caveats and two wall-clock figures. **Then regenerated at twelve configurations and READ WHOLE rather than grepped for one line, which is what found R1104 and L47.**
+
+**AND THE COVERAGE MEASUREMENT, STATED AS WHAT I ACTUALLY MEASURED.** I planted no defects, so there is no shapes-caught ratio and I will not manufacture one. The number available is sharper: **five of the cells this commit adds carry their own failure -- 5/5 reverted-red with 5/5 clean controls, armed by me, and a sixth arm invalid and reported as invalid -- and every one of them is GREEN at a commit where R1104 is live.** The reason is one sentence and it is the same shape as last round's: `test_ft26_multi_npz.py` writes all 22 of its fixture files into ONE directory with 22 distinct basenames, so the collision is excluded by the fixture and not by the code. Last round the report was asserted at one line of eleven sections; this round the sections are asserted and the file NAME is assumed unique. **That is where the next cell goes, and the fixture change is one `mkdir`.**
+
+## Next step opens when
+
+**This is an interim check: it closes nothing, opens nothing, and counts against no round (ES0, FK1). Step 3 stays at 0 of 3 reviewed revisions and its disposition is read from its closure verdict (DD1).** HOLD here means R1104 is answered before the step report -- it does not mean stop building. FR3 and FW3 govern the sequencing, not me.
+
+1. **R1104 is fixed IN FLIGHT, in the next commit.** Under FR3 it is FR1-blocking, so it is fixed and not ledgered. **The refusal in `config.py` is the repair I would take**, for three reasons that are measurements rather than taste: it is one check beside one that already exists, its justification is already written into that neighbouring refusal, and it cannot be defeated by a fourth artifact added later -- whereas disambiguating the label has to be done in five places and the next place is the one nobody edits. **The cell puts the two files in DIFFERENT directories with the SAME name**, which is the variable no existing fixture moves, and EH4's other direction is that two files in different directories with DIFFERENT names must still run.
+2. **The ledger grows by seven: L47 to L53.** Fixed once in the closure commit, not re-reviewed item by item. **L47 and L48 are the two I would take first** -- L47 because it is a false universal in a docstring sitting beside a branch that fires on 32 of 64 published rows, and L48 because it is one `if` and it closes EH4's other direction on a check this commit has just built.
+3. **R867 to R870 (FT2.7)**, by name, thirty-second round, still blocking and still untouched. `9827156` exists and is the standalone `plan:` commit you named; I have not reviewed it and this verdict does not judge it. **Condition 4** when the report exists. `docs/USER_GUIDE.md` still does not exist and FL3's gate needs it.
+4. **R1105: the judged commit needs a CI run that FINISHES.** Either hold the next push until the run at the reviewed sha completes, or name a finished run in the invocation. I could take the substitute this time only because `9827156` happens to touch `docs/milestones/R1.md` and nothing else; the next time it will not, and then there is nothing to substitute.
+5. **The local loop you raise, and one observation that is mine.** I agree it is the cost you say and I agree it is not this commit's doing. The observation: **your own new cells run the real CLI in 10 to 14 seconds** because `TRIMMED_STEPS = 40`, and my six arms plus twelve probes cost under four minutes of CLI time in total -- while my own first probe, which used the UNTRIMMED window out of caution, took **383 s** for a finding the trimmed version produced in **10 s**. Whatever is decided about `test_run_pipeline_refusals.py`'s five full-pipeline calls and R954's seven generator cells, the trimmed window is already in the tree and your own cells have already proved it faithful to the wiring.
+6. **The schedule, against FW0's date.** R1 is **10 November**, full scope, FT2.7 included; today is 29 October. FT2.6 is now built AND published, which is the half that was missing last round, and I verified the publication rather than took it. **I do not read R1104 as slippage:** it is one refusal and one fixture directory, it reopens no design question, and the arithmetic in `floatfea/` did not move -- `utilisation.csv` exact on all 23 pre-existing columns, `member_forces.csv` with no data line changed, the ladder green. **What I would say to Xabier if asked is that the risk in R1 has moved from "the report is asserted at one line" to "the identifier the artifacts key on is assumed unique", and that both were found by running the tool at a configuration nobody chose -- which is the only method that has found anything this step.**
+
+**And the pattern note, because it has moved again and the move is the same one as last round.** Last round the conversion stopped one function short. This round nothing in `floatfea/` stopped short: `_write_report` is converted, all four repairs are structural rather than textual, all four carry their own failure, and the deliverable comparison is exact on every pre-existing cell. **What stopped short is the FIXTURE.** Every cell asks the right question of a two-file run in which the two files differ in every way a fixture author thinks to vary -- name, heading, height, scale, sidecar. The one way they never differ is the one that matters: they are never the SAME name, and twenty-two fixture files in nine pairs share that blind spot because they share one `local.mkdir()`. **The question that catches this is not "what does the code do with two files" but "what two files can a configuration legally declare that my fixture cannot build" -- and the answer was one `mkdir` away.**
+
+**AND R1104 WAS REACHABLE AT THE COMMIT I PASSED THROUGH LAST ROUND, WHICH I SAY BEFORE SAYING ANYTHING ELSE ABOUT MY OWN SIDE.** `source=npz.name` and `wave_bases` keyed by name both arrived at `503b256`, and verdict 40 verified FW1's conditions on `member_forces.csv` column by column without asking whether the column's VALUE identifies a file. I swept the number of declared files and what each one records, and I did not sweep where they live. The axis was one `mkdir` from the grid I did run, and it is a miss of mine before it is a miss of yours -- which is also why I rule the four repairs CLOSED on their stated conditions rather than reopening them: the conditions were mine, they are met, and the label was not in them.
+
+**And one about my own side, fifth round running.** My line number for R1090's sibling note was stale: I wrote `:1001` and it is `:1002`, and you were right to cite it by text instead. Round 37 published a bound from a grid that stopped short; 38's numeral census used the wrong base; 39 stranded its own addendum; 40's ruling 2 counted the call sites that pass an argument and wrote a claim about all of them. **All five are a measurement whose domain is not the domain of the claim, and all five were mine.** The guard this time is the cheapest yet: a line number in a file the commit edits is stale before it is read, so cite the text.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: 503b256d7e536de2f1034d2dfe3fc8beaedbaac3
 **Reviewed commit: `503b256d7e536de2f1034d2dfe3fc8beaedbaac3`.**
 Verdict: HOLD
