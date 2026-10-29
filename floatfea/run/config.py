@@ -708,10 +708,23 @@ class WaveCase:
 
 @dataclass(frozen=True)
 class LoadCases:
-    """Either a committed npz of dynamic inputs, or the FloatSim runs to produce one.
+    """Either committed npz files of dynamic inputs, or the FloatSim runs to produce them.
 
-    `npz` is FL1's path: "or a path to an existing dynamic-inputs npz". It is what makes
-    step 1 runnable "on existing data" with no HSP worktree.
+    `npz_files` is FL1's path: "or a path to an existing dynamic-inputs npz". It is what
+    makes step 1 runnable "on existing data" with no HSP worktree.
+
+    **IT IS A TUPLE, AND THE PLURAL IS THE WHOLE OF FT2.6.** The configuration may list
+    several dynamic-inputs files, each recording its own heading, and the envelope is taken
+    over their UNION. One file is a one-tuple and reproduces the single-file answer
+    exactly; the EMPTY tuple is refused rather than defaulted, because an empty parameter
+    set is an error and not a skip.
+
+    **THE FIELD WAS RENAMED FROM `npz` DELIBERATELY.** Changing its TYPE under the same
+    name would leave every unconverted reader type-correct and silently wrong -- most of
+    them format it into a message, so a tuple would simply be printed as a tuple. Renaming
+    makes each one a type error that `mypy floatfea` finds. There is no `npz` alias: a
+    compatibility property would restore every silent site at once and make the rename
+    decorative.
 
     `governing_periods` is the set allowed to SET THE ENVELOPE (EZ2). A case outside it
     is still computed and still reported, as sensitivity, and cannot govern. It is
@@ -719,7 +732,7 @@ class LoadCases:
     which waves are admissible for a given height, and FL2(d) makes the check per case.
     """
 
-    npz: Path | None = None
+    npz_files: tuple[Path, ...] = ()
     cases: tuple[WaveCase, ...] = ()
     governing_periods: tuple[float, ...] = ()
     out_of_band_governing: tuple[float, ...] = ()
@@ -745,12 +758,19 @@ class LoadCases:
     thing `export` is asked to produce and then refuses when the BEM dataset does not
     cover it. An empty tuple means none was declared.
 
-    **WHAT THIS DOES NOT DO, STATED HERE BECAUSE A READER WILL EXPECT IT.** It does not
-    make `floatfea run` take an envelope over several headings. A dynamic-inputs npz
-    records ONE heading for the whole file -- that is what `exported_wave_basis` returns
-    and what the EX3/R724 caveat says on every artifact -- so a multi-heading envelope
-    needs a multi-heading npz, and producing one is the `export` path. This field is the
-    half that can be declared and checked without the HSP worktree.
+    **WHAT THIS DOES AND DOES NOT DO, REWRITTEN AT FT2.6 BECAUSE THE SECOND HALF WENT
+    FALSE.** One dynamic-inputs npz still records ONE heading for the whole file -- that is
+    what `exported_wave_basis` returns and what the EX3/R724 caveat says on every artifact
+    -- and that is exactly why `npz_files` is a LIST: the envelope over several headings is
+    taken over the union of several single-heading FILES, not inside one file. An earlier
+    version of this paragraph drew the other conclusion, that a multi-heading envelope
+    therefore waited on `export`. The first half of it was true and stays; the conclusion
+    was what FT2.6 falsified, and BP0 says a statement whose rule has moved is rewritten in
+    the same commit rather than when someone notices.
+
+    What is still NOT done here: producing a file at a heading no file records. A declared
+    heading that no listed file covers is REFUSED by name under R809's rule, not exported
+    on demand -- that remains the `export` path and it needs the HSP worktree.
     """
 
 
@@ -906,8 +926,10 @@ class RunConfig:
                 f"Fy = {self.sections.material.fy:g} Pa"
             ),
             "load_cases": (
-                f"npz {self._relative(self.load_cases.npz)}"
-                if self.load_cases.npz is not None
+                # Every file, named, in declaration order -- a provenance block that named
+                # one of several would be the `npz_files[0]` defect in the record itself.
+                "npz " + ", ".join(self._relative(p) for p in self.load_cases.npz_files)
+                if self.load_cases.npz_files
                 else f"{len(self.load_cases.cases)} declared wave case(s)"
             ),
             "governing_periods_s": list(self.load_cases.governing_periods),
@@ -1480,16 +1502,41 @@ def _parse_load_cases(block: Any, base: Path) -> LoadCases:
             f"{where}: give exactly one of `npz` (an existing dynamic-inputs file) or "
             f"`cases` (the FloatSim runs to produce one). Both or neither is ambiguous."
         )
-    npz: Path | None = None
+    # **ONE KEY, A STRING OR A LIST OF STRINGS, ONE REPRESENTATION INSIDE (FT2.6).** The
+    # field is always a tuple, so no caller sees a union type and no caller has to ask
+    # which shape it got. A bare string is a one-element list and nothing else.
+    npz_files: list[Path] = []
     if npz_raw is not None:
-        npz = Path(_require_string(npz_raw, f"{where}.npz"))
-        if not npz.is_absolute():
-            npz = (base / npz).resolve()
-        if not npz.is_file():
+        entries = npz_raw if isinstance(npz_raw, list) else [npz_raw]
+        if isinstance(npz_raw, list) and not entries:
             raise ConfigError(
-                f"{where}.npz: {npz} does not exist. `floatfea export` produces it from "
-                f"FloatSim runs; `floatfea run` does not invent dynamic inputs."
+                f"{where}.npz: the list is EMPTY. An empty list declares a run with no "
+                f"dynamic inputs at all, which is an error and not a skip. Give one path, "
+                f"or several, or use `cases` to declare the FloatSim runs instead."
             )
+        seen: dict[Path, int] = {}
+        for i, entry in enumerate(entries):
+            at = f"{where}.npz[{i}]" if isinstance(npz_raw, list) else f"{where}.npz"
+            path = Path(_require_string(entry, at))
+            if not path.is_absolute():
+                path = (base / path).resolve()
+            if not path.is_file():
+                raise ConfigError(
+                    f"{at}: {path} does not exist. `floatfea export` produces it from "
+                    f"FloatSim runs; `floatfea run` does not invent dynamic inputs."
+                )
+            # A repeat would enter the union twice. It cannot change the envelope -- a
+            # union is idempotent -- but it doubles the file in every artifact that names
+            # which files were read, and that is a claim about coverage. Refused, the same
+            # argument `_parse_headings` makes for a repeated heading.
+            if path in seen:
+                raise ConfigError(
+                    f"{at}: {path} is already declared at index {seen[path]}. The same "
+                    f"dynamic-inputs file twice covers no additional heading and would be "
+                    f"named twice in every artifact that reports which files were read."
+                )
+            seen[path] = i
+            npz_files.append(path)
     cases: list[WaveCase] = []
     for i, item in enumerate(cases_raw or []):
         at = f"{where}.cases[{i}]"
@@ -1521,7 +1568,7 @@ def _parse_load_cases(block: Any, base: Path) -> LoadCases:
     override = _parse_out_of_band(block.get("out_of_band_governing"), periods, where)
     headings = _parse_headings(block.get("headings"), where)
     return LoadCases(
-        npz=npz,
+        npz_files=tuple(npz_files),
         headings=headings,
         cases=tuple(cases),
         governing_periods=periods,

@@ -100,9 +100,9 @@ body rather than summed, because two bodies out in opposite directions would can
 |---|---|
 | build | 0.12 |
 | load | 0.00 |
-| solve | 181.16 |
+| solve | 179.48 |
 | code_check | 0.00 |
-| total | 181.28 |
+| total | 179.61 |
 
 ## Declared, and what became of it
 

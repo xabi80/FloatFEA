@@ -70,6 +70,26 @@ class Row:
     period_full_s: float
     basis: str
     values: NDArray[np.float64]  # (6,) N, Vy, Vz, T, My, Mz
+    source: str = ""
+    """The dynamic-inputs file this row came from, by name (FT2.6, FW1).
+
+    **SELF-DESCRIBING BY RULING, AND THE ALTERNATIVE'S FAILURE MODE IS WHY.** FW1 rules
+    the file and heading onto the row rather than alongside it. Provenance held in a
+    parallel structure can slip out of step with the rows it describes, and the result is
+    a correct number attributed to the wrong file -- which is exactly the defect an
+    `npz_files[0]` would produce, moved one layer out. On the row it cannot slip: the
+    report reads the attribution from the same object it reads the number from.
+
+    Empty for a row that has no file behind it -- the `static` rows, which are gravity
+    only and are computed once for the whole run rather than per file.
+    """
+    heading_deg: float = float("nan")
+    """That file's own recorded heading, in degrees. `nan` where none was recorded.
+
+    One file records ONE heading (`exported_wave_basis`), which is why the envelope over
+    several headings is an envelope over several FILES. `nan` rather than a sentinel
+    number so that no arithmetic can quietly treat an unrecorded heading as zero.
+    """
 
 
 def _gravity_field(n_dof: int) -> NDArray[np.float64]:
@@ -94,7 +114,7 @@ that could be loosened to make two numbers agree.
 """
 
 
-def checked_joint_reactions(raw: Any, index: int) -> Any:
+def checked_joint_reactions(raw: Any, index: int, source: str = "") -> Any:
     """`case{index}/lam`, held to all FOUR properties its schema declares.
 
     **FOUR, and the count is the point.** This enumeration said THREE for one commit, and
@@ -254,7 +274,11 @@ def checked_joint_reactions(raw: Any, index: int) -> Any:
             f"missing key instead of an empty one. Re-export the file with "
             f"`python scripts/export_f4_dynamic_inputs.py`."
         ) from None
-    where = key
+    # **R1062, LIVE AS OF FT2.6.** While a run read ONE file, `case0/lam` named the
+    # only file there was. With several declared, a refusal naming a key and no file
+    # sends a reader to grep every one of them. The reviewer ledgered this against
+    # the commit that would make it ambiguous; this is that commit.
+    where = f"{source}: {key}" if source else key
     dtype = getattr(lam, "dtype", None)
     # **`dtype is None` IS TESTED SEPARATELY AND IT IS NOT DEFENSIVE TIDINESS.**
     # `np.dtype(None)` is `float64`, so `None != np.dtype(np.float64)` is **False**: an
@@ -730,6 +754,8 @@ def compute_rows(
     governing_periods: tuple[float, ...],
     froude_lambda: float,
     progress: Any = None,
+    source: str = "",
+    heading_deg: float = float("nan"),
 ) -> ComputedForces:
     """Every basis, over every case and step. Moved verbatim from the script's `main`.
 
@@ -764,7 +790,7 @@ def compute_rows(
     for i, period in enumerate(inp.periods_full_s):
         # R1051: the one bulk numeric array the solve consumes, and the only npz key read
         # inside `floatfea/` that had no dtype gate.
-        lam = checked_joint_reactions(raw, i)
+        lam = checked_joint_reactions(raw, i, source)
         # The worst of each component over the window, per member-station, keeping the
         # max and the min separately -- `CLAUDE.md` forbids averaging a per-case
         # diagnostic, and a signed envelope needs both ends.
@@ -817,8 +843,30 @@ def compute_rows(
                             target[key] = (sigma_now, float(period))
         for key in sorted(worst_hi):
             for tag, dyn in (("max", worst_hi[key]), ("min", worst_lo[key])):
-                rows.append(Row(key[0], key[1], key[2], period, f"dynamic_{tag}", dyn))
-                rows.append(Row(key[0], key[1], key[2], period, f"total_{tag}", static[key] + dyn))
+                rows.append(
+                    Row(
+                        key[0],
+                        key[1],
+                        key[2],
+                        period,
+                        f"dynamic_{tag}",
+                        dyn,
+                        source,
+                        heading_deg,
+                    )
+                )
+                rows.append(
+                    Row(
+                        key[0],
+                        key[1],
+                        key[2],
+                        period,
+                        f"total_{tag}",
+                        static[key] + dyn,
+                        source,
+                        heading_deg,
+                    )
+                )
         if progress is not None:
             progress(f"  T_full = {period:4g} s: {lam.shape[0]} steps")
 
@@ -832,9 +880,13 @@ def compute_rows(
             "outside the governing cases and then dropped."
         )
     for key, (_sigma, period, values) in sorted(peak.items()):
-        rows.append(Row(key[0], key[1], key[2], period, "total_instant", values))
+        rows.append(
+            Row(key[0], key[1], key[2], period, "total_instant", values, source, heading_deg)
+        )
 
     for key, values in sorted(static.items()):
+        # NO `source` AND NO `heading_deg`: the static rows are gravity alone,
+        # computed once for the run and not per dynamic-inputs file (FT2.6).
         rows.append(Row(key[0], key[1], key[2], float("nan"), "static", values))
 
     return ComputedForces(rows=rows, static=static, instant=instant, instant_sens=instant_sens)

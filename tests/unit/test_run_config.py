@@ -298,7 +298,9 @@ def test_relative_paths_resolve_against_THE_CONFIG_FILE(cfg_path: Any) -> None:
     cfg = load_config(EXAMPLE)
     assert cfg.floatsim.deck.is_absolute() and cfg.floatsim.deck.is_file()
     assert cfg.floatsim.deck == (ROOT / "data" / "platform" / "platform12_deck.yaml")
-    assert cfg.load_cases.npz == (ROOT / "data" / "f4" / "dynamic_inputs.npz")
+    # FT2.6: a bare string is a ONE-element tuple, which is the whole of the
+    # scalar-or-list door -- the field is always plural so no caller sees a union.
+    assert cfg.load_cases.npz_files == ((ROOT / "data" / "f4" / "dynamic_inputs.npz"),)
     assert cfg.outputs.directory == (ROOT / "results" / "R1" / "example")
 
 

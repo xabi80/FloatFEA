@@ -650,7 +650,7 @@ def test_FQ2_R817_the_HEADER_carries_the_basis_the_reader_returned(built: Any) -
     from floatfea.run.pipeline import RunResult, exported_wave_basis
 
     cfg = load_config(EXAMPLE)
-    basis = exported_wave_basis(cfg.load_cases.npz)
+    basis = exported_wave_basis(cfg.load_cases.npz_files[0])
     stub = RunResult(
         config=cfg,
         built=built,
@@ -724,7 +724,7 @@ def test_FQ3_R832_a_RECORDED_basis_still_states_it(built: Any) -> None:
         utilisations=[],
         mass=(),
         timings={},
-        wave_basis=exported_wave_basis(cfg.load_cases.npz),
+        wave_basis=exported_wave_basis(cfg.load_cases.npz_files[0]),
     )
     blob = " ".join(_header_lines(stub))
     assert "heading 0.0 deg" in blob, blob[:300]
@@ -1256,10 +1256,29 @@ def test_R1011_the_heading_coverage_check_has_ONE_production_call_site() -> None
         and node.func.id == "refuse_headings_this_run_cannot_cover"
     ]
     assert len(calls) == 1, [node.lineno for node in calls]
-    # AND IT IS HANDED THIS MODULE'S OWN DOOR, which is the half that inverts the reason.
+    # **AND IT IS STILL HANDED THIS MODULE'S OWN DOOR -- one layer out since FT2.6.**
+    # The call used to take `exported_wave_basis(...)` inline. It now takes one entry of
+    # the `bases` list, and that list is built in `run()` from this module's own reader,
+    # so the property this cell exists for is unchanged: the production call is never fed
+    # a dict a CALLER chose. Asserted where the fact now lives rather than relaxed.
     passed = calls[0].args[1]
-    assert isinstance(passed, ast.Call) and isinstance(passed.func, ast.Name), ast.dump(passed)
-    assert passed.func.id == "exported_wave_basis", passed.func.id
+    assert isinstance(passed, ast.Subscript), ast.dump(passed)
+    built = [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "exported_wave_basis"
+    ]
+    assert built, "nothing in pipeline.py builds a basis from this module's own reader"
+    bases_line = [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Assign)
+        and any(getattr(t, "id", "") == "bases" for t in node.targets)
+    ]
+    assert len(bases_line) == 1, [n.lineno for n in bases_line]
+    assert "exported_wave_basis" in ast.dump(bases_line[0]), ast.dump(bases_line[0])
 
     # The guard is kept because TESTS reach it directly with dicts no door has seen --
     # which is what makes it a contract rather than dead code (R994).

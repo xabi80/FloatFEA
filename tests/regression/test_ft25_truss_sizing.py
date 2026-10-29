@@ -1020,6 +1020,12 @@ def test_R1077_the_MARGIN_says_what_it_is_OVER_in_all_four_states() -> None:
         " (every face of that cell carrying zero shear)"
     ), mixed
     assert "zero shear)" in mixed and not mixed.endswith("zero shear"), mixed
+    # **R1089: THE THIRD AGREEMENT PAIR, whose plural branch nothing reached.** R1085's
+    # repair introduced `that cell` / `those cells`, and only the singular was asserted --
+    # the same gap L36 was, one clause over. Two blanks reach the plural.
+    both_blank = cli._governing_faces(_Report([blank, dataclasses.replace(two, diagonal_face="")]))
+    assert "every face of those cells carrying zero shear" in both_blank, both_blank
+    assert "that cell" not in both_blank, both_blank
 
 
 @pytest.mark.parametrize(
@@ -1097,18 +1103,33 @@ def test_R1080_the_bullet_does_NOT_bound_the_error_BY_THE_GOVERNING_FACE(tmp_pat
     assert "whose inclined-face shear is non-zero" not in text, text
     assert "a function of a DECLARED input" in text, text
     # L45: `LOW, never high` was false in its first half -- at a floor-pinned cell the
-    # published figure is EXACT, not low. Only the one-way half is asserted now, and the
+    # published figure is EXACT, not low. Three needles are asserted now -- the one-way
+    # half, the correction it holds under, and the floor clause -- which is more than the
+    # "only the one-way half" an earlier version of this comment claimed (R1090), and
     # retired wording is forbidden so it cannot come back silently.
     # **AND THE DIRECTION CLAIM NAMES WHICH CORRECTION IT HOLDS UNDER (R1088).** "no
     # triangle figure is ever HIGH" is false under the BRACED LENGTH ALONE, which is one
     # of the three corrections the same bullet enumerates -- so the unqualified sentence
     # was true of two of three and read as true of all three.
     assert (
-        "no triangle figure in these tables is ever HIGH UNDER THE ALLOCATION CORRECTION,"
-        " ALONE OR WITH THE BRACED LENGTH" in text
+        "no triangle figure in these tables is ever HIGH UNDER THE ALLOCATION CORRECTION"
+        " APPLIED ALONE" in text
     ), text
-    assert "under the BRACED LENGTH ALONE a `diag A` can come out HIGH" in text, text
-    assert "EXACT where the bracket floor absorbs the whole of it" in text, text
+    assert "Under the BRACED LENGTH ALONE a `diag A` can come out HIGH" in text, text
+    # **AND THE `EXACT` CLAIM IS PINNED TO THE ALLOCATION ALONE (R1092).** An earlier
+    # version extended it to the two-edit correction, where it is false: the bracket floor
+    # pins the AREA and nothing pins the STEEL, because the second edit lengthens the
+    # diagonals. Both the narrowing and the reason are asserted, so neither can drift back.
+    assert (
+        "UNDER THE ALLOCATION ALONE it is low where the defect surfaces and EXACT where"
+        " the bracket floor absorbs the whole of it" in text
+    ), text
+    assert "DOES NOT EXTEND TO THE TWO-EDIT CORRECTION" in text, text
+    assert "the floor pins the AREA and nothing pins the STEEL" in text, text
+    # R1091: the allocation is two terms, and the bullet says it does not speak for a
+    # correction that moves only one of them.
+    assert "the allocation is itself TWO terms" in text, text
+    assert "does not enumerate and does not speak for" in text, text
     # The face count survives as a description, explicitly disclaimed as a bound.
     assert "NOT as a" in text and "bound on the error" in text, text
 

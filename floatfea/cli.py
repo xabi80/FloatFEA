@@ -148,22 +148,35 @@ def _header_lines(result: RunResult) -> list[str]:
     #
     # `_write_report` already had the branch; the CSV path did not, which is why the
     # contradiction only appeared in two of the three artifacts.
-    basis = result.wave_basis
-    if basis:
-        lines.append(
-            "wave basis: heading {} deg, H_full {} m, H_model {} m; window {}".format(
-                basis["heading_deg"],
-                basis["wave_height_full_m"],
-                basis["wave_height_model_m"],
-                basis["window"],
-            )
-        )
-    else:
+    # **ONE LINE PER DECLARED FILE (FT2.6).** A single-file run emits exactly the line it
+    # emitted before, unprefixed, so the committed deliverable reproduces byte for byte;
+    # a multi-file run names each file on its own line, because the whole point of the
+    # union is that these values DIFFER between them and one line cannot carry two.
+    bases = result.wave_bases or ((("", result.wave_basis),) if result.wave_basis else ())
+    if not bases:
         lines.append(
             "wave basis: NOT RECORDED by the export of this dynamic-inputs file. The "
             "heading and wave height of these loads are not stated by this run, and no "
             "caveat below should be read as supplying them."
         )
+    for name, basis in bases:
+        where = f" [{name}]" if name and len(bases) > 1 else ""
+        if basis:
+            lines.append(
+                "wave basis{}: heading {} deg, H_full {} m, H_model {} m; window {}".format(
+                    where,
+                    basis["heading_deg"],
+                    basis["wave_height_full_m"],
+                    basis["wave_height_model_m"],
+                    basis["window"],
+                )
+            )
+        else:
+            lines.append(
+                f"wave basis{where}: NOT RECORDED by the export of this dynamic-inputs "
+                f"file. The heading and wave height of these loads are not stated by this "
+                f"run, and no caveat below should be read as supplying them."
+            )
     if result.built.label:
         lines.append(f"build label: {result.built.label}")
     lines.extend(f"assumption: {a}" for a in result.built.assumptions)
@@ -191,6 +204,12 @@ def _write_member_forces(path: Path, result: RunResult) -> int:
     with path.open("w", newline="", encoding="utf-8") as fh:
         _write_header(fh, result)
         writer = csv.writer(fh)
+        # **TWO NEW COLUMNS, AND THEY GO AT THE END ON PURPOSE (FT2.6, FW1).** Appending
+        # leaves every pre-existing column at its own index, so a consumer reading by
+        # position is unaffected and the golden comparison on those columns stays exact.
+        # `source` is the dynamic-inputs file the row came from and `heading_deg` is that
+        # file's recorded heading; both are empty on the `static` rows, which are gravity
+        # alone and belong to no file.
         writer.writerow(
             [
                 "body",
@@ -201,6 +220,8 @@ def _write_member_forces(path: Path, result: RunResult) -> int:
                 *COMPONENTS,
                 "sigma_Pa",
                 "tau_Pa",
+                "source",
+                "heading_deg",
             ]
         )
         # The two derived columns are carried so this table has the same SHAPE as the
@@ -225,6 +246,8 @@ def _write_member_forces(path: Path, result: RunResult) -> int:
                     *(f"{v:.6e}" for v in row.values),
                     f"{sigma:.6e}",
                     f"{tau:.6e}",
+                    row.source,
+                    "" if row.heading_deg != row.heading_deg else f"{row.heading_deg:g}",
                 ]
             )
     return len(result.rows)
@@ -236,13 +259,54 @@ def _write_utilisations(path: Path, result: RunResult) -> int:
     rows = result.utilisations
     with path.open("w", newline="", encoding="utf-8") as fh:
         _write_header(fh, result)
-        writer = csv.DictWriter(fh, fieldnames=list(rows[0]))
+        # **THE TWO PROVENANCE KEYS ARE CARRIED ON THE RECORD AND NOT WRITTEN HERE.**
+        # FW1 authorised the column change on `member_forces.csv`, which is the table of
+        # ROWS; extending `utilisation.csv` as well is a separate schema decision and it
+        # is not taken here. So the fieldnames are stated explicitly rather than inferred
+        # from the record, and this CSV stays byte-identical. A reader adding a column
+        # must add it here, which is the point of naming them.
+        hidden = {"source", "heading_deg"}
+        writer = csv.DictWriter(
+            fh, fieldnames=[k for k in rows[0] if k not in hidden], extrasaction="ignore"
+        )
         writer.writeheader()
         for row in rows:
             writer.writerow(
                 {k: (f"{v:.6g}" if isinstance(v, float) else v) for k, v in row.items()}
             )
     return len(rows)
+
+
+def _governing_provenance(result: RunResult, governing: dict[str, Any]) -> str:
+    """ ", from `h045.npz` at heading 45 deg" -- or "" for a single-file run (FT2.6).
+
+    **THE PLAN REQUIRES THE REPORT TO NAME THE GOVERNING HEADING AND FILE**
+    (`docs/milestones/R1.md`, step 3's FT2.6 bullet), and with several declared files that
+    is not a property of the run -- it is a property of the ROW that governed. So it is
+    looked up on that row rather than taken from the first file, which is the
+    `npz_files[0]` defect in the one sentence a reader acts on.
+
+    **EMPTY FOR A ONE-FILE RUN, DELIBERATELY.** The file and heading are already in the
+    header of every artifact, and appending them here would move a line of the committed
+    deliverable for no new information. EH4's one-file boundary is that a single file
+    reproduces today's output; this clause is how that stays true.
+
+    The lookup is on the five fields that identify a row uniquely, and it RETURNS EMPTY
+    rather than guessing if no row matches -- a sentence that names the wrong file is
+    worse than one that names none.
+    """
+    if len(result.wave_bases) < 2:
+        return ""
+    source = str(governing.get("source") or "")
+    if not source:
+        return ""
+    degrees = governing.get("heading_deg")
+    heading = (
+        "an unrecorded heading"
+        if not isinstance(degrees, float) or degrees != degrees
+        else f"heading {degrees:g} deg"
+    )
+    return f", from `{source}` at {heading}"
 
 
 def _write_report(path: Path, result: RunResult) -> None:
@@ -347,7 +411,8 @@ def _write_report(path: Path, result: RunResult) -> None:
         f"**U = {float(governing['utilisation']):.6g}** at "
         f"`{governing['member']}` {governing['station']}, "
         f"`T_full = {float(governing['period_full_s']):g} s`, basis "
-        f"`{governing['basis']}`, governing clause {governing['governing_clause']}.",
+        f"`{governing['basis']}`, governing clause {governing['governing_clause']}"
+        f"{_governing_provenance(result, governing)}.",
         "",
         f"Checked stations: {len(result.utilisations)}. "
         f"Over unity: {sum(1 for r in result.utilisations if float(r['utilisation']) > 1.0)}.",
@@ -808,13 +873,19 @@ def _write_truss_sizing(path: Path, report: TrussReport) -> None:
         f" bottom one -- which is exactly the comparison the defect biases. The direction"
         f" is one-way in both: the areas are monotone in the force and `Lf/h > 1`, so"
         f" **no triangle figure in these tables is ever HIGH UNDER THE ALLOCATION"
-        f" CORRECTION, ALONE OR WITH THE BRACED LENGTH** -- the bullet above enumerates"
-        f" three corrections, and under the BRACED LENGTH ALONE a `diag A` can come out"
-        f" HIGH instead, so the direction is a property of the correction and not of the"
-        f" defect (R1088). Under the two that include the allocation it is low where the"
-        f" defect surfaces and EXACT where the bracket floor absorbs the whole of it, the"
-        f" published area then being the one a corrected allocation would also produce."
-        f" An earlier wording said `LOW, never high` without either qualifier, and both"
+        f" CORRECTION APPLIED ALONE** -- and that qualification is as narrow as it looks."
+        f" Under the BRACED LENGTH ALONE a `diag A` can come out HIGH instead, so the"
+        f" direction is a property of the correction and not of the defect (R1088); and"
+        f" the allocation is itself TWO terms, the `|Vz|/2` share and the `q h` torsion"
+        f" share, so correcting one without the other is a further correction this bullet"
+        f" does not enumerate and does not speak for (R1091). **UNDER THE ALLOCATION"
+        f" ALONE it is low where the defect surfaces and EXACT where the bracket floor"
+        f" absorbs the whole of it**, the published area then being the one a corrected"
+        f" allocation would also produce. **THAT `EXACT` DOES NOT EXTEND TO THE TWO-EDIT"
+        f" CORRECTION, AND AN EARLIER VERSION OF THIS CLAUSE SAID IT DID (R1092):** the"
+        f" floor pins the AREA and nothing pins the STEEL, because the second edit"
+        f" lengthens the diagonals and the steel per unit length rises with them. An"
+        f" earlier wording said `LOW, never high` with no qualifier at all, and both"
         f" halves of that needed one (L45). Of the"
         f" {sum(len(g.cells) for g in report.trusses)} cells in the tables above,"
         f" {_governing_faces(report)} -- reported as a fact about this run, and NOT as a"
@@ -942,10 +1013,12 @@ def _cmd_export(args: argparse.Namespace) -> int:
     writing an empty one -- is the failure this project is built to prevent.
     """
     cfg: RunConfig = load_config(args.config)
-    if cfg.load_cases.npz is not None:
+    if cfg.load_cases.npz_files:
+        listed = ", ".join(str(p) for p in cfg.load_cases.npz_files)
         raise ConfigError(
-            f"{cfg.source.name}: load_cases already points at an existing npz "
-            f"({cfg.load_cases.npz}). `export` PRODUCES that file from FloatSim runs; "
+            f"{cfg.source.name}: load_cases already points at "
+            f"{len(cfg.load_cases.npz_files)} existing npz file(s) "
+            f"({listed}). `export` PRODUCES that file from FloatSim runs; "
             f"declare `cases` instead, or run `floatfea run` with this configuration."
         )
     # **FL2(c): THE HEADING REFUSAL BELONGS HERE, AND ITS INPUT IS NOT HERE YET.**

@@ -110,6 +110,15 @@ class RunResult:
     height's associated-period band -- and neither value appeared in any of them.
     """
 
+    wave_bases: tuple[tuple[str, dict[str, Any]], ...] = ()
+    """(file name, that file's recorded basis) for EVERY declared file, in order (FT2.6).
+
+    `wave_basis` above is the FIRST file's, kept because every existing artifact reads it
+    and a one-file run must reproduce byte for byte. This is the whole set, and it is what
+    an artifact naming the governing heading AND FILE reads. A run over one file has one
+    entry here and the two agree.
+    """
+
     notes: tuple[str, ...] = ()
     band_screen: tuple[CaseBand, ...] = ()
     """FL2(d): the admissibility screen, one entry per case in the dynamic-inputs file.
@@ -482,6 +491,15 @@ def _utilisations(cfg: RunConfig, built: Any, rows: list[Row]) -> list[dict[str,
             "station": row.station,
             "period_full_s": row.period_full_s,
             "basis": row.basis,
+            # **FROM THE ROW, NOT LOOKED UP LATER (FT2.6, FW1).** My first attempt had
+            # the report find the governing row by matching its five identifying fields,
+            # and with several files those five do NOT identify a row -- both files
+            # produce the same (body, member, station, period, basis) -- so the match
+            # returned the FIRST file and the report named it beside the SECOND file's
+            # number. That is `npz_files[0]` reintroduced one layer up, which is why FW1
+            # put the provenance on `Row`: carried, it cannot be mismatched.
+            "source": row.source,
+            "heading_deg": row.heading_deg,
             "f_a_MPa": locked.f_a / 1e6,
             "F_a_MPa": locked.allow_axial / 1e6,
             "f_b_MPa": locked.f_b / 1e6,
@@ -620,6 +638,147 @@ def _recorded_heading(basis: dict[str, Any]) -> float | None:
             f"which the run proceeds with it."
         )
     return float(recorded)
+
+
+def refuse_headings_no_file_covers(
+    declared: tuple[float, ...], bases: list[tuple[Path, dict[str, Any]]]
+) -> None:
+    """A declared heading that NO declared file covers is refused (FT2.6, R809's rule).
+
+    **THE SINGLE-FILE RULE IS UNCHANGED AND IS NOT RELAXED TO ADMIT A SECOND FILE.** The
+    old call asked `refuse_headings_this_run_cannot_cover` whether ONE basis covered the
+    declared set. With several files the question is whether the UNION does, and the way
+    to get that wrong is to ask the first file and trust the rest -- which is the
+    `npz_files[0]` defect. So each declared heading is matched against every file's
+    recorded heading, and only a heading no file records is refused.
+
+    The refusal names which headings ARE covered and by which file, because "declared 45
+    and nothing covers it" is not actionable without knowing what the files do carry.
+    """
+    if not declared:
+        return
+    # **ONE FILE DELEGATES, AND THAT IS NOT A SHORTCUT -- IT IS THE GUARANTEE.** EH4's
+    # one-file boundary asks that a one-tuple reproduce today's behaviour exactly; handing
+    # straight to the single-basis function makes that true by construction rather than by
+    # a second implementation that happens to agree. It also keeps that function on a
+    # PRODUCTION path: a rename that left it called from nowhere would be R866/R877's own
+    # shape, a correct and well-tested function nothing reaches.
+    if len(bases) == 1:
+        refuse_headings_this_run_cannot_cover(declared, bases[0][1])
+        return
+    covered: dict[float, str] = {}
+    unrecorded: list[str] = []
+    for path, basis in bases:
+        recorded = _recorded_heading(basis)
+        if recorded is None:
+            unrecorded.append(path.name)
+            continue
+        covered.setdefault(recorded, path.name)
+    missing = [d for d in declared if not any(_same_heading(d, r) for r in covered)]
+    if not missing:
+        return
+    if not covered:
+        raise ConfigError(
+            f"load_cases.headings declares {list(declared)} deg and NO declared "
+            f"dynamic-inputs file records a heading at all "
+            f"({', '.join(unrecorded) or 'none listed'}). A declared heading with no file "
+            f"behind it is refused, not assumed to be heading 0: the envelope would be "
+            f"taken over whatever was exported while the configuration claimed the "
+            f"declared set. Export a file per heading, or drop the declaration."
+        )
+    have = ", ".join(f"{h:g} deg ({name})" for h, name in sorted(covered.items()))
+    extra = (
+        f" {', '.join(unrecorded)} record no heading at all and cover nothing."
+        if unrecorded
+        else ""
+    )
+    raise ConfigError(
+        f"load_cases.headings declares {list(declared)} deg and no declared "
+        f"dynamic-inputs file covers {missing} deg. The declared files carry: "
+        f"{have}.{extra} A declared heading with no file behind it would leave the "
+        f"envelope short of what the configuration claims, so it is refused before "
+        f"anything is built or written (R809)."
+    )
+
+
+def _same_heading(declared: float, recorded: float) -> bool:
+    """EXACT equality on the recorded degrees, deliberately and with no epsilon.
+
+    A heading is a DECLARED number compared with a RECORDED one, and both are written by
+    hand or by the exporter at the same precision. An `isclose` here would be a comparison
+    epsilon in the load path under another name, which `CLAUDE.md` forbids outright; a
+    configuration that means 45 writes 45. If a real export ever records 44.999999, that
+    is a finding about the exporter and not a reason to widen this.
+    """
+    return declared == recorded
+
+
+def refuse_scale_disagreement(cfg: Any, npz: Path) -> None:
+    """ONE SOURCE FOR THE SCALE (R805, FN0), asked of EVERY declared file.
+
+    **NOT `validated_export_scale`, WHICH ALREADY EXISTS AND DOES A DIFFERENT JOB.**
+    That one resolves the scale a PUBLISHER may use and returns it, and R919's gate
+    holds every publishing path to it. This one asks whether a file's recorded scale
+    AGREES WITH THE CONFIGURATION and refuses if not. My first version of this helper
+    took the other name and `mypy` caught the redefinition; two checks sharing one
+    name is how one of them silently stops being called.
+
+    The configuration's lambda reaches the deck build, every Froude conversion and the
+    provenance -- and a dynamic-inputs file exported at a DIFFERENT scale cannot be mixed
+    with it, because the joint reactions in that file are already scaled. Refused, naming
+    both, rather than silently applying one scale to the geometry and another to the loads.
+
+    **PER FILE, AND THIS IS THE HAZARD OF THE WHOLE OF FT2.6.** Two files at different
+    scales would mix forces at `lambda^3` with a locked moment at `lambda^4` against one
+    deck. Asking only the first file is the shape that would do it, so every file is
+    asked and the message names WHICH file disagreed.
+    """
+    exported, where = exported_froude_lambda(npz)
+    if exported is None:
+        raise ConfigError(
+            f"{npz.name}: {where}, so there is no way to know what scale "
+            f"its joint reactions are at. The configuration declares "
+            f"floatsim.froude_lambda = {cfg.floatsim.froude_lambda!r}. Re-export the file "
+            f"-- `floatfea export` records the scale from FN0 onward -- rather than "
+            f"assuming it matches, which is exactly the defect FN0 closed."
+        )
+    if exported != cfg.floatsim.froude_lambda:
+        raise ConfigError(
+            f"scale mismatch. floatsim.froude_lambda = {cfg.floatsim.froude_lambda!r} in "
+            f"{cfg.source.name}, and {npz.name} was exported at "
+            f"{exported!r} according to {where}. The deck would be built at one scale "
+            f"while the joint reactions in that file carry another: the yaw-locked "
+            f"composite goes as lambda^3 on force and lambda^4 on the locked moment. The "
+            f"declared scale is "
+            f"{'larger' if cfg.floatsim.froude_lambda > exported else 'smaller'} by a "
+            f"factor of {_ratio(cfg.floatsim.froude_lambda, exported):g}, which is "
+            f"{_ratio(cfg.floatsim.froude_lambda, exported) ** 3:g}x on every force and "
+            f"{_ratio(cfg.floatsim.froude_lambda, exported) ** 4:g}x on the locked "
+            f"moment. Declare the file's own scale, or export a file at this one."
+        )
+
+
+def _band_screen_over_files(
+    cfg: Any, per_file: list[tuple[Path, Any, tuple[float, ...], Any]]
+) -> tuple[CaseBand, ...]:
+    """FL2(d)'s screen, per file, combined rather than replaced (FT2.6).
+
+    The screen is a function of the file's own recorded HEIGHT, so one file's basis cannot
+    answer for another's and the screens are concatenated. `refuse_cases_that_cannot_govern`
+    refuses on the spot, so a run that reaches the end of this loop has every file's cases
+    screened and no file's screen standing in for another's.
+    """
+    out: list[CaseBand] = []
+    for _npz, _raw, periods_one, basis_one in per_file:
+        out.extend(refuse_cases_that_cannot_govern(cfg, periods_one, basis_one))
+    return tuple(out)
+
+
+@dataclass(frozen=True)
+class _ComputedAll:
+    """The concatenated rows of every declared file. `compute_rows`' shape, one field."""
+
+    rows: list[Row]
 
 
 def refuse_headings_this_run_cannot_cover(
@@ -1496,7 +1655,10 @@ def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunRes
     timings: dict[str, float] = {}
     say = progress or (lambda _line: None)
 
-    if cfg.load_cases.npz is None:
+    # **REFUSED, NOT DEFAULTED AND NOT SKIPPED (FT2.6, EH4).** An empty set of
+    # dynamic-inputs files is an error and not a run with no dynamic loads: the
+    # alternative would solve gravity alone and publish it as an envelope.
+    if not cfg.load_cases.npz_files:
         raise ConfigError(
             "load_cases declares wave `cases` but no `npz`. `floatfea run` does not "
             "invoke FloatSim -- that is `floatfea export`, which needs the HSP worktree. "
@@ -1508,9 +1670,12 @@ def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunRes
     # the outputs is a warning with a non-zero exit code. The npz's own recorded heading
     # is the only fact needed and `exported_wave_basis` reads it without the HSP
     # worktree.
-    refuse_headings_this_run_cannot_cover(
-        cfg.load_cases.headings, exported_wave_basis(cfg.load_cases.npz)
-    )
+    # **OVER THE UNION OF THE FILES, which is what makes a declared heading coverable by
+    # a file other than the first (FT2.6).** `refuse_headings_this_run_cannot_cover` takes
+    # ONE basis, so it is asked once per file and a heading is refused only when NO file
+    # covers it -- R809's rule unchanged, applied to a set.
+    bases = [(p, exported_wave_basis(p)) for p in cfg.load_cases.npz_files]
+    refuse_headings_no_file_covers(cfg.load_cases.headings, bases)
 
     t0 = time.perf_counter()
     built = build_model(cfg)
@@ -1522,61 +1687,50 @@ def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunRes
     mass = _mass_report(built)
 
     t0 = time.perf_counter()
-    raw: Any = np.load(cfg.load_cases.npz, allow_pickle=False)
-
-    # ONE SOURCE FOR THE SCALE (R805, FN0). The configuration's lambda reaches the deck
-    # build, every Froude conversion and the provenance -- and a dynamic-inputs file
-    # exported at a DIFFERENT scale cannot be mixed with it, because the joint reactions
-    # in that file are already scaled. Refused, naming both, rather than silently applying
-    # one scale to the geometry and another to the loads.
-    exported, where = exported_froude_lambda(cfg.load_cases.npz)
-    if exported is None:
-        raise ConfigError(
-            f"{cfg.load_cases.npz.name}: {where}, so there is no way to know what scale "
-            f"its joint reactions are at. The configuration declares "
-            f"floatsim.froude_lambda = {cfg.floatsim.froude_lambda!r}. Re-export the file "
-            f"-- `floatfea export` records the scale from FN0 onward -- rather than "
-            f"assuming it matches, which is exactly the defect FN0 closed."
+    # ===================================================================== FT2.6
+    # **EVERY CHECK BELOW RUNS PER FILE AND NOT ONE OF THEM IS RELAXED.** The union is
+    # taken of what they produce; it is never taken of whether they passed. A reader
+    # looking for the place a second file could slip through unchecked will not find one,
+    # because there is no branch on `npz_files[0]` anywhere in this function.
+    per_file: list[tuple[Path, Any, tuple[float, ...], Any]] = []
+    for npz in cfg.load_cases.npz_files:
+        raw_one: Any = np.load(npz, allow_pickle=False)
+        refuse_scale_disagreement(cfg, npz)
+        periods_one = checked_recorded_periods(
+            raw_one["periods_full_s"], f"{npz.name}: `periods_full_s`"
         )
-    if exported != cfg.floatsim.froude_lambda:
-        raise ConfigError(
-            f"scale mismatch. floatsim.froude_lambda = {cfg.floatsim.froude_lambda!r} in "
-            f"{cfg.source.name}, and {cfg.load_cases.npz.name} was exported at "
-            f"{exported!r} according to {where}. The deck would be built at one scale "
-            f"while the joint reactions in that file carry another: the yaw-locked "
-            f"composite goes as lambda^3 on force and lambda^4 on the locked moment. The "
-            f"declared scale is "
-            f"{'larger' if cfg.floatsim.froude_lambda > exported else 'smaller'} by a "
-            f"factor of {_ratio(cfg.floatsim.froude_lambda, exported):g}, which is "
-            f"{_ratio(cfg.floatsim.froude_lambda, exported) ** 3:g}x on every force and "
-            f"{_ratio(cfg.floatsim.froude_lambda, exported) ** 4:g}x on the locked "
-            f"moment. Declare the file's own scale, or export a file at this one."
-        )
+        refuse_disagreeing_period_records(npz, periods_one, raw_one)
+        per_file.append((npz, raw_one, periods_one, exported_wave_basis(npz)))
 
-    # **R1019/R1022: THE RECORDED PERIOD ARRAY IS HELD TO THE DECLARED PERIOD'S DOMAIN**,
-    # through the shared door. R1019 put the check inline here and nowhere else;
-    # `scripts/f4_dynamic_residual.py`'s `load()` and `scripts/measure/f6_results_report.py`
-    # WERE the same read with no domain, which is what R1022 found, and both go through
-    # the door now -- each with a cell asserting the refusal arrives from its own site.
-    # The domain, the refusal and the reason it is made at the READER rather than at a
-    # comparison are all in `checked_recorded_periods`.
-    periods = checked_recorded_periods(
-        raw["periods_full_s"], f"{cfg.load_cases.npz.name}: `periods_full_s`"
-    )
-
-    # R1005, before `unknown` and for the same reason it exists: `unknown` asks
-    # whether a declared case EXISTS, this asks whether the file AGREES WITH ITSELF
-    # about which case is which. The mechanism and the measurement are in the
-    # helper's docstring rather than copied here.
-    refuse_disagreeing_period_records(cfg.load_cases.npz, periods, raw)
+    # The UNION of the recorded periods, which is what a declared governing period is
+    # checked against now: a period carried by the second file is carried by the run.
+    periods = tuple(sorted({p for _n, _r, ps, _b in per_file for p in ps}))
+    # There is deliberately NO `raw = per_file[0][1]` here. The first draft kept one, and
+    # `ruff` reported it unused -- which is the mechanical proof that nothing downstream
+    # reads a single file's array any more, and therefore that no `npz_files[0]` survives
+    # in this function. Keeping the binding would have re-created the hazard silently for
+    # the next person who needed "the" raw array.
 
     unknown = sorted(set(cfg.load_cases.governing_periods) - set(periods))
     if unknown:
+        # **ONE FILE KEEPS THE ORIGINAL MESSAGE, WORD FOR WORD.** Same reason the heading
+        # check delegates: EH4's one-file boundary is that a one-tuple behaves exactly as
+        # today, and a refusal message is part of the behaviour. Several files get a
+        # message that names them all, because "which file was it missing from" is the
+        # first thing a reader asks and a union cannot answer it from one name.
+        if len(cfg.load_cases.npz_files) == 1:
+            raise ConfigError(
+                f"load_cases.governing_periods names {unknown} s, which "
+                f"{cfg.load_cases.npz_files[0].name} does not contain. It carries "
+                f"{sorted(periods)} s. A governing period with no case behind it would "
+                f"silently drop out of the envelope."
+            )
+        names = ", ".join(p.name for p in cfg.load_cases.npz_files)
         raise ConfigError(
-            f"load_cases.governing_periods names {unknown} s, which "
-            f"{cfg.load_cases.npz.name} does not contain. It carries {sorted(periods)} s. "
-            f"A governing period with no case behind it would silently drop out of the "
-            f"envelope."
+            f"load_cases.governing_periods names {unknown} s, which no declared "
+            f"dynamic-inputs file contains. Between them, {names} carry "
+            f"{sorted(periods)} s. A governing period with no case behind it would "
+            f"silently drop out of the envelope."
         )
     # FL2(d), beside its sibling: both ask whether the DECLARED governing set is
     # supportable by this file. `unknown` asks whether the case EXISTS; this asks whether
@@ -1584,20 +1738,42 @@ def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunRes
     # hand and no third open of the npz is needed, and before the solve and before any
     # output, which is R809's requirement -- a refusal after the artifacts is a warning
     # with a non-zero exit code.
-    band_screen = refuse_cases_that_cannot_govern(
-        cfg, periods, exported_wave_basis(cfg.load_cases.npz)
-    )
+    # Per file, because the screen is a function of that file's own recorded HEIGHT: one
+    # basis cannot answer for another. The screens are combined, not replaced.
+    band_screen = _band_screen_over_files(cfg, per_file)
     timings["load"] = time.perf_counter() - t0
 
     t0 = time.perf_counter()
-    computed = compute_rows(
-        built,
-        _Inputs(periods_full_s=periods),
-        raw,
-        cfg.load_cases.governing_periods,
-        cfg.floatsim.froude_lambda,
-        progress=say,
-    )
+    # **PER FILE, AND EVERY ROW CARRIES WHICH FILE AND WHICH HEADING (FW1).** The rows of
+    # several files are concatenated, so the envelope a consumer takes over them is the
+    # envelope over the union -- and each row says where it came from, so the report's
+    # attribution is read off the same object as the number.
+    all_rows: list[Any] = []
+    for npz, raw_one, periods_one, basis_one in per_file:
+        if len(per_file) > 1:
+            say(f"  {npz.name}:")
+        heading = float(basis_one["heading_deg"]) if basis_one else float("nan")
+        computed_one = compute_rows(
+            built,
+            _Inputs(periods_full_s=periods_one),
+            raw_one,
+            cfg.load_cases.governing_periods,
+            cfg.floatsim.froude_lambda,
+            progress=say,
+            source=npz.name,
+            heading_deg=heading,
+        )
+        # The STATIC rows are gravity alone and identical for every file, so they are
+        # taken from the first file's computation and not repeated -- otherwise a
+        # two-file run would publish each static row twice and a consumer taking a
+        # maximum would be unaffected while one taking a COUNT would be wrong.
+        kept = (
+            computed_one.rows
+            if not all_rows
+            else [r for r in computed_one.rows if r.basis != "static"]
+        )
+        all_rows.extend(kept)
+    computed = _ComputedAll(rows=all_rows)
     timings["solve"] = time.perf_counter() - t0
     say(f"  {len(computed.rows)} member-force rows in {timings['solve']:.1f} s")
 
@@ -1612,7 +1788,8 @@ def run(cfg: RunConfig, progress: Callable[[str], None] | None = None) -> RunRes
     return RunResult(
         config=cfg,
         built=built,
-        wave_basis=exported_wave_basis(cfg.load_cases.npz),
+        wave_basis=per_file[0][3],
+        wave_bases=tuple((p.name, b) for p, _r, _ps, b in per_file),
         rows=computed.rows,
         utilisations=utilisations,
         mass=mass,
