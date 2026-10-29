@@ -82,6 +82,7 @@ from floatfea.model.material import S355, Material, Section
 from floatfea.model.nodes import Model, Node
 from floatfea.tolerances import (
     MASS_PROPERTY_AGREEMENT,
+    NODE_COINCIDENCE_DECIMALS,
     RIGID_MODE_BOUND,
     RIGID_MODE_EXACTNESS,
 )
@@ -482,10 +483,37 @@ def _platform_label(a: str, b: str) -> str:
     return f"platform:{a}_{b}"
 
 
+def _platform_node_name(end: str) -> str:
+    """The node name for a declared platform END, from its NAME and nothing else (R867).
+
+    **THIS IS THE WHOLE OF R867's RULE.** The name a platform node carries used to be
+    derived from the first MEMBER that reached its point -- `f"{label}_a"` or
+    `f"{label}_tip"` -- so a brace declared before the arm that shares its hub took the
+    node and `platform:<hub>_arm_tip` was never created, while `config.py`'s duplicate
+    check keys on `frozenset((a, b))`, which is the schema stating that order does NOT
+    identify a member. Two layers disagreeing about one question, and three readers of the
+    tip name then raised three layers downstream.
+
+    A joint's name is a property of the joint. Derived from the declared end name, it is
+    independent of declaration order and of direction BY CONSTRUCTION rather than by a
+    second check -- which is R867's closing condition in the reviewer's own words.
+    """
+    if end == PLATFORM_CENTRE_NODE:
+        return "platform_centre"
+    return f"platform:{end}_arm_tip"
+
+
 def _declared_platform_members(
     declared: tuple[tuple[str, str], ...],
     nodes: dict[str, tuple[float, float, float]],
-) -> list[tuple[str, tuple[float, float, float], tuple[float, float, float]]]:
+) -> list[
+    tuple[
+        str,
+        tuple[float, float, float],
+        tuple[float, float, float],
+        tuple[str, str],
+    ]
+]:
     """The platform's members as the configuration declared them (FL2(a)).
 
     Refused by name against the deck's own node list. A configuration naming a hub the
@@ -505,8 +533,79 @@ def _declared_platform_members(
                     f"and building the rest without it would publish a frame the "
                     f"configuration did not describe."
                 )
-        out.append((_platform_label(a, b), nodes[a], nodes[b]))
+        out.append(
+            (
+                _platform_label(a, b),
+                nodes[a],
+                nodes[b],
+                (_platform_node_name(a), _platform_node_name(b)),
+            )
+        )
+    _refuse_hubs_the_centre_cannot_reach(declared, nodes)
     return out
+
+
+def _refuse_hubs_the_centre_cannot_reach(
+    declared: tuple[tuple[str, str], ...],
+    nodes: dict[str, tuple[float, float, float]],
+) -> None:
+    """A hub the declared topology does not connect to the centre is refused (R869).
+
+    A topology that does not reach the centre built without complaint, and `rigid_links`
+    ties the body's whole remainder to a `{PLATFORM_CENTRE_NODE}` that is an endpoint of
+    no member -- so the remainder's mass appears in the mass report and contributes no
+    stiffness to the frame. **The enumeration of the eight declared topologies, with what
+    each one does today and the command that measured it, is in the plan at `9827156`
+    (`docs/milestones/R1.md`, FT2.7).** It is not restated here, because a table in a
+    docstring is a figure nothing regenerates (BI3).
+
+    **THIS CHECKS THE DECK'S HUBS AND NOT THE MODEL'S NODES, and that is the whole
+    design.** A hub no declared member names has no node in the frame at all, so a
+    connected-component walk over BUILT nodes finds nothing wrong and accepts a platform
+    missing a quarter or three quarters of its support. The plan records two of the eight
+    topologies in exactly that state.
+
+    **AND A HUB REACHED ONLY BY A BRACE IS ACCEPTED HERE.** It IS connected to the centre,
+    so this refusal passes it; it fails downstream for a third reason, which the plan
+    records as an open question rather than as an R869 item.
+
+    Over names rather than coordinates on purpose: `nodes` is keyed by the deck's own node
+    NAMES, so no coordinate comparison enters and this cannot acquire an epsilon.
+    """
+    reach: dict[str, set[str]] = {}
+    for a, b in declared:
+        reach.setdefault(a, set()).add(b)
+        reach.setdefault(b, set()).add(a)
+
+    seen = {PLATFORM_CENTRE_NODE}
+    stack = [PLATFORM_CENTRE_NODE]
+    while stack:
+        for nxt in reach.get(stack.pop(), ()):
+            if nxt not in seen:
+                seen.add(nxt)
+                stack.append(nxt)
+
+    hubs = [n for n in sorted(nodes) if n != PLATFORM_CENTRE_NODE]
+    # **ABSENT AND UNREACHABLE ARE DISTINGUISHED, because they are different mistakes.**
+    # A hub no member names is a topology that forgot it; a hub that is named but cannot
+    # be reached is a topology that is disconnected. The reader needs to know which.
+    absent = [h for h in hubs if h not in reach]
+    stranded = [h for h in hubs if h in reach and h not in seen]
+    if not absent and not stranded:
+        return
+
+    parts = []
+    if absent:
+        parts.append(f"{absent} appear in no declared member")
+    if stranded:
+        parts.append(f"{stranded} are declared but not reachable from `{PLATFORM_CENTRE_NODE}`")
+    raise ValueError(
+        "topology.platform.members leaves " + " and ".join(parts) + ". Every hub the "
+        f"deck owns must be connected to the platform's centre by the declared members, "
+        f"because the body's whole remainder mass is rigidly linked to that centre and a "
+        f"hub it cannot reach contributes no stiffness to the frame while still appearing "
+        f"in the mass report. The deck's hubs are {hubs}."
+    )
 
 
 def _body_centres(
@@ -534,7 +633,17 @@ def _member_geometry(
     hub_joints: list[dict[str, Any]],
     z: float,
     platform_members: tuple[tuple[str, str], ...] = (),
-) -> dict[str, list[tuple[str, tuple[float, float, float], tuple[float, float, float]]]]:
+) -> dict[
+    str,
+    list[
+        tuple[
+            str,
+            tuple[float, float, float],
+            tuple[float, float, float],
+            tuple[str, str],
+        ]
+    ],
+]:
     """Per body, its members as `(label, start, end)` in the joint plane.
 
     Separated from the mass work so the geometry is decided once and the `f` ladder
@@ -548,7 +657,17 @@ def _member_geometry(
     its own buoys, which is a count this builder already refuses to vary.
     """
     buoy_joints = [j for j in joints if j["body_a"].startswith("buoy")]
-    out: dict[str, list[tuple[str, tuple[float, float, float], tuple[float, float, float]]]] = {}
+    out: dict[
+        str,
+        list[
+            tuple[
+                str,
+                tuple[float, float, float],
+                tuple[float, float, float],
+                tuple[str, str],
+            ]
+        ],
+    ] = {}
     nodes = _platform_nodes(hub_joints, z)
     if platform_members:
         out["platform"] = _declared_platform_members(platform_members, nodes)
@@ -559,6 +678,10 @@ def _member_geometry(
                 f"platform:{j['body_a']}_arm",
                 centre,
                 (j["point"][0], j["point"][1], z),
+                (
+                    _platform_node_name(PLATFORM_CENTRE_NODE),
+                    _platform_node_name(str(j["body_a"])),
+                ),
             )
             for j in sorted(hub_joints, key=lambda j: j["body_a"])
         ]
@@ -570,11 +693,18 @@ def _member_geometry(
                 f"{hub} carries {len(cluster)} cluster arms; the platform is four "
                 "tripods of three, and a hub with another count is not this model."
             )
+        # **THE TRIPODS KEEP THE MEMBER-DERIVED NAME, and that is a decision rather
+        # than an omission.** A hub body's geometry is not configurable -- three cluster
+        # arms to its own buoys, a count this builder refuses to vary -- so no declaration
+        # order exists to disagree with, and `f"{parent}:{child}_arm_tip"` (the
+        # parameterised reader at `floatfea/post/forces_table.py`) already denotes the
+        # buoy joint it reaches. R867's rule is applied where the defect is.
         out[hub] = [
             (
                 f"{hub}:{j['body_a']}_arm",
                 node,
                 (j["point"][0], j["point"][1], z),
+                (f"{hub}_centre", f"{hub}:{j['body_a']}_arm_tip"),
             )
             for j in cluster
         ]
@@ -583,7 +713,14 @@ def _member_geometry(
 
 def _build_body(
     name: str,
-    geometry: list[tuple[str, tuple[float, float, float], tuple[float, float, float]]],
+    geometry: list[
+        tuple[
+            str,
+            tuple[float, float, float],
+            tuple[float, float, float],
+            tuple[str, str],
+        ]
+    ],
     body: dict[str, Any],
     fraction: float,
     section: Section,
@@ -606,7 +743,12 @@ def _build_body(
     node_of: dict[tuple[float, ...], int] = {}
 
     def node(point: tuple[float, ...], label: str) -> int:
-        key = tuple(round(c, 9) for c in point)
+        # **THE COINCIDENCE RULE IS DECLARED (R867 (a), answering L57).** `round(..., 9)`
+        # on a coordinate in metres declares two points within a nanometre to be the same
+        # node, which is a comparison epsilon under another name and belongs in
+        # `floatfea/tolerances.py` by `CLAUDE.md`'s own words. Its value and its FORM are
+        # unchanged by this commit; the entry says why a form change was not taken.
+        key = tuple(round(c, NODE_COINCIDENCE_DECIMALS) for c in point)
         if key not in node_of:
             node_of[key] = model.nodes.add(Node(point[0], point[1], point[2], name=label))
         return node_of[key]
@@ -625,9 +767,17 @@ def _build_body(
     body_centre = centre if centre is not None else geometry[0][1]
     centre_node = node(body_centre, f"{name}_centre")
     members: list[Member] = []
-    for label, start, end in geometry:
-        a = node(start, f"{name}_centre" if start == body_centre else f"{label}_a")
-        b = node(end, f"{name}_centre" if end == body_centre else f"{label}_tip")
+    # **THE END'S NAME IS CARRIED IN, NOT DERIVED FROM ITS COORDINATE (R867).** These two
+    # lines read `f"{name}_centre" if start == body_centre else f"{label}_a"` -- an EXACT
+    # tuple comparison deciding a NAME, two lines under a dedup that compares the same
+    # points to nine decimals. Two notions of "the same point" on adjacent lines, and the
+    # name a node got was whichever member reached it first, which is why declaration
+    # order decided whether a topology ran at all. `_platform_node_name` now derives each
+    # end's name from the declared END NAME, so no coordinate comparison enters the
+    # naming and the rounding below decides node IDENTITY only.
+    for label, start, end, (name_a, name_b) in geometry:
+        a = node(start, name_a)
+        b = node(end, name_b)
         length = math.dist(start, end)
         check_limits(label, length, section)
         members.append(

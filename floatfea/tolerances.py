@@ -1707,6 +1707,70 @@ DETECTION_THRESHOLD_BAND_COUNTER: Final[float] = 0.25
 # Set: 2026-09-30, F3 (DY3, answering R593)
 MASS_PROPERTY_AGREEMENT: Final[float] = 1e-13
 
+# CLASS: GEOMETRIC -- a coincidence rule on node coordinates, not a convergence threshold
+# and not a comparison against a measured quantity, so no counter-case is constructible in
+# the usual form: there is no "defect" to inject past it. What a counter-case WOULD be is
+# two distinct deck joints closer together than this rule can tell apart, and the deck
+# geometry that produces one is refused earlier -- a hub whose joint coincides with another
+# has no node of its own and R869 names it as absent.
+#
+# WHAT IT IS. `_build_body`'s `node()` helper deduplicates nodes by rounding each
+# coordinate to this many decimals, so two points agreeing to a nanometre in metres are
+# ONE node. That is a comparison epsilon under another name, and `CLAUDE.md` is explicit
+# that such a thing lives here: "convergence thresholds, comparison epsilons, small number
+# guards ... and any factor introduced to make two numbers agree".
+#
+# WHY IT IS DECLARED NOW, WHICH IS THE PART A LATER READER NEEDS. It was an undeclared
+# `round(c, 9)` on the production path and `tests/test_no_tolerance_literals.py` was GREEN
+# on it, by construction: that guard flags float thresholds in comparisons and treats
+# integers as counts, and this one is an integer argument to `round`. Verdict 42's L57
+# ruled it CZ0 (b) in shape and non-blocking under FR1 -- because the naming line two
+# below it was an EXACT comparison, so a near-coincident end lost a NAME and a missing
+# `platform:<hub>_arm_tip` is a loud ValueError -- and said in terms that it becomes live
+# the moment R867's repair touches that helper. R867 does touch it, and R867 DELETES that
+# exact comparison, so the reason the epsilon was harmless no longer holds unmeasured.
+#
+# WHY THE VALUE AND THE FORM BOTH STAND. A decimal count applied by `round` is not the
+# form this quantity would be given from scratch -- a coincidence rule on a LENGTH is a
+# length, and rounding buckets points rather than clustering them, so two points 1.9 nm
+# apart may land in one bucket or two depending on where they sit. Changing it to a
+# distance comparison alters which points deduplicate and can move a golden file, which is
+# a decision with its own justification and its own regeneration, and R1 does not take it.
+# Recorded here rather than left for the next reader to rediscover.
+#
+# AND A VALUE THAT DOES NOT MOVE IS EU1's WORST CASE, NOT ITS SAFEST -- EU1's own sentence.
+# So the boundary was solved from BOTH sides and the model run at every rung, and the
+# result is that THIS CONSTANT CANNOT BE REACHED BY ANY ADMISSIBLE VALUE OF ITSELF:
+#
+# TABLE 1 -- the model at every rung of MASS_FRACTION_LADDER, five declared topologies:
+#
+#       f = 0.75, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0   node names, member labels and member
+#                                                connectivity IDENTICAL at every rung,
+#                                                for all five topologies. The naming rule
+#                                                is a function of names and `f` is a mass
+#                                                fraction, so this is the measurement
+#                                                confirming the two do not interact.
+#
+# TABLE 2 -- EH4, both directions on the coincidence rule itself:
+#
+#       declared            9 decimals (1e-09 m)
+#       may RISE to         18 and beyond, with NO effect -- no two deck points need
+#                           more resolution than this to be told apart
+#       may FALL to         -1 (10 m buckets) with NO effect, which is TEN DECADES of
+#                           margin below the declared value
+#       at                  -2 (100 m buckets) the centre and a hub finally merge, and
+#                           the failure is a REFUSAL -- "element connects node 0 to
+#                           itself; a zero-length member has no axis" -- not a shorter
+#                           frame solved quietly
+#
+# The margin is geometric and it is why the value is not delicate: the default star's
+# CLOSEST two nodes are 41.3261 m apart, against a resolution of 1e-09 m, a factor of
+# 4.133e+10. **And the loudness L57 relied on is now provided by the ELEMENT's zero-length
+# refusal rather than by the naming comparison R867 deleted** -- which is the thing that
+# had to be measured rather than assumed, because the old reason stopped being true.
+# Set: 2026-10-29, R1 step 3 (R867, answering verdict 42's L57)
+NODE_COINCIDENCE_DECIMALS: Final[int] = 9
+
 
 # ---------------------------------------------------------------------------
 # Rung 4 -- The loads are the loads
