@@ -882,8 +882,16 @@ def test_R1076_the_bullet_PUBLISHES_NO_AREA_FACTOR_in_either_shape_it_took(tmp_p
     assert two_edit < lf / h, (two_edit, lf / h)
 
 
-def _cell_at(shape: str, h: float, b: float, geometry: str, steel: float):
-    """A `TrussCell` carrying only the four fields `_margin` reads, plus its steel."""
+def _cell_at(shape: str, h: float, b: float, geometry: str, steel: float, face: str = ""):
+    """A `TrussCell` carrying the four fields `_margin` reads, its steel, and its face.
+
+    **R1087: THE FACE IS THE FIFTH FIELD AND IT IS A PARAMETER NOW.** This helper hard-set
+    `diagonal_face="bottom"` while its docstring declared four fields, so `_governing_faces`
+    read a fifth the docstring did not mention -- and `bottom` is a TRIANGLE's key, so
+    every `box` cell it built was a box governed by a face a box does not have. That is
+    R1078's conflation reproduced inside the fixture written to check R1078's repair.
+    The default is empty, which is `_cell`'s own value when no face governs.
+    """
     from floatfea.run.truss import TrussCell
 
     return TrussCell(
@@ -898,7 +906,7 @@ def _cell_at(shape: str, h: float, b: float, geometry: str, steel: float):
         chord_buckling_length=1.0,
         diagonal_area=0.0,
         diagonal_force=0.0,
-        diagonal_face="bottom",
+        diagonal_face=face,
         steel_area_per_m=steel,
     )
 
@@ -980,14 +988,20 @@ def test_R1077_the_MARGIN_says_what_it_is_OVER_in_all_four_states() -> None:
         def __init__(self, cells):
             self.trusses = [_Group(cells)]
 
-    one = _cell_at("box", 3.0, 3.0, "per_face_45", 1.0)
-    two = _cell_at("box", 8.0, 3.0, "uniform_panel", 1.0)
-    assert cli._governing_faces(_Report([one])).startswith("1 is governed by")
-    assert "2 are governed by" in cli._governing_faces(_Report([one, two]))
+    # A BOX's faces are vertical and horizontal (R1078/R1087): `bottom` is a triangle's.
+    one = _cell_at("box", 3.0, 3.0, "per_face_45", 1.0, face="vertical")
+    two = _cell_at("box", 8.0, 3.0, "uniform_panel", 1.0, face="vertical")
+    assert cli._governing_faces(_Report([one])) == "1 is governed by the vertical face"
+    assert "2 are governed by the vertical face" in cli._governing_faces(_Report([one, two]))
 
     # **L46, pre-existing: a cell with NO governing face was published as being governed
     # by a face called `(none)`.** `_cell` leaves the field empty when every face carries
-    # zero shear. Both agreements again, and the invented face name is forbidden.
+    # zero shear. Both agreements again.
+    #
+    # **R1086: "the invented face name is forbidden" was what this comment used to say,
+    # and NOTHING forbids it -- nor can anything, because the shipped sentence QUOTES the
+    # retired wording.** The outcome is held by the positive needle below, which is a
+    # weaker guarantee than the comment claimed, and the comment now says so.
     import dataclasses
 
     blank = dataclasses.replace(one, diagonal_face="")
@@ -996,10 +1010,16 @@ def test_R1077_the_MARGIN_says_what_it_is_OVER_in_all_four_states() -> None:
     assert "1 has no governing face at all" in got, got
     got_two = cli._governing_faces(_Report([blank, dataclasses.replace(two, diagonal_face="")]))
     assert "2 have no governing face at all" in got_two, got_two
-    # And a mixed report still names the faces it does have.
+    # **AND THE MIXED REPORT, WHERE THE CAUSAL PHRASE WAS FALSE OF THE NAMED FACE
+    # (R1085).** As a trailing comma phrase, "every face carrying zero shear" read as a
+    # statement about the vertical-governed cell too. It is parenthesised into its own
+    # clause now, and the whole string is pinned rather than two fragments of it.
     mixed = cli._governing_faces(_Report([one, blank]))
-    assert "1 is governed by the bottom face" in mixed, mixed
-    assert "1 has no governing face at all" in mixed, mixed
+    assert mixed == (
+        "1 is governed by the vertical face, 1 has no governing face at all"
+        " (every face of that cell carrying zero shear)"
+    ), mixed
+    assert "zero shear)" in mixed and not mixed.endswith("zero shear"), mixed
 
 
 @pytest.mark.parametrize(
@@ -1079,8 +1099,16 @@ def test_R1080_the_bullet_does_NOT_bound_the_error_BY_THE_GOVERNING_FACE(tmp_pat
     # L45: `LOW, never high` was false in its first half -- at a floor-pinned cell the
     # published figure is EXACT, not low. Only the one-way half is asserted now, and the
     # retired wording is forbidden so it cannot come back silently.
-    assert "no triangle figure in these tables is ever HIGH" in text, text
-    assert "EXACT where the bracket floor absorbs it" in text, text
+    # **AND THE DIRECTION CLAIM NAMES WHICH CORRECTION IT HOLDS UNDER (R1088).** "no
+    # triangle figure is ever HIGH" is false under the BRACED LENGTH ALONE, which is one
+    # of the three corrections the same bullet enumerates -- so the unqualified sentence
+    # was true of two of three and read as true of all three.
+    assert (
+        "no triangle figure in these tables is ever HIGH UNDER THE ALLOCATION CORRECTION,"
+        " ALONE OR WITH THE BRACED LENGTH" in text
+    ), text
+    assert "under the BRACED LENGTH ALONE a `diag A` can come out HIGH" in text, text
+    assert "EXACT where the bracket floor absorbs the whole of it" in text, text
     # The face count survives as a description, explicitly disclaimed as a bound.
     assert "NOT as a" in text and "bound on the error" in text, text
 
@@ -1105,6 +1133,14 @@ def test_R1081_the_artifact_does_not_claim_the_winner_is_LOAD_INDEPENDENT(tmp_pa
     assert "WHICH CELL WINS CAN DEPEND ON THE LOAD" in text, text
     assert "named the torsion as what decides" not in text, text
     assert "property of THIS run's loads" in text, text
+    # **R1083: NONE OF THE THREE ASSERTIONS ABOVE IS L43's REPAIR, AND MY ARM FOR IT
+    # REDDENED FOR THE WRONG REASON.** All three predate L43 and survive its reversion;
+    # the arm's mutation happened to delete `property of THIS run's loads` as well, so
+    # `1 failed` was a true observation about a mutation that was not L43's. L43 changed
+    # two clauses and these are the two:
+    assert "can flip both the winning SHAPE and the winning READING" in text, text
+    assert "is not guaranteed to carry over to another deck or another heading" in text, text
+    assert "carries over to neither" not in text, text
 
 
 def test_R1082_a_NEAR_duplicate_is_ACCEPTED_because_the_comparison_is_EXACT(tmp_path) -> None:

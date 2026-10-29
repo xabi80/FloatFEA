@@ -550,9 +550,14 @@ def _governing_faces(report: TrussReport) -> str:
         for face, n in sorted(counts.items())
     ]
     if unresolved:
+        # **R1085: THE CAUSAL PHRASE BELONGS INSIDE THE CLAUSE IT EXPLAINS.** As a
+        # trailing comma phrase it read as false of the cells that DO have a governing
+        # face: "1 is governed by the bottom face, 2 have no governing face at all,
+        # every face carrying zero shear" says the named face carries zero shear too.
         clauses.append(
             f"{unresolved} {'has' if unresolved == 1 else 'have'} no governing face at"
-            f" all, every face carrying zero shear"
+            f" all (every face of {'that cell' if unresolved == 1 else 'those cells'}"
+            f" carrying zero shear)"
         )
     return ", ".join(clauses)
 
@@ -802,10 +807,15 @@ def _write_truss_sizing(path: Path, report: TrussReport) -> None:
         f" faces**, so it moves only where the corrected inclined face overtakes the"
         f" bottom one -- which is exactly the comparison the defect biases. The direction"
         f" is one-way in both: the areas are monotone in the force and `Lf/h > 1`, so"
-        f" **no triangle figure in these tables is ever HIGH.** It is low where the defect"
-        f" surfaces and EXACT where the bracket floor absorbs it -- `LOW, never high` was"
-        f" the previous wording and the first half of it is false at a floor-pinned cell,"
-        f" where the published figure is already right (L45). Of the"
+        f" **no triangle figure in these tables is ever HIGH UNDER THE ALLOCATION"
+        f" CORRECTION, ALONE OR WITH THE BRACED LENGTH** -- the bullet above enumerates"
+        f" three corrections, and under the BRACED LENGTH ALONE a `diag A` can come out"
+        f" HIGH instead, so the direction is a property of the correction and not of the"
+        f" defect (R1088). Under the two that include the allocation it is low where the"
+        f" defect surfaces and EXACT where the bracket floor absorbs the whole of it, the"
+        f" published area then being the one a corrected allocation would also produce."
+        f" An earlier wording said `LOW, never high` without either qualifier, and both"
+        f" halves of that needed one (L45). Of the"
         f" {sum(len(g.cells) for g in report.trusses)} cells in the tables above,"
         f" {_governing_faces(report)} -- reported as a fact about this run, and NOT as a"
         f" bound on the error. The box rows are unaffected: `Lf = h` there.",
