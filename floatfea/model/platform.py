@@ -555,9 +555,11 @@ def _refuse_hubs_the_centre_cannot_reach(
     ties the body's whole remainder to a `{PLATFORM_CENTRE_NODE}` that is an endpoint of
     no member -- so the remainder's mass appears in the mass report and contributes no
     stiffness to the frame. **The enumeration of the eight declared topologies, with what
-    each one does today and the command that measured it, is in the plan at `9827156`
-    (`docs/milestones/R1.md`, FT2.7).** It is not restated here, because a table in a
-    docstring is a figure nothing regenerates (BI3).
+    each one does today and the command that measured it, is in `docs/milestones/R1.md`
+    under FT2.7.** It is not restated here, because a table in a docstring is a figure
+    nothing regenerates (BI3) -- and the section is cited by NAME rather than by a commit
+    sha, because the sha an earlier draft of this docstring carried was superseded one
+    commit later.
 
     **THIS CHECKS THE DECK'S HUBS AND NOT THE MODEL'S NODES, and that is the whole
     design.** A hub no declared member names has no node in the frame at all, so a
@@ -565,9 +567,22 @@ def _refuse_hubs_the_centre_cannot_reach(
     missing a quarter or three quarters of its support. The plan records two of the eight
     topologies in exactly that state.
 
-    **AND A HUB REACHED ONLY BY A BRACE IS ACCEPTED HERE.** It IS connected to the centre,
-    so this refusal passes it; it fails downstream for a third reason, which the plan
-    records as an open question rather than as an R869 item.
+    **AND THE SCOPE IS THE DECLARATION, NOT THE BUILT FRAME. Measured, not assumed.** Two
+    arms that dropped or redirected a declared member inside the builder, leaving the
+    declaration intact, both PASSED this refusal and died downstream in
+    `KeyError: no node named 'platform:<hub>_arm_tip'`. So what this guarantees is that
+    every hub is reachable IN THE DECLARATION; a builder that fails to honour a good
+    declaration is caught by that lookup instead. Loud, and before any artifact exists --
+    but narrower than "every hub has a reachable node in the frame", which is what an
+    earlier draft of this sentence could be read as claiming.
+
+    **AND A HUB REACHED ONLY BY A BRACE IS ACCEPTED HERE, AND IT RUNS.** It IS connected to
+    the centre, so this refusal passes it -- and since R867 names a node after the joint it
+    occupies rather than after the member that reached it first, the support scheme resolves
+    and the topology solves. Verdict 42 ruled that and measured it: the node at hub4's joint
+    is at distance 0.0 from the one the star calls `platform:hub4_arm_tip`. An earlier draft
+    of this sentence said it "fails downstream" and called that an open question; both were
+    true when written and neither is true now.
 
     Over names rather than coordinates on purpose: `nodes` is keyed by the deck's own node
     NAMES, so no coordinate comparison enters and this cannot acquire an epsilon.

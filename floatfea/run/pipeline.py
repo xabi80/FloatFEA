@@ -162,9 +162,19 @@ def _sections_for(cfg: RunConfig, body_names: tuple[str, ...]) -> dict[str, Sect
     here would silently size a member with the stand-in tube and report the result as
     the configured one.
 
-    For the current star each body's members are one group, so the group names ARE the
-    body names. FL2(a) replaces this with a member list carrying its own group labels;
-    that is why this function is small and separate.
+    Each body's members are ONE group, so the group names ARE the body names, and that
+    is why this function is small and separate.
+
+    **A PER-MEMBER SECTION GROUP IS A DEVIATION FROM THE LOCKED PLAN'S (a), RECORDED
+    RATHER THAN BUILT (R870).** What stood here was a future-tense sentence promising that
+    FL2(a) would replace this with per-member group labels -- written before FL2(a) landed,
+    left in place after it landed, and never true of what it shipped. The deviation and its
+    reason are in `docs/milestones/R1.md` under FT2.7, and not restated here, because a
+    scope decision recorded in two places goes stale in one of them.
+
+    The retired sentence is PARAPHRASED and not quoted, deliberately: reproducing it would
+    leave a line in the tree that any future census for the false claim still matches, and
+    the repair would read as the defect.
     """
     declared = set(cfg.sections.groups)
     missing = sorted(set(body_names) - declared)
@@ -212,6 +222,13 @@ def _fraction_for(cfg: RunConfig, body_names: tuple[str, ...]) -> float | None:
             "run would report masses it did not use. FL2 wires it; until then this is "
             "refused rather than half-applied."
         )
+    # **ONE FRACTION FOR THE WHOLE MODEL, AND THE REFUSAL NO LONGER PROMISES OTHERWISE
+    # (R870).** The message used to end by naming FL2(a) as the milestone that would give
+    # the builder per-body fractions -- which FL2(a) did not do, so a user who read it was
+    # told to wait for something that had already shipped without it. What it says now is
+    # what they can act on. Per-body fractions are a deviation from the locked plan's (a)
+    # recorded in `docs/milestones/R1.md` under FT2.7. Paraphrased, not quoted, for the
+    # same reason as the docstring above.
     values = {spec.fraction for spec in specs if spec is not None}
     if len(values) != 1:
         raise ConfigError(
@@ -219,8 +236,8 @@ def _fraction_for(cfg: RunConfig, body_names: tuple[str, ...]) -> float | None:
             f"({sorted(v for v in values if v is not None)}). "
             f"`build_superstructure` applies ONE fraction to every body, so a per-body "
             f"split cannot be honoured today and running at one of them would report a "
-            f"mass distribution the configuration did not ask for. FL2(a) is where the "
-            f"builder gains per-body fractions."
+            f"mass distribution the configuration did not ask for. Declare ONE "
+            f"fraction, or the same fraction for every body."
         )
     return next(iter(values))
 
