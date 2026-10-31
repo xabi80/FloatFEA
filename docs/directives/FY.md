@@ -90,3 +90,70 @@ That asymmetry may be intended: a recorded `360.0` is an exporter writing a dire
 could have written as `0.0`, which is the same class of thing as a recorded `-10.0`. It is
 implemented as the directive words it, and the commit reports what the change newly
 refuses, so that if `[0, 360]` was meant the correction is one character.
+
+---
+
+# FY5 — two rulings on the FY1/FY2 patch
+
+*Appended under FP0, verbatim, as the first commit of the turn that received it. Issued by
+Xabier, 2026-10-31, as a follow-up to FY after the FY1/FY2 code landed in the working tree
+and its measurements were reported.*
+
+## The directive, verbatim
+
+```
+DIRECTIVE FY5 — two rulings on the FY1/FY2 patch
+Record: append to docs/directives/FY.md.
+
+FY5.1 — Recorded heading range: CLOSED [0, 360], not [0, 360).
+  - My FY1 text said [0, 360). That was my wording, not a decision. It
+    creates the recorded/declared asymmetry you measured, and 360 ≡ 0
+    under R1100.
+  - Change it so a recorded 360.0 is accepted, and the coverage
+    comparison treats it as 0 (the existing mod-360 path, no new code).
+  - −10 stays refused. Test rows: 360.0 accepted, 360.1 refused,
+    −10 refused.
+  - Update the refusal message and the docstring to state [0, 360].
+
+FY5.2 — Derived height provenance: MARK IT in report.md only.
+  - Where a height was derived, report.md states it in one line next to
+    the value, e.g. "24.2 m full (derived: 0.484 m model × λ = 50)".
+    A recorded pair prints as today.
+  - CSV headers unchanged. No marker key in the published dict. Carry
+    provenance as a local in the report writer, or as a separate return
+    value from _validated_wave_basis that only the report path reads.
+  - Test rows: model-only, full-only and both-recorded each produce the
+    expected report.md line.
+  - Under FR1 this is not blocking (a derived value is exact, not
+    wrong). It is cheap, and the user guide will need it, so do it in
+    this cycle rather than ledgering it.
+
+The two self-found defects (type/finiteness loop, KeyError on the
+derivation path) are accepted as fixed. Keep their assertions as named
+test rows so they cannot regress.
+
+Then continue as planned: test rows, the docstring (cite
+conventions.md:150 and FY1/FY5.1), golden U = 1.71167, then FY3.
+```
+
+## What FY5 changes about FY as recorded above
+
+**FY5.1 SUPERSEDES FY1's `[0, 360)` and the paragraph this file wrote about it.** The
+section "One reading FY1 settles and one it leaves to be flagged" recorded the half-open
+reading as implemented-as-worded with the asymmetry flagged for a one-character correction.
+FY5.1 is that correction, and it states the reason the flag was worth raising: the
+half-open range was wording rather than a decision.
+
+**The recorded side is now the same shape as the declared side**, inclusive at both ends,
+and `uncovered_headings` continues to compare modulo 360 — so `360.0` is accepted as a
+recording and treated as the direction `0.0` names, with no new code on the comparison path.
+
+**FY5.2 answers the disclosure gap this cycle raised and declined to fill unasked.** The
+FY1/FY2 work named it rather than building half of it: a derived height was published
+exactly as a recorded one, and `CLAUDE.md`'s rule about a stand-in value pointed at marking
+it while FY2's letter did not. FY5.2 rules where the mark goes (`report.md` only), what it
+says, and — explicitly — that no marker key enters the published dict.
+
+**And FY5 grades it under FR1 rather than leaving the grade to be inferred:** not blocking,
+because a derived value is exact rather than wrong. It is done in this cycle on cost and
+on the user guide's need for it, not because it blocks.
