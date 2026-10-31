@@ -127,23 +127,54 @@ elif command and re.search(PROTECTED, command):
     # the write in another. A caller that is not the supervisor has no
     # legitimate write here, so any write shape anywhere in a command that
     # mentions a protected directory is refused.
+    # A REDIRECT IS A WRITE WHERE ITS TARGET IS, NOT WHERE THE COMMAND HAPPENS
+    # TO MENTION A PATH (FX1). This is the FOURTH instance of the pattern this
+    # hook records about itself, and the first in which the over-refusal blocked
+    # the repair for it: the patch command below was itself denied, because its
+    # text named the directory and it had a redirect to the scratchpad.
+    #
+    # The previous form asked only WHETHER a redirect appeared anywhere in a
+    # command mentioning a protected directory. The matrix pasted into the FX
+    # commit shows that denying four reads and no additional write, among them
+    # the one FX was raised for:
+    #
+    #   python scripts/carried_table.py <a verdict> <answers.json> > <scratchpad>
+    #
+    # a committed generator whose INPUT is the verdict and whose OUTPUT is the
+    # scratchpad -- and `tests/test_report_carried.py` re-runs it and compares
+    # against what the report committed, so its table cannot be hand-written
+    # instead. Also denied: `wc -l <a verdict> > /tmp/n`, the same command with
+    # `2>&1`, and a pytest run over corpus DATA with its output in a file.
+    #
+    # So targets are extracted and tested one by one. `2>&1` yields no target,
+    # because `&` is outside the target character class, and `> /dev/null`
+    # yields a target that simply is not protected -- which is why the R84
+    # exemption list is GONE rather than extended. It was a list of shapes that
+    # write no FILE, and asking where the file IS answers that question without
+    # a list anyone has to keep complete. The R84 defect was an incomplete
+    # version of exactly that list.
+    #
+    # NO APOSTROPHES ANYWHERE IN THIS BLOCK, and that is load-bearing rather
+    # than style: the whole helper is one single-quoted shell argument, so an
+    # apostrophe in a COMMENT terminates it. Three of them in the first draft of
+    # this very clause did, bash raised a syntax error, `2>/dev/null` swallowed
+    # it, and the hook ALLOWED a Write straight at a verdict. See the empty-hit
+    # guard below, which is what makes that loud instead.
+    targets = [m.group(2) for m in re.finditer(r"([0-9]*)>>?\s*([^\s;|&<>]+)", command)]
+
+    # BH5 HOLE 1 IS NOT REOPENED, AND IT NEEDS ITS OWN CLAUSE NOW. The hole was
+    # `cd tests/corpus && echo x > y`: a RELATIVE target resolved against a
+    # protected cwd, so no target string names the directory. The broad match
+    # caught it incidentally; this catches it on purpose. The note above saying
+    # "the `cd` clause bought nothing" was true while the broad match existed
+    # and is false now -- with targets tested individually this clause is the
+    # only thing between that command and an allow, which the matrix checks in
+    # both the corpus and the reviews direction.
+    cd_into = re.search(r"\bcd\s+[^\s;|&]*" + PROTECTED, command)
+
     writes = (
-        # A redirect, with exactly two exemptions and no more (R84). The
-        # previous form was `(?<![0-9])>{1,2}(?!&)`, and that lookbehind exempted
-        # EVERY numbered redirect -- so `2> tests/corpus/entry.txt` and
-        # `2>> docs/reviews/step-4.md` were cleared as if they were `2>&1`.
-        # Both are ordinary writes. A stream number in front of `>` says WHICH
-        # STREAM is redirected, not whether a file is written, and `2>` is the
-        # shape an accidental write is most likely to take here precisely because
-        # it looks like the `2>&1` the rule was relaxed for.
-        #
-        # What stays exempt is the two shapes that genuinely write no file: `>&`
-        # (a descriptor duplication) and a redirect whose TARGET is the null
-        # device, which is what the third false positive was actually about.
-        # Those are stripped from the copy this clause scans; every other
-        # redirect in the same command is still there to be caught.
-        re.search(r">{1,2}(?!&)", re.sub(
-            r"[0-9]*>>?\s*(?:/dev/null|NUL)\b", "", command))
+        any(re.search(PROTECTED, t) for t in targets)
+        or (cd_into and targets)
         or re.search(r"\b" + VERBS + r"\b", command)
         or re.search(r"\bsed\b[^\n]*-i", command)
         or re.search(r"\bgit\b[^\n]*\b(?:checkout|restore|rm|mv)\b", command)
@@ -154,6 +185,29 @@ elif command and re.search(PROTECTED, command):
 print(agent, hit)
 ' 2>/dev/null)
 EOF
+
+# THE HELPER NOT RUNNING AT ALL IS A FOURTH FAIL-OPEN ROUTE, AND IT WAS OPEN
+# UNTIL THIS COMMIT (found while making the FX change, by the matrix FX requires).
+#
+# BH5 hole 2 closed the case where the helper RUNS and cannot parse its JSON: it
+# prints `- unparseable` and the case below denies. Nothing covered the case
+# where the helper does not run -- a shell syntax error inside the single-quoted
+# block, a python that dies on import, a machine where the interpreter exists but
+# the block is malformed. Then `$(...)` is empty, `read` leaves both variables
+# empty, no `case` arm matches, and the hook falls through to `exit 0`: ALLOW.
+#
+# Measured, because that is how it was found: three apostrophes in a comment in
+# the clause above broke the quoting, and the matrix went from 18 writes denied
+# to 24 rows ALLOWED -- `Write` at a verdict, `rm` of a verdict and unparseable
+# input among them. `bash -n` passed, because the shell syntax is still valid
+# once the quotes rebalance, and `2>/dev/null` hid the error from the operator.
+#
+# The helper prints two tokens on every path it can reach, so an empty `hit`
+# means it did not reach any of them. That is input this hook cannot clear.
+if [ -z "$hit" ]; then
+  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"protect-reviews.sh produced no decision at all -- its helper did not run (a quoting or interpreter failure, not a parse failure). A hook that cannot answer cannot clear a request, so this fails CLOSED. Run the hook by hand without 2>/dev/null to see the error."}}\n'
+  exit 0
+fi
 
 # The reviewer writes these directories. Nobody else does, including any other
 # subagent: a general-purpose agent has no business writing a verdict either.
