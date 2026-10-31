@@ -6,8 +6,18 @@ question and the option selected. Both are reproduced exactly; nothing is paraph
 
 ## Provenance
 
-Xabier was asked, in the session that then made the change, and selected the first option.
-There is no additional free-text instruction, and this file does not invent one.
+**Issuer: Xabier. Date: 2026-10-30.** Asked in the session that then made the change; he
+selected the first of three options. There is no additional free-text instruction, and this
+file does not invent one.
+
+**The issuer and date are stated because FY4 asked for them and this file did not carry
+them.** FY4's wording is "FX was not issued by the supervisor in this channel. Make sure
+`docs/directives/FX.md` exists and names its issuer and date" — the file existed and named
+the issuer; the date was missing, and a directive record whose date a later reader has to
+infer from `git log` is the same defect as one whose text they have to infer from a commit
+message. **Accepted at FY4** (`docs/directives/FY.md`), both parts: the
+`protect-reviews.sh` narrowing and the fail-closed guard that I flagged as going beyond
+FX1's letter.
 
 ## FX0 — the question, verbatim
 

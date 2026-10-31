@@ -21,7 +21,7 @@ Each file records where its text came from. **This is not uniform and the record
 * `FM.md`, `FN.md`, `FO.md`, `FP.md`, `FQ.md`, `FR.md`, `FS.md`, `FT.md`, `FU.md`,
   `FV.md`, `FW.md` — **verbatim** from the directive message.
 * `FY.md` — **verbatim** from the directive message. Issued by Xabier, 2026-10-31.
-* `FX.md` — **verbatim, but the directive arrived as a SELECTION rather than as a message.**
+* `FX.md` — **verbatim, but the directive arrived as a SELECTION rather than as a message.** Issued by Xabier, 2026-10-30; **accepted at FY4.**
   Xabier was asked a question with three options and chose one; what is reproduced
   word-for-word is the question and all three options, including the two not taken, so a
   later reader can see what the ruling was chosen *against*. There is no free-text
