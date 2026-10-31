@@ -20,7 +20,12 @@ Each file records where its text came from. **This is not uniform and the record
 
 * `FM.md`, `FN.md`, `FO.md`, `FP.md`, `FQ.md`, `FR.md`, `FS.md`, `FT.md`, `FU.md`,
   `FV.md`, `FW.md` — **verbatim** from the directive message.
+* `FZ.md` — **verbatim** from the directive message. Issued by Xabier, 2026-10-31.
+  **It also carries the running SR log**: FZ asks that every self-ruling taken under its
+  standing rulings be recorded as `SR-<n>`, and SR-1 is the ruling that they all go in that
+  one file rather than scattering across later directive files.
 * `FY.md` — **verbatim** from the directive message. Issued by Xabier, 2026-10-31.
+  Carries FY and FY5; FY5.1 supersedes FY1's heading range.
 * `FX.md` — **verbatim, but the directive arrived as a SELECTION rather than as a message.** Issued by Xabier, 2026-10-30; **accepted at FY4.**
   Xabier was asked a question with three options and chose one; what is reproduced
   word-for-word is the question and all three options, including the two not taken, so a
