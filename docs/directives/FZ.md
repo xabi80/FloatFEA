@@ -104,3 +104,30 @@ would have to know the directive sequence first. `docs/directives/README.md` is 
 index of the record and points at one file per directive; one SR log in the file that
 created the mechanism is the reading consistent with that. No published number depends on
 either reading, so rule 7's tie-break — pick the simpler one — also selects this.
+
+**SR-2: what is "per grid cell" for FY3's old/new ratio table, when the shipped example has
+`truss_sizing` OFF and its `(h, b)` grid commented out?**
+*Ruling applied:* FZ rule 7 (ambiguous wording → the reading consistent with existing
+conventions and tests).
+*Why:* two readings. (i) A probe load at a configuration where the inclined face governs,
+which is what verdict 42 used to show the defect reaches the published column. (ii) The
+example's own declared grid — `depths × widths × shapes` from the commented `truss:` block
+— at the deck's own governing rows. **Taken: (ii).** FY3's phrase is "per grid cell" and
+`truss_sizing.md` is published over that grid, so "cell" already denotes a row of that
+table; a probe load would produce a table of a configuration no deliverable contains. The
+probe is kept as well, as the absolute `h = 2, b = 8` cell FY3 separately requires, because
+it is the configuration where the whole factor lands in the published column and the grid's
+own rows mask it. Both readings are reported; neither replaces the other.
+
+**SR-3: the triangle's torsion closure — against Bredt's identity, or against the module's
+own wall forces?**
+*Ruling applied:* FZ rule 1 (what blocks is a silently wrong published result) with rule 5
+(self-found defects fixed, not ruled on).
+*Why:* my first closure measurement computed the triangle's recovered `Mx/T` as
+`2 · A_enc · q`, which is Bredt's identity and therefore `1.000000` whatever the module
+does — a check that cannot fail, which is the R434 shape this repository has a guard for.
+It was replaced before anything was claimed from it: the closure now sums the moments of
+the module's OWN wall magnitudes about a point, with each wall's real lever, so a wrong
+magnitude moves the answer. Worst `|closure − 1|` over the declared grid is `2.22e-16` on
+`Vz` and exactly `0` on `Mx/T`. No ruling was needed on the physics; what needed recording
+is that the first version of the evidence was vacuous and why.
