@@ -20,6 +20,13 @@ Each file records where its text came from. **This is not uniform and the record
 
 * `FM.md`, `FN.md`, `FO.md`, `FP.md`, `FQ.md`, `FR.md`, `FS.md`, `FT.md`, `FU.md`,
   `FV.md`, `FW.md` — **verbatim** from the directive message.
+* `FX.md` — **verbatim, but the directive arrived as a SELECTION rather than as a message.**
+  Xabier was asked a question with three options and chose one; what is reproduced
+  word-for-word is the question and all three options, including the two not taken, so a
+  later reader can see what the ruling was chosen *against*. There is no free-text
+  instruction to quote and the file says so rather than inventing one. **This is the first
+  directive in this record with that provenance**, and it is distinguished here because
+  "verbatim from the directive message" would be false of it.
 * `FL.md` — **reconstructed from the session summary.** FL arrived before a context
   compaction, so the implementer no longer had the original message when the record was
   backfilled. The summary's rendering is faithful in substance and is not guaranteed
