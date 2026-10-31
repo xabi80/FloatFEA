@@ -141,10 +141,20 @@ def test_the_TORSION_term_is_what_distinguishes_the_two_shapes_vertical_face() -
     box = box_resolution(N, VY, VZ, T, MY, MZ, h, b)
     tri = triangle_resolution(N, VY, VZ, T, MY, MZ, h, b)
     assert tri.face_shear["inclined"] > box.face_shear["vertical"]
-    # And with NO torsion they coincide exactly, which is the deck's own case.
+    # **AND THE COINCIDENCE THIS CELL EXISTED TO EXPLAIN IS GONE, WHICH IS FY3 (FY3).**
+    # It used to end: "with NO torsion they coincide exactly, which is the deck's own
+    # case", asserting `box == tri == |Vz|/2`. That coincidence WAS the defect -- both
+    # shapes were given `|Vz|/2` per face, the box correctly and the triangle as though
+    # its inclined faces were vertical. Now the triangle's in-plane share is `Lf/h` times
+    # the box's at zero torsion, so the published tables no longer agree by accident and
+    # the "looks like a shared code path" reading this cell was written to answer no
+    # longer arises. The RATIO is asserted, because that is the quantity FY3 changed.
+    lf = math.hypot(h, b / 2.0)
     box0 = box_resolution(N, VY, VZ, 0.0, MY, MZ, h, b)
     tri0 = triangle_resolution(N, VY, VZ, 0.0, MY, MZ, h, b)
-    assert box0.face_shear["vertical"] == tri0.face_shear["inclined"] == abs(VZ) / 2.0
+    assert box0.face_shear["vertical"] == abs(VZ) / 2.0
+    assert tri0.face_shear["inclined"] == abs(VZ) / 2.0 * (lf / h)
+    assert tri0.face_shear["inclined"] > box0.face_shear["vertical"]
 
 
 # ---------------------------------------------------------------------------
@@ -735,41 +745,40 @@ def test_L8_a_NON_FINITE_declared_parameter_is_REFUSED(truss_value, needle: str)
     assert "must be finite" in str(caught.value), str(caught.value)
 
 
-def test_R1072_the_TRIANGLE_shear_allocation_does_NOT_close_and_the_BOX_does() -> None:
-    """The idealisation's error, pinned as a measurement so it cannot drift unrecorded.
+def test_FY3_the_TRIANGLE_shear_allocation_CLOSES_and_so_does_the_BOX() -> None:
+    """The allocation, pinned as a measurement -- now that FY3 has made it close.
 
-    **THIS CELL DOES NOT ASSERT THE ALLOCATION IS RIGHT. IT ASSERTS WHAT IT IS.** Each of
-    the triangle's two inclined faces is allocated `|Vz|/2`, as though it were vertical. It
-    is not: for its VERTICAL component to be `|Vz|/2`, an inclined face of length
-    `Lf = hypot(h, b/2)` must carry `|Vz| Lf / (2h)` in plane. So the allocation is short
-    by exactly `Lf/h`, and the torsion share is short by the same factor -- `q h` where
-    Bredt gives `q Lf`.
+    **THIS CELL USED TO ASSERT THE OPPOSITE, AND THAT IS WHY IT IS HERE.** Its previous
+    form said in capitals: "THIS CELL DOES NOT ASSERT THE ALLOCATION IS RIGHT. IT ASSERTS
+    WHAT IT IS" -- each inclined face allocated `|Vz|/2` as though it were vertical, short
+    by exactly `Lf/h`, with the gap escalated rather than repaired because making it close
+    in `floatfea/` alone would have put two answers for one quantity in this repository.
 
-    **THE BOX IS THE CONTROL AND IT CLOSES EXACTLY**, because its faces really are
-    vertical, so `Lf = h` and the factor is one.
+    **FY3 settled that question and settled it against those numbers**, and
+    `results/F6b/truss_sizing.md` now carries a dated SUPERSEDED note for every triangle
+    row. So this cell pins the repaired quantity: each inclined face carries
+    `|Vz| Lf / (2h)` in plane, its shear flow acts over `Lf`, and both shapes close.
 
-    The idealisation is inherited verbatim from `scripts/measure/f6b_truss_sizing.py` and
-    is already published in `results/F6b/truss_sizing.md`; FI1 (`docs/milestones/F6b.md`)
-    says shear goes to the VERTICAL faces and a triangle has none, so nothing declares it.
-    **It is escalated rather than repaired** -- making it close in `floatfea/` alone would
-    put two answers for one quantity in this repository. This cell is what stops the gap
-    being rediscovered instead of ruled on.
+    **THE BOX REMAINS THE CONTROL.** It closed exactly before FY3 and closes exactly after
+    -- its faces really are vertical, so `Lf = h` and the factor is one. A repair that
+    moved the box would fail here on the same assertion that passes the triangle, which is
+    FY3's "box section must be unchanged" asserted rather than read off a diff.
     """
     for h, b in ((8.0, 3.0), (3.0, 8.0), (2.0, 8.0)):
         lf = math.hypot(h, b / 2.0)
         box = box_resolution(0.0, 0.0, 1.0, 0.0, 0.0, 0.0, h, b)
         tri = triangle_resolution(0.0, 0.0, 1.0, 0.0, 0.0, 0.0, h, b)
-        # Both shapes allocate `|Vz|/2` to each of two faces, so both SUM to Vz = 1.
+        # THE BOX: two genuinely vertical faces at `|Vz|/2`, summing to the load.
         assert box.face_shear["vertical"] * 2 == 1.0
-        assert tri.face_shear["inclined"] * 2 == 1.0
-        # THE TRIANGLE: in-plane equilibrium needs `Lf/h` times as much, and `Lf > h`
-        # strictly whenever `b > 0` -- so the shortfall is never zero and never favourable.
-        # (Three assertions here used to be arithmetic about Python rather than about
-        # `floatfea` -- `math.hypot(h, 0.0) == h` and a restatement of `2*(Lf/(2h))` --
-        # and they are gone (L14).)
+        # THE TRIANGLE: each inclined face carries the IN-PLANE share, so the pair sums to
+        # `Lf/h` times the load in plane -- and their VERTICAL components sum to the load,
+        # which is the closure. `Lf > h` strictly whenever `b > 0`, so the in-plane total
+        # is strictly greater: that inequality used to be the finding and is now the
+        # arithmetic of a correct allocation.
         assert lf > h
         in_plane = 2.0 * (1.0 * lf / (2.0 * h))
-        assert tri.face_shear["inclined"] * 2 < in_plane
+        assert tri.face_shear["inclined"] * 2 == in_plane
+        assert tri.face_shear["inclined"] * 2 * (h / lf) == 1.0
 
         # **THE TORSION HALF, which the published claim asserts and no cell covered (L14):
         # the module's share is `q h` where Bredt gives `q Lf`, short by the same factor.**
@@ -779,10 +788,11 @@ def test_R1072_the_TRIANGLE_shear_allocation_does_NOT_close_and_the_BOX_does() -
         # under test made this cell survive a mutation of that function's triangle branch.
         # Bredt: `q = T / (2 A_enc)`, and a triangle's enclosed area is `b h / 2`.
         q = 1.0 / (2.0 * (0.5 * b * h))
-        # **EXACTLY, and no tolerance.** With `Vz = 0` the module's share is `abs(q*h)`
-        # from the same expression computed here, so equality is exact -- and it is the
-        # `h` rather than the `Lf` that this pins, which is the whole finding.
-        assert tri_t.face_shear["inclined"] == q * h
+        # **EXACTLY, and no tolerance -- and it is `q * Lf` now, which is the repair.**
+        # This line read `== q * h`, and the comment beside it said "it is the `h` rather
+        # than the `Lf` that this pins, which is the whole finding". Bredt's wall force is
+        # the flow times the wall's OWN length, so `Lf` is what it was always owed.
+        assert tri_t.face_shear["inclined"] == q * lf
         # (An assertion here that `q * lf > ...` reduced, given the line above, to `lf > h`
         # -- already asserted a few lines up. It was the L14 defect reintroduced by the L14
         # repair, and it is gone rather than restated (L21).)
@@ -795,11 +805,14 @@ def test_R1072_a_TRIANGLE_diagonal_force_is_pinned_ABSOLUTELY_at_h_not_b() -> No
     equilibrium identities holding it; the shear channel had none for the triangle, which is
     how R1072's allocation went unexamined through two commits and one review.
 
-    What is pinned is the force the SHIPPED allocation produces -- `|Vz|/2` on the inclined
-    face, times `L/d` -- so that if the allocation is ever changed, this cell fails and the
-    change cannot be silent. It is a statement about the code, not an endorsement of it;
-    `test_R1072_the_TRIANGLE_shear_allocation_does_NOT_close_and_the_BOX_does` is the one
-    that records the gap.
+    What is pinned is the force the SHIPPED allocation produces -- and it is pinned at the
+    REPAIRED one now. Its previous form pinned `|Vz|/2` on the inclined face times `L/d`,
+    "so that if the allocation is ever changed, this cell fails and the change cannot be
+    silent. It is a statement about the code, not an endorsement of it." **FY3 is that
+    change and this cell is one of the four that fired**, which is the mechanism working
+    rather than a cost. It now pins `|Vz| Lf / (2h)` over a face whose dimension is `Lf`.
+    `test_FY3_the_TRIANGLE_shear_allocation_CLOSES_and_so_does_the_BOX` is the one that
+    records the closure.
     """
     # **`h=8, b=3` AND NOT `h=3, b=8` (L13).** At `h=3, b=8` the inclined face's own
     # dimension is `h = 3` and `min(h, b)` is also `3`, so the two readings give the SAME
@@ -812,7 +825,11 @@ def test_R1072_a_TRIANGLE_diagonal_force_is_pinned_ABSOLUTELY_at_h_not_b() -> No
     truss = TrussOptions(depths=(h,), widths=(b,), shapes=("triangle",))
     group = resolve_group("platform", rows, truss, MATERIAL)
     inclined = faces("triangle", h, b)[0]
-    assert inclined.shear_key == "inclined" and inclined.dimension == h
+    # **THE DIMENSION IS `Lf` NOW, NOT `h` (FY3 Q2).** This assertion read `== h`, and it
+    # is the one that says Q2 landed: the face is braced over its own length rather than
+    # over its vertical projection.
+    lf = math.hypot(h, b / 2.0)
+    assert inclined.shear_key == "inclined" and inclined.dimension == lf
 
     for cell in group.cells:
         # **THE LENGTH IS DERIVED HERE, NOT TAKEN FROM `panel_and_diagonal` (L13).** The
@@ -827,7 +844,7 @@ def test_R1072_a_TRIANGLE_diagonal_force_is_pinned_ABSOLUTELY_at_h_not_b() -> No
             if cell.geometry == "per_face_45"
             else math.hypot(panel, inclined.dimension)
         )
-        expected = (shear / 2.0) * length / inclined.dimension
+        expected = (shear * lf / (2.0 * h)) * length / inclined.dimension
         assert cell.diagonal_force == expected, (cell.geometry, cell.diagonal_force)
         # The inclined face governs here: `Vy = T = 0`, so the bottom face carries nothing.
         assert cell.diagonal_face == "inclined", cell.diagonal_face
@@ -1209,15 +1226,21 @@ def test_R1080_the_defect_does_NOT_move_steel_per_m_BELOW_the_bracket_FLOOR() ->
     **MY OWN BULLET CLAIMED THE SUM RISES ON EVERY CELL WITH A NON-ZERO INCLINED-FACE
     SHEAR, AND THAT IS FALSE.** `area_for_compression` bisects inside
     `sections.truss.diameter_search` and the smallest declared tube already carries a small
-    demand, so the shipped and the corrected allocations return the SAME floor area and the
-    published `steel/m` is byte-identical. My first probe missed it because every load I
-    chose was large; the boundary has to be solved, not sampled.
+    demand, so the two allocations return the SAME floor area and the published `steel/m`
+    is byte-identical. My first probe missed it because every load I chose was large; the
+    boundary has to be solved, not sampled.
 
-    The cell pins both sides of that boundary at one `(h, b)` with one variable moved -- the
-    inclined-face allocation -- so the exception is a property of the resolution and not of
-    a published sentence. It carries no threshold of its own: the two loads are far either
-    side of a boundary this test never names, and the assertions are equality and
-    inequality of published figures.
+    **THE SIMULATION IS INVERTED AT FY3, AND IT HAD TO BE.** This cell monkeypatched the
+    resolver to MULTIPLY the inclined share by `Lf/h`, standing in for a correction that
+    had not been made. FY3 made it, so that wrapper double-applied the factor and the cell
+    failed -- one of the four that fired. The patch now DIVIDES, standing in for the
+    defective allocation the repair replaced, and the comparison runs the same way round:
+    the corrected figure against the defective one, one variable moved.
+
+    The cell pins both sides of that boundary at one `(h, b)`, so the exception is a
+    property of the resolution and not of a published sentence. It carries no threshold of
+    its own: the two loads are far either side of a boundary this test never names, and the
+    assertions are equality and inequality of published figures.
     """
     import math
 
@@ -1225,15 +1248,20 @@ def test_R1080_the_defect_does_NOT_move_steel_per_m_BELOW_the_bracket_FLOOR() ->
 
     original = truss_mod.RESOLVERS["triangle"]
 
-    def corrected(n, vy, vz, t, my, mz, h, b):
+    def defective(n, vy, vz, t, my, mz, h, b):
+        """The PRE-FY3 allocation, simulated: the vertical projection of the in-plane share.
+
+        Dividing by `Lf/h` recovers exactly what the module produced before FY3, because
+        the repair multiplied by it -- `|Vz|/2` per face and `q*h` along each wall.
+        """
         cf = original(n, vy, vz, t, my, mz, h, b)
         lf = math.hypot(h, b / 2.0)
         shears = dict(cf.face_shear)
-        shears["inclined"] = shears["inclined"] * (lf / h)
+        shears["inclined"] = shears["inclined"] / (lf / h)
         return ChordForces(cf.chords, shears)
 
     def resolve(vz, fixed):
-        truss_mod.RESOLVERS["triangle"] = corrected if fixed else original
+        truss_mod.RESOLVERS["triangle"] = original if fixed else defective
         try:
             group = resolve_group(
                 "probe",
@@ -1251,8 +1279,8 @@ def test_R1080_the_defect_does_NOT_move_steel_per_m_BELOW_the_bracket_FLOOR() ->
     # finding R1080 is about, so the cell must not rest on it.
     row = (0.0, 3.0e6, 1.0e3, 0.0, 1.0e8, 0.0)
     assert (
-        corrected(*row, 3.0, 8.0).face_shear["inclined"]
-        > original(*row, 3.0, 8.0).face_shear["inclined"]
+        original(*row, 3.0, 8.0).face_shear["inclined"]
+        > defective(*row, 3.0, 8.0).face_shear["inclined"]
     )
 
     # BELOW the floor: that larger inclined shear does NOT move the published figure.
@@ -1278,7 +1306,7 @@ def test_R1080_the_defect_does_NOT_move_steel_per_m_BELOW_the_bracket_FLOOR() ->
         TrussOptions(depths=(3.0,), widths=(8.0,), shapes=("box",)),
         MATERIAL,
     )
-    truss_mod.RESOLVERS["triangle"] = corrected
+    truss_mod.RESOLVERS["triangle"] = defective
     try:
         box_b = resolve_group(
             "probe",

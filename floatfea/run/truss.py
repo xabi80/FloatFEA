@@ -165,8 +165,28 @@ def triangle_resolution(
         "bot_-b": axial - my / (2.0 * h) - mz / b,
     }
     q = t / (2.0 * enclosed_area("triangle", h, b))
-    # Two INCLINED faces carry `Vz`; the single BOTTOM face carries `Vy`. The inclined
-    # face's height is `h`, the vertical projection the chord separation provides.
+    # **EACH INCLINED FACE CARRIES ITS IN-PLANE SHARE, OVER ITS OWN LENGTH (FY3 Q1,
+    # answering R1072).** A braced face resists shear IN ITS OWN PLANE. For an apex-up
+    # triangle with bottom chords at `(-b/2, 0)` and `(+b/2, 0)` and the apex at `(0, h)`,
+    # each inclined wall runs along `e = (+-b/2, h)/Lf` with `Lf = hypot(h, b/2)`, so a
+    # face whose VERTICAL component must be `|Vz|/2` carries an in-plane force of
+    # `|Vz|/2 * Lf/h`. Bredt's shear flow acts along the wall too, so its contribution is
+    # `q * Lf` and not `q * h`.
+    #
+    # WHAT THIS REPLACES, AND IT DID NOT CLOSE. The previous form gave each face the
+    # VERTICAL PROJECTION of both -- `|Vz|/2 + q*h` -- so the faces' own components did
+    # not sum to the applied load. Measured over the example's declared grid, the
+    # recovered fraction of `Vz` ran from `0.982872` at `h=8, b=3` down to `0.447214` at
+    # `h=2, b=8`, and the recovered `Mx/T` from `0.988581` to `0.631476`. The box closed
+    # at `1.000000` on both channels at every aspect ratio, which is what said the error
+    # was in the triangle's treatment and not in the reference.
+    #
+    # The consequence was UNCONSERVATIVE and it reached a published column: triangular
+    # `diag A` in `truss_sizing.md` was low by up to `1.7723x` on the example's own grid
+    # and `2.3792x` at `h=2, b=8`. `docs/milestones/F6b.md` declares nothing about an
+    # inclined face -- FI1 says `Vz` goes to the VERTICAL faces, and a triangle has none --
+    # so this was an unexamined carry-over from `scripts/measure/f6b_truss_sizing.py`
+    # rather than a declared idealisation. FY3 rules both halves fixed.
     #
     # **THE KEYS ARE `inclined` AND `bottom`, NOT `vertical` AND `horizontal` (R1078).**
     # They were the box's names, and a triangle has no vertical face -- so a caller
@@ -175,8 +195,9 @@ def triangle_resolution(
     # vertical face" on a grid where the true answer for inclined faces was 0 and all 15
     # were box cells. A name that is false of the thing it names will eventually be
     # believed by something; renaming makes the conflation impossible rather than caught.
+    lf = inclined_face_length(h, b)
     face = {
-        "inclined": abs(vz) / 2.0 + abs(q * h),
+        "inclined": abs(vz) * lf / (2.0 * h) + abs(q * lf),
         "bottom": abs(vy) + abs(q * b),
     }
     return ChordForces(chords, face)
@@ -185,6 +206,17 @@ def triangle_resolution(
 def enclosed_area(shape: str, h: float, b: float) -> float:
     """`A_enclosed` for FI1's shear flow: `b h` for the box, `b h / 2` for the triangle."""
     return b * h if shape == "box" else 0.5 * b * h
+
+
+def inclined_face_length(h: float, b: float) -> float:
+    """`Lf`, the true length of an apex-up triangle's inclined face (FY3).
+
+    One function, because `Lf` is used in two places FY3 changes and they must not be able
+    to disagree: the SHEAR each inclined face carries in its own plane (Q1) and the LENGTH
+    that face is braced over (Q2). Those were `h` in both before FY3, and `h` is the
+    vertical projection of this.
+    """
+    return math.hypot(h, 0.5 * b)
 
 
 RESOLVERS = {"box": box_resolution, "triangle": triangle_resolution}
@@ -209,7 +241,16 @@ def faces(shape: str, h: float, b: float) -> tuple[Face, ...]:
     """
     if shape == "box":
         return (Face(2, h, "vertical"), Face(2, b, "horizontal"))
-    return (Face(2, h, "inclined"), Face(1, b, "bottom"))
+    # **THE INCLINED FACE IS BRACED OVER `Lf`, NOT OVER `h` (FY3 Q2).** It was `h`, the
+    # vertical projection, so the diagonal inside that face was sized and buckling-checked
+    # as if the face were only as deep as the triangle is tall. This is the second half of
+    # R1072 and it is INDEPENDENT of the first: the measurement that separated them found
+    # the allocation worth `Lf/h` on the diagonal FORCE and `0` on the published area at
+    # `per_face_45`, while the braced length alone moved 50 cells up and up to `27.0%`
+    # DOWN -- a longer strut is weaker, and it is also compared against a different
+    # slenderness limit. Correcting one and not the other gives a number defensible on one
+    # axis and wrong on the other, which is why FY3 rules both.
+    return (Face(2, inclined_face_length(h, b), "inclined"), Face(1, b, "bottom"))
 
 
 def chord_buckling_length(geometry: str, h: float, b: float) -> float:

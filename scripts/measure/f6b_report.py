@@ -83,8 +83,31 @@ def main(argv: list[str] | None = None) -> int:
     w("are unaffected**: a box's faces really are vertical, so the factor is one and the")
     w("box closes exactly on every `(h, b)`, which is the control. `docs/milestones/F6b.md`")
     w("(FI1) sends shear `Vz` to the VERTICAL faces, so this is an inheritance and not a")
-    w("declared idealisation, and whether the allocation should close is an OPEN QUESTION")
-    w("as this is written, not a settled one.")
+    w("declared idealisation.")
+    w()
+    w("## SUPERSEDED — every TRIANGLE row and figure below (2026-10-31, FY3)")
+    w()
+    w("**The open question the paragraph above described is CLOSED, and it was decided")
+    w("against these numbers.** Directive FY3 ruled both halves fixed: each inclined face")
+    w("carries `|Vz| Lf / (2h)` in plane with its shear flow over `Lf`, and the face is")
+    w("braced over `Lf` rather than over `h`. **So every triangle row and every triangle")
+    w("figure in this document is superseded. The box rows are not** — they were the")
+    w("control and nothing in the repair touches them.")
+    w()
+    w("**THIS DOCUMENT IS NOT RECOMPUTED, and that is deliberate.** It is the record of")
+    w("what F6b published, and overwriting its numbers would destroy the evidence that")
+    w("the correction was needed. The corrected values are produced by")
+    w("`floatfea/run/truss.py` and published in R1's own `truss_sizing.md`; the per-cell")
+    w("old-versus-new table, with a ratio column, is in R1 step 3's report.")
+    w()
+    w("**WHAT A READER OF A TRIANGLE ROW HERE SHOULD KNOW, pointed at rather than")
+    w("quoted**, because this document carries no typed measured figure and this note")
+    w("keeps that rule: the correction never makes a triangle LIGHTER; on the grid these")
+    w("rows were computed over, the governing face is the bottom one at every cell, so")
+    w("the diagonal AREA column moves least and the steel-per-metre column moves most;")
+    w("and the full factor appears only where the inclined face governs, which is a")
+    w("load case this deck's own shears do not reach. The step report gives all of it")
+    w("per cell, measured at both commits.")
     w()
     w(
         f"Declared inputs: chords and diagonals are tubes at `D/t = {inp['D_over_t']:.0f}`; "
@@ -433,7 +456,22 @@ def main(argv: list[str] | None = None) -> int:
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"  wrote {args.out.relative_to(ROOT).as_posix()} ({len(lines)} lines)")
+    # **THE LOG LINE USED TO CRASH THE GENERATOR AFTER IT HAD WRITTEN THE FILE.** It was
+    # `args.out.relative_to(ROOT)`, which raises `ValueError` for any `--out` that is not
+    # under the repository root -- a relative path, or anywhere outside it. The write had
+    # already happened, so the deliverable was on disk and the process exited 1: a caller
+    # that checks the exit code concludes the file was not produced, and a caller that
+    # does not gets a traceback beside a correct artifact. Found while regenerating this
+    # document for FY3, by writing to a scratch path and reading the exit code.
+    #
+    # It is not a wrong NUMBER, so it is not blocking under FR1 -- and it is one line, so
+    # FZ rule 1's "fixed in-cycle if cheap" applies rather than the ledger.
+    # `tests/regression/test_fy3_triangle_closure.py` carries the row.
+    try:
+        shown = args.out.resolve().relative_to(ROOT).as_posix()
+    except ValueError:
+        shown = str(args.out)
+    print(f"  wrote {shown} ({len(lines)} lines)")
     return 0
 
 

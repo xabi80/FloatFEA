@@ -23,8 +23,31 @@ single factor, and publishing one would state a sample as a bound. **The box row
 are unaffected**: a box's faces really are vertical, so the factor is one and the
 box closes exactly on every `(h, b)`, which is the control. `docs/milestones/F6b.md`
 (FI1) sends shear `Vz` to the VERTICAL faces, so this is an inheritance and not a
-declared idealisation, and whether the allocation should close is an OPEN QUESTION
-as this is written, not a settled one.
+declared idealisation.
+
+## SUPERSEDED — every TRIANGLE row and figure below (2026-10-31, FY3)
+
+**The open question the paragraph above described is CLOSED, and it was decided
+against these numbers.** Directive FY3 ruled both halves fixed: each inclined face
+carries `|Vz| Lf / (2h)` in plane with its shear flow over `Lf`, and the face is
+braced over `Lf` rather than over `h`. **So every triangle row and every triangle
+figure in this document is superseded. The box rows are not** — they were the
+control and nothing in the repair touches them.
+
+**THIS DOCUMENT IS NOT RECOMPUTED, and that is deliberate.** It is the record of
+what F6b published, and overwriting its numbers would destroy the evidence that
+the correction was needed. The corrected values are produced by
+`floatfea/run/truss.py` and published in R1's own `truss_sizing.md`; the per-cell
+old-versus-new table, with a ratio column, is in R1 step 3's report.
+
+**WHAT A READER OF A TRIANGLE ROW HERE SHOULD KNOW, pointed at rather than
+quoted**, because this document carries no typed measured figure and this note
+keeps that rule: the correction never makes a triangle LIGHTER; on the grid these
+rows were computed over, the governing face is the bottom one at every cell, so
+the diagonal AREA column moves least and the steel-per-metre column moves most;
+and the full factor appears only where the inclined face governs, which is a
+load case this deck's own shears do not reach. The step report gives all of it
+per cell, measured at both commits.
 
 Declared inputs: chords and diagonals are tubes at `D/t = 24`; `F_y = 355 MPa`; tension `0.6 F_y`; compression
 § 3.2.2 at `K = 1.0` with `L` = the panel length; diagonals at `45°`; joint allowance `1.15`;
