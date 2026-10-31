@@ -131,3 +131,30 @@ the module's OWN wall magnitudes about a point, with each wall's real lever, so 
 magnitude moves the answer. Worst `|closure − 1|` over the declared grid is `2.22e-16` on
 `Vz` and exactly `0` on `Mx/T`. No ruling was needed on the physics; what needed recording
 is that the first version of the evidence was vacuous and why.
+
+**SR-4: does FY3's "mark the triangle tables SUPERSEDED" mean recompute them?**
+*Ruling applied:* FZ rule 7 (ambiguous wording -> the reading consistent with existing
+conventions), with rule 4 (unconservative physics: fix, mark SUPERSEDED, give a ratio table).
+*Why:* two readings. (i) Fix `scripts/measure/f6b_truss_sizing.py` as well and regenerate
+F6b's numbers. (ii) Leave the numbers as the record of what F6b published and mark them,
+pointing at the corrected values. **Taken: (ii).** FY3's own words are "mark ... SUPERSEDED
+with a dated note pointing to the corrected values" -- under (i) there would be nothing to
+point at, and "superseded" would be the wrong word for a document that now agrees.
+Recomputing would also destroy the evidence that the correction was needed, which is what
+rule 4's ratio table exists to keep readable. The note carries no measured figure, because
+that document's standing rule is that none is typed into it; it names which column moves
+least and which most, and points at R1's `truss_sizing.md` and the step report.
+
+**SR-5: the F6b generator wrote the deliverable and then exited 1.**
+*Ruling applied:* FZ rule 1 (not blocking under FR1, fixed in-cycle because cheap) with
+rule 5 (self-found defect: fix and add a named row).
+*Why:* `args.out.relative_to(ROOT)` on the final log line raises `ValueError` for any
+`--out` not under the repository root. The write had already happened, so the artifact was
+on disk at 17516 bytes and the process exited 1 -- a caller checking the exit code concludes
+the file was not produced; one that does not gets a traceback beside a correct artifact. No
+number is wrong, so FR1 does not make it blocking; it is one line, so it is fixed now rather
+than ledgered. **And it had already cost something before it was found:** my first
+verification of the supersession printed "REGENERATES BYTE-IDENTICAL" from a `cmp` of two
+files written by crashed runs, because a `&&` chain hides a non-zero exit whenever the next
+command succeeds on the wreckage. That claim was withdrawn and re-measured with exit codes
+checked.
