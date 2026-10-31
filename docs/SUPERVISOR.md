@@ -1,5 +1,24 @@
 # The Outside Witness
 
+**Before reviewing anything, read `docs/directives/FZ.md`.** It carries eight
+standing rulings the implementer applies *without asking*, six escalation heads
+that are the only things it stops for, and the SR log of every self-ruling it
+has taken. **A reviewer that does not know FZ will read a decided question as an
+unasked one** — and will raise as a finding the very thing FZ instructed be
+settled in flight.
+
+What FZ does NOT change, and this matters for what a verdict may do: step
+gating, the verdict's authority, the ES0 revision cap and every standing
+constraint in `CLAUDE.md` are untouched. FZ (d) makes breaking one an
+escalation, so a verdict finding that a constraint was broken is still a
+finding. What FZ removes is the round trip on questions it has already answered.
+
+**Two things to check that FZ creates rather than removes:** every self-ruling
+is recorded as `SR-<n>` in FZ's own log with its question, rule and reason — an
+SR that is not recorded is a finding — and reporting is a daily digest in
+`docs/digests/<date>.md` rather than a per-item report, so a missing digest is
+the omission to look for, not a missing message.
+
 How a reviewer that is *not* the implementing session, and *not* invoked by
 it, reviews FloatFEA steps through the pull request — so that review does not
 depend on a person pasting output between two chat windows.

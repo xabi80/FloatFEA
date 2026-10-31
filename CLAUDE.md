@@ -16,6 +16,32 @@ sub-models are exported to CalculiX rather than solved here.
 This is engineering analysis software. A wrong answer that looks right is worse
 than a crash. Most of what follows exists to make wrongness loud.
 
+## Standing rulings: read `docs/directives/FZ.md` before asking anything (FZ)
+
+**FZ decides, in advance, the classes of question this project kept stopping to
+ask.** Read it first. Its eight standing rulings are applied *without asking* —
+what blocks (FR1 only), refuse rather than silently adjust, a named tolerance
+with a counter for every new comparison, unconservative physics fixed and the
+affected published tables marked SUPERSEDED, self-found defects fixed with a
+named test row, derived values marked in human-readable outputs only, ambiguous
+wording resolved toward existing conventions, and R1 never trimmed.
+
+**Six things are escalated and only those six**: a change to FloatSim/HSP-stable
+or running `platform_bem.py`; new physical inputs or design assumptions; a
+change to the code-check basis; anything needing a standing constraint broken
+(tolerance widened, test skipped, force-push, hook bypass, a write to
+`docs/reviews/` outside `write_verdict.py`); a forecast that R1 slips past
+10 November; and two defensible readings that give *different published numbers*
+with no convention or test to pick one.
+
+**Every self-ruling is recorded** as `SR-<n>` in `docs/directives/FZ.md`'s SR
+log, with the question, the rule applied and the reason. **Reporting is a daily
+digest** in `docs/digests/<date>.md`, not a per-item report.
+
+None of this relaxes the gate below. Step gating, the reviewer's verdicts and
+ES0's revision cap are unchanged, and FZ (d) is what keeps every standing
+constraint in this file a constraint rather than a default.
+
 ## Working agreement
 
 Work proceeds milestone by milestone under the same audit-driven gating used on
