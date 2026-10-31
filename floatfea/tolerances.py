@@ -1771,6 +1771,55 @@ MASS_PROPERTY_AGREEMENT: Final[float] = 1e-13
 # Set: 2026-10-29, R1 step 3 (R867, answering verdict 42's L57)
 NODE_COINCIDENCE_DECIMALS: Final[int] = 9
 
+# CLASS: INPUT VALIDATION -- a relative agreement between two recordings of ONE physical
+# quantity at two scales. Its counter-case is an injected pair inconsistency that the same
+# assertion in the same quantity must detect, which is RECORDED_HEIGHT_PAIR_COUNTER below.
+#
+# WHAT IT IS (FY2, answering R895). A dynamic-inputs sidecar records the wave height twice,
+# at model scale and at full scale, related by the Froude factor `lambda`. Nothing related
+# them, and the model side carried the FULL-scale `0..100 m` ceiling, so it was vacuous by
+# exactly lambda -- 50x as shipped, up to 1000x at FROUDE_LAMBDA's own ceiling. A sidecar
+# recording `24.2 m` full and `100.0 m` model was accepted at exit 0 and both numbers were
+# published, beside the correct lambda, in `report.md` and both CSV headers: a sea state
+# that cannot exist, with nothing saying which number was wrong.
+#
+# FY2 rules the repair as a CHECK rather than a derivation when both are recorded:
+#
+#     |full - model * lambda| <= RECORDED_HEIGHT_PAIR_RELATIVE * |full|
+#
+# WHY RELATIVE AND NOT ABSOLUTE. The quantity spans three decades over FROUDE_LAMBDA's own
+# domain (lambda 1 to 1000), so one absolute epsilon is simultaneously too loose at model
+# scale and too tight at full scale. A relative form has the same meaning at both ends,
+# which is what a rule about two recordings of one quantity needs.
+#
+# REASON FOR 1e-9: the two numbers are written by one exporter from one source value, so
+# the only legitimate disagreement between them is the decimal rounding in the sidecar's
+# JSON. The shipped example records `24.2` and `0.484` at lambda 50: `0.484 * 50` is
+# `24.200000000000003`, a relative discrepancy of `1.5e-16`, which is round-off at double
+# precision and nothing else. 1e-9 is seven decades above that and seven decades below the
+# smallest disagreement that could matter physically -- a millimetre on a 24 m wave is
+# `4e-5` relative, four decades ABOVE this value, so a sidecar whose numbers disagree by
+# as little as a millimetre is still refused.
+#
+# AND IT IS NOT A CONVERGENCE THRESHOLD OR A FUDGE. Nothing iterates to it and no two
+# computed results are being made to agree: it is the width of the gap between two
+# RECORDED numbers that a reader is entitled to treat as one.
+# Set: 2026-10-31, R1 step 3 (FY2, answering R895)
+RECORDED_HEIGHT_PAIR_RELATIVE: Final[float] = 1e-9
+
+# CLASS: INPUT VALIDATION -- the counter-case for the entry above. The smallest pair
+# inconsistency the same assertion in the same quantity must DETECT, expressed as a
+# relative perturbation of the full-scale height.
+#
+# Reason for 1e-6: three decades above the ceiling it must trip, so the refusal is not
+# being asked to resolve a boundary, and four decades BELOW the millimetre-scale
+# disagreement that is the smallest physically meaningful one -- so a counter-case built
+# on it is testing the check rather than testing a wave. At the shipped example it is a
+# perturbation of `24.2 * 1e-6` = `2.42e-05` m, twenty-four microns on a twenty-four metre
+# wave, and the cell asserts that THAT is refused.
+# Set: 2026-10-31, R1 step 3 (FY2, answering R895)
+RECORDED_HEIGHT_PAIR_COUNTER: Final[float] = 1e-6
+
 
 # ---------------------------------------------------------------------------
 # Rung 4 -- The loads are the loads

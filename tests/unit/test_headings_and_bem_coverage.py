@@ -406,7 +406,18 @@ def test_R879_a_recorded_heading_OUTSIDE_the_declared_domain_is_refused(value: f
     """
     with pytest.raises(ConfigError) as caught:
         _validated_wave_basis(dict(GOOD) | {"heading_deg": value}, SIDECAR)
-    assert "outside the declared domain" in str(caught.value), str(caught.value)
+    message = str(caught.value)
+    # **THE HEADING HAS ITS OWN MESSAGE NOW, AND FY1 IS WHY (FY1, FY5.1).** It no longer
+    # shares the generic "outside the declared domain" wording, because FY1 asks the
+    # refusal to name the value, the accepted range AND the remedy -- so a reader whose
+    # export wrote a signed heading is told to normalise it mod 360 under the convention
+    # in `docs/conventions.md:150` rather than left to work that out. All three are
+    # asserted, because a message that names the value and not the remedy is the half of
+    # this that R885 already had.
+    assert "accepted range 0 <= heading <= 360 deg" in message, message
+    assert f"{value:g} deg" in message, message
+    assert "docs/conventions.md:150" in message, message
+    assert "mod 360" in message, message
 
 
 @pytest.mark.parametrize("value", [0.0, 360.0, 180.0])
@@ -434,7 +445,17 @@ def test_R881_a_recorded_WAVE_HEIGHT_outside_its_declared_domain_is_refused(
     with pytest.raises(ConfigError) as caught:
         _validated_wave_basis(dict(GOOD) | {key: value}, SIDECAR)
     message = str(caught.value)
-    assert "outside the declared domain" in message and f"run.{key}" in message, message
+    assert f"run.{key}" in message, message
+    # **THE TWO HEIGHTS NOW FAIL WITH DIFFERENT MESSAGES, AND THAT IS FY2 (FY2).** The
+    # full-scale height carries `WAVE_HEIGHT`'s declared `0..100 m`. The model height
+    # carries no constant at all: its ceiling is DERIVED as `100/lambda`, which at the
+    # committed lambda of 50 is 2 m, so the message names the derivation rather than a
+    # declared domain. Asserting one message for both would have passed while saying
+    # nothing about which bound each was checked against.
+    if key == "wave_height_full_m":
+        assert "outside the declared domain" in message, message
+    else:
+        assert "That ceiling is DERIVED" in message, message
 
 
 @pytest.mark.parametrize("value", [0.0, 100.0, 24.2])
@@ -443,8 +464,22 @@ def test_R881_the_WAVE_HEIGHT_domain_is_INCLUSIVE_at_both_ends(value: float) -> 
 
     A calm sea is `0.0` m and the bound admits it; the refusal above is about values no
     declaration could express, not about small ones.
+
+    **THE PAIR MOVES TOGETHER NOW, AND NOT BECAUSE THE ASSERTION NEEDED HELP (FY2).** This
+    cell used to set the full height alone and leave the model height at `0.484`, which
+    was admissible only while nothing related the two. Under FY2 `100.0` m full against
+    `0.484` m model at lambda 50 is a refusal -- correctly, since it implies `24.2` m --
+    so varying one leg of the triple in isolation stopped being a test of the BOUND and
+    became a test of the pair check. The model height is set to `value / lambda`, which is
+    what an exporter would have written, and the bound is still what is under test: at
+    `100.0` the model height is `2.0`, exactly its derived ceiling, so this also pins the
+    inclusive end of the DERIVED bound.
     """
-    assert _validated_wave_basis(dict(GOOD) | {"wave_height_full_m": value}, SIDECAR)
+    lam = float(GOOD["lambda"])
+    assert _validated_wave_basis(
+        dict(GOOD) | {"wave_height_full_m": value, "wave_height_model_m": value / lam},
+        SIDECAR,
+    )
 
 
 def test_R881_EVERY_numeric_recorded_field_HAS_a_declared_domain() -> None:
@@ -455,18 +490,35 @@ def test_R881_EVERY_numeric_recorded_field_HAS_a_declared_domain() -> None:
     same defect again, and nothing above would notice: the cases are keyed on the names
     that exist today.
     """
-    from floatfea.run.pipeline import RECORDED_BOUNDS, WAVE_BASIS_KEYS
+    from floatfea.run.pipeline import HEIGHT_PAIR, RECORDED_BOUNDS, WAVE_BASIS_KEYS
 
+    # **DECLARED OR DERIVED, AND THE DISTINCTION IS THE WHOLE OF FY2 (FY2).** The invariant
+    # this cell protects is that no recorded numeric field reaches a deliverable with a
+    # type check and no domain -- which is what R881 was. `wave_height_model_m` left
+    # `RECORDED_BOUNDS` because its ceiling is `100/lambda` rather than a constant, so the
+    # old equality would now fail for the one field whose bound got STRICTER. The
+    # invariant is restated to cover both kinds, and the derived one is named rather than
+    # excused, so a sixth field added with neither is still caught.
+    derived = {HEIGHT_PAIR[1]}
     numeric = [k for k in WAVE_BASIS_KEYS if not isinstance(GOOD[k], str)]
-    assert set(numeric) == set(RECORDED_BOUNDS), (
-        f"these recorded numeric fields have no declared domain: "
-        f"{sorted(set(numeric) - set(RECORDED_BOUNDS))}"
+    assert set(numeric) == set(RECORDED_BOUNDS) | derived, (
+        f"these recorded numeric fields have no domain, declared or derived: "
+        f"{sorted(set(numeric) - set(RECORDED_BOUNDS) - derived)}"
     )
     for key, (unit, low, high) in RECORDED_BOUNDS.items():
         assert low < high and unit, (key, unit, low, high)
+    # And the derived one really is bounded: at the committed lambda its ceiling is 2 m,
+    # which is `WAVE_HEIGHT`'s high bound divided by lambda and not a second constant.
+    with pytest.raises(ConfigError) as caught:
+        _validated_wave_basis(
+            dict(GOOD) | {"wave_height_model_m": 2.001, "wave_height_full_m": 100.0}, SIDECAR
+        )
+    assert "That ceiling is DERIVED" in str(caught.value), str(caught.value)
 
 
-@pytest.mark.parametrize("missing", list(GOOD))
+@pytest.mark.parametrize(
+    "missing", [k for k in GOOD if k not in ("wave_height_full_m", "wave_height_model_m")]
+)
 def test_R878_a_PARTIAL_sidecar_is_refused_rather_than_downgraded(missing: str) -> None:
     """A sidecar missing a field is WRONG, not absent.
 
@@ -505,8 +557,19 @@ def test_R903_a_bad_recorded_LAMBDA_is_refused(value: Any) -> None:
 def test_R903_the_LAMBDA_domain_is_inclusive_and_admits_the_committed_scale(
     value: float,
 ) -> None:
-    """`FROUDE_LAMBDA` is `(1.0, 1000.0)` inclusive, and 50 is the committed export."""
-    assert _validated_wave_basis(dict(GOOD) | {"lambda": value}, SIDECAR)
+    """`FROUDE_LAMBDA` is `(1.0, 1000.0)` inclusive, and 50 is the committed export.
+
+    **THE MODEL HEIGHT MOVES WITH LAMBDA, BECAUSE UNDER FY2 IT MUST (FY2).** This cell set
+    lambda alone and left both heights at the committed pair, which was admissible only
+    while nothing related the three. At lambda 1000 the committed `0.484` m model height is
+    above its derived ceiling of `0.1` m AND implies `484` m full scale -- two refusals, for
+    a cell whose subject is the lambda BOUND. The model height is set to `full / lambda`,
+    so the triple is consistent at every rung and what is under test is the bound.
+    """
+    full = float(GOOD["wave_height_full_m"])
+    assert _validated_wave_basis(
+        dict(GOOD) | {"lambda": value, "wave_height_model_m": full / value}, SIDECAR
+    )
 
 
 def test_R877_the_READER_ITSELF_validates_not_only_the_helper(tmp_path: Path) -> None:
@@ -534,11 +597,22 @@ def test_R877_the_READER_ITSELF_validates_not_only_the_helper(tmp_path: Path) ->
         exported_wave_basis(npz)
     assert "run.heading_deg" in str(caught.value), str(caught.value)
 
-    partial = {k: v for k, v in GOOD.items() if k != "wave_height_full_m"}
+    # **THE PARTIAL CASE DROPS `window`, NOT A HEIGHT, AND FY2 IS WHY.** Dropping
+    # `wave_height_full_m` is no longer partial: FY2 derives it from the model height and
+    # lambda, so this case would have asserted a refusal that is now a feature. `window`
+    # is one of the three fields that are one quantity each, where R878's rule is
+    # unchanged -- a sidecar missing one of those is WRONG rather than ABSENT.
+    partial = {k: v for k, v in GOOD.items() if k != "window"}
     sidecar.write_text(_json.dumps({"run": partial}), encoding="utf-8")
     with pytest.raises(ConfigError) as caught:
         exported_wave_basis(npz)
     assert "PARTIAL wave basis" in str(caught.value), str(caught.value)
+
+    # AND THE HEIGHT PAIR AT THE CALL SITE: one recorded, the other derived, through the
+    # reader rather than the helper -- which is this cell's whole reason for existing.
+    model_only = {k: v for k, v in GOOD.items() if k != "wave_height_full_m"}
+    sidecar.write_text(_json.dumps({"run": model_only}), encoding="utf-8")
+    assert exported_wave_basis(npz) == GOOD
 
     # R881 AT THE CALL SITE TOO. The helper cases above are green with the call removed
     # from the reader, which is exactly how R866, R877 and R881 each shipped.
@@ -840,3 +914,227 @@ def test_R1042_a_BOOL_SIDECAR_cannot_pass_the_TWO_RECORD_comparison(tmp_path: Pa
     message = str(excinfo.value)
     assert "cannot be compared" in message, message
     assert "True (bool)" in message, message
+
+
+# --------------------------------------------------------------------------
+# FY1 / FY5.1 -- a signed heading is REFUSED and not normalised, over [0, 360].
+# FY2 / FY5.2 -- the height pair against lambda, and the derived-height mark.
+# --------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("value", [360.0, 0.0, 359.999, 180.0])
+def test_FY5_1_a_recorded_heading_of_360_is_ACCEPTED(value: float) -> None:
+    """The range is CLOSED at both ends, which FY5.1 settled.
+
+    **THIS CELL EXISTS BECAUSE THE CODE SHIPPED HALF-OPEN FOR ONE COMMIT.** FY1's text
+    said `[0, 360)`; implemented as worded it refused a recorded `360.0` while a DECLARED
+    `headings: [360.0]` stayed accepted and compared modulo 360 under R1100 -- the two
+    sides of one quantity disagreeing at exactly one value. FY5.1: "That was my wording,
+    not a decision."
+
+    So `360.0` is accepted here, and `test_R872_360_and_0_are_ONE_direction` is what makes
+    it mean the direction `0.0` names. Nothing on the comparison path changed.
+    """
+    lam = float(GOOD["lambda"])
+    assert _validated_wave_basis(
+        dict(GOOD) | {"heading_deg": value, "wave_height_model_m": 24.2 / lam}, SIDECAR
+    )
+
+
+@pytest.mark.parametrize("value", [-10.0, -0.001, 360.1, 450.0])
+def test_FY1_a_SIGNED_or_past_turn_heading_is_refused_with_the_remedy(value: float) -> None:
+    """FY1's three requirements of the message, asserted one by one.
+
+    `docs/conventions.md:150` records that the BEM reader converts a heading straight
+    through with no sign flip and no offset, so a Capytaine dataset carrying a negative
+    `wave_direction` records a negative heading -- a legal direction written with the
+    other sign. **FY1 rules REFUSE rather than normalise**, because a signed recording may
+    be a sign-convention error in the export and normalising it silently is what would
+    hide that.
+
+    `-0.001` is the row that matters most: it is the smallest signed value, a hair below
+    the boundary, and it is the one an over-eager `abs()` or a tolerance would let through.
+    """
+    with pytest.raises(ConfigError) as caught:
+        _validated_wave_basis(dict(GOOD) | {"heading_deg": value}, SIDECAR)
+    message = str(caught.value)
+    assert f"{value:g} deg" in message, message
+    assert "accepted range 0 <= heading <= 360 deg" in message, message
+    assert "docs/conventions.md:150" in message, message
+    assert f"{value % 360.0:g}" in message, message
+
+
+def test_FY2_case_D_the_pair_R895_FOUND_is_refused() -> None:
+    """R895's own case, through the validator: `24.2 m` full and `100.0 m` model.
+
+    **THIS IS THE STATE THAT PUBLISHED AT EXIT 0.** Both numbers reached `report.md` and
+    both CSV headers, beside the correct lambda, describing a sea state that cannot exist
+    -- at lambda 50 a 100 m model wave is a 5000 m full-scale wave. Nothing said which of
+    the two was wrong, and the contradiction was readable only to someone who did the
+    division.
+
+    The ceiling catches it first and the message says the ceiling is DERIVED, which is the
+    half of FY2 that makes the bound right rather than merely tighter: a single shared
+    `0..100 m` was vacuous by exactly lambda.
+    """
+    with pytest.raises(ConfigError) as caught:
+        _validated_wave_basis(dict(GOOD) | {"wave_height_model_m": 100.0}, SIDECAR)
+    message = str(caught.value)
+    assert "run.wave_height_model_m" in message, message
+    assert "That ceiling is DERIVED" in message, message
+    assert "0..2 m" in message, message
+
+
+@pytest.mark.parametrize("model", [0.3, 0.6, 0.4839, 0.4841])
+def test_FY2_case_C_a_MISMATCHED_pair_is_refused_naming_both(model: float) -> None:
+    """A pair that is inside both bounds and still disagrees with lambda.
+
+    **THE CEILING ALONE WOULD NOT CATCH THESE.** Every value here is under the derived
+    `2 m`, so a bound on one member of the pair is green on all of them; it is the pair
+    CHECK that refuses. `0.4839` and `0.4841` are the rows that say the check is not a
+    rounding allowance -- they are a tenth of a millimetre from the recorded `0.484`, and
+    `RECORDED_HEIGHT_PAIR_RELATIVE` is `1e-9`.
+    """
+    with pytest.raises(ConfigError) as caught:
+        _validated_wave_basis(dict(GOOD) | {"wave_height_model_m": model}, SIDECAR)
+    message = str(caught.value)
+    assert "disagree with the recorded lambda" in message, message
+    assert "wave_height_full_m" in message and "wave_height_model_m" in message, message
+    assert "RECORDED_HEIGHT_PAIR_RELATIVE" in message, message
+
+
+def test_FY2_the_COUNTER_is_detected_and_the_committed_pair_is_not() -> None:
+    """The declared tolerance and its counter, from the two ends they are declared for.
+
+    `RECORDED_HEIGHT_PAIR_COUNTER` is the smallest pair inconsistency the same assertion
+    in the same quantity must DETECT. `RECORDED_HEIGHT_PAIR_RELATIVE` is the width it may
+    not detect. Both are asserted here against the committed pair, so neither can be
+    widened without this cell saying so -- which is what a counter is for.
+
+    The committed pair's own disagreement is round-off and nothing else: `0.484 * 50` is
+    `24.200000000000003`, a relative discrepancy of about `1.5e-16`.
+    """
+    from floatfea.tolerances import (
+        RECORDED_HEIGHT_PAIR_COUNTER,
+        RECORDED_HEIGHT_PAIR_RELATIVE,
+    )
+
+    full = float(GOOD["wave_height_full_m"])
+
+    # the committed pair, unperturbed: accepted
+    assert _validated_wave_basis(dict(GOOD), SIDECAR)
+
+    # perturbed by the COUNTER: refused
+    with pytest.raises(ConfigError):
+        _validated_wave_basis(
+            dict(GOOD) | {"wave_height_full_m": full * (1.0 + RECORDED_HEIGHT_PAIR_COUNTER)},
+            SIDECAR,
+        )
+
+    # **AND THE COUNTER IS STRICTLY CLEAR OF THE TOLERANCE, constant against constant.**
+    # My first version of this line was `> RECORDED_HEIGHT_PAIR_RELATIVE * 100.0`, to say
+    # "three decades clear" -- and `tests/test_no_tolerance_literals.py` refused it,
+    # correctly: the bound of that comparison is the PRODUCT, so `100.0` is an undeclared
+    # factor deciding a comparison, which is a tolerance under another name. HOW FAR apart
+    # they are is reasoned in the two `tolerances.py` entries, where a reader can check the
+    # reasoning against the quantity; what belongs here is the ORDERING, which is what the
+    # two rows above rest on.
+    assert RECORDED_HEIGHT_PAIR_COUNTER > RECORDED_HEIGHT_PAIR_RELATIVE
+
+
+@pytest.mark.parametrize("dropped", ["wave_height_full_m", "wave_height_model_m"])
+def test_FY2_ONE_recorded_height_DERIVES_the_other(dropped: str) -> None:
+    """FY2's "if only one is recorded, derive the other", and R878 is not reopened.
+
+    **THIS IS ALSO THE SECOND OF THE TWO DEFECTS FY5 ASKS BE PINNED.** Making
+    `wave_height_full_m` optional made the type-check loop subscript a key that was no
+    longer guaranteed, and it raised `KeyError` out of that line on exactly this path. It
+    was found by probing FY2's own "model only" case before any test existed, which is why
+    FY5 asks for the row: nothing else in the suite went down this path.
+
+    R878's rule is untouched for the three fields that are one quantity each -- the cell
+    above still refuses a sidecar missing `heading_deg`, `lambda` or `window`. The two
+    heights are one quantity at two scales, and the dict this returns is COMPLETE whichever
+    way it arrived, so R878's own defect -- a `KeyError` after the solve from a consumer
+    subscripting a truthy-but-partial dict -- cannot come back through this door.
+    """
+    partial = {k: v for k, v in GOOD.items() if k != dropped}
+    out = _validated_wave_basis(partial, SIDECAR)
+    # **EXACT EQUALITY, DELIBERATELY, AND THE DIRECTION OF THE DERIVATION IS WHY IT CAN
+    # BE.** This is the natural place for an epsilon and it does not need one: `24.2 / 50`
+    # is `0.484` exactly in binary, while `0.484 * 50` is `24.200000000000003`. The
+    # derivation runs from whichever height the file recorded, so the reconstructed dict
+    # compares equal to the committed one on the nose in both directions -- and an
+    # `approx` here would have hidden the day that stopped being true.
+    assert out == GOOD, (out, GOOD)
+
+
+@pytest.mark.parametrize("value", [True, False, float("nan"), float("inf"), "0.5", [0.5]])
+def test_FY2_the_MODEL_height_keeps_its_type_and_finiteness_checks(value: object) -> None:
+    """The FIRST of the two defects FY5 asks be pinned, by name.
+
+    **`wave_height_model_m` LEFT `RECORDED_BOUNDS` UNDER FY2**, because its ceiling is
+    derived from lambda rather than declared. The loop that type-checks every recorded
+    number was keyed on that dict, so the field lost its bool, type, overflow and
+    finiteness checks in the same edit that tightened its range -- and a model height of
+    `true` or `nan` would have published `True m model` in `report.md` at exit 0. That is
+    the exact shape R903 found for `rho_inf`, re-created by a repair.
+
+    It was found by probing, not by reading, and no test in the suite covered it. The loop
+    now iterates what is PRESENT and range-checks only what has a static bound.
+    """
+    with pytest.raises(ConfigError) as caught:
+        _validated_wave_basis(dict(GOOD) | {"wave_height_model_m": value}, SIDECAR)
+    assert "run.wave_height_model_m" in str(caught.value), str(caught.value)
+
+
+def test_FY2_BOTH_heights_absent_is_still_PARTIAL() -> None:
+    """Deriving from one is not deriving from none.
+
+    FY2 relaxes completeness for the PAIR, not for the quantity: a sidecar recording
+    neither height records no wave height at all, and there is nothing to derive from.
+    """
+    partial = {
+        k: v for k, v in GOOD.items() if k not in ("wave_height_full_m", "wave_height_model_m")
+    }
+    with pytest.raises(ConfigError) as caught:
+        _validated_wave_basis(partial, SIDECAR)
+    message = str(caught.value)
+    assert "PARTIAL wave basis" in message, message
+    assert "wave_height_full_m" in message and "wave_height_model_m" in message, message
+
+
+@pytest.mark.parametrize(
+    ("recorded", "expected"),
+    [
+        (("wave_height_full_m", "wave_height_model_m"), ""),
+        (("wave_height_model_m",), "**full scale derived**"),
+        (("wave_height_full_m",), "**model scale derived**"),
+        ((), ""),
+    ],
+    ids=["both recorded", "model only", "full only", "no sidecar"],
+)
+def test_FY5_2_the_report_MARKS_a_derived_height_and_only_then(
+    recorded: tuple[str, ...], expected: str
+) -> None:
+    """FY5.2's three rows, plus the no-sidecar row, on the report clause itself.
+
+    **A RECORDED PAIR PRINTS EXACTLY AS IT PRINTED BEFORE FY5.2**, which is the row that
+    protects the golden: the shipped example records both, so `report.md` is byte-identical
+    and `results/R1/example/` does not move. The mark appears only where a number was
+    derived, and it names which of the two the file carried and the arithmetic that
+    produced the other.
+
+    The no-sidecar row is here because an empty provenance set must mean "say nothing"
+    rather than "say derived": a run with no sidecar states the basis is NOT RECORDED
+    everywhere already, and a derived-height clause there would be a claim about a file
+    that does not exist.
+    """
+    from floatfea.cli import _derived_height_note
+
+    note = _derived_height_note(dict(GOOD), frozenset(recorded))
+    if expected:
+        assert expected in note, note
+        assert "lambda = 50.0" in note, note
+    else:
+        assert note == "", note

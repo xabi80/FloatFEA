@@ -61,6 +61,7 @@ from floatfea.run.config import (
     is_recorded_number,
     recorded_spelling,
 )
+from floatfea.tolerances import RECORDED_HEIGHT_PAIR_RELATIVE
 
 __all__ = [
     "RunResult",
@@ -909,6 +910,27 @@ A height is meaningless without the scale it was measured at, so the scale belon
 basis rather than beside it.
 """
 
+
+HEIGHT_PAIR: Final[tuple[str, str]] = ("wave_height_full_m", "wave_height_model_m")
+"""The two recorded heights, which are ONE quantity at two scales (FY2).
+
+**`wave_height_model_m` IS NOT IN `RECORDED_BOUNDS` ANY MORE, AND THAT IS R895's REPAIR.**
+It was there carrying `WAVE_HEIGHT`, a `0..100 m` domain belonging to the FULL-scale
+quantity, so the model side's ceiling was vacuous by exactly lambda -- 50x as shipped and
+up to 1000x at `FROUDE_LAMBDA`'s own ceiling. `RECORDED_BOUNDS`' justification said each
+recorded value is checked against the bound its CONFIGURED counterpart gets, and
+`wave_height_model_m` has no configured counterpart at all.
+
+FY2 rules the repair: the 100 m ceiling is the full-scale one, and **the model ceiling is
+DERIVED as `100/lambda` rather than being a second constant.** A derived ceiling cannot go
+stale against the one it is derived from, which is the whole reason it is not a constant.
+
+AND THE PAIR IS CHECKED AGAINST LAMBDA, which is the half that makes the bound right rather
+than merely tighter: at lambda = 50 a sidecar recording `24.2 m` full and `100.0 m` model
+described a sea state that cannot exist, and published both numbers beside the correct
+lambda in `report.md` and both CSV headers at exit 0.
+"""
+
 RECORDED_PROVENANCE_NUMERIC: Final[tuple[str, ...]] = ("rho_inf", "dt", "ramp_s")
 """Recorded numbers the generator PUBLISHES but no computation here consumes (R903).
 
@@ -927,7 +949,6 @@ not a partial record of them.
 RECORDED_BOUNDS: Final[dict[str, Bound]] = {
     "heading_deg": HEADING,
     "wave_height_full_m": WAVE_HEIGHT,
-    "wave_height_model_m": WAVE_HEIGHT,
     "lambda": FROUDE_LAMBDA,
 }
 """The declared domain each RECORDED numeric field is checked against (R881, R895).
@@ -1086,6 +1107,78 @@ def refuse_cases_that_cannot_govern(
     return screen
 
 
+def _resolve_height_pair(present: dict[str, Any], sidecar: Path) -> None:
+    """The two recorded heights against lambda: derive the missing one, or check the pair.
+
+    **FY2's RULING ON R895, AND BOTH HALVES MATTER.** The 100 m ceiling is the FULL-scale
+    one. The model ceiling is DERIVED as `100/lambda` rather than declared a second time,
+    so it cannot go stale against the quantity it comes from -- at the shipped lambda of
+    50 that is 2 m, where the old shared ceiling admitted 100 m and so was vacuous by
+    exactly lambda.
+
+    AND THE PAIR IS CHECKED, which is what makes the bound right rather than merely
+    tighter. A sidecar recording `24.2 m` full with `100.0 m` model passed every check
+    this function had and published both numbers, beside the correct lambda, in `report.md`
+    and in both CSV headers, at exit 0 -- a sea state that cannot exist, with nothing
+    saying which of the two numbers was wrong.
+
+    **THE CHECK IS RELATIVE AND ITS TOLERANCE IS DECLARED.** `|full - model*lambda| <=
+    RECORDED_HEIGHT_PAIR_RELATIVE * full`. Relative because the quantity spans three
+    decades over `FROUDE_LAMBDA`'s own domain, so an absolute metre-scale epsilon is
+    simultaneously too loose at model scale and too tight at full scale; declared because
+    `CLAUDE.md` is explicit that a comparison epsilon is a tolerance under another name.
+
+    **AND ONE THING FY2 DOES NOT COVER, NAMED HERE RATHER THAN HALF-BUILT.** A derived
+    height is published in `report.md` and in both CSV headers exactly as a recorded one
+    is, with nothing saying which of the two numbers the file actually carried.
+    `CLAUDE.md`'s standing rule about a stand-in value -- that it is surfaced where a
+    reader of the result will see it, so a result computed under a fallback cannot be
+    mistaken for one computed under full data -- points at marking it. FY2 says to derive
+    and does not say to mark, and a marker key in this dict reaches the publishing paths
+    in `cli.py`, so it is not added on my own judgement. It is a ledger item in the report.
+    """
+    full_key, model_key = HEIGHT_PAIR
+    lam = float(present["lambda"])
+    full = present.get(full_key)
+    model = present.get(model_key)
+
+    # The model ceiling, DERIVED. `WAVE_HEIGHT`'s high bound is the full-scale one.
+    model_ceiling = WAVE_HEIGHT[2] / lam
+
+    if model is not None and not 0.0 <= float(model) <= model_ceiling:
+        raise ConfigError(
+            f"{sidecar.name}: `run.{model_key}` is {float(model):g} m, outside "
+            f"0..{model_ceiling:g} m. That ceiling is DERIVED -- the declared "
+            f"{WAVE_HEIGHT[2]:g} m is a FULL-scale bound and this field is model scale, "
+            f"so the ceiling is {WAVE_HEIGHT[2]:g}/lambda at the recorded lambda of "
+            f"{lam:g}. A single shared ceiling was vacuous by exactly lambda, which is "
+            f"what R895 found and FY2 ruled."
+        )
+
+    if full is None:
+        present[full_key] = float(model) * lam  # type: ignore[arg-type]
+        return
+    if model is None:
+        present[model_key] = float(full) / lam
+        return
+
+    # BOTH RECORDED: the pair is a claim about lambda and it is checked (FY2).
+    expected = float(model) * lam
+    slack = RECORDED_HEIGHT_PAIR_RELATIVE * abs(float(full))
+    if abs(float(full) - expected) > slack:
+        raise ConfigError(
+            f"{sidecar.name}: the recorded wave heights disagree with the recorded "
+            f"lambda. `wave_height_full_m` is {float(full):g} m and "
+            f"`wave_height_model_m` is {float(model):g} m at lambda {lam:g}, which "
+            f"implies {expected:g} m full scale -- a discrepancy of "
+            f"{abs(float(full) - expected):g} m against an allowance of {slack:g} m "
+            f"(RECORDED_HEIGHT_PAIR_RELATIVE). One of the two numbers is wrong and "
+            f"nothing here can say which, so both are refused rather than published side "
+            f"by side beside a lambda that contradicts them. Record one and let the other "
+            f"be derived, or fix the export."
+        )
+
+
 def _validated_wave_basis(present: dict[str, Any], sidecar: Path) -> dict[str, Any]:
     """The recorded basis, validated AT THE READER, or a refusal (R877, R878, R879).
 
@@ -1120,20 +1213,78 @@ def _validated_wave_basis(present: dict[str, Any], sidecar: Path) -> dict[str, A
     outside `HEADING`'s domain. NaN and infinity are refused here BY NAME rather than one
     line later by the coverage message, and `10**400` is caught before `float()` raises
     `OverflowError`.
+
+    **R885, DECIDED: A SIGNED HEADING IS REFUSED AND NOT NORMALISED (FY1), OVER A CLOSED
+    RANGE `[0, 360]` (FY5.1).** This is the decision and the reason, recorded on the side
+    that enforces it, because the other side of it is recorded somewhere this function
+    does not reach.
+
+    `docs/conventions.md:150` records that the BEM reader converts a heading **straight
+    through**, as `heading_deg = rad2deg(wave_direction)`, with no sign flip and no offset.
+    So a Capytaine dataset carrying `wave_direction = -0.1745` rad records `-10.0` -- a
+    perfectly ordinary 350 deg heading, written with the other sign. Two things could be
+    done with that, and FY1 chose:
+
+      * NORMALISE at the reader, so `-10.0` silently becomes `350.0`. Convenient, and it
+        hides a sign-convention error in an export behind a number that looks right.
+      * REFUSE, naming the value, the range and the remedy. The cost is an over-refusal
+        when the export was correct and merely signed; the message says how to fix it.
+
+    **It refuses.** The grade is unchanged by that -- an over-refusal cannot produce a
+    wrong number, so R885 was ledgered rather than blocking, and FY1 closes it rather than
+    reclassifying it.
+
+    **And the range is CLOSED at both ends, which FY5.1 settled after this clause shipped
+    half-open for one commit.** `[0, 360)` refused a recorded `360.0` while a DECLARED
+    `headings: [360.0]` stayed accepted and compared modulo 360 under R1100 -- the two
+    sides of one quantity disagreeing at exactly one value. `360 == 0` is settled on the
+    comparison path that already settled it; this one asks only whether a recording is a
+    value a declaration could legally express.
     """
     if not present:
         return {}
-    missing = [k for k in WAVE_BASIS_KEYS if k not in present]
+    # **COMPLETE OR EMPTY, WITH ONE EXCEPTION FY2 RULES: THE HEIGHT PAIR (FY2).** R878's
+    # rule is unchanged for the three fields that are one quantity each -- a sidecar
+    # missing one of those is WRONG rather than ABSENT. The two heights are ONE quantity
+    # at two scales, so FY2 rules that recording either is recording the quantity and the
+    # other is DERIVED. The dict this returns is complete whichever way it arrived, so
+    # R878's defect -- a `KeyError` after the solve, from a consumer subscripting a key a
+    # truthy-but-partial dict did not carry -- cannot come back through this door.
+    singles = tuple(k for k in WAVE_BASIS_KEYS if k not in HEIGHT_PAIR)
+    missing = [k for k in singles if k not in present]
+    if not any(k in present for k in HEIGHT_PAIR):
+        missing += list(HEIGHT_PAIR)
     if missing:
         raise ConfigError(
-            f"{sidecar.name} records a PARTIAL wave basis: {missing} missing from "
+            f"{sidecar.name} records a PARTIAL wave basis: {sorted(missing)} missing from "
             f"{sorted(present)}. Every published artifact states all five, and the report "
             f"header subscripts them, so a partial record raised `KeyError` after the "
             f"solve and left a zero-byte CSV behind. A sidecar missing a field is wrong "
             f"rather than absent -- delete the sidecar to run with the basis NOT RECORDED, "
             f"which every artifact then says, or record the missing field."
         )
-    for key, (unit, low, high) in RECORDED_BOUNDS.items():
+    # **EVERY RECORDED NUMBER GETS THE TYPE, OVERFLOW AND FINITENESS CHECKS; ONLY SOME
+    # HAVE A STATIC RANGE (FY1, FY2).** Two things changed under FY2 and both would have
+    # been defects if this loop had been left keyed on `RECORDED_BOUNDS` alone:
+    #
+    #   * `wave_height_model_m` LEFT that dict, because its ceiling is derived from lambda
+    #     rather than declared. Left out of this loop with it, a model height of `true` or
+    #     `nan` would have lost the checks it had -- a published `True m model` at exit 0,
+    #     which is the exact defect R903 found for `rho_inf`;
+    #   * `wave_height_full_m` became OPTIONAL, because FY2 derives it when only the model
+    #     height is recorded. Subscripted unconditionally it raised `KeyError` out of this
+    #     line on the derivation path, which is how I found it: the probe of FY2's own
+    #     "model only" case, before any test existed.
+    #
+    # So the domain is what is PRESENT, and a key with no static bound gets everything
+    # except the range check.
+    seen_keys: list[str] = []
+    for key in (*RECORDED_BOUNDS, *HEIGHT_PAIR):
+        if key in present and key not in seen_keys:
+            seen_keys.append(key)
+    for key in seen_keys:
+        bound = RECORDED_BOUNDS.get(key)
+        unit, low, high = bound if bound is not None else ("m", 0.0, 0.0)
         value = present[key]
         if isinstance(value, bool) or not isinstance(value, (int, float)):
             raise ConfigError(
@@ -1191,7 +1342,33 @@ def _validated_wave_basis(present: dict[str, Any], sidecar: Path) -> dict[str, A
         #     could legally have declared. `HEADING` bounds that to `0..360` RAW and
         #     `WAVE_HEIGHT` to `0..100` m, so a sidecar recording `450.0` deg or `-24.2` m
         #     records something no declaration could express.
-        if not low <= float(value) <= high:
+        # **THE HEADING RANGE IS CLOSED, `[0, 360]`, RULED AT FY5.1.** FY1's text said
+        # `[0, 360)` and this clause shipped half-open for one commit. Measured, that
+        # newly refused a recorded `360.0` while a DECLARED `headings: [360.0]` stays
+        # accepted and compared modulo 360 under R1100 -- an asymmetry at exactly one
+        # value, between the two sides of the same quantity. FY5.1, on being shown it:
+        # *"That was my wording, not a decision."*
+        #
+        # So both sides are inclusive and `360 == 0` is settled on the COMPARISON path
+        # that already settled it, with no new code: `uncovered_headings` normalises, and
+        # the reviewer measured `450` against a covered `90` as correctly one direction.
+        # What this clause refuses is a value no declaration could express at all -- a
+        # negative heading, or one past a full turn.
+        if key == "heading_deg" and not 0.0 <= float(value) <= 360.0:
+            raise ConfigError(
+                f"{sidecar.name}: `run.heading_deg` is {float(value):g} deg, outside the "
+                f"accepted range 0 <= heading <= 360 deg. Normalise it mod 360 under the "
+                f"convention in `docs/conventions.md:150`, which records that the BEM "
+                f"reader converts a heading straight through with no sign flip and no "
+                f"offset -- so a dataset carrying a negative `wave_direction` records a "
+                f"negative heading, and {float(value):g} becomes "
+                f"{float(value) % 360.0:g}. Refused rather than normalised here, by FY1 "
+                f"and FY5.1: a signed recording may be a sign-convention error in the "
+                f"export, and normalising it silently is what would hide that. The range "
+                f"is CLOSED at both ends -- a recorded 360 is accepted and treated as 0 "
+                f"by the coverage comparison, which is R1100's rule."
+            )
+        if bound is not None and key != "heading_deg" and not low <= float(value) <= high:
             raise ConfigError(
                 f"{sidecar.name}: `run.{key}` is {float(value):g}, outside the declared "
                 f"domain {low:g}..{high:g} {unit} that every declared value of this "
@@ -1199,6 +1376,7 @@ def _validated_wave_basis(present: dict[str, Any], sidecar: Path) -> dict[str, A
                 f"-- a recorded value the configuration could not legally declare cannot "
                 f"describe the run that produced these artifacts."
             )
+    _resolve_height_pair(present, sidecar)
     for key in RECORDED_PROVENANCE_NUMERIC:
         if key not in present:
             continue
@@ -1245,6 +1423,40 @@ def exported_wave_basis(npz: Path) -> dict[str, Any]:
     if not sidecar.is_file():
         return {}
     return wave_basis_from_sidecar(sidecar)
+
+
+def recorded_height_keys(npz: Path) -> frozenset[str]:
+    """Which of the two heights the SIDECAR itself carries (FY5.2).
+
+    **FY5.2 ASKS FOR THE MARK IN `report.md` AND FOR NO MARKER KEY IN THE PUBLISHED
+    DICT**, and this is how the report path learns which number the file actually had. A
+    derived height is numerically exact, so nothing downstream can tell it from a recorded
+    one -- which is the whole reason it has to be asked rather than inferred.
+
+    **IT ASKS THE FILE, NOT THE VALIDATOR, AND THAT IS DELIBERATE.** Returning the derived
+    key from `_validated_wave_basis` would have changed the signature of
+    `exported_wave_basis`, which several cells compare against a whole dict with `==`, and
+    a second parallel return value is a thing that can drift out of step with the dict it
+    describes. The sidecar is the source of truth for what was recorded, and a question
+    answered from the source cannot disagree with it.
+
+    Returns the subset of `HEIGHT_PAIR` present in the sidecar's `run` block, or an empty
+    set when there is no sidecar at all -- which is the basis-NOT-RECORDED case every
+    artifact already states.
+    """
+    sidecar = npz.with_suffix(".provenance.json")
+    if not sidecar.is_file():
+        return frozenset()
+    try:
+        raw = json.loads(sidecar.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        # The validator refuses this by name and with a better message; a provenance
+        # question is not the place to raise a second, worse version of that refusal.
+        return frozenset()
+    run_block = raw.get("run") if isinstance(raw, dict) else None
+    if not isinstance(run_block, dict):
+        return frozenset()
+    return frozenset(k for k in HEIGHT_PAIR if k in run_block)
 
 
 def wave_basis_from_sidecar(sidecar: Path) -> dict[str, Any]:

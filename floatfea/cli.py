@@ -24,7 +24,7 @@ from floatfea.basis import BREAKING_STEEPNESS_LIMIT
 from floatfea.post.forces_table import _stresses
 from floatfea.post.member_forces import COMPONENTS
 from floatfea.run.config import ConfigError, RunConfig, load_config
-from floatfea.run.pipeline import RunResult
+from floatfea.run.pipeline import HEIGHT_PAIR, RunResult, recorded_height_keys
 from floatfea.run.pipeline import run as run_pipeline
 from floatfea.run.sizing import (
     SizingReport,
@@ -434,6 +434,28 @@ def _governing_provenance(result: RunResult, governing: dict[str, Any]) -> str:
     return f", from `{source}` at {heading}"
 
 
+def _derived_height_note(basis: dict[str, Any], recorded: frozenset[str]) -> str:
+    """The one clause FY5.2 asks for beside a DERIVED wave height, or nothing.
+
+    A recorded pair prints exactly as it printed before FY5.2 -- the empty string -- so
+    the shipped example's report is byte-identical and the golden does not move. Where one
+    height was derived, the clause names which number the file carried and the arithmetic
+    that produced the other, so a reader can check it without opening the sidecar.
+
+    **WHY IT SAYS "DERIVED" RATHER THAN "ASSUMED".** A derived height is exact: it is the
+    recorded one times the recorded lambda, and FY5.2 grades it under FR1 as not blocking
+    for that reason. The word matters because `CLAUDE.md` reserves the language of
+    fallbacks and assumptions for a value nothing determines, which this is not.
+    """
+    full_key, model_key = HEIGHT_PAIR
+    if not recorded or recorded == {full_key, model_key}:
+        return ""
+    lam = basis.get("lambda")
+    if model_key in recorded:
+        return f" — **full scale derived**: {basis.get(model_key)} m model x lambda = {lam}"
+    return f" — **model scale derived**: {basis.get(full_key)} m full scale / lambda = {lam}"
+
+
 def _write_report(path: Path, result: RunResult) -> None:
     """The run report: what was configured, what it produced, and what it rests on.
 
@@ -470,15 +492,26 @@ def _write_report(path: Path, result: RunResult) -> None:
             "of these loads are **not stated by this run**."
         )
     else:
+        # **WHICH OF THE TWO HEIGHTS THE FILE ACTUALLY CARRIED (FY5.2).** FY2 derives the
+        # missing one from the recorded one and lambda, and a derived value is numerically
+        # exact -- so without asking, this report publishes a number the file never
+        # contained as though it had. FY5.2 rules the mark here and NOWHERE ELSE: the CSV
+        # headers are unchanged and no marker key enters the published basis dict, so this
+        # is read from the sidecar through `recorded_height_keys` rather than carried.
+        #
+        # R1104 is what makes the name-to-path lookup sound: two declared files may no
+        # longer share a basename, so a label identifies exactly one declared path.
+        by_label = {p.name: p for p in cfg.load_cases.npz_files}
         for i, (name, basis) in enumerate(bases):
             block: list[str] = [f"### `{name}`", ""] if len(bases) > 1 else []
             if basis:
+                recorded = recorded_height_keys(by_label[name]) if name in by_label else frozenset()
                 block += [
                     f"* **heading** — {basis.get('heading_deg', '(not recorded)')} deg",
                     f"* **wave height** — "
                     f"{basis.get('wave_height_full_m', '(not recorded)')} m "
                     f"full scale ({basis.get('wave_height_model_m', '(not recorded)')} m "
-                    f"model)",
+                    f"model){_derived_height_note(basis, recorded)}",
                     f"* **window** — {basis.get('window', '(not recorded)')}",
                 ]
             elif len(bases) > 1:
