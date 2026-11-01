@@ -1707,12 +1707,33 @@ DETECTION_THRESHOLD_BAND_COUNTER: Final[float] = 0.25
 # Set: 2026-09-30, F3 (DY3, answering R593)
 MASS_PROPERTY_AGREEMENT: Final[float] = 1e-13
 
-# CLASS: GEOMETRIC -- a coincidence rule on node coordinates, not a convergence threshold
-# and not a comparison against a measured quantity, so no counter-case is constructible in
-# the usual form: there is no "defect" to inject past it. What a counter-case WOULD be is
-# two distinct deck joints closer together than this rule can tell apart, and the deck
-# geometry that produces one is refused earlier -- a hub whose joint coincides with another
-# has no node of its own and R869 names it as absent.
+# NO `CLASS:` LINE, AND THAT IS NOT AN OMISSION -- SEE BELOW. A coincidence rule on node
+# coordinates. It fires by design and carries NO counter-case: there is no "defect" to
+# inject past it. What a counter-case WOULD be is two distinct deck joints closer together
+# than this rule can tell apart, and the deck geometry that produces one is refused
+# earlier -- a hub whose joint coincides with another has no node of its own and R869 names
+# it as absent.
+#
+# **WHY THERE IS NO CLASS LABEL HERE, AND IT IS A GUARD DEFECT I AM REPORTING RATHER THAN
+# WORKING AROUND.** This entry first said `CLASS: GEOMETRIC`, which is not a class this
+# repository has -- rung 3's vocabulary is `ACCURACY` or `STRUCTURAL` and nothing else. It
+# escaped notice because this constant is `Final[int]` and the class guard reads
+# `Final[float]`.
+#
+# Relabelling it `STRUCTURAL` then broke the NEXT entry. `_ENTRY` in
+# `tests/verification/rung3/test_tolerance_counter_cases.py` is
+# `# CLASS:\s*(ACCURACY|STRUCTURAL).*?^NAME\s*:\s*Final\[float\]` with DOTALL, so a
+# recognised class on a non-float constant does not terminate at that constant: the match
+# runs on and **attaches this label to the next `Final[float]` entry**, whatever its own
+# label says. `RECORDED_HEIGHT_PAIR_RELATIVE` was reported STRUCTURAL while its own comment
+# said ACCURACY, and the STRUCTURAL obligation then failed on it.
+#
+# So this entry carries no `CLASS:` line: an integer constant is genuinely outside a
+# `Final[float]` scheme, and the reason it needs no counter is stated above in prose
+# instead. **The mis-attribution is a real hole in that guard** -- a class label can be
+# silently transferred to an entry that did not declare it -- and it is in the digest as an
+# apparatus item rather than fixed here, because rung 3's guards are not edited inside a
+# step commit that also touches `floatfea/`.
 #
 # WHAT IT IS. `_build_body`'s `node()` helper deduplicates nodes by rounding each
 # coordinate to this many decimals, so two points agreeing to a nanometre in metres are
@@ -1771,9 +1792,13 @@ MASS_PROPERTY_AGREEMENT: Final[float] = 1e-13
 # Set: 2026-10-29, R1 step 3 (R867, answering verdict 42's L57)
 NODE_COINCIDENCE_DECIMALS: Final[int] = 9
 
-# CLASS: INPUT VALIDATION -- a relative agreement between two recordings of ONE physical
-# quantity at two scales. Its counter-case is an injected pair inconsistency that the same
-# assertion in the same quantity must detect, which is RECORDED_HEIGHT_PAIR_COUNTER below.
+# CLASS: ACCURACY -- a relative agreement between two recordings of ONE physical quantity
+# at two scales, with a counter-case below it. **`ACCURACY` AND NOT A THIRD CLASS: my first
+# draft wrote `INPUT VALIDATION`, which is not in this file's vocabulary -- rung 3 accepts
+# `ACCURACY` or `STRUCTURAL` and nothing else, and an unrecognised label is an entry that
+# escapes the rule by omission rather than one that declares a new kind.** The obligations
+# `ACCURACY` carries are exactly the ones this entry meets: a `_COUNTER`, strictly above
+# the ceiling, named by a test that injects it.
 #
 # WHAT IT IS (FY2, answering R895). A dynamic-inputs sidecar records the wave height twice,
 # at model scale and at full scale, related by the Froude factor `lambda`. Nothing related
@@ -1807,9 +1832,13 @@ NODE_COINCIDENCE_DECIMALS: Final[int] = 9
 # Set: 2026-10-31, R1 step 3 (FY2, answering R895)
 RECORDED_HEIGHT_PAIR_RELATIVE: Final[float] = 1e-9
 
-# CLASS: INPUT VALIDATION -- the counter-case for the entry above. The smallest pair
-# inconsistency the same assertion in the same quantity must DETECT, expressed as a
-# relative perturbation of the full-scale height.
+# The counter-case for the entry above: the smallest pair inconsistency the same assertion
+# in the same quantity must DETECT, as a relative perturbation of the full-scale height.
+# **NAMED `<CEILING>_COUNTER`, which is the convention the guards key on.** It was
+# `RECORDED_HEIGHT_PAIR_COUNTER` -- the FAMILY name, not the ceiling's -- so
+# `hasattr(tolerances, f"{ceiling}_COUNTER")` was False and BOTH class obligations passed
+# VACUOUSLY: `STRUCTURAL`'s "carries no counter" was satisfied by a missing name rather
+# than an absent counter. A counter the apparatus cannot find is not a counter.
 #
 # Reason for 1e-6: three decades above the ceiling it must trip, so the refusal is not
 # being asked to resolve a boundary, and four decades BELOW the millimetre-scale
@@ -1818,12 +1847,19 @@ RECORDED_HEIGHT_PAIR_RELATIVE: Final[float] = 1e-9
 # perturbation of `24.2 * 1e-6` = `2.42e-05` m, twenty-four microns on a twenty-four metre
 # wave, and the cell asserts that THAT is refused.
 # Set: 2026-10-31, R1 step 3 (FY2, answering R895)
-RECORDED_HEIGHT_PAIR_COUNTER: Final[float] = 1e-6
+RECORDED_HEIGHT_PAIR_RELATIVE_COUNTER: Final[float] = 1e-6
 
-# CLASS: STRUCTURAL -- an equilibrium closure residual. The faces of a braced truss section
-# must carry the applied shear and torque between them; this is the width of the gap
-# allowed between what is applied and what the faces' own components recover, relative to
-# the applied value. Its counter is TRUSS_FACE_CLOSURE_COUNTER below.
+# CLASS: ACCURACY -- an equilibrium closure residual, with a counter-case below it. The
+# faces of a braced truss section must carry the applied shear and torque between them;
+# this is the width of the gap allowed between what is applied and what the faces' own
+# components recover, relative to the applied value.
+#
+# **`ACCURACY` AND NOT `STRUCTURAL`, WHICH IS WHAT IT SAID FIRST.** `STRUCTURAL` is for a
+# threshold that fires by design and must NOT carry a counter-case; this one has one, so
+# `STRUCTURAL` was the wrong class and the guard that would have said so was blind to it
+# through the counter's name (see the counter below). The closure is an identity once the
+# allocation is right, and the quantity being bounded is a numerical residual -- which is
+# what `ACCURACY` is for.
 #
 # WHAT IT IS (FY3, answering R1072). An apex-up triangle has two inclined walls and a
 # bottom wall. Each resists shear IN ITS OWN PLANE, so a face whose vertical component
@@ -1861,15 +1897,16 @@ RECORDED_HEIGHT_PAIR_COUNTER: Final[float] = 1e-6
 # Set: 2026-10-31, R1 step 3 (FY3, answering R1072)
 TRUSS_FACE_CLOSURE_RELATIVE: Final[float] = 1e-12
 
-# CLASS: STRUCTURAL -- the counter-case for the entry above: the smallest relative
-# perturbation of an inclined face's shear that the closure assertion must DETECT.
+# The counter-case for the entry above: the smallest relative perturbation of an inclined
+# face's shear that the closure assertion must DETECT. Named `<CEILING>_COUNTER` for the
+# same reason as the height pair's -- the family name was invisible to the guards.
 #
 # Reason for 1e-6: six decades above the ceiling it must trip, so the assertion is not
 # being asked to resolve a boundary, and four decades below the smallest real allocation
 # error FY3 repaired (`1.0174x`, i.e. `1.74e-2` relative) -- so a counter-case built on it
 # tests the closure CHECK rather than re-testing the physics.
 # Set: 2026-10-31, R1 step 3 (FY3)
-TRUSS_FACE_CLOSURE_COUNTER: Final[float] = 1e-6
+TRUSS_FACE_CLOSURE_RELATIVE_COUNTER: Final[float] = 1e-6
 
 
 # ---------------------------------------------------------------------------

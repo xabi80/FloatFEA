@@ -41,7 +41,7 @@ from floatfea.run.truss import (
     inclined_face_length,
     resolve_group,
 )
-from floatfea.tolerances import TRUSS_FACE_CLOSURE_COUNTER, TRUSS_FACE_CLOSURE_RELATIVE
+from floatfea.tolerances import TRUSS_FACE_CLOSURE_RELATIVE_COUNTER, TRUSS_FACE_CLOSURE_RELATIVE
 
 ROOT = Path(__file__).resolve().parents[2]
 EXAMPLE = ROOT / "examples" / "platform12_placeholder.yaml"
@@ -124,19 +124,19 @@ def test_FY3_the_faces_CLOSE_against_the_applied_shear_and_torque(
 def test_FY3_the_COUNTER_perturbation_is_DETECTED_by_the_closure(h: float, b: float) -> None:
     """The counter-case the closure assertion must catch, at four aspect ratios.
 
-    `TRUSS_FACE_CLOSURE_COUNTER` is the smallest relative perturbation of an inclined
+    `TRUSS_FACE_CLOSURE_RELATIVE_COUNTER` is the smallest relative perturbation of an inclined
     face's shear that closure must detect; `TRUSS_FACE_CLOSURE_RELATIVE` is the width it
     may ignore. Without this cell the assertion above could be satisfied by a closure that
     is insensitive rather than exact -- which is what it WAS before FY3, in the other
     direction.
     """
-    perturbed = 1.0 + TRUSS_FACE_CLOSURE_COUNTER
+    perturbed = 1.0 + TRUSS_FACE_CLOSURE_RELATIVE_COUNTER
     for label, got in (
         ("Vz", _vertical_closure("triangle", h, b, scale=perturbed)),
         ("Mx/T", _torque_closure("triangle", h, b, scale=perturbed)),
     ):
         assert abs(got - 1.0) > TRUSS_FACE_CLOSURE_RELATIVE, (h, b, label, got)
-    assert TRUSS_FACE_CLOSURE_COUNTER > TRUSS_FACE_CLOSURE_RELATIVE
+    assert TRUSS_FACE_CLOSURE_RELATIVE_COUNTER > TRUSS_FACE_CLOSURE_RELATIVE
 
 
 def test_FY3_the_PRE_REPAIR_allocation_does_NOT_close() -> None:
@@ -163,7 +163,7 @@ def test_FY3_the_PRE_REPAIR_allocation_does_NOT_close() -> None:
         # form was the latter, and the tolerance guard refused it: the bound of that
         # comparison is the composed value, so the literal `1.0` is deciding it. This is
         # the same shape the counter cell above uses, which the guard accepts.
-        assert abs(old_recovered - 1.0) > TRUSS_FACE_CLOSURE_COUNTER, (h, b, old_recovered)
+        assert abs(old_recovered - 1.0) > TRUSS_FACE_CLOSURE_RELATIVE_COUNTER, (h, b, old_recovered)
         # and the SHIPPED rule closes at the same geometry, which is the pair that makes
         # this cell a comparison rather than two separate claims
         assert abs(_vertical_closure("triangle", h, b) - 1.0) <= TRUSS_FACE_CLOSURE_RELATIVE

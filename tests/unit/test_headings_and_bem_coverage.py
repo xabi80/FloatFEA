@@ -1006,7 +1006,7 @@ def test_FY2_case_C_a_MISMATCHED_pair_is_refused_naming_both(model: float) -> No
 def test_FY2_the_COUNTER_is_detected_and_the_committed_pair_is_not() -> None:
     """The declared tolerance and its counter, from the two ends they are declared for.
 
-    `RECORDED_HEIGHT_PAIR_COUNTER` is the smallest pair inconsistency the same assertion
+    `RECORDED_HEIGHT_PAIR_RELATIVE_COUNTER` is the smallest pair inconsistency the same assertion
     in the same quantity must DETECT. `RECORDED_HEIGHT_PAIR_RELATIVE` is the width it may
     not detect. Both are asserted here against the committed pair, so neither can be
     widened without this cell saying so -- which is what a counter is for.
@@ -1015,7 +1015,7 @@ def test_FY2_the_COUNTER_is_detected_and_the_committed_pair_is_not() -> None:
     `24.200000000000003`, a relative discrepancy of about `1.5e-16`.
     """
     from floatfea.tolerances import (
-        RECORDED_HEIGHT_PAIR_COUNTER,
+        RECORDED_HEIGHT_PAIR_RELATIVE_COUNTER,
         RECORDED_HEIGHT_PAIR_RELATIVE,
     )
 
@@ -1027,7 +1027,8 @@ def test_FY2_the_COUNTER_is_detected_and_the_committed_pair_is_not() -> None:
     # perturbed by the COUNTER: refused
     with pytest.raises(ConfigError):
         _validated_wave_basis(
-            dict(GOOD) | {"wave_height_full_m": full * (1.0 + RECORDED_HEIGHT_PAIR_COUNTER)},
+            dict(GOOD)
+            | {"wave_height_full_m": full * (1.0 + RECORDED_HEIGHT_PAIR_RELATIVE_COUNTER)},
             SIDECAR,
         )
 
@@ -1039,7 +1040,7 @@ def test_FY2_the_COUNTER_is_detected_and_the_committed_pair_is_not() -> None:
     # they are is reasoned in the two `tolerances.py` entries, where a reader can check the
     # reasoning against the quantity; what belongs here is the ORDERING, which is what the
     # two rows above rest on.
-    assert RECORDED_HEIGHT_PAIR_COUNTER > RECORDED_HEIGHT_PAIR_RELATIVE
+    assert RECORDED_HEIGHT_PAIR_RELATIVE_COUNTER > RECORDED_HEIGHT_PAIR_RELATIVE
 
 
 @pytest.mark.parametrize("dropped", ["wave_height_full_m", "wave_height_model_m"])
