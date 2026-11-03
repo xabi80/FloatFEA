@@ -34,10 +34,29 @@ import pytest
 from floatfea import tolerances
 
 SOURCE = Path(tolerances.__file__)
+_DECL = r"^[A-Z][A-Z0-9_]*\s*:\s*Final\["
+# THE MATCH TERMINATES AT THE NEXT DECLARATION OF ANY TYPE (R1108). It used to be
+# `# CLASS:...(ACCURACY|STRUCTURAL).*?^NAME: Final[float]` with DOTALL, and a lazy
+# `.*?` crosses anything -- so a recognised class on a NON-float constant did not
+# terminate at that constant. The match ran on and attached the label to the next
+# `Final[float]` entry, whatever that entry's own comment said.
+#
+# Measured, with `# CLASS: STRUCTURAL` restored above `NODE_COINCIDENCE_DECIMALS`
+# (a `Final[int]`): the old form reported `RECORDED_HEIGHT_PAIR_RELATIVE` as
+# STRUCTURAL where its own nearest CLASS line says ACCURACY, and STRUCTURAL
+# FORBIDS a counter while that entry has one -- so the obligation failed on the
+# wrong entry, silently. On the clean tree both forms classify the same 55
+# entries with identical labels, so this is a repair and not a change of rule.
+#
+# The tempered `(?:(?!_DECL).)*?` is what forbids the crossing: at every position
+# the lookahead refuses to step over the start of any `NAME: Final[...]` line.
 _ENTRY = re.compile(
-    r"# CLASS:\s*(ACCURACY|STRUCTURAL)\b.*?^([A-Z][A-Z0-9_]*)\s*:\s*Final\[float\]",
+    r"# CLASS:\s*(ACCURACY|STRUCTURAL)\b"
+    r"(?:(?!" + _DECL + r").)*?"
+    r"^([A-Z][A-Z0-9_]*)\s*:\s*Final\[float\]",
     re.DOTALL | re.MULTILINE,
 )
+_CLASS_LINE = re.compile(r"^# CLASS:\s*(?:ACCURACY|STRUCTURAL)\b", re.MULTILINE)
 
 
 def _classified() -> list[tuple[str, str]]:
@@ -54,6 +73,37 @@ def test_there_are_classified_entries_to_check() -> None:
     assert found, "no CLASS-tagged entries parsed -- the regex or the file changed"
     assert any(c == "ACCURACY" for c, _ in found), "no ACCURACY entries to check"
     assert any(c == "STRUCTURAL" for c, _ in found), "no STRUCTURAL entries"
+
+
+def test_R1108_every_CLASS_line_CLASSIFIES_an_entry_so_none_is_ORPHANED() -> None:
+    """A `# CLASS:` line that classifies nothing is the silent half of R1108.
+
+    The regex repair above stops a label TRANSFERRING to an entry that did not
+    declare it. It cannot say that the label went nowhere, and a class nobody
+    reads is an obligation nobody checks -- a `# CLASS: ACCURACY` whose entry the
+    regex never reaches carries no counter requirement at all.
+
+    This is the cell that is RED under the armed state R1108 was found with.
+    Measured both ways, one variable moved -- `# CLASS: STRUCTURAL` restored
+    above `NODE_COINCIDENCE_DECIMALS`, a `Final[int]`:
+
+        clean:  CLASS lines 55, classified 55, orphaned 0
+        armed:  CLASS lines 56, classified 55, orphaned 1
+
+    So it fires on exactly the edit that reintroduces the defect, and the clean
+    tree gives it nothing to report. Keyed on the COUNT rather than on a name,
+    because the next orphan will be above some other constant.
+    """
+    body = SOURCE.read_text(encoding="utf-8").split('"""', 2)[-1]
+    declared = len(_CLASS_LINE.findall(body))
+    classified = len(_classified())
+    assert declared == classified, (
+        f"{declared - classified} `# CLASS:` line(s) classify no entry. A class "
+        f"label that reaches no `Final[float]` declaration is an obligation that "
+        f"is never checked, and before R1108 the label was instead TRANSFERRED to "
+        f"the next float entry. Put the class on the entry it describes, or state "
+        f"the reason in prose and remove the CLASS line."
+    )
 
 
 def test_every_float_tolerance_declares_a_class() -> None:

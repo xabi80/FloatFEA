@@ -1730,10 +1730,21 @@ MASS_PROPERTY_AGREEMENT: Final[float] = 1e-13
 #
 # So this entry carries no `CLASS:` line: an integer constant is genuinely outside a
 # `Final[float]` scheme, and the reason it needs no counter is stated above in prose
-# instead. **The mis-attribution is a real hole in that guard** -- a class label can be
-# silently transferred to an entry that did not declare it -- and it is in the digest as an
-# apparatus item rather than fixed here, because rung 3's guards are not edited inside a
-# step commit that also touches `floatfea/`.
+# instead. **The mis-attribution was a real hole in that guard** -- a class label could be
+# silently transferred to an entry that did not declare it -- and it is now FIXED rather
+# than recorded: `_ENTRY` terminates at the next declaration of any type, and
+# `test_R1108_every_CLASS_line_CLASSIFIES_an_entry_so_none_is_ORPHANED` is red under the
+# armed state the hole was found with.
+#
+# AN EARLIER REVISION OF THIS PARAGRAPH DEFERRED THE FIX AND GAVE A REASON THAT DOES NOT
+# EXIST (R1108, CW0). It said rung 3's guards are not edited inside a step commit that also
+# touches `floatfea/`. No such rule is written anywhere: `grep -c "not edited inside a step
+# commit" CLAUDE.md` is 0, and so is the same count for `rung 3's guards`. The
+# standalone-`process:`-commit rule covers `.claude/agents/`, `.claude/hooks/` and
+# `docs/SUPERVISOR.md` -- the REVIEWER's own instruments -- and
+# `tests/verification/rung3/` is an ordinary test directory. A sentence in the source tree
+# asserting a rule this repository does not have is the thing CW0 forbids, and one grep
+# refuted it.
 #
 # WHAT IT IS. `_build_body`'s `node()` helper deduplicates nodes by rounding each
 # coordinate to this many decimals, so two points agreeing to a nanometre in metres are

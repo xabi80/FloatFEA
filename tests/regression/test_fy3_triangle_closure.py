@@ -306,3 +306,123 @@ def test_FY3_the_F6b_GENERATOR_does_not_crash_AFTER_writing(tmp_path: Path) -> N
     assert "## SUPERSEDED" in committed
     assert "2026-10-31" in committed and "FY3" in committed
     assert "TRIANGLE" in committed and "box rows are not" in committed
+
+
+def _f6b_csv_rows() -> list[dict[str, str]]:
+    """The CSV data rows, skipping the leading `#` banner.
+
+    `csv.DictReader` does NOT skip comment lines -- it takes the first one as the
+    header. That is precisely why R1106's mark is a per-row column and not only a
+    banner: a script reading this file the obvious way never sees the comments at
+    all, and before this repair it never saw the supersession either.
+    """
+    import csv
+
+    text = (ROOT / "results" / "F6b" / "truss_sizing.csv").read_text(encoding="utf-8")
+    body = [ln for ln in text.splitlines() if not ln.startswith("#")]
+    return list(csv.DictReader(body))
+
+
+def test_R1106_the_SUPERSESSION_reaches_BOTH_MACHINE_READABLE_SIBLINGS() -> None:
+    """FY3's mark reached `truss_sizing.md` and NEITHER of its two siblings.
+
+    The finding, measured before the repair:
+
+        grep -c -i "superseded|FY3|R1072"  .md -> 3   .csv -> 0   .json -> 0
+
+    with **84 of 168** CSV data rows being triangle rows. The silently wrong
+    result that makes it blocking under FR1: a reader or a script taking a
+    triangle row from that CSV gets sizing from the allocation FY3 ruled
+    unconservative, with nothing in the file saying so. The inclined-face shear
+    is low by `Lf/h`, which is `1.0050` to `2.2361` over the swept grid.
+
+    **The numbers are NOT recomputed and this cell does not ask them to be**
+    (SR-4). Regeneration was proven byte-identical on every shared column before
+    the mark was added: 168 rows both ways, one column added, none removed, zero
+    cells moved, and the `.md` rebuilt from the new JSON is byte-identical to the
+    committed one.
+    """
+    import json
+
+    rows = _f6b_csv_rows()
+    assert len(rows) == 168, len(rows)
+
+    # (1) THE CSV, PER ROW -- the half a script sees.
+    tri = [r for r in rows if r["section"] == "triangle"]
+    box = [r for r in rows if r["section"] == "box"]
+    assert len(tri) == 84 and len(box) == 84, (len(tri), len(box))
+    assert all(
+        r["superseded_FY3"] == "True" for r in tri
+    ), "a triangle row carries no supersession flag -- R1106"
+    # The box rows were the CONTROL and the repair does not touch them. Asserting
+    # the False side too, because a flag that is True everywhere marks nothing.
+    assert all(
+        r["superseded_FY3"] == "False" for r in box
+    ), "a box row is flagged superseded; the box was the control"
+
+    # (2) THE CSV BANNER -- the half a human reading a spreadsheet sees.
+    csv_text = (ROOT / "results" / "F6b" / "truss_sizing.csv").read_text(encoding="utf-8")
+    banner = "\n".join(ln for ln in csv_text.splitlines() if ln.startswith("#"))
+    assert "SUPERSEDED" in banner and "2026-10-31" in banner and "FY3" in banner
+    assert "triangle" in banner and "box rows are NOT superseded" in banner
+
+    # (3) THE JSON, as data rather than as prose.
+    blob = json.loads((ROOT / "results" / "F6b" / "truss_sizing.json").read_text(encoding="utf-8"))
+    mark = blob["superseded"]
+    assert mark["ruling"] == "FY3" and mark["date"] == "2026-10-31"
+    assert mark["recomputed"] is False
+    assert mark["per_row_flag"] == "superseded_FY3"
+    assert "triangle" in mark["applies_to"] and "box" in mark["not_applies_to"]
+    answers = blob["answers"]
+    assert len(answers) == 168, len(answers)
+    assert all(
+        a["superseded_FY3"] is (a["section"] == "triangle") for a in answers
+    ), "a JSON answer disagrees with its own section about being superseded"
+
+
+def test_SR10_the_SIZING_generator_also_does_not_crash_AFTER_writing(
+    tmp_path: Path,
+) -> None:
+    """The sibling of the crash the cell above pins, in the OTHER F6b generator.
+
+    `test_FY3_the_F6b_GENERATOR_does_not_crash_AFTER_writing` covers
+    `f6b_report.py`. `f6b_truss_sizing.py` carried the same bare
+    `relative_to(ROOT)` in its closing log lines, after BOTH deliverables are
+    written -- so pointing it at a scratch directory produced two correct files
+    and an exit code of 1.
+
+    Found by doing exactly that: regenerating to a scratch path to prove R1106
+    had not moved any number. The control reported `GEN rc=1` with both files
+    byte-identical, which is the shape the cell above calls out -- an exit code
+    of 1 beside a correct file teaches a reader to ignore the exit code.
+
+    `member_forces_table.py` records that five `scripts/measure/` scripts still
+    carry the bare form. This is one of the five, so that count is now four; the
+    remaining four are named there rather than left silent.
+    """
+    import subprocess
+    import sys
+
+    generator = ROOT / "scripts" / "measure" / "f6b_truss_sizing.py"
+    assert generator.is_file()
+
+    out_csv = tmp_path / "truss_sizing.csv"
+    out_json = tmp_path / "truss_sizing.json"
+    proc = subprocess.run(
+        [sys.executable, str(generator), "--out", str(out_csv), "--json", str(out_json)],
+        capture_output=True,
+        text=True,
+        cwd=ROOT,
+    )
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert "Traceback" not in proc.stderr, proc.stderr
+    assert out_csv.is_file() and out_json.is_file()
+
+    # AND THE DELIVERABLES IT PRODUCES ARE THE ONES COMMITTED, which is what makes
+    # the exit code the only thing that was ever wrong here.
+    for produced, committed_name in (
+        (out_csv, "truss_sizing.csv"),
+        (out_json, "truss_sizing.json"),
+    ):
+        committed = (ROOT / "results" / "F6b" / committed_name).read_text(encoding="utf-8")
+        assert produced.read_text(encoding="utf-8") == committed, committed_name
