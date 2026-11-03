@@ -43,19 +43,61 @@ GENERATED_MARK = "<!-- generated: scripts/answered_table.py -->"
 #     **R1106. (BLOCKS) subject        -- the bold form, dot before the class
 #     ### R1106 (BLOCKS). subject      -- the heading form, dot after it
 #
-# so there is an optional dot on BOTH sides of the class. Requiring only the
+# so the dot's POSITION depends on which prefix matched. Requiring only the
 # first one gave every finding of the two newest verdicts the class
 # `carried` and the subject `carried from an earlier verdict` instead of its
 # own words -- and this generator feeds a published table, so that is a wrong
 # row waiting for the round that uses it.
-_FINDING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)\.?\s*(?:\(([^)]*)\))?\.?\s*(.*)$", re.MULTILINE)
+#
+# MAKING IT OPTIONAL ON BOTH SIDES WAS THE WRONG FIX, AND THAT WAS R1120's OWN
+# DEFECT (R1129). `(R\d+)\.?\s*` lets the dot be absent with nothing in its
+# place, so any line opening `**R<n>` matched -- 38 of them that the other five
+# anchors refuse, including
+#
+#     **R950, R951 AND R952 TOGETHER.** ...      a comma list of ids
+#     **R967 FIRST, BECAUSE IT IS THE ONE ...    a closing-list item
+#
+# and because `_subjects()` is last-match-wins over a file that accumulates
+# NEWEST-FIRST, eight historical findings read `recorded` where they read
+# `blocks`.
+#
+# THE DOT WAS DOING REAL WORK IN THE BOLD FORM and the fix is not to relax it
+# but to branch on the form. A bold finding is written `**R1106.` with the dot
+# immediately after the number -- that is what kept prose out before R1120 --
+# while a heading is written `### R1106 (BLOCKS).` with the dot after the
+# parenthetical, which is the only thing R1120 was ever about. Two
+# alternatives, named groups so the branch is readable.
+#
+# `[.\s]` ALONE IS NOT ENOUGH, measured: it refuses the comma list but accepts
+# `**R967 FIRST, ...`, which restores only four of the eight. Nor is
+# first-match-wins: the newest mention of a closed finding is a Carried row
+# saying it closed, so that restores three. Form-aware plus the ORIGINAL
+# last-match-wins restores all eight and changes nothing that was right.
+#
+# AND A COMMA COUNTS IN BOTH BRANCHES, UNLESS ANOTHER R ID FOLLOWS IT
+# (R1138). Requiring the dot in the bold form dropped `**R1136, and it is
+# ...`, a real finding of verdict 46 -- which is the hole a narrower
+# predicate opens behind it, and the reason the comma case is admitted
+# explicitly rather than by relaxing the dot again.
+_FINDING = re.compile(
+    r"^(?:\*\*(?P<bid>R\d+)(?:\.|,(?!\s*R\d))\s*(?:\((?P<bcls>[^)]*)\))?"
+    r"|#{2,4}\s+(?P<hid>R\d+)(?:[.\s]|,(?!\s*R\d))\s*(?:\((?P<hcls>[^)]*)\))?\.?)"
+    r"\s*(?P<rest>.*)$",
+    re.MULTILINE,
+)
 
 
 def _subjects(verdict: str) -> dict[str, tuple[str, str]]:
     """`{item: (class, subject)}` read from the verdict, never retyped."""
     out: dict[str, tuple[str, str]] = {}
     for m in _FINDING.finditer(verdict):
-        item, klass, rest = m.group(1), (m.group(2) or "").strip(), m.group(3).strip()
+        # LAST-MATCH-WINS IS UNCHANGED (R1129). Over a newest-first file that
+        # means the OLDEST dotted mention of an id decides -- which for a
+        # closed finding is its original heading and its original class, and
+        # is the behaviour every published table so far was generated under.
+        item = m.group("bid") or m.group("hid")
+        klass = (m.group("bcls") or m.group("hcls") or "").strip()
+        rest = m.group("rest").strip()
         kind = "blocks" if klass.lower().startswith("blocks") else "recorded"
         subject = re.sub(r"\s+", " ", rest).strip(" -*")
         out[item] = (kind, subject[:96])

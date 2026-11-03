@@ -8636,6 +8636,14 @@ judge  compare the block above: there, steps 8, 9 and 10 were SKIPPED. This is t
 claim  the run at `64af726`, conclusion **failure**, reported this many failing names
 cmd    scripts/ci_section.py --rounds, §0a's per-run line for the `64af726` run
 out    Run `41570739300`, conclusion **failure**: 1915 failing test name(s) in the log.
+       -- THIS IS THE OUTPUT AT `cd6d6fe` AND IS NOT WHAT THE COMMAND PRINTS NOW
+          (R1134, marked under BP0 rather than re-taken). At `cd6d6fe` the reader
+          could not see an id containing a space, which is R1119; from `fcfb770`
+          on the same command prints 1917, and this section's own per-class table
+          below sums to 1917. Revision 1's §0a WAS regenerated, because a
+          GENERATED section whose rule moved is BP0's subject; this triple is
+          prose about what revision 1 measured, and re-taking it here would make
+          the report say revision 1 had seen a figure it had not.
 rule   EG3 (i): every red is tested against the FS1/FT1 predicate INDIVIDUALLY, and
        a red that fails it is CZ1 (iv) unchanged
 ```
@@ -12024,4 +12032,3385 @@ judge  the `1 skipped` is the deliberate
 - **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[step_number_is_the_empty_string]`
 - **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]`
 - **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[zero_padded_step_number]`
+```
+
+# Revision 3 — R1128's site axis, R1129 inside my own repair, and the eleven closure items
+Answers: verdict 46 @ 1d23985
+
+**Revision 3 of the three ES0 allows — the LAST one, so the step closes after this verdict whatever it says.** Verdict 46 ruled `2ead3d6` **HOLD** on one blocking finding (R1128), with one FF0 item (R1129) and eight closure items (R1130 to R1137). It also closed R1119, R1120, R1121, R1124, R1126 and R1127, each verified by running something rather than by reading the report.
+
+## 0. CI at `2ead3d6`, the commit verdict 46 judged — conclusion **SUCCESS**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 46 at `2ead3d6` through the report's own `Answers:` line. Run `41629919814`, event `push`, conclusion **success**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| the verification ladder | 2571 | 0 | 0 |
+| lint, unit and guards | 3764 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 0 not green.**
+
+**2 job(s) SKIPPED, so unavailable rather than passing:** `CI determinism -- leg`, `CI determinism -- ten legs agree`. A skipped job measured nothing; its zeros are an absence of evidence and not a pass.
+
+**Failing tests named in the log: 0.**
+
+*Beside §0, the reason the two determinism jobs are skipped, because the generated table says they are unavailable and not why (R1137): `ci.yml:90` is `if: github.event_name == 'workflow_dispatch'`, so they run only on a manual dispatch. That is unavailable BY DESIGN, which is a different thing from CK2's allowance-exhausted state — and CK2 would be a finding.*
+
+## 0a. Runs since the commit verdict 46 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 46 at `2ead3d6` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that reached no conclusion ABOUT THE CODE -- cancelled, or still running -- has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it. A cancelled run IS `completed`, which is why the test is the conclusion and not the status (CX0, R449, R1130).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `41629919814` | push | `2ead3d6` | conclusion **success** |
+
+## 1. What this revision answers, and what it does not
+
+**Revision 3 of the three ES0 allows — the last one, so the step closes after
+it.** Verdict 46 at `1d23985` ruled `2ead3d6` **HOLD** on one blocking finding,
+with one FF0 item and eight closure items.
+
+```
+claim  the range no verdict has judged, taken AT a named commit because a
+       range is a measurement and a later commit moves it (R1131, R349)
+cmd    git rev-parse --short HEAD, at assembly
+out    1d23985
+cmd    git log --oneline 2ead3d6..1d23985 | wc -l
+out    1
+cmd    git log --oneline 2ead3d6..1d23985
+out    1d23985 review: R1 step 3 revision 2 at 2ead3d6 -- HOLD, one blocking finding under FR1
+cmd    git diff --stat 2ead3d6..1d23985 -- floatfea tests scripts results
+out    (no output)
+cmd    git diff --stat -- floatfea tests scripts, the WORKING TREE at
+       assembly, which is what this revision's own commit adds
+out     scripts/answered_table.py    | 48 ++++++++++++++++++++++++++++++---
+        scripts/carried_table.py     | 22 ++++++++++++++--
+        scripts/check_carried.py     | 16 ++++++++++-
+        scripts/ci_section.py        | 63 +++++++++++++++++++++++++++++++++++++-------
+        tests/test_report_carried.py | 38 ++++++++++++++++++++++++--
+        5 files changed, 170 insertions(+), 17 deletions(-)
+rule   R1131: "Closed when the block is re-taken at the shipping commit, or
+       states the commit it was taken at, which is R349's convention"
+judge  **it states the commit, and it states the limit of that.**
+       `1d23985` is this revision's PARENT; the commit carrying this
+       revision is its child, so the same `git log` run after it prints one
+       more than the count above, and the working-tree diff above is what
+       that one commit contains. A range is a measurement and no range taken
+       before a commit can include it — which is FT1's limb two, the same
+       reason §11's suite line names its parent. Revision 2's block said
+       `out 3` where the command printed 6, because the paste preceded two
+       further edits to the thing it describes; naming the commit is the half
+       that survives that.
+```
+
+| item | class in verdict 46 | where |
+|---|---|---|
+| R1128 | the only **BLOCKING** finding | §2 |
+| R1138 | **not in any verdict — found here, and it is the blocking class** | §3a |
+| R1129 | FF0, the next commit | §3 |
+| R1125, R1130 to R1137 | closure items, all eleven answered here | §4 |
+| R1122, R1123 | ledger rows still open | §6 |
+| R1119, R1120, R1121, R1124, R1126, R1127 | **CLOSED by verdict 46** | §7 |
+| R1106, R1107, R1108, R1117 | closed by verdict 45 | §7 |
+| R1109 to R1116, the eleven `L` ids, and everything earlier | carried by name, unswept (ES0) | §7, §8, §8b |
+
+**WHAT THIS REVISION DOES NOT DO.** It does not sweep R1109 to R1116 and it
+does not answer R1122 or R1123; both carry to the closure artifact. It opens no
+step-4 work — `docs/USER_GUIDE.md` does not exist, and step gating says a PASS
+opens step 4, not a HOLD.
+
+## 2. R1128 — a site in a `.csv` could not enter the gate at all
+
+**Verdict 46's only blocking finding, and it is the direction I asked it to
+attack.** My ask on revision 2 was "a real site the widened anchor still
+misses". The answer was that the *heading* axis — which R1127 had just swept —
+was complete, and the **site** axis beside it was not.
+
+```
+claim  the extension class admitted five, and the verdicts name eleven
+cmd    git diff 2ead3d6..1d23985 -- tests/test_report_carried.py | grep
+       "^[-+].*(?:py|md|sh|txt|json)" | grep -E "^[-+]    r\"\(\?"
+out    (no output)
+rule   CZ0 (a) as narrowed by FR1: a wrong number in a report blocks; and
+       EZ0, which makes anything under `results/` a published deliverable
+judge  the silently wrong result verdict 46 named: §8b of revision 2, headed
+       "Every site verdict 45 names that this diff does not touch", published
+       2057 rows where the complete set is 2152. A closing condition naming a
+       site in a published CSV produced **no parametrised case at all**, so
+       the gate was green however the diff turned out.
+```
+
+**THE SHARPEST FORM, AND IT IS WORTH STATING ON ITS OWN.** R1106's finding
+block names *both* machine-readable siblings. The gate read one of them.
+
+```
+claim  R1106's `.json` was a site and its `.csv` was not, before this repair
+cmd    the two siblings in SITES, at 2ead3d6 and at this commit
+out    at 2ead3d6   results/F6b/truss_sizing.json  IS a site
+                    results/F6b/truss_sizing.csv   is NOT a site, no row
+       at HEAD      both are sites, findings R1106 and R1115 each
+rule   R1106's own silently-wrong-result sentence is about the `.csv`
+judge  one finding, one sentence, two files repaired together — and the gate
+       read the one whose extension was on a list nobody had written down.
+```
+
+**THE REPAIR IS A PARSER REPAIR AND THE TWO COPIES NOW AGREE (EK2).**
+
+```
+claim  the two copies of the SITE decision already disagreed, by `yml`, so
+       this was drift and not a designed domain
+cmd    grep -n "SITE = re.compile\|_SITE = re.compile" -A 2 at 2ead3d6
+out    tests/test_report_carried.py   py|md|sh|txt|json
+       scripts/carried_table.py       py|md|sh|txt|json|yml
+cmd    the same two at this commit
+out    tests/test_report_carried.py:281:_SITE = re.compile(
+       tests/test_report_carried.py:282:    r"(?<![\w.-])(?:R\d+-)*((?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|json|csv|yml|yaml|npz|toml|xml))"
+       scripts/carried_table.py:119:SITE = re.compile(r"((?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|json|csv|yml|yaml|npz|toml|xml))")
+judge  eleven extensions, identical in both. The pattern's own comment cites
+       C119/R641 as a PARSER repair under EK2, which is what this is: no regex
+       is added and no guard is extended.
+```
+
+**I DERIVED THE LIST RATHER THAN TAKING THE VERDICT'S, AND THE MEASUREMENT
+ARGUES AGAINST THE OBVIOUS ALTERNATIVE.**
+
+```
+claim  an OPEN-ENDED extension class is not the answer, and this is why
+cmd    every path-shaped token in the verdict file with ANY extension,
+       counted by extension
+out    py 2304   md 1316   head 416   csv 201   npz 109   json 72   sh 57
+       lambda 47   yml 28   main 23   yaml 19   txt 19   load 19 ...
+judge  **`head` 416 is `cd6d6fe..HEAD`**, and `lambda`, `main`, `load`, `get`,
+       `sqrt`, `array` and two hundred more are attribute accesses, not files.
+       An enumerated class is the design; extending the enumeration is the
+       repair.
+claim  and each of the six added names a REAL path, so none is a dead needle
+cmd    each candidate extension, distinct paths and whether on disk
+out    csv  20 distinct   docs/F4_member_forces.csv, docs/F6_utilisation.csv
+       npz  25 distinct   data/f4/dynamic_inputs.npz
+       yml   2 distinct   .github/workflows/ci.yml
+       yaml  6 distinct   examples/platform12_placeholder.yaml
+       toml  1 distinct   pyproject.toml
+       xml   1 distinct   leg/regression.xml
+rule   R434: a command whose answer is `0` proves nothing about a needle
+       nobody has looked at
+judge  all six are live. `xml` is the thinnest at one path, and it is a real
+       one: `_is_a_site` admits a separator-bearing path that does not exist
+       yet (R518), which is the direction that must never be silent.
+```
+
+**BOTH DIRECTIONS (EH4), WHICH THE CLOSING CONDITION ASKS FOR BY NAME.**
+
+```
+claim  the strict side: exactly the measured delta, and the three sites the
+       condition names by hand are present
+cmd    len(SITES) before and after, and the delta
+out    2104 -> 2199      delta 95
+cmd    the three the condition names
+out    results/F6b/truss_sizing.csv     2 sites
+       docs/F4_member_forces.csv       12 sites
+       .github/workflows/ci.yml         5 sites
+cmd    python -m pytest tests/test_report_carried.py -q -k
+       "every_named_site_is_touched_or_declared or R507"
+out    95 failed, 2108 passed, 685 deselected in 20.33s
+cmd    those 95 ids, filtered to the six new extension classes
+out    95 of 95
+judge  RED rather than silently absent, which is what the gate is for.
+
+claim  AND THE NUMBER IS 103 IN THIS REVISION, NOT 95, because the input
+       moved -- the closing condition said the count moves "to the number you
+       measure rather than to mine", and this is that number with its reason
+cmd    len(SITES) and the new-class tuples, with the report answering verdict
+       45 and then verdict 46
+out    answering verdict 45 @ 903f38b   SITES 2199   new-class  95
+       answering verdict 46 @ 1d23985   SITES 2226   new-class 103
+cmd    of those 103, how many the diff leaves untouched -- so how many are
+       rows
+out    103 of 103
+cell   ONE VARIABLE: the `Answers:` header. `VERDICT_TEXT` is read AT the
+       answered commit, so a report answering verdict 46 reads a verdict file
+       that contains verdict 46's own round -- and that round names more
+       sites, eight of them in the new extension classes.
+judge  **both figures are right about different inputs and neither supersedes
+       the other.** 95 is the delta against verdict 45's file, which is what
+       the reviewer measured and what the gate showed red before this revision
+       re-anchored. 103 is what §8b carries, and it is marked row by row.
+       A row count that moved for a reason I could not name would be the
+       thing to stop and report; this one moved because the answered verdict
+       did.
+```
+
+```
+claim  the weakening side: no token that is not a site entered
+cmd    the 26 distinct new paths against `_is_a_site`, which is UNCHANGED
+out    separator-bearing : 20   -> sites by R518, even if absent
+       bare basenames    :  6   -> ci.yml, dynamic_inputs.npz,
+                                   member_forces.csv, platform12_deck.yaml,
+                                   pyproject.toml, utilisation.csv
+cmd    any bare basename counted as a site while NOT tracked at the reviewed
+       commit
+out    []
+cmd    the four R507 controls
+out    tests/verification/rung1/test_new_thing.py  True   ok
+       frames.txt                                  False  ok
+       g22_model_configurations.txt                 True   ok
+       tree_prose_claims.txt                        True   ok
+rule   EH4: the boundary is solved from the side that WEAKENS the gate too
+judge  `frames.txt` is still out, all four controls hold, and the bare-token
+       filter is untouched. **My first weakening check was wrong and I report
+       it rather than the version that passed:** it tested
+       `pathlib.Path(p).exists()` and flagged 43 paths, which is not
+       `_is_a_site`'s rule — `_tracked_at_reviewed` matches a tracked path by
+       suffix, so bare `ci.yml` counts via `.github/workflows/ci.yml`. Against
+       the real predicate the answer is zero. That behaviour is pre-existing
+       and the widening did not introduce it.
+```
+
+## 3. R1129 — my own R1120 repair widened past every other anchor
+
+**FF0, and it is a defect inside the repair of the previous finding. Three of
+verdict 46's findings are that shape and this is the one that is mine.**
+
+```
+claim  the site, as verdict 46 cites it and where it is now
+cmd    grep -o "[^ ]*answered_table.py:51" the step-3 verdict
+out    `scripts/answered_table.py:51
+cmd    grep -n "^_FINDING = re.compile\|^_FINDING = \|_FINDING = re" scripts/answered_table.py
+out    82:_FINDING = re.compile(
+rule   R349: the verdict's number is at the reviewed commit
+judge  the dot was made optional on BOTH sides, so `(R\d+)\.?\s*` let it be
+       absent with nothing in its place and any line opening `**R<n>`
+       matched — 38 that the other five anchors refuse.
+```
+
+**THE CONSEQUENCE, AND IT IS NOT THE 38 LINES.**
+
+```
+claim  eight historical findings read `recorded` where they read `blocks`
+cmd    _subjects() over the verdict, the eight verdict 46 named, at 2ead3d6
+out    R906 R925 R936 R944 R950 R959 R967 R1069  -- all `recorded`
+cmd    the same eight at this commit
+out    R906 blocks
+       R925 blocks
+       R936 blocks
+       R944 blocks
+       R950 blocks
+       R959 blocks
+       R967 blocks
+       R1069 blocks
+rule   `_subjects()` is last-match-wins over a file `scripts/write_verdict.py`
+       accumulates NEWEST-FIRST, so the later (older) match decided
+judge  8 of 8 read `blocks` again, and the newest verdict's own findings keep
+       their own words and classes.
+```
+
+**IT TOOK THREE ATTEMPTS AND THE FIRST TWO WERE WRONG. I am reporting the two
+that failed, because which repair works is the whole content of the finding.**
+
+```
+claim  three candidate repairs, measured, one variable each
+cmd    `[.\s]` after the number -- what carried_table and check_carried use
+out    4 of 8      refuses the comma list, ACCEPTS `**R967 FIRST, BECAUSE ...`
+cmd    the same, plus first-match-wins instead of last
+out    3 of 8      the newest mention of a CLOSED finding is a Carried row
+                   saying it closed, so the newest is not the heading
+cmd    form-aware -- bold requires the dot immediately, heading allows it
+       after the parenthetical -- with last-match-wins UNCHANGED
+out    8 of 8
+cell   ONE VARIABLE in each, the same verdict bytes, the same `_subjects` body
+judge  **the dot was doing real work in the BOLD form**, and that is what I
+       had not seen: it is what kept prose out before R1120 touched it. R1120's
+       actual need was only that the HEADING form writes the dot after the
+       parenthetical. So the fix branches on the form and leaves
+       last-match-wins exactly as it was — it changes nothing that was right,
+       which is what my first two attempts did not manage.
+```
+
+```
+claim  the form-aware pattern refuses every prose shape and keeps every real
+       one, and costs no ids
+cmd    the four real forms and the three prose shapes through the pattern
+out    bold, dot before the class      ('R1106', 'BLOCKS')   ok
+       heading, dot after the class    ('R1106', 'BLOCKS')   ok
+       bold, no dot at all             refused               ok
+       heading, no parenthetical       ('R1119', '')         ok
+       REFUSE id then word             refused               ok
+       REFUSE FIRST BECAUSE            refused               ok
+       REFUSE comma list               refused               ok
+cmd    the id count of EVERY shipped anchor, each read from the module
+       rather than retyped here
+out    answered_table._subjects       279
+       carried_table.FINDING          279
+       check_carried._FINDING         279
+       test_report_carried._FINDING   279
+       all four agree: True
+judge  all four agree, and the number is 279 rather than 278 because R1138
+       (§3a) admits the comma form in the same revision. **`**R162
+       (recordable)` is refused by the bold branch and that is the pre-R1120
+       behaviour restored, not a new narrowing** -- it has no dot, and the
+       bold form has required one since before any of this. No id is lost:
+       the set that was 278 is a subset of the 279.
+```
+
+## 3a. R1138 — a finding of the newest verdict was invisible to every anchor
+
+**Not in any verdict. Found while answering R1129, by printing a figure I was
+about to publish and not recognising it.** This is the blocking class: the
+published Carried table omitted a finding of the verdict it answers, and the
+gate that should have demanded it reported success.
+
+```
+claim  verdict 46 writes one of its own findings with a COMMA after the id,
+       and `[.\s]` refuses a comma
+cmd    the line, as the verdict writes it
+out    **R1136, and it is the SR-16 RULING YOU ASKED FOR rather than a
+       finding against the repair.**
+cmd    each anchor asked whether it can see `R1136`, at 1d23985
+out    carried_table.HEADING          R1136: False
+       carried_table.FINDING          R1136: False
+       test_report_carried._FINDING   R1136: False
+       the inline copy                R1136: False
+       check_carried._FINDING         R1136: False
+       answered_table._subjects       R1136: ABSENT
+rule   CZ0 (a) as narrowed by FR1 -- a wrong number in a report; and a gate
+       assertion under CZ0 (c)
+judge  **all six, which is why no measurement I had taken could show it.** The
+       id counts agreed at 278 across every anchor, so the usual cross-check
+       said they were consistent. They were consistently missing the same
+       finding.
+```
+
+```
+claim  THE SILENTLY WRONG RESULT, and it is two things
+cmd    the generated Carried table, rows for R1130 to R1137
+out    R1130 R1131 R1132 R1133 R1134 R1135 R1137   -- seven rows
+       R1136                                        -- NO ROW
+cmd    python scripts/check_carried.py, at that state
+out    check_carried: all 278 findings carried
+rule   `check_carried.py`'s own purpose is to refuse a report that omits a
+       finding of the verdict it answers
+judge  a published table that silently drops a finding of the newest verdict,
+       and the gate for exactly that saying everything is carried. The
+       script's "no findings parsed" guard fires only at ZERO, so 278 of 279
+       looks identical to 279 of 279.
+```
+
+```
+claim  the repair is one lookahead, and the comma LIST stays refused
+cmd    the seven shapes through the old separator and the new one
+out    OLD `[.\s]`                         NEW `(?:[.\s]|,(?!\s*R\d))`
+       heading, dot after class    ok      ok
+       bold, dot before class      ok      ok
+       bold, space then word       ok      ok
+       **R1136, and it is ...      WRONG   ok
+       **R950, R951 AND R952.**    refused refused
+       **R978,R986 AND R987.**     refused refused
+       a mention mid-paragraph     refused refused
+cmd    the id sets over the verdict file, old against new
+out    ids OLD 278   ids NEW 279   gained ['R1136']   lost []
+cmd    every finding verdict 46 declared, by id, asked of the new separator
+out    R1128 R1129 R1130 R1131 R1132 R1133 R1134 R1135 R1136 R1137 -- 10 of 10
+rule   EH4 in both directions, and EK2: a parser repair, no regex added
+judge  `,(?!\s*R\d)` is the whole of it: a heading whose subject OPENS with a
+       comma is admitted, and a comma list of ids is not. Nothing is lost,
+       which is the direction this file's own comments say must never be
+       silent.
+```
+
+**AND THIS IS WHY R1129's REPAIR HAD TO BE CHECKED AGAINST THE OTHER
+DIRECTION.** Requiring the dot in the bold form — which is what restored the
+eight class flips — is what dropped R1136 from `answered_table` as well.
+
+```
+claim  the eight class flips still hold with the comma admitted
+cmd    _subjects() over the verdict, the eight verdict 46 named
+out    8 of 8 read `blocks`
+cmd    R1136's own row
+out    R1136 ('recorded', 'and it is the SR-16 RULING YOU ASKED FOR rather
+       than a finding against the repair.')
+judge  so the two are not in tension once the comma case is named explicitly.
+       **Relaxing the dot again would have restored R1136 and re-broken the
+       eight** — which is the shape my own memory records as "narrowing a
+       predicate opens a hole the wider one covered", here in both
+       directions at once. Naming the case is what lets both hold.
+```
+
+**HOW IT WAS FOUND, because it was nearly not.** I was composing §5's triple
+and ran `grep -c` for verdict 46's finding headings to state the set. It
+printed **9** where the verdict declares ten. I could have written "nine" and
+moved on — the number was the command's own output, so BF0 would have been
+satisfied and the triple would have been checkable and wrong about the thing
+it was describing. The tenth was R1136.
+
+```
+claim  the needle that found it was itself too narrow, and that is the point
+cmd    grep -cE "^(### R11(2[89]|3[0-7])|\*\*R11(2[89]|3[0-7])\.)" the verdict
+out    9
+cmd    the ten ids verdict 46 declares, listed with the form each uses
+out    R1128 `### R1128 (BLOCKS).`      R1133 `**R1133.**`
+       R1129 `### R1129 (FF0, ...).`    R1134 `**R1134.**`
+       R1130 `**R1130.**`               R1135 `**R1135.**`
+       R1131 `**R1131.**`               R1136 `**R1136,`   <- the comma
+       R1132 `**R1132.**`               R1137 `**R1137.**`
+rule   BF0 is satisfied by a command's own output, and R434 is what catches a
+       needle whose answer is a number nobody checked against the thing it
+       describes
+judge  **a count that disagrees with a set you can enumerate is the cheapest
+       detector there is, and it is the only reason this was found.** Nothing
+       in the repository was red; six anchors agreed; CI was green.
+```
+
+## 4. The eleven closure items, each answered at its own cause
+
+*CZ0 says a closure item is listed and fixed once in the closure commit. **This
+is the last revision ES0 allows**, so they are fixed here instead: several are
+wrong published figures, and leaving a sentence I know to be false in a section
+I am regenerating anyway is worse than the round it would cost.*
+
+**R1125 — closed, and its second half was the one still open.** The first half
+was §1's `out` field, answered in revision 2. The second was §0a's rule
+sentence, and it was **not** repaired.
+
+```
+claim  the false sentence is gone from the GENERATOR, not from one artifact
+cmd    grep -c "did not complete" the generated section 0a
+out    0
+cmd    the sentence the generator now emits
+out    A run that reached no conclusion ABOUT THE CODE -- cancelled, or still
+       running -- has **no result** and no job lines: it reached no verdict on
+       anything, so no reason is attributed to it. A cancelled run IS
+       `completed`, which is why the test is the conclusion and not the status
+       (CX0, R449, R1130).
+rule   verdict 45 measured `status "completed", conclusion "cancelled"` for two
+       runs, so "did not complete" was false at its own boundary -- it excluded
+       the very case the sentence exists for
+judge  repaired at `scripts/ci_section.py`, so every future section carries it.
+       A repair applied to the artifact instead of its generator is overwritten
+       by the next assembly, which this report has recorded happening once.
+```
+
+**R1130 — §6 of revision 2 said R1125's second half was "repaired in section
+10" and it was not there.** That is R1123's own shape — a pointer at a row that
+does not exist — inside the repair of the finding beside it. Closed by the
+repair above, and this revision's §6 claims nothing it does not carry.
+
+**R1131 — §1's scope triple was stale at its own commit.** Closed: §1's block
+now names the commit it was taken at, which is R349's convention and is the
+half that survives a later edit.
+
+**R1132 — §4's needle selected fifteen headings where the `out` field said
+seven.**
+
+```
+claim  the needle and the set it selects, stated as what it prints
+cmd    grep -c "^### R11[12][0-9] " the step-3 verdict
+out    17   headings, spanning R1110 to R1137
+cmd    grep -c "^### R112[0-9] \|^### R1119 " the step-3 verdict
+out    7
+rule   R1132: "Closed when the needle selects the seven, or the out field says
+       what it printed"
+judge  **both branches taken.** The wide needle's real span is named, and a
+       narrow needle is given beside it. Revision 2's block asserted a span
+       the command did not print, which is a figure correct about nothing.
+```
+
+**R1133 — the answers file's `_` block described revision 1.** It named the
+addendum, announced "THREE ITEMS" and listed four, while the data rows were
+correct and current throughout.
+
+```
+claim  the block now names this revision and its count is DERIVED
+cmd    the block's count line, and its item rows, counted separately
+out    claimed in the block : 11
+       item rows in the block: 11
+       MATCH: True
+cmd    the same count against the pointer file's own `answered` rows
+out    pointer rows with state answered: 11   same set: True
+judge  the count is `len()` of the list rather than a typed number, so the two
+       cannot disagree again. **And my first check of this disagreed with
+       itself** -- it counted lines starting `R11`, which also matched the
+       prose line "R1122 and R1123 point at §6", giving 12 against 11. The
+       data was right and the needle was wrong, which is the day's shape in
+       my own verification of a fix for exactly that shape.
+```
+
+**R1134 — a figure whose rule moved was regenerated in one place and not the
+other, in the same commit.** Revision 1's §10 still publishes `1915` for a
+command that now prints `1917`.
+
+```
+claim  the triple now says which commit its output is from
+cmd    grep -c "1915 failing test name" docs/reports/R1/step-3.md
+out    2
+cmd    occurrences of `1917 failing test name` in the report, which is what
+       the figure becomes if it is re-taken rather than marked
+out    2
+rule   BP0, and R1134: "Closed when the out field is re-taken, or the triple
+       says it is the output at `cd6d6fe`"
+judge  **the second branch**, and deliberately: revision 1's §10 is a record of
+       what revision 1 measured, and re-taking a figure inside a closed
+       revision's prose would make the report say revision 1 had seen a number
+       it had not. The triple is marked as the output at `cd6d6fe`. Revision
+       1's §0a was regenerated because it is a GENERATED section whose rule
+       moved; §10 is prose about a past measurement.
+```
+
+**R1135 — §2's weakening-direction claim was wider than what was measured.**
+
+```
+claim  the sentence is reduced to the shapes actually run
+cmd    the five hostile shapes verdict 46 chose, through the pattern AND the
+       margin guard
+out    FAILED (exit code 1)                       -> `(exit code 1)`
+       FAILED to download the artifact after ...  -> the whole sentence
+       FAILED - nothing to report                 -> `- nothing to report`
+       a double-dash separator                    -> the id AND the reason
+       an em-dash separator                       -> likewise
+cmd    reachability, over both real logs
+out    3810 extracted names, 0 lacking a double colon
+rule   R1135: "Closed when the sentence is reduced to the shapes measured, or
+       the reader requires the name to look like an id"
+judge  **the first branch.** §2 now says the wider pattern refuses the four
+       shapes measured and names what it does not check, rather than claiming
+       it takes no text that is not an id. I did NOT add an id-shaped
+       requirement: that is a second predicate on a reader whose live domain
+       is measured clean at 0 of 3810, and narrowing a predicate to close a
+       sentence is how a hole gets opened behind it.
+```
+
+**R1136 — the SR-16 ruling, and the part of it that is a finding against me.**
+
+```
+claim  verdict 46 ruled BP0 satisfied and the one-commit lag not a finding;
+       what was not established is my REASON
+cmd    the arm verdict 46 ran that I did not: at `fcfb770`, §0a's 1915
+       corrected AND a revision-2 `Answers:` header opened in the same commit
+out    test_the_answered_verdict_is_the_NEWEST_one   1 passed
+rule   BG0: a causal sentence carries the controlled measurement, one variable
+       moved and everything else held
+judge  **so "it could not go there" is false, and I wrote it as measured.** My
+       cell moved one variable -- appending a comment line WITHOUT the header --
+       and concluded that the figure and the header "are one commit". That
+       conclusion needed the second arm, which is the configuration the
+       instruction actually implied, and I never ran it. This is EU1's lesson
+       in a round with no tolerance in it: the adversarial case is the one
+       nobody chose. §10 and `docs/directives/FZ.md`'s SR-16 are both reduced
+       to what was measured, and SR-16 now records that the reason was wrong.
+```
+
+**R1137 — §0's job table published two skipped jobs as zeros under "0 not
+green".**
+
+```
+claim  the generator now names a skipped job as unavailable rather than passing
+cmd    the generated section 0's job-conclusions block
+out    **Job conclusions: 4 jobs, 0 not green.**
+       **2 job(s) SKIPPED, so unavailable rather than passing:**
+       `CI determinism -- leg`, `CI determinism -- ten legs agree`. A skipped
+       job measured nothing; its zeros are an absence of evidence and not a
+       pass.
+rule   R1137, and CK2's own distinction between a job that failed and a job
+       that never ran
+judge  repaired at the generator, so it is not a sentence I remembered to add
+       to one report. **And the reason the two are skipped:** `ci.yml:90` is
+       `if: github.event_name == 'workflow_dispatch'`, so they run only on a
+       manual dispatch and are unavailable by design on a push — not CK2's
+       allowance-exhausted state, which is a different thing and would be a
+       finding.
+```
+
+## 5. The closing conditions of verdict 46, read site by site
+
+*A closing condition that names sites is closed site by site, and half of an
+item is not the item.*
+
+```
+claim  the rows below are verdict 46's own closing conditions, and the set is
+       the findings it declared
+cmd    grep -c "^.\\*Closed when.\\*" the step-3 verdict
+out    125   across the whole accumulated file, all rounds
+cmd    verdict 46's own findings in BOTH forms it writes them --
+       `### R1128 (BLOCKS).`, `**R1130.**` and `**R1136,`
+out    10
+rule   CLAUDE.md: "When a review's `Closed when` names files and lines, the
+       answering report lists each named site with its diff hunk, or states
+       that the site was left and why"
+judge  no figure is published in the table itself -- the right-hand column
+       points at the section of this revision that closes each one, so there
+       is nothing in it to source beyond the conditions.
+```
+
+| condition | what it named | state |
+|---|---|---|
+| R1128 (i) strict | the three sites by hand, the 95 answered not left red, §8b's count moving to the number I measure | **closed**, §2 and §8b |
+| R1128 (ii) weakening | exact delta, no non-site token, `test_the_R507_cases_rule_as_measured` green, `frames.txt` out | **closed**, §2 |
+| R1128 (iii) the two copies agree | `tests/test_report_carried.py`, `scripts/carried_table.py` | **closed**, §2 |
+| R1129 | `scripts/answered_table.py:51`, the eight back to `blocks` | **closed**, §3 |
+| R1130 | the sentence, or §6 stops claiming it | **closed**, §4 — the sentence, at the generator |
+| R1131 | re-taken, or states its commit | **closed**, §1 — states its commit |
+| R1132 | the needle selects seven, or the out says what it printed | **closed**, §4 — both |
+| R1133 | the block names its revision and the count matches | **closed**, §4 — count derived |
+| R1134 | re-taken, or says it is the output at `cd6d6fe` | **closed**, §4 — the second branch |
+| R1135 | reduced to the shapes measured | **closed**, §4 — first branch, no new predicate |
+| R1136 | §10 and SR-16 reduced to what was measured | **closed**, §4 and §10 |
+| R1137 | one sentence that they are unavailable rather than passing | **closed**, §4 — at the generator |
+
+## 6. The ledger rows still open
+
+*These two carry to the closure artifact. §4's repairs do not touch them and
+this section claims nothing it does not carry — which is R1130's lesson.*
+
+**R1122** — `results/F6b/truss_sizing.md` points at two destinations and one of
+them now exists without containing what the note says is in it. FZ rule 4's
+old/new ratio table is still owed. **Not answered here.**
+
+**R1123** — the hook's over-refusal, measured by verdict 45 at 5 of 10
+legitimate reads. **Two more rows were bought while writing this revision**,
+which makes seven:
+
+```
+claim  the hook refuses a legitimate write whose OUTPUT path is unprotected,
+       when the command TEXT quotes a protected path
+cmd    a heredoc writing a probe script into the scratchpad, whose text
+       mentions the step-3 verdict path
+out    PreToolUse:Bash hook error: docs/re[v]iews/ is written only by the
+       gating-supervisor, through scripts/write_verdict.py
+cmd    the same read with NO redirect: a generator invoked with the verdict as
+       an argument
+out    allowed -- the table printed
+rule   FM1: never construct a command to get past a hook; use the editing tool
+       or stop and ask
+judge  nothing was reshaped either time; the probe was written with the editing
+       tool and run without a redirect. **The shape is now precise, which is
+       worth more than the count: the refusal keys on a redirect operator
+       plus a mention, not on the read.** A heredoc is a redirect, so quoting
+       a verdict path inside one is refused while passing it as an argument is
+       not. I am not asking for the clause to be reverted -- failing closed is
+       right and verdict 45 asked for the variable write to be denied.
+```
+
+**R1124's second branch** — the eleven `L` ids are named individually in §7,
+which verdict 46 confirmed closed. Nothing further is owed.
+
+## 7. The carried items, every one named
+
+**CLOSED BY VERDICT 46, each verified by the reviewer running something rather
+than by reading revision 2:** **R1119**, **R1120**, **R1121**, **R1124**,
+**R1126** and **R1127**. The measurements are verdict 46's own and are not
+republished here — a figure quoted out of a verdict is a figure nothing in this
+repository regenerates (BI3), and this report has lost a round to exactly that.
+
+**CLOSED BY VERDICT 45 before them:** **R1106**, **R1107**, **R1108** and
+**R1117**.
+
+**CLOSED IN THIS REVISION:** **R1128** (§2), **R1129** (§3), **R1138** (§3a — mine, and the blocking class), and **R1125**,
+**R1130**, **R1131**, **R1132**, **R1133**, **R1134**, **R1135**, **R1136**,
+**R1137** (§4).
+
+**STILL OPEN, carried to the closure artifact:** **R1122** and **R1123** (§6).
+
+**CARRIED BY NAME, UNSWEPT, as ES0 allows:** **R1109**, **R1110**, **R1111**,
+**R1112**, **R1113**, **R1114**, **R1115**, **R1116**. R1109's two published
+margin figures in the `NODE_COINCIDENCE_DECIMALS` entry are still wrong and
+this report still quotes neither of them.
+
+**THE ELEVEN `L` IDS, NAMED RATHER THAN RANGED (R1124, closed by verdict 46).**
+They carry unanswered, and they are not rows of this report's generated Carried
+table and cannot be: every finding anchor in this repository matches `R` ids
+only.
+
+```
+claim  the eleven, each one named
+out    L47  L48  L49  L50  L51  L52  L53  L54  L55  L56  L58
+claim  and not one of the six finding anchors can see an L id, while all six
+       see an R id -- so the zero is a measurement and not a dead needle
+cmd    each of the six anchors applied to `### L58 (ledger). text`, then to
+       `### R58 (ledger). text`
+out    L 0 of 6
+       R 6 of 6
+rule   R434: every absence claim carries a POSITIVE CONTROL
+judge  L57 and L60 are closed and are discussed in revision 1 §7, which is the
+       sentence that was true of the two. Verdict 46 confirmed R1124 closed and
+       asked for nothing further; the list stays prose, because widening an
+       anchor to `L` ids is apparatus and it is frozen.
+```
+
+**FT2.5's conditions 1, 2 and 3 are still met**, their substance in the tree;
+condition 4 was R1121 and is closed. **FT2.6, FT2.7 and FR3 are not reopened** —
+verdict 45 ruled R867 to R870 non-blocking by name and verdict 46 did not
+re-read them.
+
+```
+claim  the FT2.5 sites are in the tree and FT2.6's named gate exists --
+       checked rather than assumed, which is what verdict 45 did
+cmd    grep -c "declared section list" floatfea/cli.py floatfea/run/config.py
+out    floatfea/cli.py:1
+       floatfea/run/config.py:2
+cmd    test -e tests/regression/test_ft26_multi_npz.py
+out    PRESENT   -- the gate FT2.6 names
+cmd    python -c "import json;print(len(json.load(open('docs/reports/R1/step-3-answers.json', encoding='utf-8'))['answered']))"
+out    291   -- the pointer rows this revision carries
+rule   BF0: a sentence naming FT2.5, FT2.6 or FT2.7 states a fact about this
+       repository and carries the check that would refute it
+judge  FT2.7's R867 to R870 are NOT re-read here and this report does not
+       claim to have re-read them.
+```
+
+**AND EVERY REMAINING ID, NAMED, BECAUSE §8's TABLE POINTS HERE FOR EACH OF THEM.**
+A pointer at the Carried table itself is refused by the guard, and rightly -- an item whose discussion is the table that lists it has no discussion. The disposition is the same for all of them: **carried by name, unswept (ES0)**. This revision answered the thirteen items verdict 46 blocked, routed under FF0 or listed as closure items; it did not re-read 291 findings, and a report claiming otherwise would be the sentence BF0 exists to stop.
+
+* `R1`, `R835`, `R836`, `R838`, `R843`, `R845`, `R846`, `R847`, `R848`,
+  `R849`, `R850`, `R851`
+* `R852`, `R853`, `R854`, `R855`, `R856`, `R857`, `R858`, `R859`, `R860`,
+  `R861`, `R862`, `R863`
+* `R864`, `R865`, `R866`, `R868`, `R869`, `R871`, `R872`, `R873`, `R874`,
+  `R875`, `R876`, `R877`
+* `R878`, `R879`, `R880`, `R881`, `R882`, `R883`, `R884`, `R885`, `R886`,
+  `R887`, `R888`, `R889`
+* `R890`, `R891`, `R892`, `R893`, `R894`, `R895`, `R896`, `R897`, `R898`,
+  `R899`, `R900`, `R901`
+* `R902`, `R903`, `R904`, `R905`, `R906`, `R907`, `R908`, `R909`, `R910`,
+  `R911`, `R912`, `R913`
+* `R914`, `R915`, `R916`, `R917`, `R918`, `R919`, `R920`, `R921`, `R922`,
+  `R923`, `R924`, `R925`
+* `R926`, `R927`, `R928`, `R929`, `R930`, `R931`, `R932`, `R933`, `R934`,
+  `R935`, `R936`, `R937`
+* `R938`, `R939`, `R940`, `R941`, `R942`, `R943`, `R944`, `R945`, `R946`,
+  `R947`, `R948`, `R949`
+* `R950`, `R951`, `R952`, `R953`, `R954`, `R955`, `R956`, `R957`, `R958`,
+  `R959`, `R960`, `R961`
+* `R962`, `R963`, `R964`, `R965`, `R966`, `R967`, `R968`, `R969`, `R970`,
+  `R971`, `R972`, `R973`
+* `R974`, `R975`, `R976`, `R977`, `R978`, `R979`, `R980`, `R981`, `R982`,
+  `R983`, `R984`, `R985`
+* `R986`, `R987`, `R988`, `R989`, `R990`, `R991`, `R992`, `R993`, `R994`,
+  `R995`, `R996`, `R999`
+* `R1000`, `R1001`, `R1002`, `R1003`, `R1005`, `R1006`, `R1007`, `R1008`,
+  `R1009`, `R1010`, `R1011`, `R1012`
+* `R1013`, `R1014`, `R1015`, `R1016`, `R1017`, `R1018`, `R1021`, `R1022`,
+  `R1023`, `R1024`, `R1025`, `R1026`
+* `R1027`, `R1028`, `R1029`, `R1030`, `R1031`, `R1032`, `R1033`, `R1034`,
+  `R1035`, `R1036`, `R1037`, `R1038`
+* `R1039`, `R1040`, `R1042`, `R1043`, `R1044`, `R1045`, `R1046`, `R1047`,
+  `R1048`, `R1049`, `R1050`, `R1051`
+* `R1052`, `R1053`, `R1054`, `R1055`, `R1056`, `R1057`, `R1058`, `R1059`,
+  `R1060`, `R1061`, `R1062`, `R1063`
+* `R1064`, `R1065`, `R1066`, `R1067`, `R1068`, `R1069`, `R1070`, `R1071`,
+  `R1072`, `R1073`, `R1074`, `R1075`
+* `R1076`, `R1077`, `R1078`, `R1079`, `R1080`, `R1081`, `R1082`, `R1083`,
+  `R1084`, `R1085`, `R1086`, `R1087`
+* `R1088`, `R1089`, `R1090`, `R1091`, `R1092`, `R1093`, `R1094`, `R1095`,
+  `R1096`, `R1097`, `R1098`, `R1099`
+* `R1100`, `R1101`, `R1102`, `R1103`, `R1104`, `R1105`
+
+
+## 8. Carried
+
+*Generated by `python scripts/carried_table.py docs/reviews/R1/step-3.md docs/reports/R1/step-3-answers.json`. The pointer file is committed, because a command whose input is untracked cannot be run by the person reading it (R296).*
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R1 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R835 | **later** — §7 | (EG3's enumeration) \| still open, still Xabier's; this commit is its eighth measurement \| of... |
+| R836 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R838 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R843 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R845 | **later** — §7 | (not one number in the three published R1 deliverables is compared against anything) \| ANSWERED... |
+| R846 | **later** — §7 | (the R838 repair is green on three injections one step above the one it was built for) \|... |
+| R847 | **later** — §7 | (section 3's "0 of 49 rows" does not reproduce; the generator emits 23) \| still open, correctly... |
+| R848 | **later** — §7 | (the empty-directory refusal admits ., ./, .., " . ") \| still open, untouched by this diff, and... |
+| R849 | **later** — §7 | (the caveat, disclaimer and provenance gates quantify over a hard-coded three-file tuple, and... |
+| R850 | **later** — §7 | THE WALL-CLOCK EXCLUSION COVERS THREE OF THE FIVE ROWS THE GENERATOR WRITES, SO TWO WALL-CLOCK... |
+| R851 | **later** — §7 | THE PROVENANCE EXCLUSION IS CHECKED BY BASENAME ONLY, AND THE KEY-SET PIN READS report.md... |
+| R852 | **later** — §7 | A CAVEAT TRUNCATED TO ITS OWN MARKER IS GREEN ON 31 OF 31 CASES. TABLE_CAVEATS[8] reduced from... |
+| R853 | **later** — §7 | "102, 1289 AND 73 COMPARABLE LINES" DOES NOT REPRODUCE. The comparable counts are 99, 1286 and... |
+| R854 | **later** — §7 | R849 NOW HAS A SECOND SITE. The new gate repeats the hard-coded three-file tuple, so FR3's two... |
+| R855 | **later** — §7 | THE SUITE WAS NOT RUN AT A PUSHED, REVIEWED COMMIT, AND THE TREE'S NINE REDS WERE NOT RECORDED... |
+| R856 | **later** — §7 | scripts/write_verdict.py REFUSES TO WRITE A VERDICT FOR A STEP THAT HAS NO REPORT, AND FR3 PLUS... |
+| R857 | **later** — §7 | R853'S REPAIR REPUBLISHED R853'S DEFECT. The corrected figure 99, 1286 and 70 COMPARABLE lines... |
+| R858 | **later** — §7 | THE FILE STILL ASSERTS THAT BOTH EXCLUDED CLASSES "ARE CHECKED SEPARATELY", AND NOTHING IN THE... |
+| R859 | **later** — §7 | THE NEW COMMENT NAMES THE WRONG ASSERTION. It says a sixth stage row "reddens HERE rather than... |
+| R860 | **later** — §7 | _TIMING_STAGES IS A HAND COPY OF THE LITERAL TUPLE AT floatfea/cli.py:297, AND NOTHING COMPARES... |
+| R861 | **later** — §7 | THE BASELINE OF NINE REDS WAS WRONG WITHIN ONE COMMIT OF MY WRITING IT. The tree is at 78, and... |
+| R862 | **later** — §7 | "THERE IS NO SECOND COPY" IS REFUTED BY ONE GREP. THREE HAND COPIES OF THE STAGE SET REMAIN AND... |
+| R863 | **later** — §7 | THE EXCLUSION SET IS NOW DEFINED BY THE CODE UNDER TEST, SO A SIXTH PUBLISHED ROW IS EXEMPTED... |
+| R864 | **later** — §7 | "THE REFACTOR PRODUCES BYTE-IDENTICAL DELIVERABLES" IS TRUE, AND THE REGENERATION GATE CANNOT... |
+| R865 | **later** — §7 | THE DOCSTRING OF THE FUNCTION WHOSE COMMENT WAS CORRECTED STILL SAYS "A FOURTH... |
+| R866 | **later** — §7 | load_cases.headings IS PARSED, RANGE-CHECKED, REPEAT-CHECKED -- AND READ BY NOTHING. floatfea... |
+| R867 | **later** — §7 | DECLARATION ORDER AND DIRECTION DECIDE WHETHER A DECLARED TOPOLOGY CAN BE RUN AT ALL. The... |
+| R868 | **later** — §7 | THE COMMITTED TEST FOR "A NON-STAR TOPOLOGY" BUILDS THE ONE ORDER THAT CANNOT BE RUN, AND NO... |
+| R869 | **later** — §7 | A DECLARED TOPOLOGY THAT DOES NOT REACH THE CENTRE BUILDS HAPPILY, AND _build_body RIGID-LINKS... |
+| R870 | **later** — §7 | FL2(a) AS SHIPPED IS A SUBSET OF THE LOCKED PLAN'S (a), AND TWO SENTENCES IN... |
+| R871 | **later** — §7 | FS1'S OWN COMMIT LEFT A HAND LIST IN MY INSTRUCTIONS AND REMOVED IT FROM CLAUDE.md. Its check... |
+| R872 | **later** — §7 | headings: [360.0] IS INSIDE THE DECLARED DOMAIN AND IS REFUSED AGAINST AN EXPORT AT 0 DEG,... |
+| R873 | **later** — §7 | A SIDECAR WHOSE heading_deg IS A LIST MAKES THE COMPARISON RAISE TypeError INSTEAD OF... |
+| R874 | **later** — §7 | THE DECLARED SIDE REFUSES A BOOL BY NAME AND THE RECORDED SIDE COERCES ONE. heading_deg: true... |
+| R875 | **later** — §7 | 82f922c FIXED THE LIST R871 NAMED AND LEFT ITS SIBLING TWO PARAGRAPHS ABOVE. docs/SUPERVISOR.md... |
+| R876 | **later** — §7 | R872 PUT AN EQUIVALENCE RELATION INSIDE A GATE AND CALLED IT ARITHMETIC. NOTHING IN THE 29... |
+| R877 | **later** — §7 | R874's REPAIR IS GATED BEHIND load_cases.headings BEING DECLARED, AND R874's OWN PUBLISHED... |
+| R878 | **later** — §7 | floatfea/cli.py:146-149 SUBSCRIPTS FOUR KEYS THAT exported_wave_basis BUILDS ONE KEY AT A TIME.... |
+| R879 | **later** — §7 | TWO OF THE THREE THINGS R873's AND R874's CONDITIONS NAMED ARE NOT DONE AND NOT DECLARED... |
+| R880 | **later** — §7 | .claude/agents/gating-supervisor.md TELLS ME TO READ "EH1, EJ2 AND FC1 -- THE TWO BOUNDARY... |
+| R881 | **later** — §7 | THE RECORDED HEADING GETS ALL THREE OF THE DECLARED SIDE'S CHECKS AND THE TWO RECORDED WAVE... |
+| R882 | **later** — §7 | R877's CLOSING CONDITION NAMED TWO SITES AND THE SECOND IS UNTOUCHED AND NOT DECLARED LEFT. THE... |
+| R883 | **later** — §7 | TWO SENTENCES IN _validated_wave_basis's OWN DOCSTRING AND REFUSAL TEXT ARE FALSE AT THIS... |
+| R884 | **later** — §7 | COMPLETE-OR-EMPTY HOLDS ONLY WHEN run IS A MAPPING. A SIDECAR WHOSE run BLOCK IS A LIST... |
+| R885 | **later** — §7 | THE RAW DOMAIN CHECK REFUSES A SIGNED RECORDING, AND docs/conventions.md:150 RECORDS THAT THE... |
+| R886 | **later** — §7 | THE # noqa: F401 THIS COMMIT ADDED SUPPRESSES NOTHING TODAY AND COVERS FOUR IMPORTS TOMORROW.... |
+| R887 | **later** — §7 | ba0ce03 MOVED THE MARKER TO A STEP WITH NO REPORT, AND THE NEGATIVE-CONTROL HARNESS DERIVES ITS... |
+| R888 | **later** — §7 | THE R799/R800 ORPHAN SWEEP GLOBS docs/reports/F/step-.md, AND R1 IS THE ACTIVE MILESTONE. AN... |
+| R889 | **later** — §7 | "A DEADLOCK THAT HAD ABSORBED SEVEN INTERIM CHECKS" IS A CAUSAL CLAIM IN THREE SHIPPED PLACES... |
+| R890 | **later** — §7 | THE CHECKPOINT'S "OF STEP 3'S NINE CODE COMMITS, TWO WERE NEW FL2 ITEMS AND FIVE WERE REPAIRS... |
+| R891 | **later** — §7 | REPLAY 1 IN f9954f7's MESSAGE -- "(empty) exit=0 <- THIS TREE CLEARS" -- IS FALSE AT HEAD. AT... |
+| R892 | **later** — §7 | "AND THE CONTROL, ONE VARIABLE MOVED -- THE OLD HOOK ON THIS SAME TREE" MOVED TWO. THE STASH... |
+| R893 | **later** — §7 | ONE LIVE SITE STILL STATES THE PREMISE FT0 RETIRED AS A RULE, AND NO LIVE PLAN STATES THE RULE... |
+| R894 | **later** — §7 | R1's STEP-3 GATE ROW DOES NOT CARRY FT2's ITEMS 6 AND 7, AND THE STEP WILL BE CLOSED AGAINST... |
+| R895 | **later** — §7 | THE RECORDED WAVE-HEIGHT PAIR IS NEVER CHECKED AGAINST LAMBDA, AND WAVE_HEIGHT's [0, 100] m IS... |
+| R896 | **later** — §7 | THE SAME DEFECT AT A SECOND DOOR, AND IT IS THE ONE EZ0 NAMES BY NAME.... |
+| R897 | **later** — §7 | R887 IS NOT CLOSED. TWO NEGATIVE-CONTROL STATES NOW DIE IN _build WITH shutil.SameFileError... |
+| R898 | **later** — §7 | closed_by_a_pass READS ANY Verdict: PASS IN A STEP'S REVIEW FILE AS CLOSURE, AND R888's GLOB... |
+| R899 | **later** — §7 | docs/SUPERVISOR.md STATES CZ0's FOUR HEADS AS THE CRITERION BOTH REVIEWERS RULE UNDER, NAMES... |
+| R900 | **later** — §7 | "ALL FOUR ARE PUSHED (FP1), SO EACH HAS A CI RUN AVAILABLE" IS FALSE. TWO OF THE FOUR HAVE NO... |
+| R901 | **later** — §7 | NEXT CARRIES TWO STACKED DOCSTRINGS AND THE SECOND IS A DEAD STRING LITERAL. claim the new... |
+| R902 | **later** — §7 | THE GENERATOR NOW VALIDATES THE RECORDED WAVE HEIGHT AND THEN IGNORES IT. EVERY NUMBER THE... |
+| R903 | **later** — §7 | THE REPAIR ROUTED THE FOUR WAVE_BASIS_KEYS AND LEFT FIVE RECORDED FIELDS AT THE SAME READER... |
+| R904 | **later** — §7 | THE REPAIRED ASSERTION IS TWO SCALAR COMPARISONS WHERE THE CLOSING CONDITION SAID "EVERY COPY... |
+| R905 | **later** — §7 | R895's REPAIR REPLACED ONE UNVERIFIABLE ABSENCE CLAIM IN floatfea/ WITH ANOTHER, AND ADDED TWO... |
+| R906 | **later** — §7 | A RED TEST AT THE REVIEWED COMMIT THAT FAILS BOTH LIMBS OF THE PREDICATE. c071e68 DELETED... |
+| R907 | **later** — §7 | THE R902 REPAIR REACHED THE COMPUTED TABLE AND LEFT THE PUBLISHED VERDICTS. AT A RECORDED... |
+| R908 | **later** — §7 | THE REPAIR MADE sidecar.run.lambda THE FROUDE SCALE OF A PUBLISHED CSV, AND NOTHING COMPARES IT... |
+| R909 | **later** — §7 | run.periods_full_s IS NOT MERELY PRINTED -- IT IS THE LOOP VARIABLE OF THE BAND TABLE. A... |
+| R910 | **later** — §7 | THE R904 LOOP INSPECTS 16 OF THE 29 ACTIONS STATES CARRIES AND SKIPS 13 UNDER A SILENT else:... |
+| R911 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R912 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R913 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R914 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R915 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R916 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R917 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R918 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R919 | **later** — §7 | THE R906 REPAIR PUT A PUBLISHED-DELIVERABLE GENERATOR ON AN AUTHORITY NOTHING CROSS-CHECKS AND... |
+| R920 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R921 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R922 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R923 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R924 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R925 | **later** — §7 | THE FROUDE CONVERSION FACTORS ARE PUBLISHED AS lambda = 50 LITERALS INTO BOTH F4 DELIVERABLES,... |
+| R926 | **later** — §7 | THE REPAIR ROUTED TWO OF THE THREE PUBLISHING READERS THROUGH THE VALIDATOR. THE THIRD --... |
+| R927 | **later** — §7 | --provenance IS DECLARED AS "the authority for the scale and the height" AND THIS COMMIT TOOK... |
+| R928 | **later** — §7 | The R909 orphan check compares a sidecar float against a float parsed back out of a... |
+| R929 | **later** — §7 | R909's condition said "in both directions". set(_recorded) - _solved is computed; _solved -... |
+| R930 | **later** — §7 | member_forces_table.py:166 says of the GOVERNING_PERIODS docstring that "no number for them is... |
+| R931 | **later** — §7 | SENSITIVITY_PERIODS = (10.0, 20.0) at :180 is referenced by nothing -- grep -rn... |
+| R932 | **later** — §7 | validated_export_scale raises ConfigError, and neither generator catches it, so an... |
+| R933 | **later** — §7 | grep -rn "R907\\|R909" tests/ --include=.py is empty, and nothing in tests/ or .github/ invokes... |
+| R934 | **later** — §7 | The two scripts/measure/ readers now REFUSE a disagreeing npz/sidecar pair; floatfea run -- the... |
+| R935 | **later** — §7 | The five new cells import validated_export_scale function-locally, five times, rather than... |
+| R936 | **later** — §7 | THE FA0 CLAUSE IS GATED ON A MEMBERSHIP PREDICATE, NOT ON THE SEA STATE FA0 RULED ON, SO... |
+| R937 | **later** — §7 | THE R925 REPAIR PUBLISHES THE TWO CONVERSION FACTORS THROUGH :.0f, SO THE FACTOR IN BOTH F4... |
+| R938 | **later** — §7 | f6_results_report.py NOW RESOLVES THE SCALE AND THE WAVE BASIS FROM --npz AND --provenance AND... |
+| R939 | **later** — §7 | The new destination-only arm asserts the wrong directory for append_finding, and declares three... |
+| R940 | **later** — §7 | The new gate's property (iii) is green on the tree R925 lived in, and no test anywhere asserts... |
+| R941 | **later** — §7 | validated_export_scale's explicit-sidecar form inherits the default form's silent skip: the... |
+| R942 | **later** — §7 | Two prose residues of the new two-branch form. The computed branch's "breaking ... <list>"... |
+| R943 | **later** — §7 | results/F6/F4_member_forces.csv is a third copy of the SCALE line, byte-identical to... |
+| R944 | **later** — §7 | THE R936 REPAIR PUBLISHES "T = 12.5 s IS INSIDE THE BAND AT THIS HEIGHT" AT EVERY RECORDED... |
+| R945 | **later** — §7 | THE NEW JOIN IS A SUBSTRING TEST, SO A FORCES TABLE GENERATED AT lambda = 500 IS ACCEPTED AT... |
+| R946 | **later** — §7 | test_R933_ANOTHER_SEA_STATE_RUNS_rather_than_refusing[f6_results_report.py] ASSERTS EXIT 0 FOR... |
+| R947 | **later** — §7 | The published-factor format now has TWO definitions. f6_results_report.py:333-338 re-implements... |
+| R948 | **later** — §7 | The node-id diff that could not see the eleventh id: the added id is in... |
+| R949 | **later** — §7 | R918's shape, with a second witness: member_forces_table.py ends with... |
+| R950 | **later** — §7 | THE R944 REPAIR REPLACED A ONE-SIDED TEST WITH A FOUR-WAY CATEGORY AND THEN READ THREE OF THE... |
+| R951 | **later** — §7 | f6_results_report.py:636 STILL DECIDES "IS THIS THE REFERENCE SEA STATE?" WITH THE MEMBERSHIP... |
+| R952 | **later** — §7 | THE NEW HEIGHT JOIN SKIPS WHEN THE HEADER CARRIES NO HEIGHT -- if _seen_h and ... -- SO R938... |
+| R953 | **later** — §7 | The other boundary of the R944 else arm, solved because EH4 asks for both. Just above H =... |
+| R954 | **later** — §7 | tests/regression/test_generators_refuse_mismatched_inputs.py:9-15 says "The cells are cheap... |
+| R955 | **later** — §7 | member_forces_table.py:396-397 prints args.out.relative_to(ROOT) AFTER both files are written,... |
+| R956 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R957 | **later** — §7 | THE R951 REPAIR DROPPED THE FOUR MEMBERSHIP CONJUNCTS AND KEYS ON HEIGHT ALONE, SO THE... |
+| R958 | **later** — §7 | THE PERIOD JOIN IS ONE-DIRECTIONAL. set(_recorded) - _solved REFUSES A DECLARED PERIOD WITH NO... |
+| R959 | **later** — §7 | , AND CA2: A RED CI IS A HOLD) CI IS RED AT THE REVIEWED COMMIT. ladder 6 -- it stays fixed... |
+| R960 | **later** — §7 | scripts/measure/member_forces_table.py:458 says "The five other scripts/measure/ scripts still... |
+| R961 | **later** — §7 | _shown is now defined twice, identically, at f6_results_report.py:240 and... |
+| R962 | **later** — §7 | FA0 ruled at one sea state. The predicate now reads that height from a mutable input file... |
+| R963 | **later** — §7 | R950's decision boundary is not bracketed by any cell. With params at 10.0 and 14.21 (the... |
+| R964 | **later** — §7 | test_R951's claimed needle is asserted nowhere to be FOUND: grep -rn "The governing basis is... |
+| R965 | **later** — §7 | The height-mismatch refusal interpolates a Python list: "the CSV's own caveats state H =... |
+| R966 | **later** — §7 | One document, one height, two spellings: f6_results_report.py:551 writes H = {h_full} m and... |
+| R967 | **later** — §7 | THE THIRD INPUT IS JOINED TO NOTHING. --util CARRIES EVERY UTILISATION THE REPORT PUBLISHES AND... |
+| R968 | **later** — §7 | R957 IS NOT CLOSED. THE REFERENCE GATE IS A HEIGHT COMPARISON AND THE NEW JOIN DOES NOT... |
+| R969 | **later** — §7 | THE JOIN COMPARES SETS WHERE THE DOCUMENT ITERATES A LIST. A DUPLICATE DECLARED PERIOD PASSES... |
+| R970 | **later** — §7 | THE R959 CLASS IS CLOSED FOR CSVs AND OPEN FOR EVERY OTHER DELIVERABLE. IN A FRESH CHECKOUT AT... |
+| R971 | **later** — §7 | R959's CONDITION (ii) IS UNMET AT THE SITE I NAMED, AND THE REPORT DOES NOT SAY THE SITE WAS... |
+| R972 | **later** — §7 | test_R959's docstring says ".csv -text stores the bytes. This asserts the property directly." I... |
+| R973 | **later** — §7 | OBSERVED LIVE, WITH A TRACEBACK) My first probe handed the generator a forces CSV with no... |
+| R974 | **later** — §7 | git worktree list carries twelve AppData/Local/Temp/suite-count-/tree registrations, and git... |
+| R975 | **later** — §7 | .gitattributes says "Every tracked CSV here is a generator artifact, so the rule is the file... |
+| R976 | **later** — §7 | A DUPLICATED UTILISATION ROW PASSES BOTH NEW JOINS AND IS PUBLISHED TWICE. ONE VARIABLE MOVED... |
+| R977 | **later** — §7 | R968 IS NOT CLOSED. THE NEW CONJUNCT READS ITS REFERENCE FROM THE SAME FILE --provenance... |
+| R978 | **later** — §7 | THE UTIL JOIN COMPARES KEYS AND PERIODS AND NOT THE QUANTITY THE TWO TABLES SHARE. ONE VARIABLE... |
+| R979 | **later** — §7 | THE DERIVATION MIRRORS TWO OF THE PRODUCER'S FOUR CONJUNCTS. IT IS AN OVER-REFUSAL AND NEVER A... |
+| R980 | **later** — §7 | THE JOIN IS VACUOUS WHEN BOTH DERIVED SETS ARE EMPTY, AND THE ONLY THING THAT CATCHES IT IS THE... |
+| R981 | **later** — §7 | R918 / R956's REPAIR REACHED TWO FILES AND THE CENSUS IS SEVEN SHORT. I HIT IT LIVE:... |
+| R982 | **later** — §7 | THE NEW UTIL REFUSAL'S NARRATIVE HALF IS ONE-DIRECTIONAL. Driving the _util_extra branch prints... |
+| R983 | **later** — §7 | STATIONS_CHECKED ARRIVES FROM floatfea.run.pipeline, WHICH DOES NOT WRITE THE FILE.... |
+| R984 | **later** — §7 | THE JOIN KEYS DROP body. _util_expected, _util_got and _periods_for key on (member, station)... |
+| R985 | **later** — §7 | _wrong_period COMPARES PERIODS AS STRINGS (r.get("period_full_s", "") against a set of strings)... |
+| R986 | **later** — §7 | THREE OF THE SEVEN CLAIMS IN THE PARAGRAPH _reference GUARDS ARE ABOUT THE STRESS BOUND, WHICH... |
+| R987 | **later** — §7 | THE RECORDED HEADING AND THE RECORDED PERIOD COUNT ARE PUBLISHED AS LITERALS AT FOUR SITES... |
+| R988 | **later** — §7 | FOUR MORE LITERALS OF THE SAME CLASS ARE TRUE TODAY AND GO FALSE AT A NAMED NEXT ITEM. :713... |
+| R989 | **later** — §7 | THE TURN'S SUITE FIGURE IS NOT A WHOLE-SUITE FIGURE: --ignore=tests/test_report_carried.py... |
+| R990 | **later** — §7 | MY OWN STATE-(2) CONTROL DID NOT MEASURE WHAT I SAID IT MEASURED. docs/reviews/R1/step-3.md... |
+| R991 | **later** — §7 | THE THREE BOUND SENTENCES ARE NOW INTERPOLATED, AND TWO OF THEIR CONCLUSIONS ARE STILL DECIDED... |
+| R992 | **later** — §7 | THE NEW VALUE JOIN REACHES ALL 23 PUBLISHED UTILISATION COLUMNS AND DOES NOT REACH sigma_Pa,... |
+| R993 | **later** — §7 | THE EH4 TABLE IN test_R978_a_CHANGE_BELOW_THE_PUBLISHED_PRECISION_is_accepted's DOCSTRING IS... |
+| R994 | **later** — §7 | FOUR MORE LITERAL CLAIMS ABOUT THE RUN SIT OUTSIDE THE CENSUS'S STATED DOMAIN, AND TWO OF THEM... |
+| R995 | **later** — §7 | git diff --stat HEAD~1 IS 816 insertions(+), 102 deletions(-), NOT 792. git diff --shortstat... |
+| R996 | **later** — §7 | A NEGATIVE NEEDLE THAT EMBEDS A SPELLED COUNT IS VACUOUS AT ANY OTHER COUNT. assert "largest of... |
+| R999 | **later** — §7 | THE DIFF MADE sigma_Pa AND tau_Pa ORPHAN COLUMNS OF A PUBLISHED DELIVERABLE, AND IT IS THE ONE... |
+| R1000 | **later** — §7 | A RANK CLAUSE CAN PUBLISH TWO EQUAL FIGURES AS THE EVIDENCE FOR A STRICT ORDERING. At my states... |
+| R1001 | **later** — §7 | TWO CITATIONS IN THE NEW R994 COMMENT RESOLVE ONE FRAME AND FIVE LINES OFF.... |
+| R1002 | **later** — §7 | R993's RESIDUE: THE DOCSTRING STILL PUBLISHES THREE ROWS WHILE THE CELL RUNS ONE OF THEM. The... |
+| R1003 | **later** — §7 | MY VERDICT 21 NAMED THE RIGHT REPAIR FOR R992 FOR THE WRONG REASON, AND THE WRONG REASON WAS... |
+| R1005 | **later** — §7 | THE NPZ RECORDS EACH CASE'S PERIOD TWICE, NOTHING COMPARES THE TWO, AND FL2(d)'s SCREEN IS... |
+| R1006 | **later** — §7 | and (d), FR1) TWO RED TESTS AT THE REVIEWED COMMIT THAT FAIL THE FS1/FT1 BOUNDARY PREDICATE, IN... |
+| R1007 | **later** — §7 | A MALFORMED SIDECAR run BLOCK NOW SILENTLY DISABLES THE WHOLE FL2(d) SCREEN, AND I MEASURED THE... |
+| R1008 | **later** — §7 | out_of_band_governing ADMITS A BREAKING WAVE WITH NO FURTHER DECLARATION, AND BREAKING HAS NO... |
+| R1009 | **later** — §7 | THE EH4 BREAKING CELL ASSERTS THE LABEL WHERE THE LOAD-BEARING PROPERTY IS THE DECISION.... |
+| R1010 | **later** — §7 | TEN LIVE COPIES OF THE BAND AND STEEPNESS COEFFICIENTS REMAIN IN THE TWO EZ0 GENERATOR SCRIPTS... |
+| R1011 | **later** — §7 | _recorded_height's DOCSTRING STATES A FALSE CALL GRAPH AS THE REASON FOR ITS ASYMMETRY WITH... |
+| R1012 | **later** — §7 | refuse_cases_that_cannot_govern SILENTLY SKIPS A DECLARED PERIOD THAT IS NOT IN THE FILE. Both... |
+| R1013 | **later** — §7 | FOUR STALE LINE CITATIONS IN THE LIVE TREE; THE CENSUS IS IN ANSWER (5c) ABOVE AND YOUR LIST OF... |
+| R1014 | **later** — §7 | THE FU0 EXEMPTION'S REVERSE GUARD PASSES ON A PARTIAL REPAIR. Three arms in answer (4) above.... |
+| R1015 | **later** — §7 | THE H = 0 REFUSAL IS RIGHT AND ITS MESSAGE IS ODD, AND CALM WATER CAN SET AN ENVELOPE IF... |
+| R1016 | **later** — §7 | A NEGATIVE CONTROL THAT DIES IN next().... |
+| R1017 | **later** — §7 | NO CI JOB RUNS tests/regression/, SO FL2(d)'s END-TO-END GATE HAS NO INDEPENDENT WITNESS.... |
+| R1018 | **later** — §7 | THE NEW test_one_gravity.py RELOADS A LIBRARY MODULE AND POISONS IT FOR THE REST OF THE... |
+| R1021 | **later** — §7 | R1005 REPAIR IS EVADED BY DELETING THE SECOND RECORD AT EXACTLY THE INDICES THAT DISAGREE,... |
+| R1022 | **later** — §7 | R1019 DOMAIN CHECK REACHES ONE OF THE THREE READERS OF periods_full_s, AND THE TWO IT MISSES... |
+| R1023 | **later** — §7 | R1017 IS FALSE: tests/regression/ RUNS ON EVERY PUSH, IN THE ladder JOB. The entry I routed to... |
+| R1024 | **later** — §7 | THE R1018 FOUR-ARM TABLE IN THE COMMIT MESSAGE IS STALE BY THE TWO CELLS THE SAME COMMIT ADDED.... |
+| R1025 | **later** — §7 | R1010 REPAIR IS HOLDABLE BY A TEST, MEASURED, SO "A NO-OP SUBSTITUTION CANNOT BE DETECTED" IS... |
+| R1026 | **later** — §7 | FIVE PUBLISHED LITERALS OF THE BAND AND STEEPNESS CONSTANTS SURVIVE R1010 SWEEP, AND ONE OF... |
+| R1027 | **later** — §7 | floatfea/basis.py:89 SAYS period_band.py IS "THE ONLY CONSUMER OF THESE THREE CONSTANTS", AND... |
+| R1028 | **later** — §7 | TWO OBSERVATIONS ON R1019 PLACEMENT, BOTH ABOUT WHERE RATHER THAN WHETHER. (i) The refusal sits... |
+| R1029 | **later** — §7 | THE DEFECT ARM 06 FOUND IN THE NEW REFUSAL IS STILL STANDING IN THE OLD ONE, WHICH IS THE... |
+| R1030 | **later** — §7 | THE # not-a-tolerance: MARKER IS AN UNCONDITIONAL, FREE-TEXT SILENCER ON THE COMPARISON OWN... |
+| R1031 | **later** — §7 | tests/unit IS A PUSH PATH, AND THE STEP IT RUNS IN GREW BY 149 SECONDS AT THIS COMMIT. The CI... |
+| R1032 | **later** — §7 | THE GUARD THAT READS WHICH FINDINGS A VERDICT MARKS AS BLOCKING CANNOT TELL "BLOCKS" FROM "DOES... |
+| R1033 | **later** — §7 | THE TYPE GATE THIS COMMIT ADDED FOR THAT FAMILY LISTS THE PYTHON TYPES A JSON SIDECAR CAN... |
+| R1034 | **later** — §7 | THE mass_eps CONCLUSION IS RIGHT AND NEITHER REASON GIVEN FOR IT IS WHAT HOLDS IT. The turn's... |
+| R1035 | **later** — §7 | THE EMPTY-SEQUENCE ALLOWANCE IS SAFE AND ITS STATED REASON NAMES A CHECK THAT NEVER RUNS ON IT.... |
+| R1036 | **later** — §7 | THE DOOR'S DOCSTRING MEASURES THE MODEL-SCALE CASE AT ONE OF ITS THREE CALLERS. I WENT TO SHOW... |
+| R1037 | **later** — §7 | THE NEW REFUSAL'S REMEDY SENTENCE WILL BE WRONG FOR THE FILES THIS STEP'S OWN GATE PRODUCES.... |
+| R1038 | **later** — §7 | THE DUPLICATED not-a-tolerance: BLOCK. tests/unit/test_forces_table_reexports.py carries the... |
+| R1039 | **later** — §7 | R899's COUNT IS WRONG IN ONE DIRECTION AND THE DRIFT IS REAL IN THE OTHER. Verdict 24 reported... |
+| R1040 | **later** — §7 | THERE IS A THIRD RECORD OF THE SAME QUANTITY AND NOTHING COMPARES IT. The sidecar's run block... |
+| R1042 | **later** — §7 | THE SAME DEFECT AT A FOURTH SITE, IN THE SAME FUNCTION AS THE THIRD, FOUR LINES BELOW THE... |
+| R1043 | **later** — §7 | with CA2: a red test and a red CI at the reviewed commit, failing BOTH limbs of the FS1/FT1... |
+| R1044 | **later** — §7 | of my own amended R1033 condition, and it was neither met nor stated as left) THE MEMBERSHIP IS... |
+| R1045 | **later** — §7 | THE DOCSTRING THAT TELLS A READER WHICH BRANCH IS LIVE IS FALSE IN ITS FIRST CLAUSE.... |
+| R1046 | **later** — §7 | A SHAPE-(2,) froude_lambda IS REFUSED WITH "the npz could not be read". Driven: np.array([50.0,... |
+| R1047 | **later** — §7 | THE PRE-COMMIT SELECTION RULE WAS "WHAT DID I EDIT" AND IT HAS TO BE "WHAT EXERCISES WHAT I... |
+| R1048 | **later** — §7 | A WAITER ANCHORED ON [0-9]+ failed, FIRED ON AN INNER SYNTHETIC RUN'S SUMMARY AT 52%. They... |
+| R1049 | **later** — §7 | scripts/write_verdict.py STAMPS HEAD, AND HEAD IS NOT THE JUDGED COMMIT WHEN THE IMPLEMENTER... |
+| R1050 | **later** — §7 | THE TRACKED FILE THAT REVERTED AT 17:36 WAS ME, NOT A SYNC. The implementer measured a tracked... |
+| R1051 | **later** — §7 | THE JOINT-REACTION ARRAY'S DTYPE IS CHECKED NOWHERE. A BOOL-TYPED case{i}/lam IS ACCEPTED,... |
+| R1052 | **later** — §7 | THE TWO SCALE READERS RAISE AN UNCAUGHT AttributeError OR OverflowError ON SIX SIDECAR SHAPES... |
+| R1053 | **later** — §7 | THE COMMIT MESSAGE'S OWN git diff --name-only OUTPUT NAMES TWO FILES WHERE THE DIFF IS THREE.... |
+| R1054 | **later** — §7 | floatfea/run/config.py SAYS "every one of numpy's twenty-two dtype KINDS is a single non-empty... |
+| R1055 | **later** — §7 | THE COMPLEMENT NAMES 17 EXCLUDED ROOT FILES AS "the remaining root-level report guards". AT... |
+| R1056 | **later** — §7 | THE R1044 REPAIR IS CORRECT AND HELD BY NOTHING. Restoring kind in "iuf" in place of the tuple... |
+| R1057 | **later** — §7 | A NEW PARAMETER'S OWN LABEL DESCRIBES A DIFFERENT VALUE. In the R1042 cell: pytest.param("JSON... |
+| R1058 | **later** — §7 | A NON-FINITE case{i}/lam IS ACCEPTED, SOLVED AND PUBLISHED. THE GOVERNING CASE SET TO NaN GIVES... |
+| R1059 | **later** — §7 | THE ADMITTED SET IS float16, float32 AND float64, AND THE DOCSTRING'S OWN REASON -- TRUNCATION... |
+| R1060 | **later** — §7 | THE INSTINCT WAS RIGHT, THE CONCLUSION IS RIGHT, AND THE RUN YOU PASTED DID NOT REACH THE CODE... |
+| R1061 | **later** — §7 | FOUR MEASUREMENTS ARE PUBLISHED IN A floatfea/ DOCSTRING AND IN A USER-FACING REFUSAL, AND... |
+| R1062 | **later** — §7 | THE REFUSAL DOES NOT NAME THE FILE, AND THIS STEP'S OWN GATE PUTS SEVERAL FILES IN ONE RUN.... |
+| R1063 | **later** — §7 | A case{i}/lam WITH ZERO TIMESTEPS IS ACCEPTED, SOLVED AND PUBLISHED. THE GOVERNING CASE EMPTIED... |
+| R1064 | **later** — §7 | THE TREE FINGERPRINT CARRIES NO COMMAND AND THIRTEEN RECIPES DO NOT REPRODUCE IT.... |
+| R1065 | **later** — §7 | test_the_SEARCH_reads_no_gravity_at_all IS FUNCTION-LOCAL AND CANNOT SEE A HELPER A SEARCH... |
+| R1066 | **later** — §7 | A BIG-ENDIAN >f8 lam IS REFUSED WITH A MESSAGE THAT BLAMES THE WIDTH, WHICH IS NOT WHAT IS... |
+| R1067 | **later** — §7 | "candidate {index} of {count}" MIXES A ZERO-BASED INDEX WITH A ONE-BASED COUNT, IN A... |
+| R1068 | **later** — §7 | THE R1060 INCIDENTAL IS AT A SECOND SITE. scripts/measure/f6a_required_section.py:585 and... |
+| R1069 | **later** — §7 | THE DIAGONAL FORCE AND THE DIAGONAL'S BUCKLING LENGTH ARE BOTH BUILT FROM panel_and_diagonal's... |
+| R1070 | **later** — §7 | R1063 SURVIVES ONE MORE KEY EDIT. NOTHING BOUNDS EITHER WINDOW LENGTH BELOW, SO EMPTYING lam... |
+| R1071 | **later** — §7 | sections.truss.d_over_t AND joint_allowance ACCEPT A BOOL AND A STRING, IN A FUNCTION THAT... |
+| R1072 | **later** — §7 | THE TRIANGLE'S FACE-SHEAR ALLOCATION DOES NOT CLOSE AGAINST Vz OR T, THE BOX'S CLOSES EXACTLY,... |
+| R1073 | **later** — §7 | THE REWRITTEN BULLET PUBLISHES THE FORCE FACTOR AS THE AREA FACTOR, AND THE AREA FACTOR IS... |
+| R1074 | **later** — §7 | THE GENERATOR HARD-CODES FOUR FIGURES ABOUT THIS DECK AND THIS GRID INTO AN ARTIFACT IT WRITES... |
+| R1075 | **later** — §7 | THE NEW PARAGRAPH PUBLISHES "A ROW WITH A LARGE TORSION PUTS uniform_panel AHEAD FOR BOTH... |
+| R1076 | **later** — §7 | THE AREA-FACTOR TABLE IS A FOUR-ROW SAMPLE AT ONE UNSTATED LOAD AND ONE UNSTATED READING OF A... |
+| R1077 | **later** — §7 | THE R1075 REPAIR PUT FOUR NEW DECK-SPECIFIC LITERALS, INCLUDING THE WORDS "ON THIS DECK", INTO... |
+| R1078 | **later** — §7 | THE COMPUTED FIGURE THAT REPLACED R1074 HARD-CODED ONE IS COUNTED OVER A DOMAIN THAT CANNOT... |
+| R1079 | **later** — §7 | THE SENTENCE THAT REPLACED THE RETRACTED "NONE OF IT IS THE BRACED LENGTH" PUBLISHES A BOUND --... |
+| R1080 | **later** — §7 | THE BULLET THAT TELLS A READER WHETHER THE KNOWN DEFECT REACHES A PUBLISHED NUMBER CONDITIONS... |
+| R1081 | **later** — §7 | THE R1077 REPAIR DELETED THE DECK-SPECIFIC LITERALS AND ALSO DELETED THE QUALIFIER THAT MADE... |
+| R1082 | **later** — §7 | _margin NEW LABEL IS FALSE AT AN ADMISSIBLE GRID SHAPE: AT depths: [3.0, 3.0] THE ARTIFACT... |
+| R1083 | **later** — §7 | NOTHING IN THE TREE HOLDS L43's REPAIR, AND THE COMMIT MESSAGE'S ARM FIGURE FOR IT DOES NOT... |
+| R1084 | **later** — §7 | EXACT IS THE RIGHT WORD AND I PROVED THE HALF YOU COULD NOT -- BUT THE SAME CLAUSE RE-OPENS... |
+| R1085 | **later** — §7 | L46's TRAILING CAUSE IS A FOURTH COMMA-ITEM IN A LIST IT IS TRUE OF ONLY ONE MEMBER OF, SO AT A... |
+| R1086 | **later** — §7 | THE TEST COMMENT SAYS THE RETIRED WORDING IS forbidden. NOTHING FORBIDS IT, AND NOTHING CAN,... |
+| R1087 | **later** — §7 | THE NEW ASSERTIONS READ A FIFTH FIELD FROM A FIXTURE WHOSE DOCSTRING SAYS IT CARRIES FOUR, AND... |
+| R1088 | **later** — §7 | no triangle figure in these tables is ever HIGH IS FALSE UNDER ONE OF THE THREE CORRECTIONS THE... |
+| R1089 | **later** — §7 | R1085's REPAIR INTRODUCES A THIRD AGREEMENT PAIR INTO THAT ONE SENTENCE AND ONLY THE SINGULAR... |
+| R1090 | **later** — §7 | R1086 IS CLOSED AT A SITE MY CONDITION DID NOT NAME AND OPEN AT THE ONE IT DID.... |
+| R1091 | **later** — §7 | YOUR QUALIFIER IS TRUE -- WIDER THAN YOU VERIFIED IT -- AND THE ENUMERATION BEHIND IT IS... |
+| R1092 | **later** — §7 | : 1890 cells, 139 identical, 154 MISMATCHES cmd which reading, and how much out all 154 are... |
+| R1093 | **later** — §7 | report.md PUBLISHES THE FIRST FILE'S WAVE BASIS AS "THE WAVE BASIS THESE LOADS WERE EXPORTED... |
+| R1094 | **later** — §7 | THE FL2(d) SECTION STATES ONE FILE'S ASSOCIATED-PERIOD BAND AS THE BAND, OVER A TABLE... |
+| R1095 | **later** — §7 | A MIXED SET -- ONE FILE THAT RECORDS A HEIGHT AND ONE THAT DOES NOT -- PUBLISHES A... |
+| R1096 | **later** — §7 | Checked stations: 64. Over unity: 16. ON A MODEL WITH 32 STATIONS, 12 OF THEM OVER UNITY. THE... |
+| R1097 | **later** — §7 | _governing_provenance's DOCSTRING STILL DESCRIBES THE IMPLEMENTATION THE REPAIR DELETED, AND... |
+| R1098 | **later** — §7 | "THE FIELDNAMES ARE STATED EXPLICITLY RATHER THAN INFERRED FROM THE RECORD" IS FALSE, AND I... |
+| R1099 | **later** — §7 | YOUR READING OF FW1's SCOPE IS RIGHT. THE CONSEQUENCE IS THAT utilisation.csv NOW CARRIES 32... |
+| R1100 | **later** — §7 | THE ONE-FILE AND MULTI-FILE HEADING COMPARISONS ARE DIFFERENT FUNCTIONS WITH DIFFERENT... |
+| R1101 | **later** — §7 | A REFUSAL THIS COMMIT ADDS HAS AN AGREEMENT PAIR WITH NO SINGULAR BRANCH, AND NOTHING ASSERTS... |
+| R1102 | **later** — §7 | Row.source AND Row.heading_deg CARRY DEFAULTS, SO MY "APPEND WITH NO DEFAULT" CONSTRAINT BOUGHT... |
+| R1103 | **later** — §7 | TWO OF THE THREE ARTIFACTS' SHARED CAVEATS ARE SINGULAR PROSE ABOUT A PLURAL RUN, AND ONE OF... |
+| R1104 | **later** — §7 | TWO DIFFERENT DECLARED FILES WHOSE BASENAMES COLLIDE ARE ACCEPTED AT EXIT 0, AND EVERY ARTIFACT... |
+| R1105 | **later** — §7 | WHAT CANCELLED THE RUN IS A PUSH FROM YOUR SIDE, AND THE MECHANISM WILL DO IT EVERY TIME.... |
+| R1106 | **carried** — §7 | . The FY3 supersession reached ONE of three sibling artifacts. 84 of 168 rows in a published... |
+| R1107 | **carried** — §7 | . The hook narrowing moved FOUR WRITE rows from DENY to ALLOW, and >\| is the one that matters.... |
+| R1108 | **carried** — §7 | . The rung-3 class guard transfers a CLASS label to an entry that did not declare it. Your... |
+| R1109 | **later** — §7 | . The coincidence rule's TABLE 1 reproduces exactly. BOTH of TABLE 2's published margin figures... |
+| R1110 | **later** — §7 | . The plan declares NODE_COINCIDENCE_DECIMALS STRUCTURAL; the file deliberately declares no... |
+| R1111 | **later** — §7 | . wave_basis_from_sidecar is a third door and it CANNOT reconcile. Your two doors are right;... |
+| R1112 | **later** — §7 | . A multi-element froude_lambda makes _npz_scale_key return None, which SKIPS the... |
+| R1113 | **later** — §7 | . The third wrong-exception-class site, which you asked me to assume exists. It does, and... |
+| R1114 | **later** — §7 | . exported_wave_basis gates on is_file() and wave_basis_from_sidecar on exists(), so R1007's... |
+| R1115 | **later** — §7 | . A published supersession note points at a document that does not exist.... |
+| R1116 | **later** — §7 | . The new != is exact in the strict direction, as you claim. The weakening direction has one... |
+| R1117 | **carried** — §7 | . I removed my own worktree while a measurement was still running in it, and 33 reds are the... |
+| R1119 | **carried** — §7 | . scripts/ci_section.py cannot see a failing test whose id contains a space, so the generated... |
+| R1120 | **carried** — §7 | . R1118's repair reached four of the six sites. The two it missed require a dot the verdicts do... |
+| R1121 | **carried** — §7 | . FT2.5's condition 4 -- the one sentence of disclosure for Xabier -- is absent at the first... |
+| R1122 | **later** — §6 | . R1115 has MOVED, and the move is in the wrong direction. One of the two destinations the... |
+| R1123 | **later** — §6 | . The over-refusal the hook repair costs is bigger than the one row you measured -- 5 of 10... |
+| R1124 | **carried** — §7 | . Nine of the eleven carried L ledger ids are named nowhere in the report, and the cause is... |
+| R1125 | **answered** — §4 | . Two triples whose out field is not what the cmd printed. claim section 1's triple shows two... |
+| R1128 | **answered** — §2 | . _SITE admits only py\|md\|sh\|txt\|json, so no site named in a .csv, .yml, .yaml, .npz, .toml or... |
+| R1129 | **answered** — §3 | . The answered_table half of R1120's repair made the dot optional on BOTH sides, which widened... |
+| R1130 | **answered** — §4 | carried, and the verdict says nothing further about it here |
+| R1131 | **answered** — §4 | carried, and the verdict says nothing further about it here |
+| R1132 | **answered** — §4 | carried, and the verdict says nothing further about it here |
+| R1133 | **answered** — §4 | carried, and the verdict says nothing further about it here |
+| R1134 | **answered** — §4 | carried, and the verdict says nothing further about it here |
+| R1135 | **answered** — §4 | carried, and the verdict says nothing further about it here |
+| R1136 | **answered** — §4 | carried, and the verdict says nothing further about it here |
+| R1137 | **answered** — §4 | carried, and the verdict says nothing further about it here |
+
+## 8b. Every site verdict 46 names that this diff does not touch
+
+*Generated by `python scripts/untouched_sites.py`, which imports `tests/test_report_carried.py` and reads `SITES` and `TOUCHED` from it, so the table cannot enumerate a different set than the guard checks. The `why it was left` column is keyed on the same pointer file §8's table is generated from.*
+
+*The rows marked **newly visible under R1128** are the ones no previous revision could contain: their sites are named in a `.csv`, `.yml`, `.yaml`, `.npz`, `.toml` or `.xml` path, and the gate's extension class admitted none of those.*
+
+<!-- generated: scripts/untouched_sites.py -->
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R1001 | `f6_results_report.py:718` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1001 | `floatfea/run/pipeline.py:793` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1001 | `floatfea/run/pipeline.py:794` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1001 | `floatfea/run/pipeline.py:795` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1001 | `floatfea/run/pipeline.py:796` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1001 | `floatfea/run/pipeline.py:797` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1001 | `floatfea/run/pipeline.py:798` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1001 | `floatfea/run/pipeline.py:799` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1001 | `floatfea/run/pipeline.py:800` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1001 | `floatfea/run/pipeline.py:801` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1001 | `floatfea/run/pipeline.py:802` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1001 | `floatfea/run/pipeline.py:803` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1001 | `floatfea/run/pipeline.py:804` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1001 | `floatfea/run/pipeline.py:805` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1001 | `floatfea/run/pipeline.py:806` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1003 | `test_r1_example_golden.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1003 | `tests/test_report_guard_states.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1005 | `data/f4/dynamic_inputs.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1005 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1005 | `pipeline.py:1239` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1005 | `pipeline.py:1252` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1005 | `pipeline.py:1262` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1005 | `post/forces_table.py:463` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1005 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1005 | `results/R1/example/utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1005 | `scripts/export_f4_dynamic_inputs.py:419` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1006 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1006 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1006 | `test_one_gravity.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1006 | `test_one_gravity.py:128` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1006 | `test_period_band.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1006 | `tests/regression/test_r1_example_golden.py:385` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1006 | `tests/regression/test_r1_example_golden.py:386` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1006 | `tests/regression/test_r1_example_golden.py:387` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1006 | `tests/regression/test_r1_example_golden.py:388` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1006 | `tests/test_no_tolerance_literals.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1006 | `tests/unit/test_period_band.py:150` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1006 | `tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1007 | `pipeline.py:893` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1007 | `pipeline.py:894` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1007 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1008 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1009 | `tests/unit/test_period_band.py:151` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1010 | `basis.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1010 | `f6_results_report.py:970` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1010 | `member_forces_table.py:209` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1010 | `member_forces_table.py:681` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1010 | `period_band.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1011 | `pipeline.py:772` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1011 | `pipeline.py:773` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1011 | `pipeline.py:774` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1011 | `pipeline.py:1194` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1013 | `pipeline.py:793` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1013 | `pipeline.py:794` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1013 | `pipeline.py:795` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1013 | `pipeline.py:796` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1013 | `pipeline.py:797` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1013 | `pipeline.py:798` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1013 | `pipeline.py:799` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1013 | `pipeline.py:800` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1013 | `pipeline.py:801` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1013 | `pipeline.py:802` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1013 | `pipeline.py:803` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1013 | `pipeline.py:804` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1013 | `pipeline.py:805` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1013 | `pipeline.py:806` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1017 | `.github/workflows/ci.yml:403` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1017 | `docs/milestones/F2a.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1017 | `tests/regression/test_fl2d_band_check.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1018 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1018 | `test_one_gravity.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1018 | `test_period_band.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1018 | `tests/test_one_gravity.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1018 | `tests/test_one_gravity.py:148` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1018 | `tests/unit/test_period_band.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1021 | `data/f4/dynamic_inputs.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1021 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1021 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1021 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1022 | `f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1022 | `floatfea/run/pipeline.py:1407` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1022 | `member_forces_table.py:330` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1022 | `pipeline.py:1407` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1022 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1022 | `scripts/f4_dynamic_residual.py:193` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1022 | `scripts/measure/f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1022 | `scripts/measure/f6_results_report.py:565` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1023 | `F2a.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1023 | `ci.yml:510` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1023 | `docs/milestones/F2a.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1023 | `leg/regression.xml` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1023 | `scripts/run_rung.sh` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1023 | `tests/regression/test_fl2d_band_check.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1023 | `tests/test_ci_runs_the_whole_suite.py:56` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1023 | `tests/test_tree_prose_consistent.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1024 | `test_period_band.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1025 | `tests/unit/test_forces_table_reexports.py:91` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1026 | `docs/F4_member_forces.md:57` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1026 | `f6_results_report.py:743` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1026 | `floatfea/cli.py:292` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1026 | `member_forces_table.py:220` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1026 | `results/R1/example/report.md:30` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1026 | `scripts/measure/member_forces_table.py:671` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1027 | `floatfea/basis.py:89` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1027 | `floatfea/cli.py:23` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1027 | `period_band.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1028 | `config.py:211` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1030 | `tests/test_no_tolerance_literals.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1031 | `ci.yml:133` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1031 | `ci.yml:338` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1032 | `tests/test_report_carried.py:358` | the file is touched and this line number is the old one | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1032 | `tests/test_report_carried.py:359` | the file is touched and this line number is the old one | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1032 | `tests/test_report_carried.py:360` | the file is touched and this line number is the old one | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1032 | `tests/test_report_carried.py:361` | the file is touched and this line number is the old one | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1032 | `tests/test_report_carried.py:362` | the file is touched and this line number is the old one | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1032 | `tests/test_report_carried.py:363` | the file is touched and this line number is the old one | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1032 | `tests/test_report_carried.py:364` | the file is touched and this line number is the old one | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1033 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1033 | `data/f4/dynamic_inputs.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1033 | `docs/F4_member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1033 | `docs/F4_member_forces.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1033 | `f6_results_report.py:577` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1033 | `floatfea/run/config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1033 | `floatfea/run/config.py:295` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1033 | `floatfea/run/pipeline.py:1360` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1033 | `member_forces_table.py:365` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1033 | `scripts/export_f4_dynamic_inputs.py:419` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1033 | `scripts/measure/member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1034 | `tests/verification/rung4/test_f4_g41_dynamic.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1034 | `tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1035 | `config.py:1072` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1035 | `dynamic_inputs.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1035 | `tests/unit/test_run_config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1036 | `docs/F6_utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1037 | `data/f4/dynamic_inputs.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1037 | `scripts/export_f4_dynamic_inputs.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1038 | `tests/unit/test_forces_table_reexports.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1039 | `.claude/agents/gating-supervisor.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1039 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1039 | `docs/SUPERVISOR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:699` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:700` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:701` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:702` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:703` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:704` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:705` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:706` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:707` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1259` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1260` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1261` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1262` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1263` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1264` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1265` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1266` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1267` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1268` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1269` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1270` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1271` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1272` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1273` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1274` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1275` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1276` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1277` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1278` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1279` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1280` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1281` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1282` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1283` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1284` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1285` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1286` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1287` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1288` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1289` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1290` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1291` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1292` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1293` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1294` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1295` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1296` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1297` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1298` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1299` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1300` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1301` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `floatfea/run/pipeline.py:1302` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `scripts/measure/f6_results_report.py:458` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `scripts/measure/f6a_premise_check.py:189` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `scripts/measure/member_forces_table.py:334` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1042 | `tests/regression/test_r1_example_golden.py:401` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1043 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1043 | `floatfea/run/config.py:295` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1043 | `floatfea/run/pipeline.py:1360` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1043 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1043 | `tests/regression/test_f6_deliverable_agrees_with_itself.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1043 | `tests/verification/rung4/test_f4_g41_dynamic.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1044 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1044 | `floatfea/run/config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1045 | `data/f4/dynamic_inputs.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1047 | `floatfea/run/config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1047 | `floatfea/run/pipeline.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1049 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1049 | `scripts/write_verdict.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1050 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1051 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1051 | `docs/load-interchange-v1.md:110` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1051 | `floatfea/post/forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1051 | `floatfea/post/forces_table.py:123` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1051 | `floatfea/post/forces_table.py:464` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1051 | `forces_table.py:448` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1051 | `forces_table.py:464` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1051 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1051 | `pipeline.py:1288` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1051 | `pipeline.py:1425` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1051 | `pipeline.py:1564` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1051 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1051 | `scripts/export_f4_dynamic_inputs.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1051 | `scripts/measure/f6a_premise_check.py:208` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1051 | `scripts/measure/member_forces_table.py:406` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1051 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1052 | `scripts/measure/f6a_premise_check.py:189` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1053 | `config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1053 | `floatfea/run/config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1053 | `floatfea/run/pipeline.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1053 | `tests/unit/test_headings_and_bem_coverage.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1054 | `floatfea/run/config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1055 | `test_figure_local_check.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1055 | `test_marker_exemption_corpus.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1055 | `test_precommit_stale.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1055 | `test_supervisor_conftest_pathspec.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1058 | `docs/load-interchange-v1.md:110` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1058 | `floatfea/io/reader.py:68` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1058 | `floatfea/io/reader.py:345` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1058 | `floatfea/post/forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1058 | `floatfea/post/forces_table.py:582` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1058 | `floatfea/run/pipeline.py:967` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1058 | `floatfea/run/pipeline.py:1525` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1058 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1058 | `reader.py:378` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1058 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1058 | `scripts/export_f4_dynamic_inputs.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1058 | `scripts/export_f4_dynamic_inputs.py:476` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1058 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1059 | `docs/load-interchange-v1.md:110` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1059 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1060 | `premise_check.json` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1060 | `scripts/measure/f6a_premise_check.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1060 | `tests/regression/test_generators_refuse_mismatched_inputs.py:19` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1061 | `floatfea/post/forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1061 | `tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1062 | `floatfea/run/pipeline.py:1196` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `docs/load-interchange-v1.md:110` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `floatfea/post/forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `floatfea/post/forces_table.py:88` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `floatfea/post/forces_table.py:89` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `floatfea/post/forces_table.py:90` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `floatfea/post/forces_table.py:91` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `floatfea/post/forces_table.py:92` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `floatfea/post/forces_table.py:93` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `floatfea/post/forces_table.py:94` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `floatfea/post/forces_table.py:582` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `floatfea/post/forces_table.py:613` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `floatfea/run/pipeline.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `forces_table.py:88` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `forces_table.py:89` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `forces_table.py:90` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `forces_table.py:91` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `forces_table.py:92` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `forces_table.py:93` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `forces_table.py:94` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `scripts/export_f4_dynamic_inputs.py:233` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `scripts/export_f4_dynamic_inputs.py:234` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `test_fl2d_band_check.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `test_ft24_required_section.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1063 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1064 | `premise_check.json` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1065 | `scripts/measure/f6a_required_section.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1066 | `scripts/export_f4_dynamic_inputs.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1067 | `required_section.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1067 | `scripts/export_f4_dynamic_inputs.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1068 | `f6a_premise_check.py:365` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1068 | `scripts/measure/f6a_report.py:411` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1068 | `scripts/measure/f6a_required_section.py:585` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1069 | `floatfea/run/truss.py:425` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1069 | `floatfea/run/truss.py:426` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1069 | `floatfea/run/truss.py:427` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1069 | `floatfea/run/truss.py:428` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1069 | `floatfea/run/truss.py:429` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1069 | `floatfea/run/truss.py:430` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1069 | `scripts/measure/f6b_truss_sizing.py:402` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1069 | `scripts/measure/f6b_truss_sizing.py:403` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1069 | `scripts/measure/f6b_truss_sizing.py:404` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1069 | `test_ft25_truss_sizing.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1069 | `truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1070 | `floatfea/post/forces_table.py:303` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1070 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1070 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1070 | `scripts/export_f4_dynamic_inputs.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1070 | `scripts/export_f4_dynamic_inputs.py:233` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1070 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1071 | `floatfea/run/config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1071 | `truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `docs/milestones/F6b.md:32` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/cli.py:613` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/cli.py:614` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/cli.py:615` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/cli.py:616` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/cli.py:617` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/cli.py:618` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/cli.py:619` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/cli.py:620` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/cli.py:621` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/cli.py:631` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/cli.py:632` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/cli.py:633` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/cli.py:634` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/cli.py:635` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/cli.py:636` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/run/truss.py:169` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/run/truss.py:170` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/run/truss.py:171` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/run/truss.py:172` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `floatfea/run/truss.py:432` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `results/F6b/truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `scripts/measure/f6b_truss_sizing.py:155` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `scripts/measure/f6b_truss_sizing.py:156` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `scripts/measure/f6b_truss_sizing.py:157` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `scripts/measure/f6b_truss_sizing.py:158` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `scripts/measure/f6b_truss_sizing.py:159` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `scripts/measure/f6b_truss_sizing.py:160` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `scripts/measure/f6b_truss_sizing.py:161` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `tests/regression/test_ft25_truss_sizing.py:497` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1072 | `truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1073 | `floatfea/cli.py:653` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1073 | `floatfea/cli.py:654` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1073 | `floatfea/cli.py:655` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1073 | `floatfea/cli.py:656` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1073 | `floatfea/cli.py:657` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1073 | `floatfea/cli.py:658` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1073 | `floatfea/cli.py:659` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1073 | `floatfea/cli.py:660` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1073 | `floatfea/cli.py:661` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1073 | `floatfea/cli.py:662` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1073 | `floatfea/cli.py:663` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1073 | `floatfea/cli.py:664` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1073 | `floatfea/cli.py:665` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1073 | `floatfea/cli.py:666` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1073 | `truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1074 | `examples/platform12_placeholder.yaml:104` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1074 | `examples/platform12_placeholder.yaml:105` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1074 | `floatfea/cli.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1074 | `floatfea/cli.py:526` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1074 | `floatfea/cli.py:527` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1074 | `floatfea/cli.py:528` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1074 | `floatfea/cli.py:529` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1074 | `floatfea/cli.py:627` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1074 | `floatfea/cli.py:628` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1074 | `floatfea/cli.py:629` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1074 | `floatfea/cli.py:630` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1074 | `floatfea/cli.py:631` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1074 | `floatfea/cli.py:632` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1074 | `floatfea/cli.py:633` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1075 | `floatfea/cli.py:630` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1075 | `floatfea/cli.py:631` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1075 | `floatfea/cli.py:632` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1075 | `floatfea/cli.py:633` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1075 | `truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:690` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:691` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:692` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:693` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:694` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:695` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:696` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:697` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:698` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:699` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:700` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:701` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:702` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:703` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:704` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:705` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:706` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:707` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `floatfea/cli.py:708` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1076 | `truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1077 | `floatfea/cli.py:627` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1077 | `floatfea/cli.py:628` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1077 | `floatfea/cli.py:629` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1077 | `floatfea/cli.py:630` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1077 | `floatfea/cli.py:631` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1077 | `floatfea/cli.py:632` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1077 | `floatfea/cli.py:633` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1077 | `floatfea/cli.py:655` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1077 | `floatfea/cli.py:656` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1077 | `floatfea/cli.py:657` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1077 | `floatfea/cli.py:658` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1077 | `floatfea/cli.py:659` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1077 | `floatfea/cli.py:660` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1077 | `floatfea/cli.py:661` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1077 | `floatfea/cli.py:662` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1077 | `floatfea/cli.py:663` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1077 | `truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `f6b_truss_sizing.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `floatfea/cli.py:523` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `floatfea/cli.py:524` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `floatfea/cli.py:525` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `floatfea/cli.py:526` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `floatfea/cli.py:527` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `floatfea/cli.py:528` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `floatfea/cli.py:529` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `floatfea/cli.py:530` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `floatfea/cli.py:531` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `floatfea/cli.py:532` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `floatfea/cli.py:533` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `floatfea/cli.py:534` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `floatfea/cli.py:535` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `floatfea/cli.py:536` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `floatfea/cli.py:537` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `floatfea/cli.py:538` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `floatfea/cli.py:539` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `sizing.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `test_r1_example_regenerates.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `truss.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1078 | `truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1079 | `floatfea/cli.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1079 | `floatfea/cli.py:709` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1079 | `floatfea/cli.py:710` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1079 | `floatfea/cli.py:711` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1079 | `floatfea/cli.py:712` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1079 | `floatfea/cli.py:713` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1079 | `floatfea/cli.py:714` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1079 | `truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1080 | `floatfea/cli.py:747` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1080 | `floatfea/cli.py:748` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1080 | `floatfea/cli.py:749` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1080 | `floatfea/cli.py:750` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1080 | `floatfea/cli.py:751` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1080 | `floatfea/cli.py:752` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1080 | `floatfea/run/truss.py:457` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1080 | `truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1081 | `floatfea/cli.py:680` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1081 | `floatfea/cli.py:681` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1081 | `floatfea/cli.py:682` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1081 | `floatfea/cli.py:683` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1081 | `truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `docs/directives/FR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `floatfea/cli.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `floatfea/cli.py:572` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `floatfea/cli.py:573` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `floatfea/cli.py:574` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `floatfea/cli.py:575` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `floatfea/cli.py:576` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `floatfea/cli.py:577` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `floatfea/cli.py:578` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `floatfea/cli.py:579` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `floatfea/cli.py:580` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `floatfea/cli.py:581` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `floatfea/cli.py:582` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `floatfea/cli.py:583` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `scripts/write_verdict.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `step-1-answers.json` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `step-1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `step-2-answers.json` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `step-2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `truss.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1082 | `truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1083 | `cli.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1083 | `docs/milestones/R1.md:374` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1083 | `docs/milestones/R1.md:375` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1083 | `floatfea/cli.py:710` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1083 | `floatfea/cli.py:711` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1083 | `floatfea/cli.py:712` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1083 | `floatfea/cli.py:713` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1083 | `floatfea/cli.py:714` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1083 | `test_ft24_required_section.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1083 | `test_ft25_truss_sizing.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1083 | `test_tree_prose_consistent.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1083 | `truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1084 | `floatfea/cli.py:805` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1084 | `floatfea/cli.py:806` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1084 | `floatfea/cli.py:807` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1084 | `floatfea/cli.py:808` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1085 | `floatfea/cli.py:552` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1085 | `floatfea/cli.py:553` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1085 | `floatfea/cli.py:554` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1085 | `floatfea/cli.py:555` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1085 | `floatfea/cli.py:556` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1086 | `tests/regression/test_ft25_truss_sizing.py:1079` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1086 | `tests/regression/test_ft25_truss_sizing.py:1080` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1086 | `tests/regression/test_ft25_truss_sizing.py:1081` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `floatfea/run/truss.py:210` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `floatfea/run/truss.py:211` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `floatfea/run/truss.py:212` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:885` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:886` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:887` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:888` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:889` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:890` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:891` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:892` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:893` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:894` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:895` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:896` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:897` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:898` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:899` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:900` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:901` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:902` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1087 | `tests/regression/test_ft25_truss_sizing.py:903` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1088 | `floatfea/cli.py:804` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1088 | `floatfea/cli.py:805` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1089 | `floatfea/cli.py:557` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1089 | `floatfea/cli.py:558` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1089 | `floatfea/cli.py:559` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1089 | `floatfea/cli.py:560` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1089 | `tests/regression/test_ft25_truss_sizing.py:1011` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1089 | `tests/regression/test_ft25_truss_sizing.py:1012` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1089 | `tests/regression/test_ft25_truss_sizing.py:1013` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1089 | `tests/regression/test_ft25_truss_sizing.py:1014` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1089 | `tests/regression/test_ft25_truss_sizing.py:1015` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1089 | `tests/regression/test_ft25_truss_sizing.py:1016` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1089 | `tests/regression/test_ft25_truss_sizing.py:1017` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1089 | `tests/regression/test_ft25_truss_sizing.py:1018` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1089 | `tests/regression/test_ft25_truss_sizing.py:1019` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1089 | `tests/regression/test_ft25_truss_sizing.py:1020` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1089 | `tests/regression/test_ft25_truss_sizing.py:1021` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1090 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1090 | `tests/regression/test_ft25_truss_sizing.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1090 | `tests/regression/test_ft25_truss_sizing.py:1099` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1090 | `tests/regression/test_ft25_truss_sizing.py:1100` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1090 | `tests/regression/test_ft25_truss_sizing.py:1101` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1091 | `floatfea/cli.py:810` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1091 | `floatfea/cli.py:811` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1091 | `floatfea/cli.py:812` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1091 | `floatfea/cli.py:813` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1091 | `floatfea/cli.py:814` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1091 | `floatfea/cli.py:815` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1091 | `floatfea/cli.py:816` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1091 | `floatfea/cli.py:817` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1091 | `floatfea/cli.py:818` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1092 | `floatfea/cli.py:813` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1092 | `floatfea/cli.py:814` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1092 | `floatfea/cli.py:815` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1092 | `floatfea/cli.py:816` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1093 | `floatfea/cli.py:333` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1093 | `floatfea/cli.py:334` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1093 | `floatfea/cli.py:335` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1093 | `floatfea/cli.py:336` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1093 | `floatfea/cli.py:337` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1093 | `floatfea/cli.py:338` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1093 | `floatfea/cli.py:339` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1093 | `floatfea/cli.py:340` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1093 | `floatfea/cli.py:341` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1093 | `floatfea/cli.py:342` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1093 | `floatfea/cli.py:343` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1093 | `floatfea/cli.py:344` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1093 | `floatfea/cli.py:345` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1093 | `floatfea/cli.py:346` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1093 | `pipeline.py:1791` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1093 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1093 | `results/R1/example/report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1094 | `floatfea/cli.py:358` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1094 | `floatfea/cli.py:359` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1094 | `floatfea/cli.py:360` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1094 | `floatfea/cli.py:361` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1094 | `floatfea/cli.py:362` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1094 | `floatfea/cli.py:363` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1094 | `floatfea/cli.py:364` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1094 | `floatfea/cli.py:365` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1094 | `floatfea/cli.py:366` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1094 | `floatfea/cli.py:367` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1094 | `floatfea/cli.py:368` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1094 | `floatfea/cli.py:369` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1094 | `floatfea/cli.py:370` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1094 | `floatfea/cli.py:371` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1094 | `floatfea/cli.py:372` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1094 | `floatfea/run/pipeline.py:1694` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `floatfea/cli.py:350` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `floatfea/cli.py:351` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `floatfea/cli.py:352` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `floatfea/cli.py:353` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `floatfea/cli.py:354` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `floatfea/cli.py:355` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `floatfea/cli.py:356` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `floatfea/cli.py:357` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:707` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:708` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:709` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:710` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:711` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:712` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:713` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:714` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:715` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:716` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:717` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:718` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:719` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:1255` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:1256` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:1257` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:1258` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:1259` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:1260` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:1261` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:1262` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1095 | `pipeline.py:1263` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1096 | `floatfea/cli.py:417` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1096 | `floatfea/cli.py:418` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1096 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1096 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1097 | `floatfea/cli.py:294` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1097 | `floatfea/cli.py:295` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1097 | `floatfea/cli.py:296` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1098 | `floatfea/cli.py:262` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1098 | `floatfea/cli.py:263` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1098 | `floatfea/cli.py:264` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1098 | `floatfea/cli.py:265` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1098 | `floatfea/cli.py:266` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1098 | `floatfea/cli.py:267` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1098 | `floatfea/cli.py:268` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1098 | `floatfea/cli.py:269` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1098 | `floatfea/cli.py:270` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1098 | `floatfea/cli.py:271` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1098 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1099 | `floatfea/cli.py:268` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1099 | `floatfea/cli.py:269` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1099 | `floatfea/cli.py:270` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1099 | `floatfea/cli.py:271` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1099 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1099 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1100 | `config.py:194` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1100 | `floatfea/run/pipeline.py:698` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1100 | `floatfea/run/pipeline.py:699` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1100 | `floatfea/run/pipeline.py:700` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1100 | `floatfea/run/pipeline.py:701` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1100 | `floatfea/run/pipeline.py:702` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1100 | `floatfea/run/pipeline.py:703` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1100 | `floatfea/run/pipeline.py:704` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1100 | `floatfea/run/pipeline.py:705` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1100 | `floatfea/run/pipeline.py:706` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1100 | `floatfea/run/pipeline.py:707` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1100 | `floatfea/run/pipeline.py:708` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1101 | `floatfea/run/pipeline.py:690` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1101 | `floatfea/run/pipeline.py:691` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1101 | `floatfea/run/pipeline.py:692` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1101 | `floatfea/run/pipeline.py:693` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1101 | `floatfea/run/pipeline.py:694` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1101 | `test_ft26_multi_npz.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `cli.py:209` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `cli.py:210` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `cli.py:211` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:73` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:74` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:75` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:76` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:77` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:78` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:79` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:80` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:81` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:82` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:83` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:84` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:85` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:86` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:87` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:88` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:89` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:90` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1102 | `floatfea/post/forces_table.py:91` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1103 | `floatfea/cli.py:89` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1103 | `floatfea/cli.py:90` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1103 | `floatfea/cli.py:91` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1103 | `floatfea/cli.py:92` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1103 | `floatfea/cli.py:93` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1103 | `floatfea/cli.py:94` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1103 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `.../h000/dynamic_inputs.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `.../h045/dynamic_inputs.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `../data/f4/dynamic_inputs.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `cli.py:146` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `cli.py:147` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `cli.py:148` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `cli.py:149` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `cli.py:150` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `cli.py:151` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `cli.py:152` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `cli.py:153` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `cli.py:1237` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `config.py:1532` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `config.py:1533` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `config.py:1534` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `config.py:1535` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `config.py:1536` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `config.py:1537` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `config.py:1600` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `config.py:1601` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `d0/../d0/v000.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `d0/v000.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `d5/V000.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `docs/F4_member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `docs/F6_utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `docs/milestones/R1.md:396` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `docs/milestones/R1.md:397` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `docs/milestones/R1.md:398` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `docs/milestones/R1.md:399` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `docs/milestones/R1.md:400` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `dynamic_inputs.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `examples/platform12_placeholder.yaml:129` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `floatfea/cli.py:474` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `floatfea/run/config.py:1532` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `floatfea/run/pipeline.py:788` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `no_sidecar/dynamic_inputs.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `test_ft26_multi_npz.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1104 | `with_sidecar/dynamic_inputs.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1105 | `.github/workflows/ci.yml` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1105 | `.github/workflows/ci.yml:41` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1105 | `.github/workflows/ci.yml:42` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1105 | `.github/workflows/ci.yml:43` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1105 | `R1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1105 | `docs/milestones/R1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1105 | `floatfea/post/forces_table.py:405` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1105 | `floatfea/run/pipeline.py:793` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1105 | `scripts/suite_count.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1105 | `step-2-answers.json` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1105 | `test_ft26_multi_npz.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1105 | `tests/test_report_guard_states.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1106 | `CLAUDE.md` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1106 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1106 | `results/F6b/truss_sizing.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1106 | `results/F6b/truss_sizing.json` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1106 | `results/F6b/truss_sizing.md` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1106 | `scripts/measure/f6b_report.py:88` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1106 | `tests/regression/test_fy3_triangle_closure.py:306` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1106 | `truss_sizing.md` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1106 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1107 | `.claude/hooks/protect-reviews.sh:163` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1107 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1108 | `CLAUDE.md` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1108 | `docs/SUPERVISOR.md` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1108 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1108 | `tests/verification/rung3/test_tolerance_counter_cases.py:37` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1108 | `tests/verification/rung3/test_tolerance_counter_cases.py:38` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1108 | `tests/verification/rung3/test_tolerance_counter_cases.py:39` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1108 | `tests/verification/rung3/test_tolerance_counter_cases.py:40` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1108 | `tolerances.py` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1109 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `R1.md:455` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `docs/milestones/R1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `docs/milestones/R1.md:435` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1766` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1767` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1768` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1769` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1770` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1771` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1772` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1773` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1774` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1775` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1776` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1777` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1778` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1779` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1780` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1781` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1782` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1783` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1784` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1785` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1786` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1787` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1788` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1789` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1790` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1791` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1792` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `floatfea/tolerances.py:1793` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `tests/test_plan_matches_tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1110 | `tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1111 | `f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1111 | `f6a_premise_check.py:190` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1111 | `floatfea/run/pipeline.py:1452` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1111 | `member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1111 | `scripts/measure/f6_results_report.py:474` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1111 | `scripts/measure/member_forces_table.py:348` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1111 | `tests/regression/test_generators_refuse_mismatched_inputs.py:138` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1111 | `tests/regression/test_generators_refuse_mismatched_inputs.py:139` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1112 | `floatfea/run/pipeline.py:1686` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1112 | `floatfea/run/pipeline.py:1687` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1112 | `floatfea/run/pipeline.py:1688` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1112 | `floatfea/run/pipeline.py:1689` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1112 | `floatfea/run/pipeline.py:1690` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1112 | `floatfea/run/pipeline.py:1691` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1112 | `floatfea/run/pipeline.py:1692` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1112 | `floatfea/run/pipeline.py:1693` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1112 | `floatfea/run/pipeline.py:1694` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1112 | `floatfea/run/pipeline.py:1695` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1113 | `config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1113 | `floatfea/run/config.py:378` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1113 | `floatfea/run/pipeline.py:1777` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1114 | `floatfea/run/pipeline.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1114 | `floatfea/run/pipeline.py:1445` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1114 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1115 | `floatfea/run/truss.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1115 | `results/F6b/truss_sizing.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1115 | `results/F6b/truss_sizing.json` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1115 | `results/F6b/truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1115 | `results/F6b/truss_sizing.md:39` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1115 | `results/F6b/truss_sizing.md:40` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1115 | `results/F6b/truss_sizing.md:41` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1115 | `truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1116 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1116 | `scripts/export_f4_dynamic_inputs.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1117 | `conftest.py` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1117 | `tests/regression/test_generators_refuse_mismatched_inputs.py` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1117 | `tests/test_ci_canonical_environment.py` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1117 | `tests/test_ci_determinism_gate.py` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1117 | `tests/test_ci_runs_the_whole_suite.py` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1117 | `tests/test_ci_workflow_is_wellformed.py` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1117 | `tests/test_collected_set_golden.py` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1117 | `tests/test_report_guard_states.py` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1117 | `tests/test_supervisor_conftest_pathspec.py` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1119 | `f6_results_report.py:718` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1119 | `scripts/ci_section.py:412` | the file is touched and this line number is the old one | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1119 | `tests/test_report_numbers_are_sourced.py` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1120 | `.claude/hooks/require-verdict.sh:461` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1120 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1120 | `scripts/answered_table.py:36` | the file is touched and this line number is the old one | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1120 | `scripts/check_carried.py:34` | the file is touched and this line number is the old one | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1121 | `cli.py:918` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1121 | `cli.py:942` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1121 | `config.py:541` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1121 | `config.py:542` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1121 | `docs/milestones/R1.md` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1121 | `floatfea/cli.py` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1121 | `floatfea/run/config.py` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1121 | `truss_sizing.md` | the file is untouched | no change at that exact site; closed by an earlier verdict and carried in §7, which is where its disposition is read |
+| R1122 | `./results/F6b/truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1122 | `floatfea/run/truss.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1122 | `results/F6b/truss_sizing.md:39` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1122 | `results/F6b/truss_sizing.md:40` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1122 | `results/F6b/truss_sizing.md:41` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1122 | `truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1123 | `SCRATCH/out.txt` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1123 | `SCRATCH/t.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R1128 | `.github/workflows/ci.yml:403` | the file is untouched | **newly visible under R1128** -- no change at that exact line; the finding is answered in §2 and the repair does not reach it |
+| R1128 | `CLAUDE.md` | the file is untouched | no change at that exact line; the finding is answered in §2 and the repair does not reach it |
+| R1128 | `data/f4/dynamic_inputs.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact line; the finding is answered in §2 and the repair does not reach it |
+| R1128 | `docs/F4_member_forces.csv:17` | the file is untouched | **newly visible under R1128** -- no change at that exact line; the finding is answered in §2 and the repair does not reach it |
+| R1128 | `docs/F6_utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact line; the finding is answered in §2 and the repair does not reach it |
+| R1128 | `examples/platform12_placeholder.yaml:104` | the file is untouched | **newly visible under R1128** -- no change at that exact line; the finding is answered in §2 and the repair does not reach it |
+| R1128 | `pipeline.py:685` | the file is untouched | no change at that exact line; the finding is answered in §2 and the repair does not reach it |
+| R1128 | `pipeline.py:686` | the file is untouched | no change at that exact line; the finding is answered in §2 and the repair does not reach it |
+| R1128 | `pipeline.py:687` | the file is untouched | no change at that exact line; the finding is answered in §2 and the repair does not reach it |
+| R1128 | `results/F6b/truss_sizing.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact line; the finding is answered in §2 and the repair does not reach it |
+| R1128 | `results/F6b/truss_sizing.json` | the file is untouched | no change at that exact line; the finding is answered in §2 and the repair does not reach it |
+| R1128 | `results/R1/example/utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact line; the finding is answered in §2 and the repair does not reach it |
+| R1128 | `scripts/ci_section.py:999` | the file is touched and this line number is the old one | no change at that exact line; the finding is answered in §2 and the repair does not reach it |
+| R1132 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact line; the finding is answered in §4 and the repair does not reach it |
+| R1137 | `ci.yml:90` | the file is untouched | **newly visible under R1128** -- no change at that exact line; the finding is answered in §4 and the repair does not reach it |
+| R850 | `floatfea/cli.py:296` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R850 | `floatfea/cli.py:297` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R850 | `floatfea/cli.py:298` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R850 | `floatfea/cli.py:299` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R850 | `floatfea/run/pipeline.py:605` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R850 | `floatfea/run/pipeline.py:672` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R850 | `tests/regression/test_r1_example_regenerates.py:54` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R850 | `tests/regression/test_r1_example_regenerates.py:55` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R850 | `tests/regression/test_r1_example_regenerates.py:56` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R850 | `tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `data/platform/platform12_deck.yaml` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `floatfea/run/config.py:507` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `floatfea/run/config.py:508` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `floatfea/run/config.py:509` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `floatfea/run/config.py:510` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `floatfea/run/config.py:511` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `floatfea/run/config.py:512` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `floatfea/run/config.py:513` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `floatfea/run/config.py:514` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `floatfea/run/config.py:515` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `floatfea/run/config.py:516` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `floatfea/run/config.py:517` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `floatfea/run/config.py:518` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `floatfea/run/config.py:519` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `floatfea/run/config.py:520` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `floatfea/run/config.py:521` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `floatfea/run/config.py:522` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `floatfea/run/config.py:523` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `home/someone-else/junk/platform12_deck.yaml` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `platform12_deck.yaml` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `tests/regression/test_r1_example_regenerates.py:105` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `tests/regression/test_r1_example_regenerates.py:106` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `tests/regression/test_r1_example_regenerates.py:107` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `tests/regression/test_r1_example_regenerates.py:108` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `tests/regression/test_r1_example_regenerates.py:109` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `tests/regression/test_r1_example_regenerates.py:110` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `tests/regression/test_r1_example_regenerates.py:111` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `tests/regression/test_r1_example_regenerates.py:112` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R851 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R852 | `docs/directives/FO.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R852 | `floatfea/cli.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R852 | `tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R853 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R853 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R853 | `tests/regression/test_r1_example_regenerates.py:62` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R853 | `tests/regression/test_r1_example_regenerates.py:63` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R853 | `tests/regression/test_r1_example_regenerates.py:64` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R853 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R854 | `docs/milestones/R1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R854 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R854 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R854 | `tests/regression/test_r1_example_regenerates.py:48` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R854 | `tests/regression/test_r1_published_artifacts.py:69` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R854 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R855 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R855 | `scripts/suite_count.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R856 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R856 | `docs/directives/FR.md:28` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R856 | `docs/directives/FR.md:29` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R856 | `docs/directives/FR.md:30` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R856 | `docs/directives/FR.md:31` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R856 | `docs/directives/FR.md:32` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R856 | `docs/directives/FR.md:33` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R856 | `scripts/write_verdict.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R856 | `scripts/write_verdict.py:179` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R856 | `scripts/write_verdict.py:180` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R856 | `scripts/write_verdict.py:181` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R857 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R857 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R857 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R858 | `tests/regression/test_r1_example_regenerates.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R859 | `cli.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R859 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R859 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R860 | `cli.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R860 | `floatfea/cli.py:297` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R860 | `floatfea/run/pipeline.py:605` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R860 | `tests/regression/test_r1_example_regenerates.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R861 | `tests/regression/test_r1_example_regenerates.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R861 | `tests/test_collected_set_golden.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R861 | `tests/test_report_guard_states.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R862 | `floatfea/run/pipeline.py:673` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R862 | `pipeline.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R862 | `pipeline.py:673` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R862 | `tests/regression/test_r1_example_golden.py:318` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R862 | `tests/regression/test_r1_example_golden.py:321` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R863 | `floatfea/cli.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R863 | `floatfea/run/pipeline.py:605` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R863 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R863 | `tests/regression/test_r1_example_regenerates.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R864 | `floatfea/cli.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R865 | `home/someone-else/junk/other_cases.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R865 | `tests/regression/test_r1_example_regenerates.py:224` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R865 | `tests/regression/test_r1_example_regenerates.py:225` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R865 | `tests/regression/test_r1_example_regenerates.py:226` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R865 | `tests/regression/test_r1_example_regenerates.py:227` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R865 | `tests/regression/test_r1_example_regenerates.py:228` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R865 | `tests/regression/test_r1_example_regenerates.py:229` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `data/f4/dynamic_inputs.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `floatfea/cli.py:354` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `floatfea/cli.py:355` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `floatfea/cli.py:356` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `floatfea/cli.py:357` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `floatfea/cli.py:358` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `floatfea/cli.py:359` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `floatfea/cli.py:360` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `floatfea/cli.py:361` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `floatfea/cli.py:362` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `floatfea/cli.py:407` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `floatfea/run/config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `floatfea/run/config.py:425` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `floatfea/run/pipeline.py:515` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `floatfea/run/pipeline.py:543` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `floatfea/run/pipeline.py:558` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `report.md:7` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `report.md:23` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `report.md:55` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R866 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R867 | `floatfea/model/platform.py:629` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R867 | `floatfea/post/forces_table.py:169` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R867 | `floatfea/run/config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R867 | `floatfea/run/config.py:898` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R867 | `floatfea/solve/static.py:135` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R868 | `examples/platform12_placeholder.yaml:35` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R868 | `tests/unit/test_topology_from_config.py:92` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R869 | `floatfea/model/platform.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R869 | `floatfea/model/platform.py:626` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R869 | `floatfea/post/forces_table.py:169` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R869 | `floatfea/solve/static.py:135` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R870 | `docs/milestones/R1.md:81` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R870 | `docs/milestones/R1.md:352` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R870 | `floatfea/run/pipeline.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R870 | `floatfea/run/pipeline.py:123` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R870 | `floatfea/run/pipeline.py:180` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R871 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R871 | `CLAUDE.md:421` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R871 | `docs/SUPERVISOR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R871 | `docs/SUPERVISOR.md:1` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R871 | `docs/SUPERVISOR.md:547` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R872 | `floatfea/run/config.py:189` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R872 | `floatfea/run/pipeline.py:586` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R873 | `floatfea/run/pipeline.py:583` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R873 | `floatfea/run/pipeline.py:584` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R873 | `floatfea/run/pipeline.py:585` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R873 | `floatfea/run/pipeline.py:586` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R874 | `floatfea/cli.py:146` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R874 | `floatfea/run/config.py:199` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R874 | `floatfea/run/pipeline.py:583` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R874 | `floatfea/run/pipeline.py:584` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R874 | `floatfea/run/pipeline.py:585` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R874 | `floatfea/run/pipeline.py:586` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R875 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R875 | `docs/SUPERVISOR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R875 | `docs/SUPERVISOR.md:549` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R875 | `docs/SUPERVISOR.md:555` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R875 | `docs/SUPERVISOR.md:556` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R875 | `docs/SUPERVISOR.md:557` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R876 | `tests/unit/test_headings_and_bem_coverage.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `docs/conventions.md:143` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `docs/conventions.md:144` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `docs/conventions.md:145` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `docs/conventions.md:146` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `docs/conventions.md:147` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `examples/platform12_placeholder.yaml` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:583` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:584` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:585` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:586` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:629` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:630` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:687` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:688` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:689` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:690` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:691` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:692` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:693` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:694` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:695` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:696` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:697` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:698` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `floatfea/run/pipeline.py:699` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `report.md:23` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `tests/regression/test_r1_example_golden.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R877 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `cli.py:147` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `docs/SUPERVISOR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `docs/directives/FR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `docs/milestones/F2a.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/cli.py:136` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/cli.py:137` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/cli.py:138` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/cli.py:139` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/cli.py:140` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/cli.py:141` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/cli.py:146` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/cli.py:147` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/cli.py:148` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/cli.py:149` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/cli.py:262` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/cli.py:263` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/cli.py:264` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/cli.py:265` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/cli.py:395` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/cli.py:396` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/cli.py:397` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/run/pipeline.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/run/pipeline.py:695` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/run/pipeline.py:696` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/run/pipeline.py:697` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/run/pipeline.py:698` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/run/pipeline.py:699` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `scripts/f4_dynamic_residual.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `scripts/write_verdict.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `tests/conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `tests/test_supervisor_conftest_pathspec.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `tests/unit/test_headings_and_bem_coverage.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R878 | `tests/unit/test_run_pipeline_refusals.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `config.py:212` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `floatfea/run/config.py:202` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `floatfea/run/config.py:208` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `floatfea/run/config.py:212` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `floatfea/run/pipeline.py:581` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `floatfea/run/pipeline.py:582` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `floatfea/run/pipeline.py:583` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `floatfea/run/pipeline.py:584` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `floatfea/run/pipeline.py:585` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `floatfea/run/pipeline.py:586` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `floatfea/run/pipeline.py:587` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `floatfea/run/pipeline.py:588` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `floatfea/run/pipeline.py:589` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `floatfea/run/pipeline.py:590` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `floatfea/run/pipeline.py:591` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `floatfea/run/pipeline.py:592` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R879 | `floatfea/run/pipeline.py:593` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `.claude/agents/gating-supervisor.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `.claude/hooks/require-verdict.sh` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:429` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:458` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:459` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:460` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:461` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:462` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:463` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:464` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:465` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:466` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:467` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:468` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:469` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:470` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:471` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:472` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:473` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:474` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:475` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:476` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:477` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:478` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `CLAUDE.md:479` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `config.py:196` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `data/f4/dynamic_inputs.provenance.json` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `docs/SUPERVISOR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `docs/directives/FR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `docs/directives/FT.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `docs/directives/README.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `docs/milestones/F2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `docs/milestones/F2a.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `docs/milestones/R1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `f6a_premise_check.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `floatfea/run/pipeline.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `pipeline.py:1027` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `scripts/f4_dynamic_residual.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `scripts/measure/f6a_required_section.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `scripts/measure/f6b_truss_sizing.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `scripts/write_verdict.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `step-1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `step-2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `tests/conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `tests/regression/test_r1_published_artifacts.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `tests/test_plan_figures.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `tests/test_report_guard_states.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `tests/test_tree_prose_consistent.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R880 | `tests/unit/test_headings_and_bem_coverage.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R881 | `config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R881 | `floatfea/run/config.py:190` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R881 | `floatfea/run/config.py:931` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R881 | `floatfea/run/pipeline.py:52` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R881 | `floatfea/run/pipeline.py:722` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R881 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R881 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R881 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R882 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R882 | `floatfea/run/pipeline.py:589` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R882 | `floatfea/run/pipeline.py:597` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R882 | `floatfea/run/pipeline.py:633` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R883 | `floatfea/run/pipeline.py:712` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R884 | `floatfea/run/pipeline.py:802` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R885 | `docs/conventions.md:150` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R885 | `readers/capytaine.py:191` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R885 | `readers/capytaine.py:192` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R885 | `readers/capytaine.py:193` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R885 | `readers/capytaine.py:194` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R885 | `scripts/export_f4_dynamic_inputs.py:524` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R885 | `scripts/report_joint_reactions.py:93` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R886 | `pyproject.toml:110` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R886 | `tests/unit/test_headings_and_bem_coverage.py:35` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R887 | `.../repo/docs/reports/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R887 | `docs/reports/R1/step-2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R887 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R887 | `step-2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R887 | `tests/test_report_guard_states.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R887 | `tests/test_report_guard_states.py:90` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R887 | `tests/test_report_guard_states.py:91` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R887 | `tests/test_report_guard_states.py:494` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R888 | `.claude/hooks/require-verdict.sh:240` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R888 | `.claude/hooks/require-verdict.sh:276` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R888 | `docs/reports/F7/step-1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R888 | `docs/reports/R1/step-4.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R889 | `.claude/hooks/require-verdict.sh:157` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R889 | `docs/directives/FT.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R889 | `docs/directives/FT.md:44` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R890 | `results/R1/example/report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R890 | `results/R1/example/report.md:89` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R890 | `scripts/measure/f6a_required_section.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R890 | `scripts/measure/f6b_truss_sizing.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R892 | `...docs/reports/R1/step-2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R892 | `.claude/hooks/require-verdict.sh` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R893 | `F2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R893 | `docs/milestones/F2.md:22` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R893 | `docs/milestones/F6.md:145` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R893 | `docs/milestones/R1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R893 | `docs/milestones/R1.md:5` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R893 | `docs/milestones/R1.md:6` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R893 | `docs/reports/F6/step-1.md:22` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R894 | `docs/directives/FT.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R894 | `docs/milestones/R1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R894 | `docs/milestones/R1.md:352` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R894 | `docs/milestones/R1.md:353` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R894 | `docs/milestones/R1.md:354` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R894 | `docs/milestones/R1.md:355` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R894 | `docs/milestones/R1.md:356` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R894 | `docs/milestones/R1.md:357` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R894 | `docs/milestones/R1.md:358` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `cli.py:147` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `cli.py:148` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `cli.py:265` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `cli.py:266` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `config.py:931` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `floatfea/run/config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `floatfea/run/pipeline.py:682` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `floatfea/run/pipeline.py:683` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `floatfea/run/pipeline.py:684` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `floatfea/run/pipeline.py:685` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `floatfea/run/pipeline.py:686` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `floatfea/run/pipeline.py:687` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `floatfea/run/pipeline.py:688` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `floatfea/run/pipeline.py:689` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `floatfea/run/pipeline.py:690` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `floatfea/run/pipeline.py:691` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `floatfea/run/pipeline.py:692` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `floatfea/run/pipeline.py:693` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `floatfea/run/pipeline.py:694` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `floatfea/run/pipeline.py:695` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `floatfea/run/pipeline.py:696` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `scripts/measure/f6_results_report.py:400` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `scripts/measure/f6_results_report.py:401` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R895 | `utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `config.py:189` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `config.py:190` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `docs/SUPERVISOR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `docs/directives/FR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `floatfea/run/config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `floatfea/run/pipeline.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `scripts/measure/f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `step-1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `step-2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `tests/conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `tests/regression/test_f6_deliverable_agrees_with_itself.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `tests/regression/test_f6_deliverable_agrees_with_itself.py:235` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R896 | `tests/test_report_guard_states.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R897 | `.../repo/docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R897 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R897 | `step-2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R897 | `tests/test_report_guard_states.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R897 | `tests/test_report_guard_states.py:536` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `.claude/hooks/require-verdict.sh` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `.claude/hooks/require-verdict.sh:285` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `.claude/hooks/require-verdict.sh:286` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `.claude/hooks/require-verdict.sh:287` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `.claude/hooks/require-verdict.sh:288` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `.claude/hooks/require-verdict.sh:289` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `config.py:189` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `config.py:190` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `config.py:191` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `config.py:192` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `config.py:193` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `config.py:194` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `config.py:195` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `config.py:196` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `docs/SUPERVISOR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `docs/directives/FR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `docs/reports/R1/step-4.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `docs/reviews/R1/step-1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `docs/reviews/R1/step-2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `floatfea/run/config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `floatfea/run/pipeline.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `scripts/measure/f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `scripts/measure/member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `step-1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `step-2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `tests/conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `tests/regression/test_f6_deliverable_agrees_with_itself.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `tests/test_report_guard_states.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `tests/unit/test_forces_table_reexports.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R898 | `tests/unit/test_headings_and_bem_coverage.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R899 | `.claude/agents/gating-supervisor.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R899 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R899 | `docs/SUPERVISOR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R899 | `docs/SUPERVISOR.md:24` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R899 | `docs/SUPERVISOR.md:25` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R899 | `docs/SUPERVISOR.md:26` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R899 | `docs/SUPERVISOR.md:27` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R899 | `docs/SUPERVISOR.md:28` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R899 | `docs/SUPERVISOR.md:29` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R899 | `docs/SUPERVISOR.md:30` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R899 | `docs/SUPERVISOR.md:31` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R899 | `docs/SUPERVISOR.md:32` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R899 | `docs/SUPERVISOR.md:33` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R901 | `tests/test_report_guard_states.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R902 | `docs/F4_member_forces.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R902 | `f6_results_report.py:76` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R902 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R902 | `member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R902 | `member_forces_table.py:143` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R902 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R902 | `scripts/measure/f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R902 | `scripts/measure/member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `config.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `config.py:196` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `config.py:733` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:961` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:962` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:963` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:964` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:965` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:966` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:967` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:968` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:969` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:970` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:971` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:972` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:973` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:974` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:975` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:976` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:977` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:978` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:979` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:980` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `pipeline.py:981` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R903 | `scripts/measure/f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R904 | `docs/reviews/R1/step-10.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R904 | `docs/reviews/R1/step-2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R904 | `tests/test_report_guard_states.py:851` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R904 | `tests/test_report_guard_states.py:852` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R904 | `tests/test_report_guard_states.py:853` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R904 | `tests/test_report_guard_states.py:854` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R904 | `tests/test_report_guard_states.py:855` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R904 | `tests/test_report_guard_states.py:856` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R904 | `tests/test_report_guard_states.py:857` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R904 | `tests/test_report_guard_states.py:858` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R904 | `tests/test_report_guard_states.py:859` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R904 | `tests/test_report_guard_states.py:860` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R904 | `tests/test_report_guard_states.py:861` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R905 | `config.py:196` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R905 | `floatfea/run/pipeline.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R905 | `tests/prose_triple_controls.txt` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R906 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R906 | `docs/SUPERVISOR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R906 | `docs/directives/FR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R906 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R906 | `f6a_premise_check.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R906 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R906 | `member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R906 | `scripts/f4_dynamic_residual.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R906 | `scripts/measure/f6a_premise_check.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R906 | `scripts/measure/f6a_premise_check.py:188` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R906 | `step-1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R906 | `step-2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R906 | `tests/conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R906 | `tests/regression/test_f6_deliverable_agrees_with_itself.py:492` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R906 | `tests/unit/test_forces_table_reexports.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R906 | `tests/unit/test_forces_table_reexports.py:47` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R907 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R907 | `docs/F4_member_forces.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R907 | `f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R907 | `f6_results_report.py:1052` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R907 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R907 | `member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R907 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R907 | `scripts/measure/member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R907 | `test_f6_deliverable_agrees_with_itself.py:235` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `data/f4/dynamic_inputs.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `docs/F4_member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `docs/F4_member_forces.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `f6a_premise_check.py:185` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `member_forces_table.py:287` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1012` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1013` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1014` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1015` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1016` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1017` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1027` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1028` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1029` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1030` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1031` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1032` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1033` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1034` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1035` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1036` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1037` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1038` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `pipeline.py:1039` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `scripts/export_f4_dynamic_inputs.py:430` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `scripts/measure/member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R908 | `tests/regression/test_r1_example_golden.py:420` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R909 | `pipeline.py:1043` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R909 | `pipeline.py:1044` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R909 | `pipeline.py:1045` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R909 | `pipeline.py:1046` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R909 | `pipeline.py:1047` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R909 | `pipeline.py:1048` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R909 | `pipeline.py:1049` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R909 | `pipeline.py:1050` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R909 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R909 | `scripts/measure/f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R910 | `tests/test_report_guard_states.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R911 | `floatfea/io/integrator.py:30` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R911 | `pipeline.py:704` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R911 | `pipeline.py:705` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R911 | `pipeline.py:706` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R911 | `pipeline.py:707` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R911 | `pipeline.py:708` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R911 | `pipeline.py:709` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R911 | `pipeline.py:710` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R911 | `pipeline.py:711` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R911 | `pipeline.py:712` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R911 | `pipeline.py:713` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R911 | `pipeline.py:714` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R911 | `pipeline.py:715` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R911 | `pipeline.py:716` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R911 | `pipeline.py:717` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R913 | `floatfea/cli.py:145` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R913 | `floatfea/cli.py:146` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R913 | `floatfea/cli.py:147` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R913 | `floatfea/cli.py:148` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R913 | `floatfea/cli.py:149` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R914 | `scripts/measure/member_forces_table.py:147` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R914 | `scripts/measure/member_forces_table.py:148` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R914 | `scripts/measure/member_forces_table.py:149` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R914 | `scripts/measure/member_forces_table.py:150` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R914 | `scripts/measure/member_forces_table.py:151` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R914 | `scripts/measure/member_forces_table.py:152` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R914 | `scripts/measure/member_forces_table.py:153` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R917 | `pipeline.py:869` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R918 | `member_forces_table.py:312` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `f6a_premise_check.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `pipeline.py:1027` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `pipeline.py:1028` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `pipeline.py:1029` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `pipeline.py:1030` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `pipeline.py:1031` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `pipeline.py:1032` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `pipeline.py:1033` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `pipeline.py:1034` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `pipeline.py:1035` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `pipeline.py:1036` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `pipeline.py:1037` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `pipeline.py:1038` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `pipeline.py:1039` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `results/F6a/premise_check.json` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `results/F6a/required_section.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `scripts/measure/f6a_premise_check.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R919 | `scripts/measure/f6a_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R920 | `data/f4/dynamic_inputs.npz` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R920 | `floatfea/run/pipeline.py:944` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R920 | `floatfea/run/pipeline.py:945` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R920 | `floatfea/run/pipeline.py:946` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R920 | `test_r1_example_golden.py:402` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R921 | `scripts/measure/f6a_premise_check.py:358` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R922 | `f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R922 | `f6a_premise_check.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R922 | `member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R922 | `tests/regression/test_f6_deliverable_agrees_with_itself.py:490` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R924 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R924 | `scripts/measure/member_forces_table.py:148` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R924 | `scripts/measure/member_forces_table.py:149` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R924 | `scripts/measure/member_forces_table.py:150` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R924 | `scripts/measure/member_forces_table.py:151` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R924 | `scripts/measure/member_forces_table.py:152` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R924 | `scripts/measure/member_forces_table.py:153` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R924 | `scripts/measure/member_forces_table.py:154` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R925 | `config.py:507` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R925 | `docs/F4_member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R925 | `docs/F4_member_forces.csv:17` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R925 | `docs/F4_member_forces.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R925 | `docs/F4_member_forces.md:21` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R925 | `member_forces_table.py:252` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R925 | `scripts/measure/member_forces_table.py:252` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R926 | `f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R926 | `f6_results_report.py:428` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R926 | `f6a_premise_check.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R926 | `member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R926 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R926 | `scripts/measure/f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R927 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R927 | `docs/F4_member_forces.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R927 | `f6a_premise_check.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R927 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R927 | `member_forces_table.py:285` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R927 | `member_forces_table.py:312` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R927 | `pipeline.py:999` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R930 | `member_forces_table.py:166` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R932 | `f6a_premise_check.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R932 | `member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `cli.py:142` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `cli.py:143` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `cli.py:144` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `cli.py:145` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `cli.py:146` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `cli.py:147` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `cli.py:148` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `cli.py:149` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `cli.py:150` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1098` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1099` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1100` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1101` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1102` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1103` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1104` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1105` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1106` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1107` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1108` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1109` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1110` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1111` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1112` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1113` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1114` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1115` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1116` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1117` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1118` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1119` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R934 | `pipeline.py:1120` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R935 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R935 | `tests/unit/test_headings_and_bem_coverage.py:34` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R935 | `tests/unit/test_headings_and_bem_coverage.py:35` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R935 | `tests/unit/test_headings_and_bem_coverage.py:36` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R935 | `tests/unit/test_headings_and_bem_coverage.py:37` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R935 | `tests/unit/test_headings_and_bem_coverage.py:38` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R935 | `tests/unit/test_headings_and_bem_coverage.py:39` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R935 | `tests/unit/test_headings_and_bem_coverage.py:40` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R936 | `docs/F4_member_forces.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R936 | `member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R936 | `member_forces_table.py:339` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R936 | `member_forces_table.py:493` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `docs/F4_member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `docs/F4_member_forces.csv:17` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `docs/F4_member_forces.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:343` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:344` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:345` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:346` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:347` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:348` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:429` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:430` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:431` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:432` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:433` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:434` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:435` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:436` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:437` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:438` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:439` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:440` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:441` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:442` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:443` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:444` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:445` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R937 | `member_forces_table.py:446` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R938 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R938 | `f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R938 | `f6_results_report.py:305` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R938 | `f6_results_report.py:341` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R938 | `f6_results_report.py:342` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R938 | `f6_results_report.py:343` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R938 | `f6_results_report.py:344` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R938 | `f6_results_report.py:481` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R938 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R938 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `docs/SUPERVISOR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `docs/directives/FR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `docs/milestones/F2a.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `floatfea/run/pipeline.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `scripts/f4_dynamic_residual.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `scripts/measure/f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `scripts/measure/f6a_premise_check.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `scripts/measure/member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `scripts/write_verdict.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `step-1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `step-2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `tests/conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `tests/regression/test_f6_deliverable_agrees_with_itself.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `tests/test_report_guard_states.py:896` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R939 | `tests/unit/test_headings_and_bem_coverage.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R941 | `pipeline.py:688` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R943 | `docs/F4_member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R943 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R943 | `results/F6/F4_member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R944 | `docs/F4_member_forces.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R944 | `member_forces_table.py:655` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R944 | `member_forces_table.py:656` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R944 | `member_forces_table.py:657` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R944 | `member_forces_table.py:658` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R944 | `member_forces_table.py:659` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R944 | `member_forces_table.py:660` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R944 | `member_forces_table.py:661` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R944 | `member_forces_table.py:662` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R944 | `member_forces_table.py:663` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R944 | `member_forces_table.py:664` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R944 | `member_forces_table.py:665` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R944 | `member_forces_table.py:666` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:332` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:333` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:334` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:335` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:336` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:337` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:338` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:339` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:340` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:341` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:342` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:343` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:344` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:345` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:346` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:347` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:348` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:349` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:350` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:351` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:352` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:353` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:354` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:355` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:356` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:357` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:358` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:359` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `f6_results_report.py:360` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `tests/regression/test_generators_refuse_mismatched_inputs.py:143` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `tests/regression/test_generators_refuse_mismatched_inputs.py:144` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `tests/regression/test_generators_refuse_mismatched_inputs.py:145` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `tests/regression/test_generators_refuse_mismatched_inputs.py:146` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `tests/regression/test_generators_refuse_mismatched_inputs.py:147` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `tests/regression/test_generators_refuse_mismatched_inputs.py:148` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `tests/regression/test_generators_refuse_mismatched_inputs.py:149` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `tests/regression/test_generators_refuse_mismatched_inputs.py:150` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `tests/regression/test_generators_refuse_mismatched_inputs.py:151` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `tests/regression/test_generators_refuse_mismatched_inputs.py:152` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R945 | `tests/regression/test_generators_refuse_mismatched_inputs.py:153` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `docs/F4_member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `f6_results_report.py:377` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:156` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:157` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:158` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:159` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:160` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:161` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:162` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:163` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:164` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:165` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:166` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:167` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:168` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:169` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:170` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:171` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:172` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:173` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:174` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:175` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:176` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:177` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:178` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R946 | `tests/regression/test_generators_refuse_mismatched_inputs.py:179` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R947 | `f6_results_report.py:333` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R947 | `f6_results_report.py:334` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R947 | `f6_results_report.py:335` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R947 | `f6_results_report.py:336` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R947 | `f6_results_report.py:337` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R947 | `f6_results_report.py:338` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R947 | `f6_results_report.py:347` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R947 | `f6_results_report.py:348` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R947 | `member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R948 | `tests/test_no_tolerance_literals.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R949 | `member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `docs/F4_member_forces.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `docs/SUPERVISOR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `docs/directives/FR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `member_forces_table.py:677` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `member_forces_table.py:678` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `member_forces_table.py:679` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `member_forces_table.py:680` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `member_forces_table.py:681` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `member_forces_table.py:683` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `member_forces_table.py:684` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `member_forces_table.py:685` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `member_forces_table.py:686` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `member_forces_table.py:687` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `member_forces_table.py:688` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `member_forces_table.py:689` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `member_forces_table.py:690` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `member_forces_table.py:691` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `member_forces_table.py:692` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `member_forces_table.py:693` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `scripts/measure/f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `scripts/measure/member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `scripts/run_rung.sh` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `step-1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `step-2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `tests/conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `tests/regression/test_f6_deliverable_agrees_with_itself.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R950 | `tests/regression/test_generators_refuse_mismatched_inputs.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R951 | `f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R951 | `f6_results_report.py:636` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R951 | `f6_results_report.py:637` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R951 | `f6_results_report.py:638` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R951 | `member_forces_table.py:542` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R951 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R952 | `f6_results_report.py:354` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R952 | `f6_results_report.py:355` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R952 | `f6_results_report.py:356` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R952 | `f6_results_report.py:357` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R952 | `f6_results_report.py:358` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R952 | `f6_results_report.py:359` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R952 | `f6_results_report.py:360` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R952 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R953 | `member_forces_table.py:683` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R953 | `member_forces_table.py:684` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R953 | `member_forces_table.py:685` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R953 | `member_forces_table.py:686` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R953 | `member_forces_table.py:687` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R953 | `member_forces_table.py:688` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R953 | `member_forces_table.py:689` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R953 | `member_forces_table.py:690` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R953 | `member_forces_table.py:691` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R953 | `member_forces_table.py:692` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R953 | `member_forces_table.py:693` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R954 | `member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R954 | `test_f6_deliverable_agrees_with_itself.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R954 | `tests/regression/test_generators_refuse_mismatched_inputs.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R954 | `tests/regression/test_generators_refuse_mismatched_inputs.py:9` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R954 | `tests/regression/test_generators_refuse_mismatched_inputs.py:10` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R954 | `tests/regression/test_generators_refuse_mismatched_inputs.py:11` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R954 | `tests/regression/test_generators_refuse_mismatched_inputs.py:12` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R954 | `tests/regression/test_generators_refuse_mismatched_inputs.py:13` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R954 | `tests/regression/test_generators_refuse_mismatched_inputs.py:14` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R954 | `tests/regression/test_generators_refuse_mismatched_inputs.py:15` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R955 | `member_forces_table.py:396` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R955 | `member_forces_table.py:397` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R957 | `dynamic_inputs.provenance.json` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R957 | `f6_results_report.py:656` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R957 | `f6_results_report.py:657` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R957 | `f6_results_report.py:658` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R957 | `f6_results_report.py:659` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R957 | `f6_results_report.py:660` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R957 | `f6_results_report.py:661` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R957 | `floatfea/run/pipeline.py:684` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R957 | `floatfea/run/pipeline.py:685` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R957 | `floatfea/run/pipeline.py:686` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R957 | `floatfea/run/pipeline.py:687` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R957 | `floatfea/run/pipeline.py:688` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R957 | `floatfea/run/pipeline.py:689` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R957 | `floatfea/run/pipeline.py:690` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R957 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R958 | `floatfea/run/pipeline.py:1132` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R958 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R958 | `scripts/measure/f6_results_report.py:558` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R958 | `scripts/measure/f6_results_report.py:570` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R958 | `scripts/measure/member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R958 | `scripts/measure/member_forces_table.py:339` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `docs/F4_member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `docs/F4_member_forces.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `docs/F6_utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `docs/SUPERVISOR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `docs/directives/FR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `docs/directives/FT.md:17` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `docs/directives/FT.md:18` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `docs/directives/FT.md:19` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `docs/milestones/F2a.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `results/F6/F4_member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `scripts/measure/f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `scripts/measure/member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `scripts/run_rung.sh` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `scripts/write_verdict.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `step-1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `step-2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `tests/conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `tests/regression/test_f6_deliverable_agrees_with_itself.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `tests/regression/test_generators_refuse_mismatched_inputs.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `tests/test_report_guard_states.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R959 | `tests/unit/test_forces_table_reexports.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R960 | `api_wsd_utilisation.py:241` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R960 | `api_wsd_utilisation.py:242` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R960 | `f6a_premise_check.py:360` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R960 | `f6a_report.py:411` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R960 | `f6a_required_section.py:575` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R960 | `f6a_required_section.py:576` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R960 | `f6b_report.py:414` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R960 | `f6b_truss_sizing.py:679` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R960 | `f6b_truss_sizing.py:680` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R960 | `g41_dynamic.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R960 | `r754_stress_vs_grade.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R960 | `scripts/measure/member_forces_table.py:458` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R961 | `f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R961 | `f6_results_report.py:240` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R961 | `f6_results_report.py:656` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R961 | `member_forces_table.py:248` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R961 | `member_forces_table.py:440` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R966 | `f6_results_report.py:551` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R967 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R967 | `docs/F4_member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R967 | `docs/F6_utilisation.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R967 | `docs/SUPERVISOR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R967 | `docs/directives/FT.md:17` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R967 | `docs/directives/FT.md:18` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R967 | `docs/directives/FT.md:19` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R967 | `docs/milestones/F2a.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R967 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R967 | `scripts/measure/api_wsd_utilisation.py:150` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R967 | `scripts/measure/api_wsd_utilisation.py:151` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R967 | `scripts/measure/f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R967 | `scripts/measure/f6_results_report.py:1172` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R967 | `scripts/measure/f6_results_report.py:1173` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R967 | `scripts/measure/f6_results_report.py:1174` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R967 | `scripts/write_verdict.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R968 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R968 | `dynamic_inputs.provenance.json` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R968 | `f6_results_report.py:585` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R968 | `f6_results_report.py:586` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R968 | `f6_results_report.py:587` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R968 | `f6_results_report.py:656` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R968 | `f6_results_report.py:657` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R968 | `f6_results_report.py:658` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R968 | `f6_results_report.py:659` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R968 | `f6_results_report.py:660` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R968 | `f6_results_report.py:661` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R968 | `floatfea/run/pipeline.py:1132` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R968 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R968 | `scripts/export_f4_dynamic_inputs.py:527` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R968 | `scripts/measure/member_forces_table.py:660` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R969 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R969 | `conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R969 | `docs/SUPERVISOR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R969 | `docs/directives/FR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R969 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R969 | `f6_results_report.py:570` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R969 | `f6_results_report.py:661` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R969 | `floatfea/run/config.py:949` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R969 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R969 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R969 | `scripts/measure/f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R969 | `scripts/run_rung.sh` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R969 | `step-1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R969 | `step-2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R969 | `tests/conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R969 | `tests/regression/test_generators_refuse_mismatched_inputs.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R970 | `docs/F4_member_forces.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R970 | `docs/F6_utilisation.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R970 | `export_platform_deck.py:225` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R970 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R970 | `results/F6a/premise_check.json` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R970 | `results/F6a/required_section.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R970 | `results/F6b/truss_sizing.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R970 | `results/R1/example/report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R970 | `test_generators_refuse_mismatched_inputs.py:504` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R970 | `test_marker_exemption_corpus.py:493` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R970 | `test_platform_deck_export.py:109` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R970 | `tests/regression/test_f6_deliverable_agrees_with_itself.py:40` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R970 | `tests/regression/test_r1_example_golden.py:56` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R970 | `tests/regression/test_r1_example_regenerates.py:138` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R971 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R971 | `tests/regression/test_generators_refuse_mismatched_inputs.py:504` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R973 | `f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R974 | `scripts/suite_count.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R975 | `tests/test_tree_prose_consistent.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `docs/SUPERVISOR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `docs/directives/FR.md:14` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `docs/directives/FR.md:15` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `docs/directives/FR.md:16` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `docs/directives/FR.md:17` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `docs/directives/FR.md:18` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `docs/directives/FR.md:19` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `docs/directives/FR.md:20` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `docs/directives/FR.md:21` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `docs/directives/FR.md:22` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `docs/directives/FR.md:23` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `docs/directives/FR.md:24` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `docs/directives/FR.md:25` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `docs/directives/FR.md:26` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `f6_results_report.py:615` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `f6_results_report.py:616` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `f6_results_report.py:617` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `f6_results_report.py:639` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `f6_results_report.py:640` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `f6_results_report.py:641` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `f6_results_report.py:642` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `f6_results_report.py:643` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `f6_results_report.py:644` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `f6_results_report.py:661` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `floatfea/run/config.py:949` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `scripts/measure/f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `scripts/run_rung.sh` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `step-1.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `step-2.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `tests/conftest.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R976 | `tests/regression/test_generators_refuse_mismatched_inputs.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R977 | `dynamic_inputs.provenance.json` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R977 | `f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R977 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R977 | `scripts/export_f4_dynamic_inputs.py:69` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R977 | `scripts/export_f4_dynamic_inputs.py:402` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R977 | `scripts/export_f4_dynamic_inputs.py:527` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R977 | `tests/regression/test_generators_refuse_mismatched_inputs.py:622` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `api_wsd_utilisation.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `api_wsd_utilisation.py:77` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `api_wsd_utilisation.py:196` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `api_wsd_utilisation.py:197` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `api_wsd_utilisation.py:198` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `api_wsd_utilisation.py:199` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `api_wsd_utilisation.py:200` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `api_wsd_utilisation.py:201` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `api_wsd_utilisation.py:202` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `api_wsd_utilisation.py:203` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `api_wsd_utilisation.py:204` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `api_wsd_utilisation.py:205` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `api_wsd_utilisation.py:206` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `api_wsd_utilisation.py:207` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `api_wsd_utilisation.py:208` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `api_wsd_utilisation.py:209` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `f6_results_report.py:48` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `f6_results_report.py:602` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `f6_results_report.py:603` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `floatfea/checks/api_wsd.py:561` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `floatfea/checks/api_wsd.py:562` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `floatfea/checks/api_wsd.py:563` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `floatfea/checks/api_wsd.py:564` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `floatfea/tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `scripts/measure/api_wsd_utilisation.py:205` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `scripts/measure/api_wsd_utilisation.py:206` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `scripts/measure/api_wsd_utilisation.py:207` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `scripts/measure/api_wsd_utilisation.py:208` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `scripts/measure/api_wsd_utilisation.py:209` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `scripts/measure/api_wsd_utilisation.py:229` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `scripts/measure/f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R978 | `tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `api_wsd_utilisation.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `api_wsd_utilisation.py:56` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `api_wsd_utilisation.py:164` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `api_wsd_utilisation.py:165` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `api_wsd_utilisation.py:166` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `api_wsd_utilisation.py:167` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `api_wsd_utilisation.py:168` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `api_wsd_utilisation.py:169` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `api_wsd_utilisation.py:170` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `api_wsd_utilisation.py:171` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `api_wsd_utilisation.py:172` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `api_wsd_utilisation.py:173` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `api_wsd_utilisation.py:174` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `api_wsd_utilisation.py:175` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `api_wsd_utilisation.py:176` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `api_wsd_utilisation.py:177` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `api_wsd_utilisation.py:178` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `floatfea/post/forces_table.py:435` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `floatfea/post/forces_table.py:504` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `floatfea/run/config.py:419` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R979 | `member_forces_table.py:161` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R980 | `scripts/measure/f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R981 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R981 | `api_wsd_utilisation.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R981 | `api_wsd_utilisation.py:241` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R981 | `f6_results_report.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R981 | `f6_results_report.py:250` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R981 | `f6a_premise_check.py:360` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R981 | `f6a_report.py:411` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R981 | `f6a_required_section.py:575` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R981 | `f6b_report.py:414` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R981 | `f6b_truss_sizing.py:679` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R981 | `member_forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R981 | `member_forces_table.py:461` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R981 | `tests/regression/test_generators_refuse_mismatched_inputs.py:89` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R983 | `api_wsd_utilisation.py:61` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R985 | `docs/SUPERVISOR.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R986 | `docs/directives/FT.md:17` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R986 | `docs/directives/FT.md:18` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R986 | `docs/directives/FT.md:19` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R986 | `docs/directives/FT.md:20` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R986 | `docs/directives/FT.md:21` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R986 | `docs/directives/FT.md:22` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R986 | `docs/directives/FT.md:23` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R986 | `docs/directives/FT.md:24` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R986 | `docs/milestones/F6.md:102` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R986 | `f6_results_report.py:795` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R986 | `f6_results_report.py:796` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R986 | `f6_results_report.py:797` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R986 | `f6_results_report.py:1219` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R986 | `f6_results_report.py:1220` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R986 | `f6_results_report.py:1221` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R986 | `f6_results_report.py:1222` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R986 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R987 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R987 | `docs/milestones/R1.md:356` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R987 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R987 | `scripts/export_f4_dynamic_inputs.py:104` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R987 | `scripts/export_f4_dynamic_inputs.py:524` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R987 | `scripts/report_joint_reactions.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R988 | `floatfea/run/config.py:419` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R990 | `CLAUDE.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R990 | `docs/reports/R1/step-2-answers.json` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R990 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `docs/directives/FT.md:21` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `docs/directives/FT.md:22` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `docs/directives/FT.md:23` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `docs/directives/FT.md:24` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `docs/directives/FT.md:25` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `docs/directives/FT.md:26` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `docs/directives/FT.md:27` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `docs/directives/FT.md:28` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `f6_results_report.py:981` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `f6_results_report.py:1537` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `f6_results_report.py:1538` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `f6_results_report.py:1539` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `f6_results_report.py:1540` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `f6_results_report.py:1541` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `f6_results_report.py:1542` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `f6_results_report.py:1543` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `f6_results_report.py:1544` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `f6_results_report.py:1545` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `f6_results_report.py:1546` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `f6_results_report.py:1547` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R991 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `api_wsd_utilisation.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `api_wsd_utilisation.py:125` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `api_wsd_utilisation.py:126` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `api_wsd_utilisation.py:127` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `api_wsd_utilisation.py:128` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `api_wsd_utilisation.py:129` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `api_wsd_utilisation.py:130` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `api_wsd_utilisation.py:131` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `api_wsd_utilisation.py:132` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `api_wsd_utilisation.py:166` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `api_wsd_utilisation.py:167` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `api_wsd_utilisation.py:168` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `api_wsd_utilisation.py:169` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `api_wsd_utilisation.py:170` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `api_wsd_utilisation.py:171` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `api_wsd_utilisation.py:172` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `f6_results_report.py:926` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `f6_results_report.py:1459` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `f6_results_report.py:1461` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/checks/api_wsd.py:561` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/checks/api_wsd.py:562` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/checks/api_wsd.py:563` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/checks/api_wsd.py:564` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:389` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:390` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:391` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:392` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:393` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:394` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:395` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:396` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:397` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:398` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:399` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:400` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:401` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:402` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:403` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:404` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:405` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:406` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `floatfea/post/forces_table.py:407` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `member_forces_table.py:777` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `results/F6/floatfea_results_report.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R992 | `tolerances.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R994 | `floatfea/model/platform.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R996 | `docs/reports/R1/step-2-answers.json` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R996 | `docs/reviews/R1/step-3.md` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R996 | `tests/test_report_guard_states.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R999 | `docs/F4_member_forces.csv` | the file is untouched | **newly visible under R1128** -- no change at that exact site; carried by name in §7, unswept (ES0) |
+| R999 | `floatfea/cli.py:193` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R999 | `floatfea/cli.py:194` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R999 | `scripts/measure/member_forces_table.py:505` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R999 | `scripts/measure/member_forces_table.py:506` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+| R999 | `test_r1_example_golden.py` | the file is untouched | no change at that exact site; carried by name in §7, unswept (ES0) |
+
+## 9. The schedule, and what closes with this step
+
+*The one hand-written paragraph this report is allowed. Everything else above
+and below is a generated section or a `claim/cmd/out` triple.*
+
+**Measured against 10 November (FW0), and it holds.** Today is 3 November, so
+seven days remain. **This is revision 3 of the three ES0 allows, so the step
+closes after this verdict whatever it says** — a blocking item still open at
+that point carries by name into step 4's `Carried` section and stays blocking
+there, and closure items go into the closure artifact as a list. Step 4 is the
+guide and the witness, and the plan's own estimate is one and a half to two
+days including writing `docs/USER_GUIDE.md`, which does not yet exist. Seven
+days against two days of step 4 is headroom, not a slip, so **nothing is
+escalated under FZ (e)**. **For Xabier, the sentence FT2.5 owes him and which
+R1121 closed, repeated here because this is the last revision and it should not
+need looking up: the FT2.5 sizing grid is TUBES — `docs/milestones/R1.md`
+section 4 fixes the candidate grid as the configuration's declared section
+list — and the truss resolution published beside it is REPORTED at the accepted
+tube's member forces and is NOT RE-SOLVED, so nothing in `truss_sizing.md`
+certifies the truss against API RP 2A-WSD as a structure.** I will not call the
+margin comfortable. Across verdicts 45 and 46, seven findings were one defect —
+a needle that cannot match the next shape of the thing it looks for — and four
+of those seven were inside the repair of the previous one. Two of them were
+mine in this step alone.
+
+```
+claim  the verdicts this step's revisions answered, and the FT2.5 ruling the
+       disclosure sentence above belongs to
+cmd    grep -h "^Answers: verdict" docs/reports/R1/step-3.md
+out    Answers: verdict 44 @ 6f14aba
+       Answers: verdict 45 @ 903f38b
+       Answers: verdict 46 @ 1d23985
+cmd    grep -c "FT2.5" the step-3 verdict -- the ruling is recorded in
+       the VERDICTS, not in the plan, where the same grep returns 0
+out    74
+
+claim  the plan's own estimate for step 4 is the sentence quoted above
+cmd    grep -n "one and a half to two days" docs/milestones/R1.md
+out    52:revisions, FL3 one and a half to two days including writing `docs/USER_GUIDE.md`, which
+rule   BF0: an estimate quoted from a plan is a fact about this repository and
+       carries the check that would refute it
+
+claim  and the file that estimate is about still does not exist
+cmd    test -e docs/USER_GUIDE.md && echo PRESENT || echo ABSENT
+out    ABSENT
+
+claim  the disclosure sentence is not a new claim -- its substance is in the
+       tree, in those words
+cmd    grep -n "declared section list" floatfea/cli.py floatfea/run/config.py
+out    floatfea/cli.py:942:        "configuration's declared section list. The truss resolution in the tables further",
+       floatfea/run/config.py:541:    configuration's declared section list. The truss is REPORTED at the accepted tube's
+       floatfea/run/config.py:647:    -- "the candidate grid is the config's declared section list" -- and that is also why
+```
+
+## 10. What this revision got wrong about itself
+
+*Three things, and the first is a finding verdict 46 made against a sentence I
+had written as measured.*
+
+**1. SR-16's reason was wrong, and the measurement that was missing is the one
+nobody chose (R1136).** I wrote that §0a's figure and revision 2's `Answers:`
+header "are one commit by construction", and gave a cell for it. The cell ran
+one arm: append a comment line to the report WITHOUT the header, and the
+newest-verdict guard goes red. Verdict 46 ran the arm I did not.
+
+```
+claim  the second arm is green, so "it could not go there" is false
+cmd    at `fcfb770`: §0a's 1915 corrected AND a revision-2 `Answers: verdict 45
+       @ 903f38b` header opened, in the same commit
+out    test_the_answered_verdict_is_the_NEWEST_one   1 passed
+cell   ONE VARIABLE against my own arm: the header is present
+rule   BG0: one variable moved, everything else held, or the sentence is
+       rewritten as the bare measurement with no cause attached
+judge  **my arm was correct and my conclusion did not follow from it.** Showing
+       that A alone is red does not show that A and B cannot be done together;
+       it shows that A alone is red. The honest statement is the bare one: the
+       figure moved one commit later, the commit in between said it was wrong,
+       and BP0 is satisfied at the judged commit. SR-16 in
+       `docs/directives/FZ.md` is corrected to say that, and to record that
+       its stated reason was refuted rather than quietly dropping it.
+```
+
+**2. My weakening check for R1128 used the wrong predicate and would have
+reported a hole that is not there.** It tested `pathlib.Path(p).exists()`
+instead of `_is_a_site`.
+
+```
+claim  the wrong predicate flags sites the right one accepts
+cmd    the new-class sites with no separator and not present on disk
+out    43 flagged, of the 95 measured at that commit
+cmd    the same sites against `_is_a_site`, which asks for a separator OR a
+       path tracked at the reviewed commit
+out    0 -- every bare basename among them IS tracked, because
+       `_tracked_at_reviewed` matches by SUFFIX, so `ci.yml` counts via
+       `.github/workflows/ci.yml`
+rule   EH4: the weakening side is solved against the rule the gate uses, not
+       against one that resembles it
+judge  the behaviour is pre-existing and the widening did not introduce it.
+       Had I published the first figure it would have been a hole reported
+       against my own repair that does not exist.
+``` `_is_a_site` does not ask that:
+it asks for a separator OR a tracked path, and `_tracked_at_reviewed` matches
+by suffix, so bare `ci.yml` legitimately counts via `.github/workflows/ci.yml`.
+Against the real predicate the answer is zero. **Second time in two revisions
+that a probe of mine used a rule adjacent to the real one** — the first found
+six harness sections for seven failures by splitting on `^_{3,}` when pytest
+pads a long name with a single underscore.
+
+**3. The check I wrote to prevent R1133 disagreed with the data it was
+checking.** R1133 was a typed count that did not match its list, so I derived
+the count with `len()`. Then I verified it by counting lines starting `R11`,
+which also matched the prose line "R1122 and R1123 point at §6" — 12 against
+11. The data was right both times and the needle was wrong, inside the fix for
+a finding about exactly that.
+
+```
+claim  the three above are each a MEASUREMENT that corrected a claim of mine,
+       not a list of regrets
+cmd    the count of findings in verdicts 45 and 46 that are one defect -- a
+       needle too narrow or too wide for the shape it looks for
+out    seven of the two verdicts' findings, four of them inside the repair of
+       the previous one
+judge  the transferable form is not about regexes. Every one of these was
+       verified by running the needle over the shapes its author already knew.
+       The only thing that found any of them was running it over a shape
+       nobody had chosen -- which is what the corpus exists for and what the
+       pause has suspended.
 ```

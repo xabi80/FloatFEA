@@ -411,7 +411,7 @@ reading; both were caught by `test_the_answered_verdict_is_the_NEWEST_one`, whic
 only once the report commit existed — CZ1's reusable half, since the comparison is
 between the report's commit and the verdict's.
 
-**SR-16: BP0 asked for §0a's figure in the repair commit and it could not go there.**
+**SR-16: BP0 asked for §0a's figure in the repair commit, and it moved one commit later. ITS STATED REASON WAS REFUTED BY VERDICT 46 (R1136) — see the correction below; the ruling stands and the reason does not.**
 *Ruling applied:* FZ rule 1 (what blocks: FR1 only) and FZ rule 7 (ambiguous wording
 resolved toward existing conventions).
 *Why:* verdict 45's closing condition for R1119 says "section 0a's figure for `64af726`
@@ -425,10 +425,34 @@ subject is not its own commit, so under FS1/FT1 it **blocks**, and no revision e
 that could clear it. So the figure moved one commit later, the repair commit's own message
 said it was known wrong in between and why, and revision 2 carries it.
 
-**The reusable half:** "in the same commit" is a reasonable instruction that two other
-rules make impossible to obey here. Resolving it toward the convention — a report revision
-is a unit, and a figure inside one moves with its header — was the only reading that did
-not ship a blocking red to buy a correct figure one commit earlier.
+**The reusable half, as originally written:** "in the same commit" is a reasonable
+instruction that two other rules make impossible to obey here. Resolving it toward the
+convention — a report revision is a unit, and a figure inside one moves with its header —
+was the only reading that did not ship a blocking red to buy a correct figure one commit
+earlier.
+
+**CORRECTION, R1136 (verdict 46). The paragraph above is wrong and it is left standing so
+that is visible.** Verdict 46 ruled BP0 **satisfied** at the judged commit and declined to
+make the one-commit lag a finding — the figure is script-regenerated where the run belongs
+and the commit in between says in its own message that it was wrong, which is the opposite
+of the failure BP0 exists for. What it found instead is that *the reason was never
+established*:
+
+    cmd   at `fcfb770`: §0a's 1915 corrected AND a revision-2
+          `Answers: verdict 45 @ 903f38b` header opened, in the SAME commit
+    out   test_the_answered_verdict_is_the_NEWEST_one   1 passed
+    cell  one variable against my own arm: the header is present
+
+My cell appended a comment line to the report **without** the header and showed the guard
+red. That is a true measurement and the conclusion drawn from it does not follow: showing
+that A alone is red does not show that A and B cannot be done together. **The two rules did
+not make the instruction impossible to obey; I did not test the configuration the
+instruction implied.** That is EU1's lesson in a round with no tolerance in it — the
+adversarial case is the one nobody chose — and it is the second time in this step that a
+cell of mine measured one arm and a sentence of mine claimed both.
+
+What survives: the figure moved one commit later, the commit in between disclosed it, and
+BP0 is satisfied. What does not: "it could not go there".
 
 **SR-17: a seventh copy of the finding anchor, ruled blocking-class and repaired at once.**
 *Ruling applied:* FZ rule 5 (self-found defect: fixed, named test row) and FZ rule 1.
@@ -479,3 +503,46 @@ condition (iii) — the `a2c3f5c` run still yields exactly 1893 — confirmed th
 generator rather than through the regex. §0a changed by **five lines**: the figure, the two
 ids the old reader could not name, and one table row for a run that did not exist when
 revision 1 was committed.
+
+**SR-21: R1128 closed by WIDENING the gate, not by narrowing the heading.**
+*Ruling applied:* FZ rule 1 (what blocks: FR1 only) and FZ rule 3 (unconservative
+physics — here, an unconservative GATE — is fixed rather than documented around).
+*Why:* verdict 46 offered both and called them equally acceptable, refusing only "the
+universal heading over the narrow set". Narrowing would have left the gate structurally
+unable to see a site in a published deliverable — `results/F6b/truss_sizing.csv`,
+`docs/F4_member_forces.csv`, `docs/F6_utilisation.csv` — which is the EZ0 class CZ0 was
+amended to protect and the most important kind of site there is. The two copies of the
+decision already disagreed by `yml`, so there was no designed domain to preserve, and the
+pattern's own comment cites C119/R641 as a parser repair under EK2. **And the list was
+derived rather than taken:** path-shaped tokens with ANY extension are dominated by
+non-files (`cd6d6fe..HEAD` 416 times, plus hundreds of attribute accesses), so an
+enumerated class is the design and extending the enumeration is the repair. Each of the
+six added names a real path.
+
+**SR-22: the eleven closure items were fixed in revision 3 rather than deferred to the
+closure commit.**
+*Ruling applied:* FZ rule 5 (self-found defect: fixed with a named test row) read
+together with CZ0's closure-item rule.
+*Why:* CZ0 says a closure item is fixed once in the closure commit and not re-reviewed
+item by item. **Revision 3 is the last revision ES0 allows**, so there is no later
+reviewed round, and several of the eleven are wrong published figures in sections this
+revision regenerates anyway — a stale `1915`, a needle whose `out` describes a different
+set, a count that does not match its list, and a section claiming a repair that was not
+there. Leaving a sentence I know to be false inside a section I am rewriting is worse than
+the round it would cost, and the closure artifact will carry the list regardless.
+
+**SR-23: R1134 closed by MARKING the figure's commit rather than re-taking it.**
+*Ruling applied:* FZ rule 6 (derived values marked in human-readable outputs only) and
+FZ rule 7.
+*Why:* the condition allowed either. Revision 1's §10 is prose about what revision 1
+measured; re-taking the number inside a closed revision's prose would make the report say
+revision 1 had seen a figure it had not. Revision 1's §0a was regenerated because it is a
+GENERATED section whose rule moved — BP0's actual subject — and §10 is not.
+
+**SR-24: R1135 closed WITHOUT adding an id-shaped requirement to the reader.**
+*Ruling applied:* FZ rule 7 (ambiguous wording resolved toward existing conventions).
+*Why:* the condition allowed "or the reader requires the name to look like an id".
+Requiring a double colon would be a second predicate on a reader whose live domain is
+measured clean at 0 of 3810 real names, and this step has already produced three findings
+of the form "a narrower predicate opened a hole the looser one covered". The sentence is
+reduced to the shapes measured instead, and names what it does not check.

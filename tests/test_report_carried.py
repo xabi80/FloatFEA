@@ -220,7 +220,21 @@ REPORT = REPORTS / f"step-{STEP}.md"
 # `**R12.` and `**R12 ` both open a finding: the missing dot dropped one silently.
 # R1117: accepts a markdown heading as well as bold. See
 # `scripts/carried_table.py` for the measurement and why six copies.
-_FINDING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)[.\s]", re.MULTILINE)
+#
+# AND A COMMA COUNTS, UNLESS ANOTHER R ID FOLLOWS IT (R1138). `[.\s]` refused
+# `**R1136, and it is ...`, which is how verdict 46 wrote one of its OWN
+# findings -- so R1136 had no id in any anchor's set, no row in the generated
+# Carried table, and `check_carried` printed "all 278 findings carried" while
+# a finding of the newest verdict was missing from the set. That is the third
+# form of one defect: R1118 was the heading prefix, R1120 the moved dot, this
+# is the separator.
+#
+# `,(?!\s*R\d)` is the whole of it. A heading whose subject opens with a comma
+# is admitted; a comma LIST of ids -- `**R950, R951 AND R952 ...` -- is still
+# refused, which is what the other anchors were right to refuse all along.
+# Measured over the verdict file: ids 278 -> 279, gained exactly `R1136`, and
+# the set of ids LOST is empty.
+_FINDING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)(?:[.\s]|,(?!\s*R\d))", re.MULTILINE)
 _MENTION = re.compile(r"\bR\d+\b")
 # `path/to/file.py:123` or `:123-145`, as the verdicts write them.
 # The leading dot of `.claude/...` is part of the path; a word boundary before
@@ -244,8 +258,28 @@ _MENTION = re.compile(r"\bR\d+\b")
 #
 # KNOWN AND ACCEPTED: a genuine first segment of the form `R<digits>-` would be
 # stripped. No path in this repository has one.
+#
+# THE EXTENSION CLASS IS ENUMERATED, AND THESE ARE THE ELEVEN (R1128). It was
+# `py|md|sh|txt|json`, which no comment justified, and the copy in
+# `scripts/carried_table.py` already carried `yml` as well -- so the two
+# disagreed and this was drift, not a designed domain. A site named in a
+# `.csv` could not enter `SITES` AT ALL, so a closing condition naming a
+# published CSV deliverable produced no parametrised case and read as answered
+# however the diff turned out. R1106's own block names both siblings, and this
+# gate read the `.json` and not the `.csv` -- the `.csv` being the file
+# R1106's silently-wrong-result sentence is about.
+#
+# OPEN-ENDED IS NOT THE ANSWER and the measurement says why: over the verdict
+# file, path-shaped tokens with ANY extension are dominated by things that are
+# not files -- `cd6d6fe..HEAD` 416 times, plus `np.array`, `math.sqrt`,
+# `cfg.load_cases.govern` and hundreds more attribute accesses. An enumerated
+# class is the design; extending the enumeration is the repair (EK2), and each
+# of the six added names a real path in the verdicts: `.csv` 201 occurrences,
+# `.npz` 103, `.yml` 28, `.yaml` 19, `.toml` 1 (`pyproject.toml`), `.xml` 1
+# (`leg/regression.xml`). `_is_a_site` is UNCHANGED, so a bare `a.npz` with no
+# separator still has to be tracked to count, and `frames.txt` stays out.
 _SITE = re.compile(
-    r"(?<![\w.-])(?:R\d+-)*((?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|json))"
+    r"(?<![\w.-])(?:R\d+-)*((?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|json|csv|yml|yaml|npz|toml|xml))"
     r"(?::(\d+)(?:-(\d+))?)?"
 )
 

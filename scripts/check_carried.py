@@ -41,7 +41,21 @@ ROOT = Path(__file__).resolve().parents[1]
 # finding of the two newest verdicts while reporting `all 250 findings
 # carried` and exiting 0. Half a repair that reports success is worse than
 # none. Now identical to `carried_table.FINDING`.
-_FINDING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)[.\s]", re.MULTILINE)
+#
+# AND A COMMA COUNTS, UNLESS ANOTHER R ID FOLLOWS IT (R1138). `[.\s]` refused
+# `**R1136, and it is ...`, which is how verdict 46 wrote one of its OWN
+# findings -- so R1136 had no id in any anchor's set, no row in the generated
+# Carried table, and `check_carried` printed "all 278 findings carried" while
+# a finding of the newest verdict was missing from the set. That is the third
+# form of one defect: R1118 was the heading prefix, R1120 the moved dot, this
+# is the separator.
+#
+# `,(?!\s*R\d)` is the whole of it. A heading whose subject opens with a comma
+# is admitted; a comma LIST of ids -- `**R950, R951 AND R952 ...` -- is still
+# refused, which is what the other anchors were right to refuse all along.
+# Measured over the verdict file: ids 278 -> 279, gained exactly `R1136`, and
+# the set of ids LOST is empty.
+_FINDING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)(?:[.\s]|,(?!\s*R\d))", re.MULTILINE)
 _MENTION = re.compile(r"\bR\d+\b")
 
 

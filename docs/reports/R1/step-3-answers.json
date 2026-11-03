@@ -3,21 +3,35 @@
     "POINTERS ONLY (CH4). No prose here -- every row points at the section",
     "that discusses it, and the guard checks that the section MENTIONS the id.",
     "",
-    "R1 STEP 3, REVISION 1 of the three ES0 allows. Answers the ADDENDUM at",
-    "6f14aba -- an ES0 interim check too, which adds one finding against the",
-    "REVIEWER and changes no disposition: the HOLD stands on R1106 alone.",
+    "R1 STEP 3, REVISION 3 of the three ES0 allows -- the LAST one, so the",
+    "step closes after it. Answers verdict 46 at 1d23985, which ruled 2ead3d6",
+    "HOLD on one blocking finding (R1128) with one FF0 item (R1129) and eight",
+    "closure items (R1130 to R1137).",
     "",
-    "THREE ITEMS ARE ANSWERED IN THIS REVISION AND THEY ARE THE VERDICT'S OWN:",
+    "11 ITEMS ARE ANSWERED IN THIS REVISION -- the count on this line is",
+    "DERIVED from the list below rather than typed, which is R1133: the",
+    "previous block said THREE and listed four, and described revision 1",
+    "while the file was revision 2's.",
     "",
-    "  R1106  BLOCKING. FY3's supersession reached one artifact of three.  -> §2",
-    "  R1107  FF0. The hook's target class could not see a clobber redirect. -> §3",
-    "  R1108  FF0. A rung-3 class label transferred to another entry.      -> §4",
-    "  R1117  THE ADDENDUM'S OWN, against the reviewer. No repair owed.   -> §5a",
+    "  R1125  Its second half -- section 0a's rule sentence -- is repaired at the generator.         -> §4",
+    "  R1128  BLOCKING. `_SITE` admitted five extensions, so no site in a .csv could enter the gate. -> §2",
+    "  R1129  FF0. R1120's own repair widened past the other anchors; eight findings flipped class.  -> §3",
+    "  R1130  R1125's second half was open and section 6 said it was repaired.                       -> §4",
+    "  R1131  Section 1's scope triple was stale at the commit that shipped it.                      -> §4",
+    "  R1132  Section 4's needle selected 15 headings where the out field said seven.                -> §4",
+    "  R1133  This block described revision 1 and its count did not match its list.                  -> §4",
+    "  R1134  Revision 1's section 10 published 1915 for a command that now prints 1917.             -> §4",
+    "  R1135  Section 2's weakening sentence was wider than what was measured.                       -> §4",
+    "  R1136  SR-16's reason was not established: the second arm was never run.                      -> §4",
+    "  R1137  Section 0 published two skipped jobs as zeros under '0 not green'.                     -> §4",
+    "",
+    "CLOSED BY VERDICT 46, each verified by the reviewer running something",
+    "rather than by reading the report: R1119, R1120, R1121, R1124, R1126, R1127.",
+    "CLOSED BY VERDICT 45 before it: R1106, R1107, R1108, R1117.",
+    "They point at §7, which carries each by name with its disposition.",
     "",
     "EVERY OTHER ROW POINTS AT §7, which carries them BY NAME AND UNSWEPT.",
-    "That is ES0's own disposition for an interim check -- the reviewer wrote",
-    "'L47-L56, L58 carry by name, unswept (ES0)' and this revision does not",
-    "pretend to have swept them. §7 names each one so the pointer is real.",
+    "R1122 and R1123 point at §6 and are the ledger rows still open.",
     "",
     "The row set is the UNION of what carried_table.py produces and what",
     "check_carried.py demands, because C15 records that the two differ by",
@@ -1113,16 +1127,16 @@
       "where": "§7"
     },
     "R1119": {
-      "state": "answered",
-      "where": "§2"
+      "state": "carried",
+      "where": "§7"
     },
     "R1120": {
-      "state": "answered",
-      "where": "§3"
+      "state": "carried",
+      "where": "§7"
     },
     "R1121": {
-      "state": "answered",
-      "where": "§9"
+      "state": "carried",
+      "where": "§7"
     },
     "R1122": {
       "state": "later",
@@ -1133,12 +1147,60 @@
       "where": "§6"
     },
     "R1124": {
-      "state": "later",
-      "where": "§6"
+      "state": "carried",
+      "where": "§7"
     },
     "R1125": {
-      "state": "later",
-      "where": "§6"
+      "state": "answered",
+      "where": "§4"
+    },
+    "R1128": {
+      "state": "answered",
+      "where": "§2"
+    },
+    "R1129": {
+      "state": "answered",
+      "where": "§3"
+    },
+    "R1130": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R1131": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R1132": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R1133": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R1134": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R1135": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R1136": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R1137": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R1126": {
+      "state": "carried",
+      "where": "§7"
+    },
+    "R1127": {
+      "state": "carried",
+      "where": "§7"
     }
   }
 }

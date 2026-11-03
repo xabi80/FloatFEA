@@ -96,9 +96,27 @@ from pathlib import Path
 # them means the test importing the scripts at module scope -- restructuring
 # a guard, which is not a repair. The drift risk is carried as a ledger row.
 HEADING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)\.?\s*\(([^)]*)\)", re.MULTILINE)
-FINDING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)[.\s]", re.MULTILINE)
+#
+# AND A COMMA COUNTS, UNLESS ANOTHER R ID FOLLOWS IT (R1138). `[.\s]` refused
+# `**R1136, and it is ...`, which is how verdict 46 wrote one of its OWN
+# findings -- so R1136 had no id in any anchor's set, no row in the generated
+# Carried table, and `check_carried` printed "all 278 findings carried" while
+# a finding of the newest verdict was missing from the set. That is the third
+# form of one defect: R1118 was the heading prefix, R1120 the moved dot, this
+# is the separator.
+#
+# `,(?!\s*R\d)` is the whole of it. A heading whose subject opens with a comma
+# is admitted; a comma LIST of ids -- `**R950, R951 AND R952 ...` -- is still
+# refused, which is what the other anchors were right to refuse all along.
+# Measured over the verdict file: ids 278 -> 279, gained exactly `R1136`, and
+# the set of ids LOST is empty.
+FINDING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)(?:[.\s]|,(?!\s*R\d))", re.MULTILINE)
 MENTION = re.compile(r"\bR\d+\b")
-SITE = re.compile(r"((?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|json|yml))")
+# R1128: the same eleven extensions as `tests/test_report_carried.py`'s `_SITE`.
+# These two copies differed by `yml` until that finding, which is how the drift
+# was found: the generator validating a declared site accepted a `.yml` and the
+# gate checking it could not see one.
+SITE = re.compile(r"((?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|json|csv|yml|yaml|npz|toml|xml))")
 
 
 def classify(verdict_text: str) -> dict[str, str]:

@@ -628,14 +628,31 @@ def report_only_section(number: str, sha: str) -> str:
         "| job | passed | failed | skipped |",
         "|---|---|---|---|",
     ]
-    red = []
+    red: list[str] = []
+    skipped: list[str] = []
     for job in jobs:
         name = job["name"]
         pa, fa, sk = measured.get(name, (0, 0, 0))
         lines.append(f"| {name} | {pa} | {fa} | {sk} |")
         if job["conclusion"] not in ("success", "skipped"):
             red.append(f"{name} ({job['conclusion']})")
+        elif job["conclusion"] == "skipped":
+            skipped.append(name)
     lines += ["", f"**Job conclusions: {len(jobs)} jobs, {len(red)} not green.**"]
+    # A SKIPPED JOB IS UNAVAILABLE, NOT PASSING (R1137). It is excluded from
+    # `red` -- correctly, because it measured nothing and reading it as a
+    # failure would HOLD a step on a job that never ran -- but then it sits in
+    # the table as `0 | 0 | 0` under "0 not green" with nothing saying so, and
+    # a reader counts it among the greens. That is the distinction CK2 draws
+    # and the table collapsed it.
+    if skipped:
+        lines += [
+            "",
+            f"**{len(skipped)} job(s) SKIPPED, so unavailable rather than passing:**"
+            f" {', '.join(f'`{s}`' for s in skipped)}."
+            " A skipped job measured nothing; its zeros are an absence of"
+            " evidence and not a pass.",
+        ]
     if red:
         lines.append("")
         lines += [f"- {r}" for r in red]
@@ -729,14 +746,31 @@ def section() -> str:
         "| job | passed | failed | skipped |",
         "|---|---|---|---|",
     ]
-    red = []
+    red: list[str] = []
+    skipped: list[str] = []
     for job in jobs:
         name = job["name"]
         p, f, s = measured.get(name, (0, 0, 0))
         lines.append(f"| {name} | {p} | {f} | {s} |")
         if job["conclusion"] not in ("success", "skipped"):
             red.append(f"{name} ({job['conclusion']})")
+        elif job["conclusion"] == "skipped":
+            skipped.append(name)
     lines += ["", f"**Job conclusions: {len(jobs)} jobs, {len(red)} not green.**"]
+    # A SKIPPED JOB IS UNAVAILABLE, NOT PASSING (R1137). It is excluded from
+    # `red` -- correctly, because it measured nothing and reading it as a
+    # failure would HOLD a step on a job that never ran -- but then it sits in
+    # the table as `0 | 0 | 0` under "0 not green" with nothing saying so, and
+    # a reader counts it among the greens. That is the distinction CK2 draws
+    # and the table collapsed it.
+    if skipped:
+        lines += [
+            "",
+            f"**{len(skipped)} job(s) SKIPPED, so unavailable rather than passing:**"
+            f" {', '.join(f'`{s}`' for s in skipped)}."
+            " A skipped job measured nothing; its zeros are an absence of"
+            " evidence and not a pass.",
+        ]
     if red:
         lines.append("")
         for r in red:
@@ -798,10 +832,19 @@ def rounds_runs(sha: str) -> list[dict]:
 def outcome(run: dict) -> str:
     """What a run DID, in the only words this repository uses for it.
 
-    A RUN THAT DID NOT COMPLETE HAS NO RESULT (CX0). `cancelled`, `queued`
-    and `in_progress` are states, not outcomes: a cancelled run reached no
-    verdict on anything, so reporting it as a failure attributes a reason it
-    never got to. It renders as `no result` and carries no job lines at all.
+    A RUN THAT REACHED NO CONCLUSION ABOUT THE CODE HAS NO RESULT (CX0).
+    `cancelled`, `queued` and `in_progress` are states, not outcomes: such a
+    run reached no verdict on anything, so reporting it as a failure
+    attributes a reason it never got to. It renders as `no result` and
+    carries no job lines at all.
+
+    "DID NOT COMPLETE" WAS THE WRONG GROUND AND IT WAS FALSE AT ITS OWN
+    BOUNDARY (R1130). A cancelled run IS `completed` -- `status "completed",
+    conclusion "cancelled"` is exactly what GitHub reports, and it is the
+    case this function exists for, so the sentence excluded its own main
+    subject. The test is whether a conclusion was reached ABOUT THE CODE,
+    which is why the second branch below reads `cancelled` as no result even
+    though its status is `completed`.
     """
     if run["status"] != "completed":
         return f"**no result** (status `{run['status']}`)"
@@ -819,9 +862,11 @@ def rounds_section(sha: str, number: str) -> str:
         _generated_by(number, sha, " --rounds")
         + " Every run whose head is a commit in this round, from"
         " `gh run list --json databaseId,event,conclusion,status,headSha`."
-        " A run that did not complete has **no result** and no job lines:"
-        " it reached no verdict on anything, so no reason is attributed to"
-        " it (CX0, R449).",
+        " A run that reached no conclusion ABOUT THE CODE -- cancelled, or"
+        " still running -- has **no result** and no job lines: it reached no"
+        " verdict on anything, so no reason is attributed to it. A cancelled"
+        " run IS `completed`, which is why the test is the conclusion and not"
+        " the status (CX0, R449, R1130).",
         "",
         "| run | event | head | outcome |",
         "|---|---|---|---|",
