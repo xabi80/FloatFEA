@@ -41,7 +41,7 @@ from floatfea.run.truss import (
     inclined_face_length,
     resolve_group,
 )
-from floatfea.tolerances import TRUSS_FACE_CLOSURE_RELATIVE_COUNTER, TRUSS_FACE_CLOSURE_RELATIVE
+from floatfea.tolerances import TRUSS_FACE_CLOSURE_RELATIVE, TRUSS_FACE_CLOSURE_RELATIVE_COUNTER
 
 ROOT = Path(__file__).resolve().parents[2]
 EXAMPLE = ROOT / "examples" / "platform12_placeholder.yaml"

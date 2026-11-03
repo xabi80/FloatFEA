@@ -329,21 +329,27 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
     args = ap.parse_args(argv)
-    # R902 / R903: through the one validated door (R896), so this reader and
-    # `floatfea run` cannot disagree about the same recorded sidecar.
-    _basis = wave_basis_from_sidecar(args.provenance)
-    h_full = float(_basis["wave_height_full_m"])
-
     import f4_dynamic_residual as fdr
 
-    inp = fdr.load()
-    raw = np.load(fdr.NPZ, allow_pickle=False)
     # R908: ONE RESOLVED SCALE, not the sidecar's copy of it. This read was
     # `float(_basis["lambda"])`, which made a published CSV's Froude scale the sidecar's
     # `run.lambda` with nothing comparing it against the npz's own key -- 2402 diff lines
     # and governing ROOT stress 455.7 -> 275.3 MPa at `run.lambda = 25.0`, at exit 0.
     # R927: THE SAME RECORD the height came from, not `fdr.NPZ`'s own sidecar.
+    #
+    # **AND IT IS RESOLVED BEFORE THE BASIS, BECAUSE THE BASIS IS RESOLVED AGAINST IT.**
+    # FY2 made the height pair depend on `run.lambda`, so with the scale unreconciled
+    # this generator refused a disagreeing pair by naming the two HEIGHTS -- the two
+    # numbers that are right -- and said nothing about the lambda that is wrong. The
+    # import moves up with the call because the call needs `fdr.NPZ`.
     lam_scale = validated_export_scale(fdr.NPZ, args.provenance)
+    # R902 / R903: through the one validated door (R896), so this reader and
+    # `floatfea run` cannot disagree about the same recorded sidecar.
+    _basis = wave_basis_from_sidecar(args.provenance)
+    h_full = float(_basis["wave_height_full_m"])
+
+    inp = fdr.load()
+    raw = np.load(fdr.NPZ, allow_pickle=False)
     # R907: THE CAVEAT BLOCK STATES WHICH PERIODS ARE WHERE, AT ONE HEIGHT. Two entries
     # name `H = 24.2 m`, `sqrt(6.5*H) = 12.542 s` and the exact governing set, and they
     # are published verbatim into the summary. R902 made the band track the recorded

@@ -455,7 +455,6 @@ def main(argv: list[str] | None = None) -> int:
     # `prov["run"]`, so a sidecar `floatfea run` REFUSES by name was accepted here at exit
     # 0 and written into a deliverable: measured at `full=-24.2, model=-0.484`, which
     # published "wave height, full scale  : -24.2 m (-0.484 m model, ...)".
-    basis = wave_basis_from_sidecar(args.provenance)
     # R926: THE SCALE IS RESOLVED, NOT ECHOED. This report printed
     # `Froude lambda = {run['lambda']}` straight from the sidecar with nothing comparing
     # it against the npz's own key, so `run.lambda = 25.0` beside an npz recording `50.0`
@@ -463,7 +462,16 @@ def main(argv: list[str] | None = None) -> int:
     # `member_forces_table.py` refused the identical pair. Same quantity, same file pair,
     # two readers, opposite outcomes: that is R908 again at a site R908's own repair did
     # not reach, because the test holding it listed two filenames by hand.
+    #
+    # **AND IT IS RESOLVED FIRST, BECAUSE THE BASIS IS RESOLVED AGAINST IT.** This call
+    # sat BELOW the basis one, and `pipeline.py` said so in a comment that called the
+    # order a thing that "happens to" hold. FY2 then made the height pair depend on
+    # `run.lambda`: with the scale unreconciled, this generator refused the disagreeing
+    # pair by naming the two HEIGHTS -- the two numbers that are right -- and said
+    # nothing about the lambda that is wrong. Resolving the scale first makes the
+    # refusal name the record that has to be repaired.
     lam_scale = validated_export_scale(args.npz, args.provenance)
+    basis = wave_basis_from_sidecar(args.provenance)
     # **R938: THE THREE INPUTS ARE NOW JOINED.** This report resolves the scale from
     # `--npz`, the basis from `--provenance` and every force from `--forces`, and joined
     # none of them -- so `--forces` pointing at a CSV generated at H = 30 m, with the

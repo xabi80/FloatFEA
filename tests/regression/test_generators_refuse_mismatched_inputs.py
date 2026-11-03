@@ -120,6 +120,23 @@ def test_R933_a_DISAGREEING_scale_is_refused_by_both(script: str, tmp_path: Path
     `f6_results_report.py` published `Froude lambda = 25.0` above forces at 50 (R926),
     and `member_forces_table.py` took the height from one record and the scale from
     another (R927).
+
+    **THIS CELL NOW PINS THE CALL ORDER AS WELL, AND IT WENT RED TO SAY SO.** FY2 made
+    `_resolve_height_pair` check the two recorded heights against `run.lambda`, and both
+    generators resolved the BASIS before the SCALE -- an order `pipeline.py` described in
+    a comment as a thing that "happens to" hold. So the disagreeing pair was refused by
+    the height check, naming `wave_height_full_m` and `wave_height_model_m`, which at
+    this input are the two numbers that are RIGHT; the record that is wrong is the
+    lambda, and the message did not mention it. Exit code and `_wrote_nothing` were both
+    correct, and the assertion on the message is the only thing that saw it.
+
+    Chasing that message found the hole on the path where nothing fired at all:
+    `exported_wave_basis` derived a MISSING height from the sidecar's unreconciled
+    lambda and published it at exit 0 --
+    `tests/unit/test_headings_and_bem_coverage.py::
+    test_SR6_a_DERIVED_height_is_not_computed_from_an_UNRECONCILED_lambda` carries that
+    measurement. Both generators resolve the scale first now, so swapping the two lines
+    back turns this assertion red again.
     """
     side = _sidecar(tmp_path, **{"lambda": 25.0})
     proc = _run(script, tmp_path, "--provenance", str(side))

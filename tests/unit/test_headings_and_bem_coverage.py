@@ -1015,8 +1015,8 @@ def test_FY2_the_COUNTER_is_detected_and_the_committed_pair_is_not() -> None:
     `24.200000000000003`, a relative discrepancy of about `1.5e-16`.
     """
     from floatfea.tolerances import (
-        RECORDED_HEIGHT_PAIR_RELATIVE_COUNTER,
         RECORDED_HEIGHT_PAIR_RELATIVE,
+        RECORDED_HEIGHT_PAIR_RELATIVE_COUNTER,
     )
 
     full = float(GOOD["wave_height_full_m"])
@@ -1087,6 +1087,332 @@ def test_FY2_the_MODEL_height_keeps_its_type_and_finiteness_checks(value: object
     with pytest.raises(ConfigError) as caught:
         _validated_wave_basis(dict(GOOD) | {"wave_height_model_m": value}, SIDECAR)
     assert "run.wave_height_model_m" in str(caught.value), str(caught.value)
+
+
+def _basis_pair(tmp: Path, npz_lam: float | None, run: dict[str, object]) -> Path:
+    """A REAL npz recording a scale, beside a sidecar recording a whole `run` block.
+
+    `_pair` in the scale section below records nothing but `lambda`, which is all the
+    agreement cells need. The derivation cells need the heights too, and they need the
+    npz to carry a key -- a pair where the npz records NO scale has one record of it,
+    nothing to contradict, and so cannot exercise the reconciliation at all.
+    """
+    import json as _json
+
+    import numpy as np
+
+    npz = tmp / "x.npz"
+    arrays: dict[str, object] = {"periods_full_s": np.array([12.5])}
+    if npz_lam is not None:
+        arrays["froude_lambda"] = np.array(npz_lam)
+    np.savez(npz, **arrays)
+    npz.with_suffix(".provenance.json").write_text(_json.dumps({"run": run}), encoding="utf-8")
+    return npz
+
+
+@pytest.mark.parametrize("dropped", ["wave_height_full_m", "wave_height_model_m"])
+@pytest.mark.parametrize("side_lam", [25.0, 100.0, 50.000001])
+def test_SR6_a_DERIVED_height_is_not_computed_from_an_UNRECONCILED_lambda(
+    tmp_path: Path, dropped: str, side_lam: float
+) -> None:
+    """FY2's derivation met the one quantity recorded TWICE, and nothing reconciled it.
+
+    **THIS IS THE HOLE FY2 OPENED, AND IT PUBLISHED A WRONG NUMBER AT EXIT 0.** FY2 made
+    the missing height derive from `run.lambda`. The sidecar's `run.lambda` and the npz's
+    `froude_lambda` are two records of one fact, and `validated_export_scale` compared
+    them -- but that is the door a deliverable resolves its SCALE through, not the door
+    `run()` resolves the BASIS through. `exported_wave_basis` went straight to
+    `wave_basis_from_sidecar`. Measured through that door on the shipped pair, with
+    `run.lambda` edited to 25.0 against an npz key of 50.0:
+
+        model 0.484 only  ->  full published as 12.1 m    EXIT 0   (24.2 m is the truth)
+        full 24.2 only    ->  model published as 0.968 m  EXIT 0   (0.484 m is the truth)
+
+    The full-scale height is printed in `report.md` and in both CSV headers, and it sets
+    the breaking band: at `governing_periods: [12.5]` the same recorded period came out
+    `too short for this height` at 24.2 m and `too long for this height` at 12.1 m, both
+    at exit 0. A published number and a published verdict, wrong by exactly the ratio of
+    the two records, with nothing saying so.
+
+    **WITH BOTH HEIGHTS RECORDED AT THE TRUE LAMBDA the pair check fired -- NAMING THE
+    HEIGHTS**, which are the two numbers that are right. That is what
+    `tests/regression/test_generators_refuse_mismatched_inputs.py::
+    test_R933_a_DISAGREEING_scale_is_refused_by_both` went red on, and chasing its message
+    is what found this. The red test was the outcome being right for the wrong reason.
+
+    **THAT IS ONLY ONE OF THE TWO WAYS BOTH HEIGHTS CAN BE RECORDED**, and the other
+    fired nothing at all -- see
+    `test_SR6_a_sidecar_CONSISTENT_WITH_ITS_OWN_WRONG_lambda_is_refused`. This cell's
+    case and that one are the same defect; mine is the one with a number missing.
+
+    `50.000001` is here because the comparison is `!=` with no margin, so the boundary is
+    exact in both directions -- give it one and it is a tolerance under another name.
+    """
+    from floatfea.run.pipeline import exported_wave_basis
+
+    run = {k: v for k, v in GOOD.items() if k != dropped} | {"lambda": side_lam}
+    with pytest.raises(ConfigError) as caught:
+        exported_wave_basis(_basis_pair(tmp_path, 50.0, run))
+    message = str(caught.value)
+    # The refusal names the LAMBDA, which is the record that has to be repaired, and not
+    # the height it would have derived.
+    assert "scale disagreement" in message, message
+    assert f"run.lambda = {side_lam:g}" in message, message
+
+
+@pytest.mark.parametrize("side_lam", [0.0, -50.0, -0.0])
+def test_SR9_a_ZERO_or_NEGATIVE_recorded_lambda_refuses_without_dividing(
+    tmp_path: Path, side_lam: float
+) -> None:
+    """The refusal message computed a ratio, and nothing range-checks either value here.
+
+    **THIS IS A DEFECT THE FIRST VERSION OF THIS COMMIT INTRODUCED.** The message said
+    "wrong by {ratio}x", with `ratio = max(key, beside) / min(key, beside)`.
+    `is_recorded_number(0.0)` is **True**, and `exported_wave_basis` reaches this
+    comparison BEFORE any domain check -- `validated_export_scale` range-checks against
+    `FROUDE_LAMBDA`, but that is the other door. Driven with the npz key at 50.0:
+
+        run.lambda = 0.0     ZeroDivisionError: float division by zero
+        run.lambda = -50.0   refused, and its own text read `wrong by -1x`
+        run.lambda = 25.0    refused, `wrong by 2x`  (the only case I had checked)
+
+    A crash on the main `run()` path and a nonsense figure inside a refusal, from a
+    quotient that existed only to decorate the message. The message states both recorded
+    values, so the quotient is the reader's to take. **A decorative figure is still a
+    figure**, and this one was measured at exactly one input.
+
+    `-0.0` is here because it is the one value where the sign is invisible in the text
+    and the division would still have failed.
+    """
+    import json as _json
+
+    from floatfea.run.pipeline import exported_wave_basis
+
+    run = dict(GOOD) | {"lambda": side_lam}
+    npz = _basis_pair(tmp_path, 50.0, run)
+    npz.with_suffix(".provenance.json").write_text(_json.dumps({"run": run}), encoding="utf-8")
+
+    with pytest.raises(ConfigError) as caught:
+        exported_wave_basis(npz)
+    message = str(caught.value)
+    assert "scale disagreement" in message, message
+    # The repair, asserted directly: no quotient is published in the refusal.
+    assert "wrong by" not in message, message
+
+
+@pytest.mark.parametrize("side_lam", [25.0, 100.0])
+def test_SR6_a_sidecar_CONSISTENT_WITH_ITS_OWN_WRONG_lambda_is_refused(
+    tmp_path: Path, side_lam: float
+) -> None:
+    """The third shape, and the only one where NOTHING fired before the repair.
+
+    **MY OWN FIRST ACCOUNT OF THIS DEFECT WAS TOO NARROW AND THIS CELL IS WHY.** It said
+    the pair check already refused a lambda disagreement whenever both heights were
+    recorded. That holds only when the heights were recorded at the TRUE lambda -- the
+    shape `test_R933_a_DISAGREEING_scale_is_refused_by_both` builds, by editing `lambda`
+    alone. A sidecar belonging to a DIFFERENT export carries heights consistent with its
+    own lambda, and then:
+
+        0.968 * 25 == 24.2          so FY2's pair check has nothing to complain about
+        25.0 in FROUDE_LAMBDA       so the range check passes
+        heading, window, periods    all well formed
+
+    Driven through `_validated_wave_basis` -- the door alone, which is what
+    `exported_wave_basis` used to call straight into -- that was **ACCEPTED**, publishing
+    `lambda = 25.0` and `wave_height_model_m = 0.968` while the npz key says `50.0` and
+    the truth is `24.2/50 = 0.484`. A published scale and a published model height, each
+    wrong by the ratio of the two records, with every check that existed green.
+
+    So this is not the derived-height case with a number added. It is the case the
+    derived-height case is a special instance of, and it is the one the suite could not
+    see.
+    """
+    import json as _json
+
+    from floatfea.run.pipeline import exported_wave_basis
+
+    full = float(GOOD["wave_height_full_m"])
+    run = dict(GOOD) | {
+        "lambda": side_lam,
+        # Consistent WITH THE SIDECAR'S OWN lambda, which is the whole point: the pair
+        # is self-consistent and still describes a different export.
+        "wave_height_model_m": full / side_lam,
+    }
+    npz = _basis_pair(tmp_path, 50.0, run)
+
+    # The control that makes the assertion mean something: the pair really is consistent,
+    # so FY2's check is NOT what refuses this.
+    assert abs(full - run["wave_height_model_m"] * side_lam) <= 0.0, run
+    _json.loads(npz.with_suffix(".provenance.json").read_text(encoding="utf-8"))
+
+    with pytest.raises(ConfigError) as caught:
+        exported_wave_basis(npz)
+    message = str(caught.value)
+    assert "scale disagreement" in message, message
+    assert "disagree with the recorded lambda" not in message, message
+
+
+@pytest.mark.parametrize("dropped", ["wave_height_full_m", "wave_height_model_m"])
+def test_SR6_the_AGREEING_pair_still_DERIVES_through_the_reader(
+    tmp_path: Path, dropped: str
+) -> None:
+    """EH4's other direction: the reconciliation must not break the feature it guards.
+
+    **AND THE CELL THAT WOULD OTHERWISE COVER THIS PASSES FOR THE WRONG REASON.**
+    `test_R877_the_READER_ITSELF_validates_not_only_the_helper` drives the same
+    derivation through `exported_wave_basis`, on an npz written as `b""` -- deliberately,
+    because that cell is about the sidecar being read from the path alone. An unreadable
+    npz records no scale, so no comparison happens there and the control says nothing
+    about a pair that has two records and agrees. This one carries a real key.
+    """
+    from floatfea.run.pipeline import exported_wave_basis
+
+    run = {k: v for k, v in GOOD.items() if k != dropped}
+    assert exported_wave_basis(_basis_pair(tmp_path, 50.0, run)) == GOOD
+
+
+@pytest.mark.parametrize(
+    "shape",
+    ["empty file", "text file", "truncated npz", "a directory", "missing", "zip magic only"],
+)
+def test_SR6_every_UNREADABLE_npz_shape_reaches_the_NAMED_refusal(
+    tmp_path: Path, shape: str
+) -> None:
+    """`np.load` raises FIVE different types, and the handler caught three of six shapes.
+
+    **THE HANDLER WAS MARKED `# pragma: no cover - unreadable npz`**, which is a statement
+    that nothing had ever measured it. Measured:
+
+        empty file       EOFError            not an OSError, not a ValueError
+        text file        ValueError          caught
+        truncated npz    zipfile.BadZipFile  derives straight from Exception
+        a directory      PermissionError     caught (OSError)
+        missing          FileNotFoundError   caught (OSError)
+        zip magic only   zipfile.BadZipFile  derives straight from Exception
+
+    So `floatfea run` on an empty or truncated npz gave an uncaught traceback where the
+    named refusal -- "the npz could not be read" -- is what the code intends. No number is
+    wrong, so under FR1 this is a ledger item and not a block; it is one tuple, so it is
+    fixed here.
+
+    **AND IT IS WHY THE TUPLE IS SHARED.** `_npz_scale_key` was written for this commit by
+    copying the handler, and inherited the hole with it --
+    `test_R877_the_READER_ITSELF_validates_not_only_the_helper` went red with `EOFError`
+    out of a cell that writes its npz as `b""`. One decision, one site (R983).
+    """
+    import numpy as np
+
+    from floatfea.run.pipeline import validated_export_scale
+
+    npz = tmp_path / "x.npz"
+    if shape == "empty file":
+        npz.write_bytes(b"")
+    elif shape == "text file":
+        npz.write_text("not an npz at all", encoding="utf-8")
+    elif shape == "truncated npz":
+        real = tmp_path / "real.npz"
+        np.savez(real, a=np.array([1.0]))
+        good = real.read_bytes()
+        npz.write_bytes(good[: len(good) // 2])
+    elif shape == "a directory":
+        npz.mkdir()
+    elif shape == "zip magic only":
+        npz.write_bytes(b"PK\x03\x04" + b"\x00" * 40)
+    # "missing": nothing is written, and the absent-sidecar branch is what answers.
+
+    with pytest.raises(ConfigError) as caught:
+        validated_export_scale(npz)
+    message = str(caught.value)
+    assert "no way to know what scale" in message, message
+
+
+@pytest.mark.parametrize(
+    "shape",
+    ["two elements", "empty array", "2x2"],
+)
+def test_SR7_a_MULTI_ELEMENT_scale_key_reaches_the_NAMED_refusal(
+    tmp_path: Path, shape: str
+) -> None:
+    """`is_recorded_number` is True for a multi-element array, and `reshape(())` is not.
+
+    **THE THREE LINES WERE OUTSIDE THE `try` AND THAT WAS NOT COSMETIC.** `_npz_scale_key`
+    was written with the read inside the handler and the conversion after it, so a
+    `froude_lambda` of `np.array([50.0, 25.0])` raised `ValueError` as a bare traceback out
+    of `exported_wave_basis`. `exported_froude_lambda` has the identical conversion INSIDE
+    its own `try` and answers `the npz could not be read (cannot reshape array of size 2
+    into shape ())`. One reader crashed and the other named it, for the same input.
+
+    Measured on all three shapes before the move -- two elements, an empty array and a
+    2x2 -- `_npz_scale_key` raised and `exported_froude_lambda` returned its reason every
+    time. `is_recorded_number` returns **True** for each, which is why no earlier guard
+    catches them.
+    """
+    import numpy as np
+
+    from floatfea.run.pipeline import validated_export_scale
+
+    arr = {
+        "two elements": np.array([50.0, 25.0]),
+        "empty array": np.array([]),
+        "2x2": np.array([[1.0, 2.0], [3.0, 4.0]]),
+    }[shape]
+    npz = tmp_path / "x.npz"
+    np.savez(npz, froude_lambda=arr, periods_full_s=np.array([12.5]))
+
+    with pytest.raises(ConfigError) as caught:
+        validated_export_scale(npz)
+    assert "no way to know what scale" in caught.value.args[0], caught.value.args[0]
+
+
+def test_SR8_a_sidecar_that_is_not_UTF_8_reaches_the_NAMED_refusal(tmp_path: Path) -> None:
+    """`UnicodeDecodeError` is a `ValueError`, and `json.JSONDecodeError` is a different one.
+
+    **`(OSError, json.JSONDecodeError)` STOOD AT FOUR SITES AND NONE CAUGHT IT.** A sidecar
+    that exists and is not UTF-8 raises out of `read_text`, before `json.loads` is reached,
+    so the pair misses it entirely. The site that matters most is this one, whose named
+    refusal is *"exists and cannot be read as JSON"* -- precisely this case, and it was
+    bypassed by a traceback.
+
+    This is SR-7's defect one file type over: an exception handler that names two classes
+    and misses a third. It was found by asking SR-7's question at the next reader rather
+    than by reading the line, which is why the census is over `json.JSONDecodeError` in
+    the whole module and not over the two sites the repair happened to touch.
+
+    R1007's distinction is what this protects: an UNREADABLE sidecar is not an ABSENT one.
+    A traceback is not that distinction either -- it is the third outcome R1007 exists to
+    prevent, and the run dies instead of saying which file is wrong.
+    """
+    from floatfea.run.pipeline import wave_basis_from_sidecar
+
+    sidecar = tmp_path / "x.provenance.json"
+    sidecar.write_bytes(b"\xff\xfe\x00binary garbage not utf8")
+
+    with pytest.raises(ConfigError) as caught:
+        wave_basis_from_sidecar(sidecar)
+    message = str(caught.value)
+    assert "cannot be read as JSON" in message, message
+    assert "x.provenance.json" in message, message
+
+
+def test_SR6_an_npz_recording_NO_scale_is_not_refused_by_the_comparison(
+    tmp_path: Path,
+) -> None:
+    """The weakening direction, stated rather than left to be inferred (EH4).
+
+    One record of the scale is not two, so there is nothing to contradict and this
+    comparison is silent. The sidecar's lambda is then the only record there is, and a
+    file with no resolvable scale at all is refused BY NAME at `validated_export_scale`
+    -- which is where that refusal belongs, with its own message about joint reactions at
+    a scale nobody declared.
+
+    This is the state the comparison inside `validated_export_scale` was already vacuous
+    in, because `exported_froude_lambda` falls back to the sidecar and the check then
+    compared that value with itself. Preserved on purpose: tightening it here would make
+    this function refuse a file for a reason it is not about.
+    """
+    from floatfea.run.pipeline import exported_wave_basis
+
+    assert exported_wave_basis(_basis_pair(tmp_path, None, dict(GOOD))) == GOOD
 
 
 def test_FY2_BOTH_heights_absent_is_still_PARTIAL() -> None:

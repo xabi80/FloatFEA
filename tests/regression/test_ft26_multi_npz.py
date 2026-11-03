@@ -64,12 +64,18 @@ def _write_npz(
             value = value[:TRIMMED_STEPS]
         if key.endswith("/lam"):
             value = value * scale
-        # **THE SCALE LIVES IN THE NPZ, NOT IN THE SIDECAR, AND I MEASURED THAT RATHER
-        # THAN ASSUMING IT.** My first version of the scale-disagreement cell retuned
-        # `run/lambda` in the provenance JSON and the run exited 0 -- which looked like a
-        # missing per-file check and was not: `exported_froude_lambda` reported `the npz`
-        # as its source for both files, so the two genuinely agreed and the check was
-        # right to pass. Editing the sidecar changes a value nothing reads here.
+        # **THE SCALE LIVES IN THE NPZ AND IS RECORDED IN THE SIDECAR TOO, SO BOTH MOVE.**
+        # My first version of the scale-disagreement cell retuned `run/lambda` in the
+        # provenance JSON ALONE and the run exited 0 -- which looked like a missing
+        # per-file check and was not: `exported_froude_lambda` prefers the npz key, so
+        # the pair still agreed on what this file was exported at. The conclusion drawn
+        # from that was too strong. "Editing the sidecar changes a value nothing reads
+        # here" is false now: `exported_wave_basis` reconciles the two records before it
+        # resolves a height against `run.lambda`, because FY2 derives a missing height
+        # from it. A fixture that moved the npz key alone would hand this cell TWO
+        # disagreements -- config-vs-npz, which is what it asserts, and npz-vs-sidecar,
+        # which would refuse first and with a different message. One variable moved: the
+        # sidecar below is kept in step.
         if froude_lambda is not None and key == "froude_lambda":
             value = np.asarray(froude_lambda, dtype=value.dtype)
         out[key] = value
@@ -85,6 +91,16 @@ def _write_npz(
             continue
         if heading is not None and "heading_deg" in side[block]:
             side[block]["heading_deg"] = heading
+        # THE SIDECAR'S SCALE FOLLOWS THE NPZ KEY, and the MODEL height follows the
+        # scale. A file exported at another lambda records that lambda in both places and
+        # the same full-scale sea state at a different model height -- which is what
+        # FY2's pair check asserts about any sidecar recording both heights.
+        if froude_lambda is not None and "lambda" in side[block]:
+            side[block]["lambda"] = froude_lambda
+            if "wave_height_full_m" in side[block] and "wave_height_model_m" in side[block]:
+                side[block]["wave_height_model_m"] = (
+                    float(side[block]["wave_height_full_m"]) / froude_lambda
+                )
         if height_full is not None and "wave_height_full_m" in side[block]:
             # The MODEL height moves with it, from the sidecar's own declared lambda --
             # not from a constant here, which would be R895 written into a fixture.

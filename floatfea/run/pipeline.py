@@ -33,6 +33,7 @@ from __future__ import annotations
 import json
 import math
 import time
+import zipfile
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -67,6 +68,7 @@ __all__ = [
     "RunResult",
     "build_model",
     "exported_froude_lambda",
+    "refuse_separated_scale_records",
     "run",
     "validated_export_scale",
     "refuse_cases_that_cannot_govern",
@@ -889,6 +891,26 @@ def refuse_uncovered_headings(declared: tuple[float, ...], covered: tuple[float,
     )
 
 
+# Every exception `np.load` raises for an npz it cannot read. ONE tuple, because the two
+# readers below had a COPY of it each and the copy carried the same hole: the handler was
+# marked `# pragma: no cover - unreadable npz`, which is a statement that nothing had ever
+# measured it, and it was wrong for three of six malformed shapes. `EOFError` and
+# `zipfile.BadZipFile` both derive straight from `Exception`, so neither was caught.
+# `test_SR6_every_UNREADABLE_npz_shape_reaches_the_NAMED_refusal` is the measurement.
+UNREADABLE_NPZ: Final = (OSError, ValueError, EOFError, zipfile.BadZipFile)
+
+# Every way a provenance SIDECAR fails to read, which is the same defect one file type
+# over: `(OSError, json.JSONDecodeError)` stood at FOUR sites and **none of them caught
+# `UnicodeDecodeError`**, which a non-UTF-8 sidecar raises out of `read_text`. It is a
+# `ValueError` subclass and `json.JSONDecodeError` is a different one, so the pair misses
+# it. The worst of the four is `wave_basis_from_sidecar`, whose named refusal is
+# *"exists and cannot be read as JSON"* -- exactly this case, bypassed by a traceback.
+# The three members are named rather than collapsed to `(OSError, ValueError)`, which
+# would also catch an unrelated `ValueError` from something other than the decode.
+# `test_SR8_a_sidecar_that_is_not_UTF_8_reaches_the_NAMED_refusal` is the measurement.
+UNREADABLE_JSON: Final = (OSError, UnicodeDecodeError, json.JSONDecodeError)
+
+
 WAVE_BASIS_KEYS: Final[tuple[str, ...]] = (
     "heading_deg",
     "wave_height_full_m",
@@ -1422,6 +1444,11 @@ def exported_wave_basis(npz: Path) -> dict[str, Any]:
     sidecar = npz.with_suffix(".provenance.json")
     if not sidecar.is_file():
         return {}
+    # **THE SCALE IS RECONCILED BEFORE THE BASIS IS RESOLVED AGAINST IT.** FY2 made the
+    # missing height derive from `run.lambda`, so this door publishes a number computed
+    # from the sidecar's scale -- and nothing here had compared that scale against the
+    # npz key every force is scaled by. See `refuse_separated_scale_records`.
+    refuse_separated_scale_records(npz, sidecar)
     return wave_basis_from_sidecar(sidecar)
 
 
@@ -1449,7 +1476,7 @@ def recorded_height_keys(npz: Path) -> frozenset[str]:
         return frozenset()
     try:
         raw = json.loads(sidecar.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except UNREADABLE_JSON:
         # The validator refuses this by name and with a better message; a provenance
         # question is not the place to raise a second, worse version of that refusal.
         return frozenset()
@@ -1494,7 +1521,7 @@ def wave_basis_from_sidecar(sidecar: Path) -> dict[str, Any]:
         return {}
     try:
         recorded = json.loads(sidecar.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+    except UNREADABLE_JSON as exc:
         raise ConfigError(
             f"{sidecar.name} exists and cannot be read as JSON ({type(exc).__name__}: "
             f"{exc}). It is the only record of the wave height and heading these loads "
@@ -1626,36 +1653,156 @@ def validated_export_scale(npz: Path, sidecar: Path | None = None) -> float:
     #
     # Defaulting to the npz's own sidecar keeps every other caller unchanged.
     sidecar = sidecar if sidecar is not None else npz.with_suffix(".provenance.json")
-    if sidecar.is_file():
-        try:
-            recorded = json.loads(sidecar.read_text(encoding="utf-8")).get("run", {})
-        except (OSError, json.JSONDecodeError):
-            recorded = {}
-        beside = recorded.get("lambda")
-        # **R1042, SECOND HALF.** `float(beside)` decided whether the two records AGREE, so
-        # a bool-typed sidecar scale compared EQUAL to a `1.0` npz key and the disagreement
-        # check could not see it either. A record that is not a number is refused here
-        # rather than compared, because "they agree" is a claim about two recorded numbers
-        # and one of them is not one.
-        if beside is not None and not is_recorded_number(beside):
-            raise ConfigError(
-                f"{npz.name}: {sidecar.name} records `run.lambda` as {beside!r} "
-                f"({recorded_spelling(beside)}), which is not a recorded number, so the "
-                f"two records of the export scale cannot be compared. The npz key says "
-                f"{exported:g} (read from {where}). Re-export the file (R1042)."
-            )
-        if beside is not None and float(beside) != exported:
-            raise ConfigError(
-                f"{npz.name}: scale disagreement between the two records of it. The npz "
-                f"key says {exported:g} (read from {where}) and {sidecar.name} records "
-                f"`run.lambda = {float(beside):g}`. Both are published -- the CSV header "
-                f"states the scale and the report prints it in the wave-basis line -- so "
-                f"a reader taking one while an artifact states the other cannot tell "
-                f"which the numbers are at. The npz key WINS when they agree (FN0); when "
-                f"they differ the pair has been separated or edited, and that is refused "
-                f"rather than resolved by preference (R908)."
-            )
+    refuse_separated_scale_records(npz, sidecar)
     return exported
+
+
+def _npz_scale_key(npz: Path) -> float | None:
+    """The `froude_lambda` key IN THE NPZ, or None. No fallback, no refusal.
+
+    **`exported_froude_lambda` ANSWERS A DIFFERENT QUESTION AND CANNOT BE USED FOR A
+    COMPARISON.** It answers *what scale was this file exported at*, preferring the npz
+    key and FALLING BACK to the sidecar's `run.lambda`. On that fallback it returns the
+    sidecar's own value, so comparing its answer against the sidecar compares a number
+    with itself -- vacuously equal. That is what the comparison inside
+    `validated_export_scale` did whenever the npz carried no key, and it is preserved
+    here deliberately rather than tightened: with one record of the scale there is
+    nothing to contradict it, and a file with no resolvable scale is refused by name at
+    `validated_export_scale` instead.
+
+    Returns None for an npz that records no key, one that cannot be read, and one whose
+    key is not a recorded number -- three states each refused by name elsewhere. Raising
+    a second, worse version of one of those refusals from a comparison would put a
+    reader on the wrong trail.
+    """
+    # **THE WHOLE READ IS INSIDE THE TRY, INCLUDING THE RESHAPE, AND THAT IS NOT
+    # COSMETIC.** `is_recorded_number` is True for a MULTI-ELEMENT array, so
+    # `reshape(())` raises `ValueError` for one -- and with these three lines outside the
+    # handler that escaped as a bare traceback out of `exported_wave_basis`, where
+    # `exported_froude_lambda` (which has the identical line INSIDE its own try) answers
+    # `the npz could not be read (cannot reshape array of size 2 into shape ())`.
+    # Measured on `froude_lambda = np.array([50.0, 25.0])`, on an empty array and on a
+    # 2x2: `_npz_scale_key` raised, `exported_froude_lambda` returned its reason.
+    try:
+        with np.load(npz, allow_pickle=False) as raw:
+            if "froude_lambda" not in raw.files:
+                return None
+            recorded = raw["froude_lambda"]
+            if not is_recorded_number(recorded):
+                return None
+            return float(np.asarray(recorded).reshape(()).item())
+    except UNREADABLE_NPZ:
+        return None
+
+
+def refuse_separated_scale_records(npz: Path, sidecar: Path) -> None:
+    """The npz's own record of its export scale against the sidecar's, or a refusal.
+
+    **ONE DECISION, TWO DOORS, AND ONLY ONE DOOR HAD IT.** This comparison lived inside
+    `validated_export_scale`, which is the door a deliverable resolves its SCALE through.
+    It is not the door `run()` resolves the wave BASIS through, and FY2 made the basis
+    depend on the same quantity: `_resolve_height_pair` derives the missing height from
+    the SIDECAR's lambda. So `exported_wave_basis` derived a published height from a
+    lambda that nothing had compared against the npz key the forces are scaled by.
+
+    Measured on the shipped pair, with `run.lambda` edited to 25.0 and one height removed
+    each way, through `exported_wave_basis`:
+
+        npz `froude_lambda`                         50.0
+        model 0.484 only  -> full published as      12.1   EXIT 0   (24.2 is the truth)
+        full 24.2 only    -> model published as     0.968  EXIT 0   (0.484 is the truth)
+
+    Both are wrong by exactly the ratio of the two records. The full-scale height is
+    published in `report.md` and in both CSV headers, and it sets the breaking band and
+    the per-case admissibility verdict that `refuse_cases_that_cannot_govern` publishes:
+    at `governing_periods: [12.5]` the same recorded period came out `too short for this
+    height` at 24.2 m and `too long for this height` at 12.1 m, both at EXIT 0.
+
+    **AND BOTH HEIGHTS RECORDED IS NOT THE SAFE CASE. THERE ARE THREE SHAPES, AND ONLY
+    ONE OF THEM FIRED ANYTHING.** The first draft of this docstring said the pair check
+    already refused that case; it does so for exactly one of the two ways both heights
+    can be recorded, and the other is the worst of the three:
+
+        both heights at the TRUE lambda      FY2's pair check fires -- naming the two
+                                             HEIGHTS, which are the numbers that are
+                                             right, and never the lambda
+        ONE height recorded                  the other is DERIVED at the wrong lambda
+                                             and published. EXIT 0
+        both heights CONSISTENT with the
+        sidecar's OWN wrong lambda           **NOTHING fires.** EXIT 0
+
+    The third is the natural shape of a sidecar that belongs to a different export, and
+    it is internally consistent: `0.968 * 25 == 24.2`, so the pair check has nothing to
+    complain about, and `25.0` is inside `FROUDE_LAMBDA`, so the range check passes.
+    Driven through the basis door alone, which is what this function's caller used to do:
+
+        published lambda                25.0    (the npz key says 50.0)
+        published wave_height_model_m   0.968   (24.2/50 = 0.484 is the truth)
+
+    A published scale and a published model height, each wrong by the ratio of the two
+    records, with every check that existed green. The derived-height case is the same
+    defect with one number missing rather than a different one.
+
+    A file recording no npz key is not compared here and is not refused here; see
+    `_npz_scale_key`.
+    """
+    if not sidecar.is_file():
+        return
+    key = _npz_scale_key(npz)
+    if key is None:
+        return
+    try:
+        raw = json.loads(sidecar.read_text(encoding="utf-8"))
+    except UNREADABLE_JSON:
+        return
+    # A malformed container is refused BY NAME, with its own message, by
+    # `wave_basis_from_sidecar` and by `_validated_wave_basis` (R884). `.get` on a
+    # non-mapping raises `AttributeError`, so reaching those refusals means returning
+    # here rather than crashing one call earlier with no name in the message.
+    recorded = raw.get("run", {}) if isinstance(raw, dict) else {}
+    beside = recorded.get("lambda") if isinstance(recorded, dict) else None
+    if beside is None:
+        return
+    # **R1042, SECOND HALF.** `float(beside)` decided whether the two records AGREE, so
+    # a bool-typed sidecar scale compared EQUAL to a `1.0` npz key and the disagreement
+    # check could not see it either. A record that is not a number is refused here
+    # rather than compared, because "they agree" is a claim about two recorded numbers
+    # and one of them is not one.
+    if not is_recorded_number(beside):
+        raise ConfigError(
+            f"{npz.name}: {sidecar.name} records `run.lambda` as {beside!r} "
+            f"({recorded_spelling(beside)}), which is not a recorded number, so the "
+            f"two records of the export scale cannot be compared. The npz key says "
+            f"{key:g}. Re-export the file (R1042)."
+        )
+    if float(beside) != key:
+        # **NO RATIO IS COMPUTED HERE, AND THE FIRST VERSION OF THIS MESSAGE COMPUTED
+        # ONE.** `max(key, beside) / min(key, beside)` divides by zero for a recorded
+        # `0.0` -- `is_recorded_number(0.0)` is True and NOTHING range-checks either
+        # value on this path, because `exported_wave_basis` reaches here before any
+        # domain check -- and it reads `-1x` for a recorded `-50.0`. Driven through
+        # `exported_wave_basis` with the npz key at 50.0: `run.lambda = 0.0` gave
+        # `ZeroDivisionError: float division by zero`, and `-50.0` gave a refusal whose
+        # own text said "wrong by -1x".
+        #
+        # The message states both recorded values, so the quotient is the reader's to
+        # take and is not worth a division that crashes on one input and lies on
+        # another. A decorative figure is still a figure.
+        raise ConfigError(
+            f"{npz.name}: scale disagreement between the two records of it. The npz "
+            f"key says {key:g} and {sidecar.name} records "
+            f"`run.lambda = {float(beside):g}`. Both are published -- the CSV header "
+            f"states the scale and the report prints it in the wave-basis line -- so "
+            f"a reader taking one while an artifact states the other cannot tell "
+            f"which the numbers are at. AND THE RECORDED HEIGHTS ARE RESOLVED AGAINST "
+            f"THIS LAMBDA (FY2): a pair that disagrees with it is refused naming the "
+            f"heights, and a sidecar recording only ONE of them derives the other at "
+            f"the wrong scale -- so the published height, both CSV headers and the "
+            f"breaking band that decides whether a declared period may set the "
+            f"envelope are all out by the quotient of these two numbers. The npz key "
+            f"WINS when they agree (FN0); when they differ the pair has been separated "
+            f"or edited, and that is refused rather than resolved by preference (R908)."
+        )
 
 
 def exported_froude_lambda(npz: Path) -> tuple[float | None, str]:
@@ -1715,7 +1862,7 @@ def exported_froude_lambda(npz: Path) -> tuple[float | None, str]:
                         f"and NO Froude scaling at all (R1041). Re-export the file."
                     )
                 return float(np.asarray(recorded).reshape(()).item()), "the npz"
-    except (OSError, ValueError) as exc:  # pragma: no cover - unreadable npz
+    except UNREADABLE_NPZ as exc:
         return None, f"the npz could not be read ({exc})"
 
     sidecar = npz.with_suffix(".provenance.json")
@@ -1723,7 +1870,7 @@ def exported_froude_lambda(npz: Path) -> tuple[float | None, str]:
         return None, f"the npz records no `froude_lambda` and {sidecar.name} is absent"
     try:
         recorded = json.loads(sidecar.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+    except UNREADABLE_JSON as exc:
         return None, f"{sidecar.name} could not be read ({exc})"
     value = recorded.get("run", {}).get("lambda")
     if value is None:
@@ -1739,10 +1886,12 @@ def exported_froude_lambda(npz: Path) -> tuple[float | None, str]:
     #     run.lambda = 50.0    -> exported 50.0 (the control), force x125000
     #
     # And `wave_basis_from_sidecar` REFUSES that same file by name, because `lambda` is in
-    # `WAVE_BASIS_KEYS`. One input, two readers, two answers (R896). What shadowed it is
-    # not a guarantee: `member_forces_table.py:334` and `f6_results_report.py:458` happen
-    # to call the basis validator before resolving the scale, `f6a_premise_check.py:189`
-    # does not, and `run()` is covered only because `exported_wave_basis` runs earlier.
+    # `WAVE_BASIS_KEYS`. One input, two readers, two answers (R896). What shadowed it was
+    # a call order that this comment called a thing that "happens to" hold -- and FY2 then
+    # made the basis depend on the scale, which turned the accident into a wrong published
+    # height. Both generators now resolve the scale FIRST, and `exported_wave_basis`
+    # reconciles the two records itself, so the order is a stated dependency rather than
+    # a coincidence. `refuse_separated_scale_records` carries the measurement.
     if not is_recorded_number(value):
         return None, (
             f"{sidecar.name} records `run.lambda` as {value!r} "
