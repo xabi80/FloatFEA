@@ -35,7 +35,20 @@ GENERATED_MARK = "<!-- generated: scripts/answered_table.py -->"
 
 # R1117: accepts a markdown heading as well as bold. See
 # `scripts/carried_table.py` for the measurement and why six copies.
-_FINDING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)\.\s*(?:\(([^)]*)\))?\s*(.*)$", re.MULTILINE)
+#
+# AND THE DOT MAY FOLLOW THE PARENTHETICAL (R1120). R1117's repair reached
+# this anchor's PREFIX and left its SUFFIX requiring a dot immediately after
+# the number. The two forms this must read are
+#
+#     **R1106. (BLOCKS) subject        -- the bold form, dot before the class
+#     ### R1106 (BLOCKS). subject      -- the heading form, dot after it
+#
+# so there is an optional dot on BOTH sides of the class. Requiring only the
+# first one gave every finding of the two newest verdicts the class
+# `carried` and the subject `carried from an earlier verdict` instead of its
+# own words -- and this generator feeds a published table, so that is a wrong
+# row waiting for the round that uses it.
+_FINDING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)\.?\s*(?:\(([^)]*)\))?\.?\s*(.*)$", re.MULTILINE)
 
 
 def _subjects(verdict: str) -> dict[str, tuple[str, str]]:

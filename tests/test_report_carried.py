@@ -2203,6 +2203,123 @@ def test_a_GREEN_JOB_TABLE_does_not_stand_under_a_FAILED_run() -> None:
     )
 
 
+def _ci_section_module():
+    """`scripts/ci_section.py` as a MODULE, without a `scripts` package.
+
+    NOT `_ci_section`, which is this file's reader for the report's CI section
+    TEXT and is defined above. The first spelling of this helper took that
+    name and shadowed it for every call site below, which is three existing
+    tests -- caught by grep before it was run, and recorded because a helper
+    named for the module it loads is the obvious name and was already taken.
+    """
+    spec = importlib.util.spec_from_file_location("ci_section", ROOT / "scripts" / "ci_section.py")
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+# EVERY SHAPE THE `FAILED` READER MUST TAKE, AND THE THREE IT MUST REFUSE
+# (R1119). The target class was `(\S+?)`: it stopped at the first space in a
+# parametrisation id, and because the ` - ` terminator is then unreachable the
+# line yielded no target AT ALL. The two rows marked DEFECT are the two ids a
+# published CI section could not name.
+#
+# BOTH DIRECTIONS (EH4). The strict rows are ids the reader must now take; the
+# refusing rows are the weakening direction -- the widened pattern must not
+# start taking text that is not an id. `None` means "no id from this line".
+_FAILED_SHAPES: list[tuple[str, str, str | None]] = [
+    (
+        "plain_id_with_a_reason",
+        "FAILED tests/x.py::test_y - AssertionError: boom",
+        "tests/x.py::test_y",
+    ),
+    (
+        "DEFECT_a_space_inside_the_parametrisation_id",
+        "FAILED tests/test_report_numbers_are_sourced.py::"
+        "test_every_number_in_prose_is_sourced_in_its_own_section[9. The schedule]"
+        " - AssertionError: 7 unsourced",
+        "tests/test_report_numbers_are_sourced.py::"
+        "test_every_number_in_prose_is_sourced_in_its_own_section[9. The schedule]",
+    ),
+    (
+        "DEFECT_several_spaces_and_commas_inside_the_id",
+        "FAILED tests/test_report_numbers_are_sourced.py::"
+        "test_every_number_in_prose_is_sourced_in_its_own_section"
+        "[7. The carried items, every one named, a] - AssertionError",
+        "tests/test_report_numbers_are_sourced.py::"
+        "test_every_number_in_prose_is_sourced_in_its_own_section"
+        "[7. The carried items, every one named, a]",
+    ),
+    (
+        "a_DOUBLE_dash_inside_the_id_does_not_terminate_it",
+        "FAILED tests/regression/t.py::test_label"
+        "[INDICATIVE SIZING SCREEN -- NOT A CODE CASE] - AssertionError",
+        "tests/regression/t.py::test_label" "[INDICATIVE SIZING SCREEN -- NOT A CODE CASE]",
+    ),
+    (
+        "a_hyphen_inside_the_id_R641s_shape",
+        "FAILED tests/t.py::test_site[R632-docs/reports/F3/step-3-answers.json] - x",
+        "tests/t.py::test_site[R632-docs/reports/F3/step-3-answers.json]",
+    ),
+    (
+        "CONTROL_no_reason_so_no_terminator_at_all",
+        "FAILED tests/x.py::test_y",
+        "tests/x.py::test_y",
+    ),
+    (
+        "CONTROL_trailing_whitespace_and_no_reason",
+        "FAILED tests/x.py::test_y   ",
+        "tests/x.py::test_y",
+    ),
+    (
+        "CONTROL_the_reason_names_a_SECOND_FAILED_line",
+        "FAILED a.py::t - AssertionError: FAILED b.py::u - more",
+        "a.py::t",
+    ),
+    (
+        "REFUSED_the_sandbox_line_is_indented_inside_a_traceback",
+        "    FAILED tests/sandbox.py::test_planted - a sandbox, not this run",
+        None,
+    ),
+    (
+        "REFUSED_a_sandbox_line_quoted_mid_sentence",
+        "E   assert 'FAILED tests/sandbox.py::test_planted' in out",
+        None,
+    ),
+    (
+        "REFUSED_the_word_alone_with_no_target",
+        "FAILED ",
+        None,
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "line,expected", [(s[1], s[2]) for s in _FAILED_SHAPES], ids=[s[0] for s in _FAILED_SHAPES]
+)
+def test_the_FAILED_reader_takes_an_id_WITH_A_SPACE(line: str, expected: str | None) -> None:
+    """R1119, in both directions.
+
+    The extraction is read through the same two steps `failing_names` applies
+    to a log line -- the pattern, then the margin guard that rejects a
+    `FAILED` quoted inside a traceback -- because the guard is half of what
+    decides whether a line yields an id, and testing the pattern alone would
+    pass a sandbox line.
+    """
+    mod = _ci_section_module()
+    m = mod._FAILED.search(line)
+    got = None
+    if m and line.startswith("FAILED "):
+        got = m.group(1).strip()
+    assert got == expected, (
+        f"the reader took {got!r} from\n  {line!r}\nand {expected!r} was "
+        "wanted. A `FAILED` line that yields no id is the R1119 shape: the "
+        "section then publishes a count short by one and a list that cannot "
+        "contain it, which looks exactly like a run with nothing to name."
+    )
+
+
 # THE CONTROLS FOR BOTH GUARDS (R429, R430, R444). Nineteen shapes the
 # reviewer wrote into its CI-section corpus over two verdicts and measured
 # the shipped pattern against: 2 of 7 the first time, 3 of 12 the second.

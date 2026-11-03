@@ -409,7 +409,24 @@ def never_started(jobs: list[dict]) -> bool:
 # A FAILING TEST'S OWN LINE, as pytest and as the ladder rung print it.
 # `FAILED tests/x.py::test_y - AssertionError: ...` and the rung's
 # `run_rung:   failure  tests.x::test_y`.
-_FAILED = re.compile(r"(?:^|\s)FAILED (\S+?)(?:\s+-\s|\s*$)")
+#
+# THE ID MAY CONTAIN A SPACE (R1119). The target class was `(\S+?)`, which
+# cannot span the space in a parametrisation id such as
+# `...test_every_number_in_prose_is_sourced_in_its_own_section[9. The schedule]`
+# -- and once the class has stopped at the space, the `\s+-\s` terminator is
+# unreachable from any start position, so the line yields NO target at all
+# rather than a truncated one. A reader that drops a red silently is the
+# failure this module's own docstring names: "a reader that names nothing
+# looks exactly like a run with nothing to name."
+#
+# The id now runs to the FIRST ` - `, or to the end of the line when no reason
+# follows. ` -- ` inside an id does not terminate it, because `\s` cannot
+# match the second hyphen. What it still cannot do is split an id that itself
+# contains ` - `; no id in this suite does, and that is a measurement in the
+# report rather than a property of the pattern, so an id of that shape would
+# be truncated here. `test_the_FAILED_reader_takes_an_id_WITH_A_SPACE` pins
+# every shape in this comment, in both directions.
+_FAILED = re.compile(r"(?:^|\s)FAILED (.+?)(?:\s+-\s.*)?$")
 _RUNG_FAILURE = re.compile(r"run_rung:\s+(?:failure|error)\s+(\S+)")
 
 

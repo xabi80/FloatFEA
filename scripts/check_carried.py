@@ -33,7 +33,15 @@ ROOT = Path(__file__).resolve().parents[1]
 # references -- and those are not this verdict's findings.
 # R1117: accepts a markdown heading as well as bold. See
 # `scripts/carried_table.py` for the measurement and why six copies.
-_FINDING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)\.", re.MULTILINE)
+#
+# AND THE DOT IS OPTIONAL (R1120). R1117's repair reached this anchor's
+# PREFIX and left its SUFFIX requiring a dot immediately after the number --
+# but the heading form the verdicts write puts the dot AFTER the
+# parenthetical, `### R1106 (BLOCKS).`, so this reader stayed blind to every
+# finding of the two newest verdicts while reporting `all 250 findings
+# carried` and exiting 0. Half a repair that reports success is worse than
+# none. Now identical to `carried_table.FINDING`.
+_FINDING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)[.\s]", re.MULTILINE)
 _MENTION = re.compile(r"\bR\d+\b")
 
 
