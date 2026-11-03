@@ -158,3 +158,145 @@ verification of the supersession printed "REGENERATES BYTE-IDENTICAL" from a `cm
 files written by crashed runs, because a `&&` chain hides a non-zero exit whenever the next
 command succeeds on the wreckage. That claim was withdrawn and re-measured with exit codes
 checked.
+
+**SR-6: FY2's derived height was computed from a lambda nothing had reconciled.**
+*Ruling applied:* FZ rule 1 (FR1: a silently wrong published number blocks, so it is fixed
+ahead of everything else) with rule 5 (self-found defect: fix and add a named row) and
+EH4 (the boundary solved in both directions, including the two that weaken the check).
+*Why:* FY2 made `_resolve_height_pair` derive the missing height from `run.lambda`. The
+sidecar's `run.lambda` and the npz's `froude_lambda` are two records of ONE fact, and the
+comparison between them lived inside `validated_export_scale` -- the door a deliverable
+resolves its SCALE through, not the door `run()` resolves the BASIS through.
+`exported_wave_basis` went straight to `wave_basis_from_sidecar`. Measured on the shipped
+pair with `run.lambda` edited to 25.0 against an npz key of 50.0:
+
+    model 0.484 only  ->  full published as 12.1 m    EXIT 0   (24.2 m is the truth)
+    full 24.2 only    ->  model published as 0.968 m  EXIT 0   (0.484 m is the truth)
+
+Wrong by exactly the ratio of the two records, in `report.md` and in both CSV headers, and
+in the breaking band: at `governing_periods: [12.5]` the same recorded period came out
+`too short for this height` at 24.2 m and `too long for this height` at 12.1 m, both at
+exit 0. That is the sentence FR1 asks for -- a wrong number and a wrong verdict in a
+published deliverable, with nothing saying so.
+
+**AND MY FIRST ACCOUNT OF IT WAS TOO NARROW, WHICH IS WORTH RECORDING BECAUSE THE
+CORRECTION WIDENED THE DEFECT.** I wrote -- in the commit message and in the docstring --
+that the pair check already refused a lambda disagreement whenever both heights were
+recorded. That holds for one of the two ways both heights can be recorded. A sidecar
+belonging to a DIFFERENT export carries heights consistent with its OWN lambda, and then
+`0.968 * 25 == 24.2` exactly, so FY2's check has nothing to complain about and `25.0` is
+inside `FROUDE_LAMBDA`. Driven through the basis door alone: **ACCEPTED**, publishing
+`lambda = 25.0` and `wave_height_model_m = 0.968` where `24.2/50 = 0.484` is the truth. A
+published scale and a published model height, each wrong by the ratio of the two records,
+with every check that existed green. Three shapes; that one fired nothing, and it is the
+one a real mismatched pair would have.
+
+**It was found by a red test whose outcome was right.** `test_R933_a_DISAGREEING_scale_is
+_refused_by_both` refused the disagreeing pair with a message naming the two HEIGHTS,
+which at that input are the two numbers that are correct; the record that is wrong is the
+lambda. Exit code and "wrote nothing" were both right, and only the assertion on the
+message saw it. Under FR1 that half is a ledger item, not a block -- the derivation half
+is the block.
+
+*The repair:* the comparison is extracted to `refuse_separated_scale_records`, one
+decision at one site, called by `validated_export_scale` as before AND by
+`exported_wave_basis` before it resolves a basis against the sidecar's lambda. Both
+generators resolve the scale before the basis, so their refusal names the record that has
+to be repaired. `pipeline.py` had itself described that call order as a thing that
+"happens to" hold; that comment is now a stated dependency, and the regression cell that
+went red is what holds it.
+
+**SR-7: `np.load`'s exception handler was marked `# pragma: no cover` and was wrong for
+three of six malformed npz shapes.**
+*Ruling applied:* FZ rule 1 (ledger under FR1 -- no number is wrong, the run dies with a
+traceback instead of a named refusal) with rule 5 (self-found defect: fix in-cycle, add a
+named row).
+*Why:* `exported_froude_lambda` caught `(OSError, ValueError)` behind
+`# pragma: no cover - unreadable npz`. Measured:
+
+    empty file       EOFError            NOT caught -- derives straight from Exception
+    text file        ValueError          caught
+    truncated npz    zipfile.BadZipFile  NOT caught -- derives straight from Exception
+    a directory      PermissionError     caught (OSError)
+    missing          FileNotFoundError   caught (OSError)
+    zip magic only   zipfile.BadZipFile  NOT caught
+
+So `floatfea run` on an empty or truncated npz gave an uncaught traceback where the code's
+own intent is the named refusal "the npz could not be read". **A `# pragma: no cover` on an
+exception handler is a statement that nothing ever measured it**, and this one was wrong
+for half the shapes it names.
+
+**It was found because I copied it.** `_npz_scale_key`, written for SR-6's repair, took
+that handler verbatim and inherited the hole; `test_R877_the_READER_ITSELF_validates_not
+_only_the_helper` -- which writes its npz as `b""` on purpose -- went red with `EOFError`
+raised out of my new function. The repair is one shared `UNREADABLE_NPZ` tuple rather than
+a second corrected copy, which is R983's rule and is exactly what the copy demonstrated.
+Six shapes, six rows, in
+`test_SR6_every_UNREADABLE_npz_shape_reaches_the_NAMED_refusal`.
+
+**SR-8: the same defect one file type over -- `(OSError, json.JSONDecodeError)` at four
+sites, none of them catching `UnicodeDecodeError`.**
+*Ruling applied:* FZ rule 1 (ledger under FR1 -- no number is wrong; the run dies with a
+traceback where a named refusal is intended) with rule 5 (self-found: fix in-cycle, named
+row).
+*Why:* a provenance sidecar that exists and is not UTF-8 raises out of
+`read_text(encoding="utf-8")`, before `json.loads` is reached. `UnicodeDecodeError` is a
+`ValueError` subclass and `json.JSONDecodeError` is a *different* `ValueError` subclass,
+so naming the second does not catch the first. Measured: both
+`refuse_separated_scale_records` and `wave_basis_from_sidecar` raised
+`UnicodeDecodeError` on `b"\xff\xfe\x00binary garbage not utf8"`.
+
+The site that matters is `wave_basis_from_sidecar`, whose refusal text is *"exists and
+cannot be read as JSON"* -- exactly this case, bypassed. **R1007's distinction is what
+this protects**: an UNREADABLE sidecar is not an ABSENT one, and a traceback is not that
+distinction either; it is the third outcome, where the run dies without naming the file.
+
+*Why it is in this commit and not ledgered, stated so the gate can rule on the
+judgement rather than infer it:* **it was found by asking SR-7's question at the next
+reader**, and the census is over `json.JSONDecodeError` in the whole module rather than
+over the two sites this repair happened to touch -- four found, four fixed, one shared
+`UNREADABLE_JSON`. Having just fixed one instance of "a handler that names two classes
+and misses a third", leaving three known instances of it standing is the narrow-census
+failure FR1 lists as a non-blocking class and which has cost this milestone three rounds
+elsewhere. If the reviewer rules it scope creep in an FF0 commit, the repair is sound and
+only its placement is wrong.
+
+**And SR-7 had a second half, in code this commit WROTE.** `_npz_scale_key` kept the
+`np.load` inside the handler and the conversion after it, so
+`np.asarray(recorded).reshape(()).item()` sat outside. `is_recorded_number` is **True**
+for a multi-element array, so `froude_lambda = np.array([50.0, 25.0])` raised
+`ValueError` as a bare traceback out of `exported_wave_basis` -- while
+`exported_froude_lambda`, which has the identical conversion INSIDE its own `try`,
+answered `the npz could not be read (cannot reshape array of size 2 into shape ())`. Two
+readers, one input, one crash and one named reason. Three shapes measured (two elements,
+empty array, 2x2); all three behaved that way, and all three are rows in
+`test_SR7_a_MULTI_ELEMENT_scale_key_reaches_the_NAMED_refusal`.
+
+**SR-9: the refusal message computed a ratio, which divided by zero on one input and
+published nonsense on another. A defect this commit INTRODUCED.**
+*Ruling applied:* FZ rule 5 (self-found: fix in-cycle, named row). Under FR1 a crash is
+not a wrong number, so it does not block -- but it is mine and it is one line.
+*Why:* the message read `wrong by {ratio}x` with
+`ratio = max(key, beside) / min(key, beside)`. `is_recorded_number(0.0)` is **True**, and
+`exported_wave_basis` reaches this comparison BEFORE any domain check --
+`validated_export_scale` range-checks against `FROUDE_LAMBDA`, but that is the other
+door. Driven through `exported_wave_basis` with the npz key at 50.0:
+
+    run.lambda = 0.0     ZeroDivisionError: float division by zero
+    run.lambda = -50.0   refused, and its own text read `wrong by -1x`
+    run.lambda = 25.0    refused, `wrong by 2x`   <- the only case I had checked
+
+So: a crash on the main `run()` path, and a nonsense figure inside a refusal, from a
+quotient that existed only to decorate a message.
+
+*The repair is removal, not a guard.* The message already states both recorded values,
+so the quotient is the reader's to take, and a division that crashes on one input and
+lies on another is not worth keeping for prose. **A decorative figure is still a
+figure**, and this one was measured at exactly one input -- the same shape as EU1's
+lesson about a constant that is right at the configuration its author chose.
+
+*How it was found, because that is the transferable part:* not by a test and not by
+review, but by reading my own diff with the comments stripped and asking what every
+computed expression does at its boundaries. `ratio` was the only arithmetic in the
+function. Three rows pin it, including `-0.0`, where the sign is invisible in the text
+and the division would still have failed.
