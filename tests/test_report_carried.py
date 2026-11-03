@@ -3403,12 +3403,27 @@ def test_the_R507_cases_rule_as_measured(path: str, counted: bool, why: str) -> 
 
 
 def _sites_by_finding() -> list[tuple[str, str, int]]:
-    """`(finding, path, line)` for every site a finding names; line 0 = no line.
+    r"""`(finding, path, line)` for every site a finding names; line 0 = no line.
 
     A finding's block ends at the next finding OR the next `##` heading, so the
     last finding no longer absorbs every path to end-of-file (R171).
+
+    THE ANCHOR IS `_FINDING`, NOT A SEVENTH COPY OF IT (R1127). This line read
+    `^\*\*(R\d+)[.\s]` -- bold only. R1118 widened six anchors to accept the
+    markdown heading form the verdicts now write, R1120 fixed the suffix of two
+    of them, and this one was in neither list, so the SITE set was blind to
+    every finding of the last three verdicts while the id set was not.
+
+    What that cost is specific and it is the mechanism `CLAUDE.md` added under
+    "A closing condition that names sites is closed site by site": a site named
+    in such a finding could go unanswered and this guard would be GREEN,
+    because the finding had no sites to check. The generated section listing
+    untouched sites published rows for older findings under a heading naming
+    the newest verdict.
+
+    So: one anchor, used here, and six copies instead of seven.
     """
-    blocks = list(re.finditer(r"^\*\*(R\d+)[.\s]", VERDICT_TEXT, re.MULTILINE))
+    blocks = list(_FINDING.finditer(VERDICT_TEXT))
     out: list[tuple[str, str, int]] = []
     for i, m in enumerate(blocks):
         end = blocks[i + 1].start() if i + 1 < len(blocks) else len(VERDICT_TEXT)
