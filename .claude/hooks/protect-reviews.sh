@@ -99,6 +99,14 @@ import json, re, sys
 
 PROTECTED = r"(?:docs[/\\]+reviews|tests[/\\]+corpus)"
 VERBS = r"(?:tee|cp|mv|rm|install|truncate|dd|touch)"
+# A TARGET THIS HOOK CANNOT RESOLVE IS A TARGET IT CANNOT CLEAR (R1107). Three
+# matrix rows wrote a verdict through a target the extraction saw but could not
+# evaluate: a variable, a backtick substitution and a dollar-paren one. The
+# path was in the command, the target was not, and the hook allowed all three.
+# Spelled with \x60 rather than a literal backtick: this helper is one
+# single-quoted argument inside a command substitution inside a heredoc, and a
+# stray metacharacter in this block has already opened this hook once.
+UNRESOLVED = r"[$\x60]"
 
 try:
     d = json.load(sys.stdin)
@@ -160,7 +168,22 @@ elif command and re.search(PROTECTED, command):
     # this very clause did, bash raised a syntax error, `2>/dev/null` swallowed
     # it, and the hook ALLOWED a Write straight at a verdict. See the empty-hit
     # guard below, which is what makes that loud instead.
-    targets = [m.group(2) for m in re.finditer(r"([0-9]*)>>?\s*([^\s;|&<>]+)", command)]
+    # THE CLOBBER-OVERRIDE FORM IS A REDIRECT, AND THIS CLASS COULD NOT SEE IT
+    # (R1107). The form was `([0-9]*)>>?\s*([^\s;|&<>]+)`. After `>` the next
+    # character in `>| x` is `|`, which is OUTSIDE the target class and which
+    # `\s*` cannot cross, so NO target was extracted and no clause fired. Ten
+    # rows of the matrix moved DENY to ALLOW on it: `>|`, `1>|`, `2>|`, `>>|`
+    # and the no-space spelling, in both the reviews and the corpus direction.
+    #
+    # `>|` is not an exotic spelling: under `noclobber` it is the ONLY redirect
+    # that overwrites, so it is the one shape that works exactly where a plain
+    # `>` is refused. Measured rather than assumed, in a shell with the option
+    # set: `>|` overwrote and `>` was refused on the same file.
+    #
+    # This is a REPAIR of the extraction and not a new branch below (EK2). The
+    # optional `\|` admits the override form for every file-descriptor prefix
+    # and both the truncating and appending operators.
+    targets = [m.group(2) for m in re.finditer(r"([0-9]*)>>?\|?\s*([^\s;|&<>]+)", command)]
 
     # BH5 HOLE 1 IS NOT REOPENED, AND IT NEEDS ITS OWN CLAUSE NOW. The hole was
     # `cd tests/corpus && echo x > y`: a RELATIVE target resolved against a
@@ -170,10 +193,16 @@ elif command and re.search(PROTECTED, command):
     # and is false now -- with targets tested individually this clause is the
     # only thing between that command and an allow, which the matrix checks in
     # both the corpus and the reviews direction.
-    cd_into = re.search(r"\bcd\s+[^\s;|&]*" + PROTECTED, command)
+    # AND `pushd` CHANGES DIRECTORY TOO (R1107). This clause named `cd` alone,
+    # so `pushd docs/reviews && echo x > step-3.md` wrote a relative target
+    # against a protected cwd with nothing naming the directory -- which is BH5
+    # hole 1 again, in the one shape the clause did not list. Repaired by naming
+    # the builtins that move the cwd rather than by adding a branch; `popd` is
+    # not here because it pops to a directory this command never names.
+    cd_into = re.search(r"\b(?:cd|pushd)\s+[^\s;|&]*" + PROTECTED, command)
 
     writes = (
-        any(re.search(PROTECTED, t) for t in targets)
+        any(re.search(PROTECTED, t) or re.search(UNRESOLVED, t) for t in targets)
         or (cd_into and targets)
         or re.search(r"\b" + VERBS + r"\b", command)
         or re.search(r"\bsed\b[^\n]*-i", command)
