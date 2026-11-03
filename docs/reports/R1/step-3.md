@@ -3828,7 +3828,7 @@ Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 44 at `a
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
 
-**Run `41570739300`, conclusion **failure**: 1915 failing test name(s) in the log.**
+**Run `41570739300`, conclusion **failure**: 1917 failing test name(s) in the log.**
 - `tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` (lint, unit and guards)
 - `tests/test_report_carried.py::test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph` (lint, unit and guards)
 - `tests/test_report_carried.py::test_the_report_carries_a_WHOLE_SUITE_count` (lint, unit and guards)
@@ -8630,7 +8630,7 @@ judge  compare the block above: there, steps 8, 9 and 10 were SKIPPED. This is t
 ```
 claim  the run at `64af726`, conclusion **failure**, reported this many failing names
 cmd    scripts/ci_section.py --rounds, §0a's per-run line for the `64af726` run
-out    Run `41570739300`, conclusion **failure**: 1915 failing test name(s) in the log.
+out    Run `41570739300`, conclusion **failure**: 1917 failing test name(s) in the log.
 rule   EG3 (i): every red is tested against the FS1/FT1 predicate INDIVIDUALLY, and
        a red that fails it is CZ1 (iv) unchanged
 ```
@@ -8762,3 +8762,6 @@ judge  measured rather than assumed. Re-anchoring on the addendum `6f14aba` and
 - **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[zero_padded_step_number]`
 ```
 ```
+
+# Revision 2 — the arm
+Answers: verdict 45 @ 903f38b
