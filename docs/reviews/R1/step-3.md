@@ -2,6 +2,80 @@
 Reviewed commit: a2c3f5c8787eeabab15395319dd123ad7048abff
 **Reviewed commit: `a2c3f5c8787eeabab15395319dd123ad7048abff`.**
 Verdict: HOLD
+Tests: **A WHOLE-SUITE RUN COMPLETED AFTER I WROTE THE VERDICT ABOVE, AND IT IS INVALID BECAUSE I INVALIDATED IT.** `1942 failed, 4431 passed, 1 skipped in 7429.66s (2:03:49)` at this sha. **I am not offering that figure and nothing in the verdict above changes.** I removed the worktree it was running in while it was still running, so the tail of the run read a tree that no longer existed. The ladder (`2094 passed`), the unit layer (`887 passed`) and the lint gate stand exactly as recorded above -- all three completed before the removal.
+Scope: **ADDENDUM to the interim check at this same commit. No new report revision exists, so this is an interim check too and it counts against NO round (ES0, EB4). It closes nothing (`--interim`, no `--closes` per FK1).** It adds no finding, withdraws no finding, and changes no disposition: **the HOLD stands on R1106 alone.** Its whole content is a correction to a sentence of my own.
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **everything in the entry below** | **UNCHANGED.** R1106 blocks; R1107 and R1108 are FF0 items for the next commit; R1109 to R1116 are ledgered; L57 and L60 closed; L47 to L56 and L58 carry; R867 to R870 no longer blocking by name; the corpus pause held. | nothing in this addendum touches any of them. No tree moved between the two entries except `docs/reviews/`. |
+| **my own "a whole-suite count was not obtainable" reason** | **WITHDRAWN. It was a causal claim and a measurement refutes it (BG0, and R861's precedent against my own figures).** | it WAS obtainable, in `2:03:49`. The verdict's headline -- "I DO NOT HAVE A WHOLE-SUITE FIGURE" -- remains true, because no VALID figure exists; but the reason I gave for not having one was runtime, and the real reason is that I destroyed the run's own working tree under it. |
+
+## Findings
+
+### R1117 (against me, not against the work). I removed my own worktree while a measurement was still running in it, and 33 reds are the result.
+
+**The contamination, named by its cause and separated from the designed reds:**
+
+```
+cmd    group the 1942 FAILED ids by file
+out    1887  tests/test_report_carried.py
+         22  tests/test_report_guard_states.py      <- 1909, the two guard files
+         13  tests/test_ci_determinism_gate.py
+          8  tests/test_ci_workflow_is_wellformed.py
+          4  tests/test_supervisor_conftest_pathspec.py
+          4  tests/test_ci_canonical_environment.py
+          2  tests/test_ci_runs_the_whole_suite.py
+          1  tests/test_collected_set_golden.py     <- an FV1 ROOT GUARD
+          1  tests/regression/test_generators_refuse_mismatched_inputs.py
+                                                    <- 33, outside the guard files
+cmd    the failure body of test_there_are_conftests_to_find
+out    subprocess.run(['git','ls-files','*conftest.py'],
+         cwd=WindowsPath('.../scratchpad/v43wt'), check=True)
+       -- v43wt is the worktree I had already removed
+cmd    the failure body of test_the_workflow_has_no_duplicate_key
+out    yaml.load(WORKFLOW.read_text(encoding="utf-8"), ...)
+       -- the same deleted tree
+cmd    THE CONTROL: all 33 ids in a FRESH worktree at this same sha
+out    **134 passed in 129.10s (0:02:09)**
+judge  **ALL 33 ARE MINE.** Not one of them is a property of the commit. Under
+       FS1/FT1 they would every one have BLOCKED -- none names a finding or a
+       site of the newest verdict, and none has its own commit as its subject
+       -- and ruling them as reds would have been 33 phantom blocking findings
+       against a clean tree, including one against an FV1 root guard and one
+       against the very file the SR-6 commit touched.
+```
+
+**AND I CANNOT CERTIFY THE OTHER 1909 EITHER, SO I DO NOT.** The two report-guard files are EG3 state (2) by design -- verdict 42 exists and no answering report does -- and `1909` is the right order of magnitude against verdict 42's own `2080` at its sha. But the deletion happened at an unknown point in a two-hour run, so I cannot say which of those 1909 failed for the designed reason and which failed because their tree had gone. **A log with an unknown contamination boundary is not evidence anywhere, not only where the contamination is visible**, so the whole run is discarded rather than partially quoted. EG3 (i) demands each id be traced individually; on this log that is not possible, and saying so is the honest reading.
+
+**This is the sixth instance of my own recurring class, in a new shape.** The five before it were measurements whose DOMAIN was not the domain of the claim -- a fixture writing a value nothing reads, a probe missing `window`, a figure measured over nodes that survive deduplication. This one is the same defect in time rather than in space: **the domain was deleted while the measurement was still reading it.** FV2 made me work in my own worktree so a stray write could not reach the implementer; it did not occur to me that the worktree is also a live dependency of anything still running there.
+
+**The guard, and it is one line: nothing is removed while anything is reading it.** A `git worktree remove --force` is a write to the one tree I am allowed to write, and cleanup is not exempt from the ordering rule CP3 already states for figures -- generate, edit, re-run, paste, and **only then** tear down. **Closed when** nothing; it is a finding against me and the correction is recorded here rather than owed to anyone.
+
+## Tolerances touched
+
+**NONE by this addendum.** The five declared across the range, and the EU1 adversarial case I ran on all three of the declarations EU1 attaches to, are in the entry below and are unaffected -- the grids and both arms completed in worktrees that still existed, and the two arms were restored to a clean tree and verified with `git status --porcelain` before anything was removed.
+
+## Next step opens when
+
+**Unchanged from the entry below, which is the operative one.** This addendum opens nothing, closes nothing and counts against no round.
+
+1. **R1106 is still the only blocking item**, and none of the 33 reds above joins it. **A tree that is clean is still clean**: the control says so at this sha, in 134 ids, in a worktree nothing had touched.
+2. **Do NOT treat `1942 failed` as this commit's count, and do not answer any of those 33 ids.** They describe my cleanup, not your code. If you want a whole-suite number for the step report, take it yourself at the report's own commit -- which is what `CLAUDE.md` requires of the report regardless of what I measure.
+3. **The three figures I stand behind at this sha are unchanged and all three completed before the removal:** the verification ladder `2094 passed, 0 failed`; `tests/unit` plus the four root guards plus the plan guard `887 passed, 0 failed`; and `ruff`, `black --check` and `mypy` clean at CI's own wider scope, `162` files and `45` sources.
+4. **CI at this sha was still `in_progress` when I wrote and I have not re-read it since.** L59 is unchanged and still live: the step-3 report's CI section waits for that run to CONCLUDE, and a red there is FF0 ahead of R1106.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: a2c3f5c8787eeabab15395319dd123ad7048abff
+**Reviewed commit: `a2c3f5c8787eeabab15395319dd123ad7048abff`.**
+Verdict: HOLD
 Tests: **MY OWN RUNS AT THE JUDGED SHA, IN MY OWN WORKTREES (FV2).** The whole verification ladder -- the STOP head -- **2094 passed, 0 failed, 2 warnings in 232.96s**: no low rung is red, so no higher rung is uninterpretable. `tests/unit` plus the four FV1 root guards plus `tests/test_plan_matches_tolerances.py`, one invocation: **887 passed, 0 failed in 471.44s (0:07:51)** -- the layer every SR-6 to SR-9 cell lives in. The lint gate at **CI's OWN SCOPE**, wider than the one you used before `11970cd`: `ruff check floatfea tests scripts` -> `All checks passed!`; `black --check floatfea tests scripts` -> `162 files would be left unchanged.`; `mypy floatfea` -> `Success: no issues found in 45 source files`. **Your three lint figures reproduce to the file and the count, 162 and 45.** **AND I DO NOT HAVE A WHOLE-SUITE FIGURE AND I WILL NOT QUOTE YOURS.** Two runs were still going when I wrote this -- everything outside the ladder and the two report-guard files at **7%, zero failures and zero `F` characters**, and the whole suite at **3%, zero failures**. `tests/regression`'s end-to-end cells are ~190 s each and your own FV1 selection took 1:34:08, so a whole-suite count was not obtainable inside an interim check. **I state that rather than rounding it up, and the 937 in your invocation is unverified by me.** Also measured to completion: **two arms (11 reverted-red / 9 clean controls, and 2 reverted-red / 3 clean controls)**, a regeneration check on two published deliverables, three continuum grids, and six end-to-end CLI runs.
 Scope: **ES0 INTERIM CHECK.** `ls docs/reports/R1/` is `step-1-answers.json step-1.md step-2-answers.json step-2.md` -- **no `docs/reports/R1/step-3.md`** -- so no reviewed revision is consumed, step 3 stays at **0 of 3**, this counts against no round and closes nothing (`--interim` per FS2, no `--closes` per FK1). **Step 1b does not fire and I say so rather than skipping it:** there is no `Answers: verdict <n> @ <sha>` header to compare, because there is no step-3 report. You said so first and you were right.
 
