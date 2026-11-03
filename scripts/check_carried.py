@@ -31,7 +31,9 @@ ROOT = Path(__file__).resolve().parents[1]
 # A finding is declared as a bolded `**R<n>. (class)` heading in a verdict. The
 # same file mentions many other `R<n>` in prose -- carried items, cross-
 # references -- and those are not this verdict's findings.
-_FINDING = re.compile(r"^\*\*(R\d+)\.", re.MULTILINE)
+# R1117: accepts a markdown heading as well as bold. See
+# `scripts/carried_table.py` for the measurement and why six copies.
+_FINDING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)\.", re.MULTILINE)
 _MENTION = re.compile(r"\bR\d+\b")
 
 

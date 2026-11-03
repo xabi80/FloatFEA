@@ -33,7 +33,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 GENERATED_MARK = "<!-- generated: scripts/answered_table.py -->"
 
-_FINDING = re.compile(r"^\*\*(R\d+)\.\s*(?:\(([^)]*)\))?\s*(.*)$", re.MULTILINE)
+# R1117: accepts a markdown heading as well as bold. See
+# `scripts/carried_table.py` for the measurement and why six copies.
+_FINDING = re.compile(
+    r"^(?:\*\*|#{2,4}\s+)(R\d+)\.\s*(?:\(([^)]*)\))?\s*(.*)$", re.MULTILINE
+)
 
 
 def _subjects(verdict: str) -> dict[str, tuple[str, str]]:

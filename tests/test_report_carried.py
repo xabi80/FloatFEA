@@ -218,7 +218,9 @@ VERDICT = REVIEWS / f"step-{max(REVIEWED)}.md" if REVIEWED else REVIEWS / "step-
 REPORT = REPORTS / f"step-{STEP}.md"
 
 # `**R12.` and `**R12 ` both open a finding: the missing dot dropped one silently.
-_FINDING = re.compile(r"^\*\*(R\d+)[.\s]", re.MULTILINE)
+# R1117: accepts a markdown heading as well as bold. See
+# `scripts/carried_table.py` for the measurement and why six copies.
+_FINDING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)[.\s]", re.MULTILINE)
 _MENTION = re.compile(r"\bR\d+\b")
 # `path/to/file.py:123` or `:123-145`, as the verdicts write them.
 # The leading dot of `.claude/...` is part of the path; a word boundary before
@@ -363,7 +365,9 @@ def _findings() -> list[tuple[str, str]]:
     """
     return [
         (m.group(1), m.group(2))
-        for m in re.finditer(r"^\*\*(R\d+)\.?\s*\(([^)]*)\)", VERDICT_TEXT, re.MULTILINE)
+        for m in re.finditer(  # R1117: heading form too
+            r"^(?:\*\*|#{2,4}\s+)(R\d+)\.?\s*\(([^)]*)\)", VERDICT_TEXT, re.MULTILINE
+        )
     ]
 
 

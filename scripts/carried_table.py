@@ -73,8 +73,30 @@ import re
 import sys
 from pathlib import Path
 
-HEADING = re.compile(r"^\*\*(R\d+)\.?\s*\(([^)]*)\)", re.MULTILINE)
-FINDING = re.compile(r"^\*\*(R\d+)[.\s]", re.MULTILINE)
+# **THE ANCHOR ACCEPTS A MARKDOWN HEADING AS WELL AS BOLD (R1117).** It was
+# `^\*\*` alone. The newest verdict writes its findings as
+# `### R1106 (BLOCKS).` rather than `**R1106. (BLOCKS)`, and measured over
+# that verdict's own text there are **0 bold findings and 11 heading-form**
+# -- so every reader of the gating record was blind to all of them,
+# including the one the verdict BLOCKED on. The generated Carried table
+# topped out at R1105.
+#
+# That is the FF0 class exactly: apparatus that decides whether a green is
+# believed. A Carried table silently missing the blocking finding is a wrong
+# row in a published report, and the guard that should have demanded it is
+# parametrised through this same anchor, so it did not know the finding
+# existed either.
+#
+# SIX COPIES OF ONE DECISION, which R983 would rather were one:
+#   scripts/carried_table.py  (HEADING, FINDING)
+#   scripts/check_carried.py  (_FINDING)
+#   scripts/answered_table.py (_FINDING)
+#   tests/test_report_carried.py (_FINDING, and the inline one)
+# They are widened identically here rather than unified, because unifying
+# them means the test importing the scripts at module scope -- restructuring
+# a guard, which is not a repair. The drift risk is carried as a ledger row.
+HEADING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)\.?\s*\(([^)]*)\)", re.MULTILINE)
+FINDING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)[.\s]", re.MULTILINE)
 MENTION = re.compile(r"\bR\d+\b")
 SITE = re.compile(r"((?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|json|yml))")
 
