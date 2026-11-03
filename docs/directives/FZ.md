@@ -546,3 +546,67 @@ Requiring a double colon would be a second predicate on a reader whose live doma
 measured clean at 0 of 3810 real names, and this step has already produced three findings
 of the form "a narrower predicate opened a hole the looser one covered". The sentence is
 reduced to the shapes measured instead, and names what it does not check.
+
+**SR-25: R1139 closed by branch (i) — the pattern admits a stemless dotfile.**
+*Ruling applied:* FZ rule 1 (what blocks: FR1 only) and FZ rule 3 (an unconservative gate
+is fixed, not documented around).
+*Why:* verdict 47 offered two branches and called both acceptable, refusing only the
+universal heading over the narrow set. Declaring the narrow domain would have left the gate
+structurally unable to see `.gitattributes` — named in R959, R967 and R975, which are the
+findings about the BYTE CONTENT of published CSV deliverables, and `.gitattributes` is what
+decides those bytes. Same reasoning as SR-21 one shape over. **Measured in both
+directions:** the dotfile branch gains EXACTLY the three rows R1139 names and loses
+nothing; `./.git`, `.github`, `.gitattributes-backup`, `.gitattributesX` and
+`x.gitattributes` are all refused; the four R507 controls hold and `frames.txt` stays out.
+**And R1128's widening route is dead for this shape** — adding `gitattributes` to the
+extension class gains 0 rows, because `[\w.-]+\.` needs a character before the dot. The
+reviewer measured that too, independently.
+
+**SR-26: `_is_a_site` is NARROWED for stemless dotfiles, and the cost is stated.**
+*Ruling applied:* FZ rule 5 (self-found defect: fixed, with the measurement named).
+*Why:* the first form of the repair gained FOUR rows, not three. The fourth was
+`('R1122', './.git', 0)` — a fragment of `find . -not -path "./.git/*"` inside R1122's
+block, which is a directory in a shell exclusion and not a site at all. It got in because
+R518 admits any separator-bearing path even when nothing is there, on the ground that a
+closing condition may name a file to be CREATED. **That ground rests on the extension
+telling a filename from a directory name, and a stemless dotfile has no extension.** So a
+stemless dotfile must now be tracked, separator or not.
+
+**What the narrowing costs, said rather than left to be found:** a stemless dotfile a
+closing condition asks to be created is not a site until it exists. That is the one
+direction R518 says must never be silent, so it is said here, in the docstring, and in the
+report. The extension form is UNCHANGED —
+`tests/verification/rung1/test_new_thing.py` is still a site before it exists — and the
+narrowing reaches only the shape that produced the noise. **This is the third time in two
+steps that a narrower predicate opened something; it is recorded as a cost rather than
+presented as a clean win.**
+
+**SR-27: R1139's repair is held for step 4's FIRST COMMIT, not the closure.**
+*Ruling applied:* FZ rule 7 (ambiguous wording resolved toward existing conventions).
+*Why:* the repair makes three sites visible and therefore RED until §8b declares them, and
+**EK3 forbids touching `docs/reports/R1/step-3.md` after that report's final verdict**,
+which verdict 47 now is. The declarations have nowhere to go until step 4's report exists,
+and the guards read the report of the step the marker names. So the repair and its three
+declaration rows are one commit, in step 4, which is what verdict 47 itself predicted —
+"step 4's first commit carries a one-line parser repair and three declaration rows instead
+of a list entry". The verified patch is held rather than the work repeated; `git apply
+--check` passes at `779e79a`.
+
+**SR-28: the locked plan's step numbering contradicts itself, and I did not adapt to it
+silently.**
+*Ruling applied:* ESCALATED as a plan defect — NOT resolved under FZ rule 7, because
+CLAUDE.md § Working agreement is explicit: "If execution reveals that the locked plan was
+wrong, stop and say so — do not silently adapt the plan while implementing it."
+*Why:* `docs/milestones/R1.md` says at line 54 **"Four steps, not three (FR2, FR3, FR4).
+The renumbering is below."** and then its section headers still read
+**`FL1 — STEP 1`, `FL2 — STEP 2`, `FL3 — STEP 3`** — three steps, with FL3 as step 3.
+But step 3 is the step that just closed under verdict 47, and its work was FL2's gate plus
+the report; FL3 has not started. Under the four-step reading FL3 is **step 4**, which is
+what the step-3 report's own §9 says and what verdict 47 assumes ("a step 4 the plan
+estimates at 1.5–2 days").
+
+So the renumbering was announced and the headers were never updated. **Two readings of a
+locked plan disagree about which step FL3 is**, and the one that is written in the headers
+is the one that is wrong. I am not starting FL3 against it. It needs a standalone `plan:`
+commit renumbering the headers to four steps before step 4 opens — a plan amendment,
+recorded, not an inline edit made while implementing.
