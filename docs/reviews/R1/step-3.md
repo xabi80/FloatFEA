@@ -1,4 +1,537 @@
 # Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: a2c3f5c8787eeabab15395319dd123ad7048abff
+**Reviewed commit: `a2c3f5c8787eeabab15395319dd123ad7048abff`.**
+Verdict: HOLD
+Tests: **MY OWN RUNS AT THE JUDGED SHA, IN MY OWN WORKTREES (FV2).** The whole verification ladder -- the STOP head -- **2094 passed, 0 failed, 2 warnings in 232.96s**: no low rung is red, so no higher rung is uninterpretable. `tests/unit` plus the four FV1 root guards plus `tests/test_plan_matches_tolerances.py`, one invocation: **887 passed, 0 failed in 471.44s (0:07:51)** -- the layer every SR-6 to SR-9 cell lives in. The lint gate at **CI's OWN SCOPE**, wider than the one you used before `11970cd`: `ruff check floatfea tests scripts` -> `All checks passed!`; `black --check floatfea tests scripts` -> `162 files would be left unchanged.`; `mypy floatfea` -> `Success: no issues found in 45 source files`. **Your three lint figures reproduce to the file and the count, 162 and 45.** **AND I DO NOT HAVE A WHOLE-SUITE FIGURE AND I WILL NOT QUOTE YOURS.** Two runs were still going when I wrote this -- everything outside the ladder and the two report-guard files at **7%, zero failures and zero `F` characters**, and the whole suite at **3%, zero failures**. `tests/regression`'s end-to-end cells are ~190 s each and your own FV1 selection took 1:34:08, so a whole-suite count was not obtainable inside an interim check. **I state that rather than rounding it up, and the 937 in your invocation is unverified by me.** Also measured to completion: **two arms (11 reverted-red / 9 clean controls, and 2 reverted-red / 3 clean controls)**, a regeneration check on two published deliverables, three continuum grids, and six end-to-end CLI runs.
+Scope: **ES0 INTERIM CHECK.** `ls docs/reports/R1/` is `step-1-answers.json step-1.md step-2-answers.json step-2.md` -- **no `docs/reports/R1/step-3.md`** -- so no reviewed revision is consumed, step 3 stays at **0 of 3**, this counts against no round and closes nothing (`--interim` per FS2, no `--closes` per FK1). **Step 1b does not fire and I say so rather than skipping it:** there is no `Answers: verdict <n> @ <sha>` header to compare, because there is no step-3 report. You said so first and you were right.
+
+**I RULED UNDER FR1 WITH EZ0** (`CLAUDE.md` section "What blocks for the rest of R1", `docs/directives/FR.md`). **ONE FINDING BLOCKS**, and I give it the sentence FR1 requires. Eight more are ledgered, and **two are FF0-class apparatus items that FF0 routes to your next commit rather than to the ledger**.
+
+**YOUR SCOPE SENTENCE IS WRONG AND IT MATTERS FOR WHAT I HAD TO READ.** You wrote that "the other 17 were reviewed by verdict 42 or are the plan/process commits since". They were not. Verdict 42 judged **`f87e087`**, and `ae96a38` -- verdict 42 itself -- is the OLDEST commit in `f87e087..a2c3f5c`. Everything after it is unreviewed:
+
+```
+cmd    git log --oneline f87e087..a2c3f5c | wc -l
+out    18        -- not 19
+cmd    git log --oneline f87e087..a2c3f5c | tail -1
+out    ae96a38 review: R1 step 3 interim check at f87e087 ...
+judge  so SIX substantive code commits are unreviewed by any verdict, not two:
+       e8a35c1, 2b3f14e (FT2.7), 9af011b (FY1/FY2/FY5), 7d38450 (FY3),
+       11970cd and 481438f (FF0).
+cmd    git diff --stat f87e087..a2c3f5c -- floatfea tests scripts | tail -1
+out    24 files changed, 3911 insertions(+), 194 deletions(-)
+```
+
+ES0 fixes an interim check's scan at "a CZ0 (a)-(d) scan of the diff since the last verdict", and the diff since the last verdict is all of that. I scanned all of it. **This is not a complaint about the work -- the work in that range is good -- it is that an invocation saying "only two commits are mine this turn" invites a reviewer to read two.**
+
+**EU1 ATTACHES, AND YOU WERE RIGHT THAT IT ATTACHES THROUGH THE RANGE AND NOT THROUGH YOUR AUTHORSHIP.**
+
+```
+cmd    git diff f87e087..a2c3f5c -- floatfea/tolerances.py | wc -c
+out    14139
+cmd    git diff 11970cd..a2c3f5c -- floatfea/tolerances.py | wc -c
+out    0                 -- your two commits move it by zero bytes, as you said
+cmd    every constant line added or removed in the range
+out    +NODE_COINCIDENCE_DECIMALS: Final[int] = 9
+       +RECORDED_HEIGHT_PAIR_RELATIVE: Final[float] = 1e-9
+       +RECORDED_HEIGHT_PAIR_RELATIVE_COUNTER: Final[float] = 1e-6
+       +TRUSS_FACE_CLOSURE_RELATIVE: Final[float] = 1e-12
+       +TRUSS_FACE_CLOSURE_RELATIVE_COUNTER: Final[float] = 1e-6
+       **FIVE added. NOTHING removed, nothing loosened, no value moved.**
+       The two counters were RENAMED in 11970cd (family name -> ceiling name),
+       values unchanged at 1e-6.
+judge  **EU1 attaches on THREE declarations, not the two you named** --
+       `NODE_COINCIDENCE_DECIMALS` is the third, and it is the R694 shape most
+       exactly, because its value did not move at all. I ran the adversarial
+       case on all three. Two survive. **The third's two published margin
+       figures do not** -- R1109 below.
+```
+
+**WHERE I WORKED (FV2).** Four worktrees of my own outside the repository, all at the judged sha: `v43wt` reads the commit and runs the ladder, the lint gate and the probes; `v43arm` takes the two arms; `v43u` runs the unit layer; the verdict is written from `v43wt`. No `checkout`, no `reset`, no write of any kind in your tree -- every arm was reverted with `git checkout --` **inside my own worktree**, and `git status --porcelain` was empty afterwards, which I checked each time. Every read of the judged commit is a read of my own worktree AT that commit (R1050, which was mine).
+
+**THE MANDATED SEPARATE DIFFS.**
+
+```
+cmd    git diff --stat f87e087..a2c3f5c -- .claude docs/SUPERVISOR.md CLAUDE.md
+out    .claude/hooks/protect-reviews.sh | 86 ++++++++++------
+       CLAUDE.md                        | 26 ++++++
+       docs/SUPERVISOR.md               | 19 +++++
+judge  **NOT A STOP, and I read all three line by line rather than taking the
+       commit messages.** Both touching commits are STANDALONE `process:`
+       commits whose whole file list is the instruction files --
+       `bb1a750` (CLAUDE.md + SUPERVISOR.md, citing FZ) and `7994b54`
+       (the hook alone, citing FX1 recorded verbatim at 026c9c3). Neither
+       touches `floatfea/` or `tests/`. `.claude/agents/` is UNTOUCHED, so my
+       own definition did not move. The CLAUDE.md and SUPERVISOR.md changes are
+       purely ADDITIVE and delete no guard -- they add obligations on me (read
+       FZ) and two new checkable things (an unrecorded SR is a finding, a
+       missing digest is the omission to look for). I checked both new
+       obligations: SR-1 to SR-9 are all in FZ's log, and
+       `docs/digests/2026-11-02.md` exists. **The hook is a different matter
+       and it is R1107.**
+cmd    git diff f87e087..a2c3f5c -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty)                     -- no new or changed conftest, no new plugin
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py           -- the pathspec resolves, as my instructions
+                                     say it must. Not an empty result.
+cmd    git diff --stat f87e087..a2c3f5c -- tests/corpus .github
+out    (empty)                     -- corpus untouched, CI config untouched
+```
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **L57** -- `round(c, 9)` an undeclared coordinate epsilon on the production path | **CLOSED, AND I VERIFIED BOTH HALVES OF VERDICT 42's POINT 4 RATHER THAN THE FIRST.** | `floatfea/model/platform.py:766` is `round(c, NODE_COINCIDENCE_DECIMALS)`, declared `Final[int] = 9` at `floatfea/tolerances.py:1793`, imported at `platform.py:85`. **And the second half -- "settle it against `start == body_centre` BEFORE writing the repair" -- is answered BETTER than the entry claims:** `git show f87e087:floatfea/model/platform.py` carried the exact comparison at `:629-630`; at HEAD `grep -n "== body_centre" floatfea/model/platform.py` finds **only a comment at `:786`**. The naming rule is now keyed on DECLARED BODY NAMES (`platform:<hub>_arm`, `:480`, `:503`), not on coordinates, so the epsilon is no longer load-bearing for a name at all. |
+| **L60** -- the plan's "THREE, all the same shape" | **CLOSED.** | `docs/milestones/R1.md` now reads `THREE SITES, **TWO SHAPES** -- corrected at verdict 42's L60, which read the shape wrong`. |
+| **R867 to R870 (FT2.7)** | **WORKED, AND THE WORK FOLLOWS VERDICT 42's TWO RULINGS -- which I checked against the rulings, not against the plan's prose.** They are **no longer blocking by name**. | `git diff f87e087..a2c3f5c -- floatfea tests` mentions R867 29 times, R868 8, R869 6, R870 2. **Ruling 1 (ROW 4 RUNS) honoured:** `tests/regression/test_ft27_topology_solve.py:60` declares `hub4_via_brace` among the topologies that RUN, with its own `U_HUB4_BRACE = "1.81076"` -- distinct from the braced star's `1.82047`, which carries the R868 caveat I attached ("#4 is a DIFFERENT structure, do not expect it to reproduce 1.82047"). **Ruling 2 (R869 subsumes THREE) honoured:** `:48` reads "#5, #6 and #7 are refused by R869 and #8 at build", and the plan closes the eight as "3 run under R867 + 3 refused under R869 + 1 already refused at build (#8) + 1 unchanged (#1) = 8". |
+| **the plan commit `9827156`, unreviewed -- and your direct question** | **RULED. Its FT2.7 section IS to be relied on AS AMENDED BY VERDICT 42's RULINGS 1 AND 2, and that is what you built.** I am not re-opening it. | Verdict 42 ruled both of its open questions and said "Build against that"; you did, and I verified the two above against the shipped tests rather than against the plan's prose. What I have NOT done is read all 265 of its lines -- I read the FT2.7 table and the tolerance section. **The residue of that reading is R1110.** |
+| **FT2.5 conditions 1, 2 and 3** | **RE-CHECKED, NOT CARRIED FORWARD ON AN EMPTY DIFF -- because the diff is NOT empty this time and four consecutive verdicts had been able to say it was.** All three still met. | `git diff --stat f87e087..a2c3f5c -- floatfea/run/sizing.py` is **empty**, but `floatfea/run/truss.py` **changed (+49)** -- `7d38450`, FY3. I read that diff whole: it replaces the inclined face's allocation and its braced length and adds `inclined_face_length`, and touches nothing FT2.5's conditions name. Condition 1's cell is covered by `tests/regression/test_fy3_triangle_closure.py`, which I ran arms and grids against. |
+| **condition 4** of the FT2.5 ruling | **STILL CARRIES; its site is a report that does not exist.** | `ls docs/reports/R1/` has no `step-3.md`. |
+| **L59 / verdict 42's point 5** -- the CI section is generated only after every run it covers has CONCLUDED | **STILL OPEN AND NOW DIRECTLY LIVE.** | `gh run list --commit a2c3f5c...` is one run, **41555438414, `status: in_progress`, no conclusion**, checked three times across roughly two hours. You invoked me mid-run and said so, which is right. **It means step 3's report cannot generate its CI section from this run yet** -- a row that goes in reading `in_progress` brings the same red back the moment it finishes, which is exactly what L59 records. |
+| **L47 to L56, L58** | **CARRY, by name, unchanged. I did NOT sweep them and ES0 forbids me one in a check of this kind.** Your census over repairs citing their ids is worthless in both directions and you said so -- I agree, and I am not substituting a worse one. | `CLAUDE.md`'s closure-item handling: fixed once, in the step's closure commit, not re-reviewed item by item. |
+| **R1084** (accepted open per FW3), **R1086** (accepted) | **unchanged.** | no finding. |
+| **R1104, R1105** | **closed at verdict 42 and not reopened.** | nothing in this diff touches their sites. |
+| **`docs/USER_GUIDE.md`** | **STILL DOES NOT EXIST and FL3's gate needs it.** | `ls docs/USER_GUIDE.md` -> `No such file or directory`. |
+| **the EG4(e) corpus pause** | **HELD. ZERO new entries.** | the `tests/corpus/` diff is empty and I added nothing. Neither exception opens. **ES0 independently fixes an interim check at "no corpus batch", so nothing turns on the lapsed date**, which verdict 41 raised with Xabier once. See the corpus section for the recorded substitute I ran instead, which produced two of this round's findings. |
+
+## Findings
+
+### R1106 (BLOCKS). The FY3 supersession reached ONE of three sibling artifacts. 84 of 168 rows in a published CSV carry the unconservative numbers with no mark.
+
+**The silently wrong result FR1 asks for:** a reader -- or a script -- taking any triangle row from `results/F6b/truss_sizing.csv` gets truss sizing computed from the face allocation FY3 ruled wrong in the **UNCONSERVATIVE** direction, with **nothing in that file saying so**, while its rendered sibling says in a heading that every triangle row in it is superseded.
+
+```
+claim  the SUPERSEDED note is in truss_sizing.md and in NEITHER machine-readable
+       sibling
+cmd    grep -c -i "superseded|FY3|R1072" (alternation escaped) over
+       results/F6b/truss_sizing.csv and results/F6b/truss_sizing.json
+out    results/F6b/truss_sizing.csv:0
+       results/F6b/truss_sizing.json:0
+cmd    grep -n -i superseded results/F6b/truss_sizing.md | head -1
+out    28:## SUPERSEDED - every TRIANGLE row and figure below (2026-10-31, FY3)
+cmd    grep "^#" results/F6b/truss_sizing.csv
+out    three lines, the F6b INDICATIVE header, and no mark of any kind
+       -- so the file CAN carry a note; it just does not
+cmd    the triangle rows counted, and the factor they are low by
+out    data rows 168   triangle rows 84
+       Lf/h over the shipped triangle rows: min 1.0050  max 2.2361 (at h=2 b=8)
+       rows understating the inclined-face shear by >1.5x : 8   by >2.0x : 2
+rule   new/old = Lf/h EXACTLY, derived independently of your figure:
+       old = |Vz|/2 + q h ;  new = |Vz| Lf/(2h) + q Lf = (Lf/h)(|Vz|/2 + q h)
+cmd    git log --oneline -1 -- each sibling
+out    .md   7d38450  (FY3 -- the note was added here)
+       .csv  27ae08f  (an earlier commit; FY3 did not touch it)
+       .json 75e31ec  (F6b step 1 revision 2)
+```
+
+**WHAT MAKES THIS A FINDING RATHER THAN AN OVERSIGHT I SHOULD HAVE LEDGERED.** You did the work properly for the `.md`: the note is emitted by the GENERATOR (`scripts/measure/f6b_report.py:88`), so it survives regeneration, and it is ASSERTED -- `tests/regression/test_fy3_triangle_closure.py:306` is `assert "## SUPERSEDED" in committed`, with `:307-308` pinning the date, `FY3`, `TRIANGLE` and `box rows are not`. That is a gate carrying its own failure. **And its domain is `truss_sizing.md` alone**, a collection that by construction cannot contain the two unmarked siblings -- the recorded guard *assertion domain blindness*, and the CLAUDE.md rule that half of an item is not the item. It is also verdict 42's **L56 one round later**: "the cell asserts published-key uniqueness on `utilisation.csv` only, while the finding it answers cited `member_forces.csv` too." Same shape, a published sibling, one round apart.
+
+**`results/F6b/` is a published deliverable under EZ0** ("anything under `results/`"), and FR1's head names a CSV explicitly. SR-4's ruling -- do not recompute, mark and point -- is defensible and I am not reopening it. The finding is that the marking reached one file of three.
+
+**Closed when** `results/F6b/truss_sizing.csv` carries the supersession in its comment header, naming which rows it covers and which it does not, and `results/F6b/truss_sizing.json` carries it in a field a reader of that file will see -- **both emitted by their generator, not typed in**, and **both asserted in the same cell that already asserts the `.md`'s note**, so the domain cannot drift apart again. If instead the two files are judged not worth marking, the `.md`'s own note must say that its machine-readable siblings are unmarked, so a reader of the document is not told the record is clean.
+
+### R1107 (FF0, your next commit -- not the ledger). The hook narrowing moved FOUR WRITE rows from DENY to ALLOW, and `>|` is the one that matters.
+
+`.claude/hooks/protect-reviews.sh:163`. **The 31-row matrix in `7994b54` says "rows MOVED by the change: 4 -- all four READS, and not one write row moved", and "Eighteen write rows were already denied before the change and all eighteen still are." Both sentences are true of those 31 rows and false of the hook.** I built the harness and ran both versions of the file:
+
+```
+cmd    both versions of the hook, same JSON, agent_type=general-purpose
+out    before after  want   command
+       DENY   ALLOW  DENY   echo x >| docs/reviews/R1/step-3.md
+       DENY   ALLOW  DENY   echo x 1>| docs/reviews/R1/step-3.md
+       DENY   ALLOW  DENY   V=docs/reviews/R1/step-3.md; echo x > $V
+       DENY   ALLOW  DENY   pushd docs/reviews && echo x > step-3.md
+       DENY   DENY   DENY   >  >>  2>  ( )>  tab  no-space  quoted   (7 rows)
+       DENY   DENY   DENY   cd docs/reviews && echo x > step-3.md
+       DENY   DENY   DENY   cd tests/corpus && echo x > y.txt
+       DENY   DENY   DENY   Write and Edit at a verdict and at a corpus entry
+       ALLOW  ALLOW  ALLOW  the four READ rows FX was raised for, and grep/cat
+cause  the target extraction is ([0-9]*)>>?\s*([^\s;|&<>]+) -- after > the next
+       character is |, which is OUTSIDE the target class and which \s* cannot
+       cross, so NO target is extracted and no clause fires.
+```
+
+**`>|` is a real write and it is the only redirect that works under `noclobber`**, which I verified rather than asserted:
+
+```
+cmd    echo ORIGINAL > clob.txt; set -o noclobber
+       echo "OVERWRITTEN BY >|" >| clob.txt; cat clob.txt
+out    OVERWRITTEN BY >|
+cmd    then, in the same shell:  echo "blocked?" > clob.txt
+out    bash: clob.txt: cannot overwrite existing file   -- and the file is
+       unchanged, so > is refused exactly where >| succeeds
+```
+
+**This is NOT a STOP and I want to be clear why**, because my instructions make a removed guard one. The change is a standalone `process:` commit, it cites FX1, `.claude/agents/` is untouched, no clause was deleted without a replacement, and the eighteen write shapes anyone would actually type are still denied. The fail-closed empty-`hit` guard it adds is a real improvement and the hazard it closes is genuinely reachable. **What happened is the thing my own memory note records and this hook's own comment records four times: narrowing a predicate opens a hole the wider one covered, and the matrix was solved only from the side that makes the change look safe (EH4).** Nobody enumerated the shapes a redirect can take; they enumerated the shapes they had already thought of -- which is R84's defect in a new place, and the commit says R84's list is gone "rather than extended" while reintroducing a list implicitly, in a character class.
+
+**FF0 routes this to your next commit, ahead of other work, not to the ledger:** `.claude/hooks/` is named in FF0's own list of apparatus that decides whether a green is believed. **Under EK2 it is a REPAIR, not a fifth `or` branch** -- the target extraction should admit the clobber-override form. **Closed when** the target regex accepts `>|` and `>>|`, the matrix is re-run in BOTH directions with my four rows in it, and the run is pasted, as the hook's own comment demands.
+
+### R1108 (FF0, your next commit -- not the ledger). The rung-3 class guard transfers a CLASS label to an entry that did not declare it. Your report of it is exactly right; the reason given for deferring it is not.
+
+`tests/verification/rung3/test_tolerance_counter_cases.py:37-40`. You reported this in the `NODE_COINCIDENCE_DECIMALS` entry rather than fixing it. **I armed it, and it reproduces precisely as you describe:**
+
+```
+claim  one CLASS line above a Final[int] constant relabels the NEXT Final[float]
+cmd    the guard's own _ENTRY regex over tolerances.py, clean and with
+       "# CLASS: STRUCTURAL" restored above NODE_COINCIDENCE_DECIMALS
+out    clean: 55 entries classified, mis-attributed 0
+       armed: 55 entries classified, and
+         RECORDED_HEIGHT_PAIR_RELATIVE:  ACCURACY -> STRUCTURAL
+         its own nearest CLASS line says: ACCURACY
+       and NODE_COINCIDENCE_DECIMALS itself is in NEITHER list (Final[int])
+judge  real, latent and silent. STRUCTURAL FORBIDS a counter and
+       RECORDED_HEIGHT_PAIR_RELATIVE has one, so the obligation fails on the
+       wrong entry -- the mechanism you hit. The current tree is clean only
+       because the CLASS line was REMOVED from the int entry, so the defect is
+       one edit away at all times.
+```
+
+**The deferral reason is false and that is the part to fix with it.** `floatfea/tolerances.py` says the mis-attribution "is in the digest as an apparatus item rather than fixed here, **because rung 3's guards are not edited inside a step commit that also touches `floatfea/`**". No such rule exists. The standalone-`process:`-commit rule in `CLAUDE.md` covers `.claude/agents/`, `.claude/hooks/` and `docs/SUPERVISOR.md` -- **the reviewer's own instruments**. `tests/verification/rung3/` is an ordinary test directory.
+
+```
+cmd    grep -n "not edited inside a step commit" CLAUDE.md ; and the same for
+       "rung 3's guards"
+out    (empty, both)
+```
+
+That sentence is a claim about this repository's rules, written in the source tree, that one `grep` refutes -- **CW0**, in the same entry as the report of the defect. **FF0 and EK2 both point away from the ledger:** a guard that fails false is fixed or deleted in the next commit. **Closed when** the regex terminates at the next declaration of any type rather than running on to the next `Final[float]`, with a cell that is red under the armed state above, and the false sentence is deleted from the entry.
+
+### R1109 (ledger). The coincidence rule's TABLE 1 reproduces exactly. BOTH of TABLE 2's published margin figures are wrong, and the second is measured over a collection that cannot contain what it is about.
+
+`floatfea/tolerances.py`, the `NODE_COINCIDENCE_DECIMALS` entry. **The VALUE and the FORM stand -- I measured that and I am not asking you to move either.** EU1 attaches here more than anywhere in the range, because this is the declaration whose value did not move at all, which is EU1's own worst case.
+
+```
+claim  TABLE 1: names, labels and connectivity IDENTICAL at every rung
+cmd    build_superstructure(measurement_fraction=f) at all seven rungs of
+       MASS_FRACTION_LADDER, fingerprinting node names, member labels and
+       (i, j) per body
+out    f=0.75 baseline: 5 bodies, 22 nodes, 16 members
+       f=0.5, 0.4, 0.3, 0.2, 0.1, 0.0 -> IDENTICAL: True, all six
+judge  **VERIFIED.** The one claim EU1 exists to demand, and it holds. R694's
+       shape does NOT recur here.
+
+claim  TABLE 2 upward: "may RISE to 18 and beyond, with NO effect -- no two deck
+       points need more resolution than this to be told apart"
+cmd    node count per body against the decimals
+out    decimals   platform  hub1  hub2  hub3  hub4   total
+       -1 .. 10          6     4     4     4     4      22
+       12                6     4     4     4     5      23   <-- CHANGED
+       15, 18, 30        6     5     5     5     5      26   <-- CHANGED
+judge  **FALSE AT 12.** The upward margin is THREE decimals, not unbounded, and
+       the second clause is backwards: there ARE deck point pairs that MERGE at
+       9 and separate at 12. The downward half reproduces exactly -- -1 with no
+       effect, and at -2 a REFUSAL, "element connects node 0 to itself; a
+       zero-length member has no axis", verbatim as the entry states.
+
+claim  "the default star's CLOSEST two nodes are 41.3261 m apart ... a factor of
+       4.133e+10", offered as why "the value is not delicate"
+cmd    closest pair per body, and the pairs the rule actually MERGES (built at
+       30 decimals, where nothing merges, then compared against 9)
+out    platform 41.3261 m   hub1..hub4 25.0000 m  -> OVERALL 25.0000 m, 2.5e+10
+       the four pairs the rule MERGES at 9 decimals:
+         hub1_centre / hub1_remainder   7.526952e-15 m
+         hub2_centre / hub2_remainder   4.281548e-14 m
+         hub3_centre / hub3_remainder   2.251925e-14 m
+         hub4_centre / hub4_remainder   1.776513e-14 m
+rule   the published figure is measured over the nodes that SURVIVE dedup
+judge  **TWO defects, and the second is the serious one.** (1) 41.3261 is the
+       PLATFORM body only; the overall closest pair is 25.0000 m in each of the
+       four hubs, so the published factor is 1.65x optimistic and its domain is
+       one of five bodies -- R755 and L60 again, a figure right about the axis
+       its author swept. (2) A rounding rule's margin is NOT the closest
+       SURVIVING pair: it is the largest separation the rule still MERGES, and
+       **a list of surviving nodes cannot contain a merged pair.** That number
+       is 4.28e-14 m against 1e-09 m, a factor of **2.3e+04**, not 4.13e+10 --
+       six orders apart, and it is the figure the "not delicate" argument
+       rests on.
+```
+
+**AND THE VALUE IS STILL RIGHT, which is why this is a ledger row and not a block.** 9 decimals sits about 4.4 decades above the largest round-off coincidence it must absorb (`4.28e-14`) and about 10 decades below the closest genuinely distinct deck joints (`25 m`). The merged pairs are `hubN_centre` / `hubN_remainder` -- the same point computed two ways, at machine epsilon times 25 m. The rule is doing necessary work and its headroom is real; two numbers describing that headroom are wrong. **Closed when** the entry's upward row reads the measured `12`, and the margin figure is the largest MERGED separation against the resolution, with its domain stated as all five bodies.
+
+### R1110 (ledger). The plan declares `NODE_COINCIDENCE_DECIMALS` `STRUCTURAL`; the file deliberately declares no class; the plan guard checks neither.
+
+`docs/milestones/R1.md:435` against `floatfea/tolerances.py:1766-1793`.
+
+```
+cmd    sed -n '435p' docs/milestones/R1.md
+out    | NODE_COINCIDENCE_DECIMALS | NODE_COINCIDENCE_DECIMALS = 9 |
+       STRUCTURAL | ...
+cmd    the entry's own words, in tolerances.py
+out    "So this entry carries no CLASS: line"
+cmd    grep -in "class" tests/test_plan_matches_tolerances.py
+out    (empty)   -- the guard runs the VALUE column in both directions and does
+                    not read the class column at all
+judge  the plan carries the very label the entry records as having been the
+       defect -- relabelling it STRUCTURAL is what transferred onto
+       RECORDED_HEIGHT_PAIR_RELATIVE -- and R1.md:455 adds "Each carries ...
+       its class" where this one deliberately does not.
+```
+
+**Closed when** the plan's class cell for that row says what the file says -- no class, with the reason -- or the two are reconciled some other way and the plan says which.
+
+### R1111 (ledger). `wave_basis_from_sidecar` is a third door and it CANNOT reconcile. Your two doors are right; the public one below them is protected by nothing but call order.
+
+Your question 2, answered with the census rather than by reading.
+
+```
+cmd    grep -rn "wave_basis_from_sidecar(" --include=*.py floatfea scripts
+out    floatfea/run/pipeline.py:1452        <- inside exported_wave_basis,
+                                               reconciled one line above
+       scripts/measure/f6_results_report.py:474
+       scripts/measure/member_forces_table.py:348
+judge  **THERE IS NO FOURTH DOOR.** exported_wave_basis (npz) and
+       validated_export_scale (npz + sidecar) both call
+       refuse_separated_scale_records; f6a_premise_check.py:190 calls
+       validated_export_scale(fdr.NPZ) whose sidecar default resolves to the
+       npz's own sidecar, so it reconciles too, and it reads no height.
+       **But wave_basis_from_sidecar is exported in __all__ at :76, takes ONLY
+       a sidecar, and derives a height from run.lambda through
+       _resolve_height_pair. It has no npz, so it cannot reconcile, ever.**
+       Its own docstring invites the pattern: "a caller holding the sidecar
+       itself comes here."
+```
+
+**Your reorder's causal claim is TRUE and I armed it rather than reading it.** `tests/regression/test_generators_refuse_mismatched_inputs.py:138-139` says "Both generators resolve the scale first now, so swapping the two lines back turns this assertion red again":
+
+```
+cmd    both generators reverted to basis-before-scale, then the refusal cell
+out    FAILED test_R933_a_DISAGREEING_scale_is_refused_by_both
+              [f6_results_report.py]
+       FAILED test_R933_a_DISAGREEING_scale_is_refused_by_both
+              [member_forces_table.py]
+       2 failed, 3 passed in 2.89s          -- clean controls green
+       restored: git status --porcelain empty
+judge  BG0 satisfied, at BOTH generators, with controls. And the arm shows the
+       reverted order still REFUSES (non-zero return code) -- only the MESSAGE
+       changes, which is FR1's own non-blocking class 1, and which you
+       classified that way yourself. Correct.
+```
+
+**So today nothing publishes through the third door unreconciled, and that is why this is a ledger row.** What protects it is that both generators happen to call `validated_export_scale` as well. **Closed when** the third door cannot be used blind: either it takes the npz (or a resolved scale) so the reconciliation is structural rather than a call-order convention, or its docstring stops inviting a caller to hold only a sidecar and says that a caller doing so publishes a height from an unreconciled lambda. R983's "one decision at one site" is satisfied for the decision and not for the door.
+
+### R1112 (ledger). A multi-element `froude_lambda` makes `_npz_scale_key` return None, which SKIPS the reconciliation silently. Not reachable today -- I measured that end to end.
+
+`floatfea/run/pipeline.py:1686-1695`. `UNREADABLE_NPZ` contains `ValueError`, and `reshape(())` raises `ValueError` for a non-scalar, so moving the reshape inside the `try` (your SR-7 repair) turned a loud crash into a silent `None` -- and `None` is the "no key to compare" exit.
+
+```
+cmd    exported_wave_basis on a 2-element / empty / 2x2 froude_lambda, with a
+       sidecar at lambda 25.0 recording ONE height
+out    npz key [50,25], full 24.2 only   -> EXIT 0, model published 0.968
+       npz key [50,25], model 0.484 only -> EXIT 0, full  published 12.1
+       empty key, 2x2 key                -> EXIT 0, same shape
+       control: scalar key 50.0          -> ConfigError, "scale disagreement"
+judge  at the DOOR this is SR-6 again, one input shape over: 12.1 where 24.2 is
+       the truth, and 0.968 where 0.484 is.
+cmd    the same pair end-to-end through the real CLI, one variable moved
+out    control  EXIT 0, report lambda 50.0, H 24.2 m / 0.484 m model
+       scalar   EXIT 2, "scale disagreement ... run.lambda = 25"  <- your repair
+       multi    EXIT 2, "the npz could not be read (cannot reshape array of
+                size 2 into shape ()), so there is no way to know what scale
+                its joint reactions are at"
+judge  **NOT BLOCKING.** run() calls exported_wave_basis at :2074 and
+       refuse_scale_disagreement at :2102, and the latter refuses on
+       "exported is None" before anything is written; both generators refuse at
+       validated_export_scale for the same reason. So no artifact carries the
+       number. What is left is that the function OWNING the comparison returns
+       silently on an input another reader treats as a hard refusal, so the
+       protection is a downstream check rather than the shared decision.
+```
+
+**Closed when** `_npz_scale_key` distinguishes "no comparable key" from "a key that is not a scalar", so the function that owns the comparison refuses the second rather than returning the first -- or its docstring says, in the list of three states it already enumerates, that a non-scalar key is a fourth and is refused elsewhere.
+
+### R1113 (ledger). The third wrong-exception-class site, which you asked me to assume exists. It does, and `config.py` already names the class twenty lines from where it was needed.
+
+`floatfea/run/pipeline.py:1777` (the `float(beside)` in `refuse_separated_scale_records`) and `UNREADABLE_JSON` at `:911`.
+
+```
+cmd    17 exotic sidecars and npz files through both reconciled doors; a
+       ConfigError is a NAMED refusal, anything else is a bare traceback
+out    run.lambda = 10**400 (JSON expresses it natively)
+         basis -> **OverflowError: int too large to convert to float**
+         scale -> **OverflowError**            <- BOTH doors, bare traceback
+       a sidecar of 60000 nested arrays
+         basis -> **RecursionError**
+         scale -> **RecursionError**           <- BOTH doors, bare traceback
+       run.lambda = NaN / Infinity / a LIST / run = a LIST  -> ConfigError
+       npz key = string / bool / NaN / complex / empty bytes / truncated zip
+                                                            -> ConfigError
+cmd    grep -rn "except (TypeError, ValueError, OverflowError)" floatfea
+out    floatfea/run/config.py:378     -- the class, already named, next door
+judge  SR-7 and SR-8's shape a third time: a handler that does not name the
+       class its input raises. **FR1 class 1 -- the outcome is right and loud,
+       only the message is a traceback -- so a ledger row, not a block.**
+       OverflowError is the one worth fixing: a JSON integer literal needs no
+       malice, and is_recorded_number is where this project decides what a
+       recorded number is.
+```
+
+**Closed when** `is_recorded_number` / `float(beside)` refuses an out-of-range integer by name, with a row for `10**400`, and `UNREADABLE_JSON` either names `RecursionError` or the entry says why a traceback is the right answer there.
+
+### R1114 (ledger). `exported_wave_basis` gates on `is_file()` and `wave_basis_from_sidecar` on `exists()`, so R1007's distinction is pre-empted in its only production caller. I bounded the reachability and that is why I did not block.
+
+`floatfea/run/pipeline.py:1445` against `:1520`. R1007 ruled that a PRESENT-but-unreadable sidecar is not an ABSENT one; that repair lives in `wave_basis_from_sidecar`, which the production door returns an empty mapping before ever reaching.
+
+```
+cmd    the same unreadable sidecar as a FILE and as a DIRECTORY, end-to-end
+       through the real CLI, against both controls -- one variable moved
+out    corrupt   (a file, bad JSON)  EXIT 2, refused by name -- R1007 working
+       notafile  (a directory)       EXIT 0, and report.md publishes:
+         "* **the screen was NOT performed.** The band is a function of the
+          recorded wave height and this dynamic-inputs file records none, so
+          there is no band"
+         sea-state screen rows: 0      Checked stations: 32. Over unity: 4.
+       absent    (nothing there)      EXIT 0, and report.md publishes the SAME
+         sentence, the SAME 0 screen rows, the SAME Over unity: 4
+       control   (the shipped pair)   EXIT 0, "The associated-period band at
+         the recorded height is 12.542 .. 16.316 s" -- the screen RAN
+judge  **the ablation is the "absent" row**: a DIRECTORY at the sidecar path is
+       indistinguishable in the artifact from a genuinely absent sidecar. So
+       the FL2(d)/EZ2 screen is skipped beside a sentence asserting the file
+       records no height, when a file system object occupies the path.
+cmd    which shapes fall in the is_file()/exists() gap, measured
+out    directory          is_file=False  exists=True   <- the gap
+       chmod 0 on a file  is_file=True   exists=True   (pathlib RE-RAISES
+                                           EACCES; it does not swallow it)
+       absent             is_file=False  exists=False  (correct)
+judge  **I DID NOT BLOCK, and this is the reason.** The realistic
+       unreadable-sidecar case is a corrupt FILE and that refuses at exit 2. I
+       could not construct a sidecar with READABLE CONTENT that is_file()
+       rejects: the gap holds a directory and special files, and neither
+       carries JSON. The defect is the asymmetry, not a reachable wrong number,
+       so FR1 makes it a ledger row rather than a block.
+cmd    git show f87e087:floatfea/run/pipeline.py, that function
+out    "if not sidecar.is_file():" present -- PRE-EXISTING, not this range's
+       work. The range added the reconciliation call directly beneath it.
+```
+
+**Closed when** the two functions agree on what "absent" means -- the production door gating on `exists()` and letting the named refusal fire, or stating beside `is_file()` why a present non-file is reported as absent.
+
+### R1115 (ledger). A published supersession note points at a document that does not exist.
+
+`results/F6b/truss_sizing.md:39-41`: "The corrected values are produced by `floatfea/run/truss.py` and published in R1's own `truss_sizing.md`; the per-cell old-versus-new table, with a ratio column, is in R1 step 3's report."
+
+```
+cmd    find results -name "truss_sizing*"
+out    results/F6b/truss_sizing.csv   results/F6b/truss_sizing.json
+       results/F6b/truss_sizing.md        -- there is no R1 truss_sizing.md
+cmd    ls docs/reports/R1/step-3.md
+out    No such file or directory
+judge  present tense, in the one note whose whole job is to send a reader away
+       from wrong numbers, naming two destinations that do not exist. The
+       example config has outputs.truss_sizing: false and FT2.5 "still refuses
+       by name", so the first cannot exist yet by design.
+```
+
+**And the old/new ratio table FZ rule 4 requires does not exist yet either** -- it is owed with the step-3 report, which is a carried obligation rather than a finding. **Closed when** the note's tense matches the tree, or both destinations exist.
+
+### R1116 (ledger). The new `!=` is exact in the strict direction, as you claim. The weakening direction has one false refusal and it depends on a dtype.
+
+Your question 5, solved in both directions (EH4) rather than from the side that makes it look strong.
+
+```
+cmd    bisect the smallest disagreement the comparison DETECTS, across
+       FROUDE_LAMBDA's whole domain
+out    npz=1     detected 1 ULP up, relative 2.220e-16
+       npz=50    detected 1 ULP up, relative 1.421e-16
+       npz=1000  detected 1 ULP up, relative 1.137e-16
+judge  **YOUR CLAIM HOLDS.** The boundary is exact and a margin here would be a
+       tolerance under another name, which is the right reading of CLAUDE.md.
+cmd    the WEAKENING direction: a pair that IS one recorded number, refused
+out    lambda  float64 npz   float32 npz   float16 npz
+       25.4    accepted      REFUSED       REFUSED
+       33.3    accepted      REFUSED       REFUSED
+       1.1     accepted      REFUSED       REFUSED
+       50.0    accepted      accepted      accepted
+       12.5    accepted      accepted      accepted
+       float32(25.4) = 25.399999618530273 against the JSON's 25.4
+       int64 npz keys: accepted, against both 50 and 50.0
+cmd    grep -n froude_lambda scripts/export_f4_dynamic_inputs.py
+out    430: flat["froude_lambda"] = np.array(g41.LAMBDA, dtype=np.float64)
+judge  not live -- the shipped exporter writes float64, and a FALSE REFUSAL is
+       the safe direction anyway (FZ's "refuse rather than silently adjust").
+       Worth one sentence so the next reader knows the comparison is exact
+       ACROSS a dtype boundary and not within one.
+```
+
+**Closed when** the docstring says the comparison assumes both records are float64 and names what a narrower npz dtype would do.
+
+## The two questions of yours that did not become findings
+
+* **Your false "both heights is safe" claim: THE CORRECTION LANDED IN ALL FOUR PLACES, and I searched for SURVIVORS rather than for the correction.** A case-insensitive grep for the old claim's shape over `floatfea`, `tests`, `scripts`, `docs/directives`, `docs/digests` and `docs/milestones` returns three hits on this subject -- `floatfea/run/pipeline.py:1723`, `tests/unit/test_headings_and_bem_coverage.py:1210` and `docs/directives/FZ.md:184` -- and **all three are the corrected form**, each stating that the first account was too narrow and that the correction WIDENED the defect. `test_SR6_a_sidecar_CONSISTENT_WITH_ITS_OWN_WRONG_lambda_is_refused` exists at `:1204`, parametrised over two lambdas. **You asked me to check it landed "not just where it was convenient": the inconvenient place is the test cell, and it is the sharpest of the three.**
+* **SR-6's repair carries its own failure.** Arm A, the reconciliation call deleted from `exported_wave_basis` -- the defect put back: **11 failed, 9 passed in 0.66s**, the reds being all six `test_SR6_a_DERIVED_height...` cases, both `..._CONSISTENT_WITH_ITS_OWN_WRONG_lambda...` cases and all three SR-9 cases, against nine clean controls. Restored; `git status --porcelain` empty.
+
+## Tolerances touched
+
+**FIVE DECLARED ACROSS THE RANGE, NONE MOVED, NOTHING LOOSENED.** The constant lines are in the EU1 block above. The two renames in `11970cd` (family name to ceiling name) change no value and are the repair for a counter the apparatus could not find, which was a real hole.
+
+| entry | old | new | form | counter | EU1 adversarial case, run by me |
+|---|---|---|---|---|---|
+| `RECORDED_HEIGHT_PAIR_RELATIVE` | -- | `1e-9` | **relative**, dimensionless, on the full-scale height | `1e-6`, three decades above the ceiling | **SURVIVES.** 10 lambdas x 8 heights over the whole of `FROUDE_LAMBDA` and `WAVE_HEIGHT` = **80 rows, 0 clean refused, 0 counter missed**; the detection boundary bisects to exactly `1e-9` at every configuration, counter `1000x` above it. Structurally a number and not a function: both sides of the inequality scale with the full-scale height. |
+| `RECORDED_HEIGHT_PAIR_RELATIVE_COUNTER` | -- | `1e-6` | relative perturbation of the full-scale height | n/a | as above; injected by the FY2 counter cell, which I located and ran. |
+| `TRUSS_FACE_CLOSURE_RELATIVE` | -- | `1e-12` | **relative** closure residual | `1e-6`, six decades above | **SURVIVES.** 17 aspect ratios the cells did not choose, `Lf/h` from `1` to **`5e+15`** against a declared grid reaching `3.8`: **0 failing**, clean residuals `0` or `2.2e-16`, and the detection boundary bisects to exactly `1e-12` on both channels at every one, counter `1e+06x` above. |
+| `TRUSS_FACE_CLOSURE_RELATIVE_COUNTER` | -- | `1e-6` | relative perturbation of an inclined face's shear | n/a | as above, both channels, all 17. |
+| `NODE_COINCIDENCE_DECIMALS` | -- | `9` (`Final[int]`) | a decimal count passed to `round` | **none, deliberately**, with prose in place of one | **VALUE AND FORM STAND; TWO OF ITS PUBLISHED FIGURES DO NOT -- R1109.** TABLE 1 reproduces at all seven rungs. TABLE 2's upward row is false at 12 decimals, and the `41.3261 m` / `4.133e+10` margin is the platform body only and is measured over a collection that cannot contain the merged pairs. |
+
+**The form question is right and I am not reopening it.** A decimal count under `round` buckets rather than clusters, the entry says so, and says a form change would move a golden file and needs its own justification and regeneration. That is the correct disposition; R1109 is about the numbers describing its headroom, not about the headroom.
+
+## Corpus (EG4(e))
+
+**THE PAUSE HELD. ZERO NEW ENTRIES.** `git diff f87e087..a2c3f5c -- tests/corpus` is empty and I added nothing. Neither exception opens: nothing here touches F4's load-mapping gate, and EB6's label-provenance gate is elsewhere. **ES0 independently fixes an interim check at "no corpus batch, no closure list"**, so nothing turns on the lapsed pause date, which verdict 41 raised with Xabier once and `CLAUDE.md` says to say once.
+
+**I RAN THE RECORDED SUBSTITUTE, BOTH HALVES, AND IT PRODUCED THE ROUND.**
+
+* **A continuum grid over the parameter space a decision rule guards.** Three grids, one per new declaration: 80 (lambda, height) rows over `FROUDE_LAMBDA` x `WAVE_HEIGHT` for the height pair; 17 aspect ratios spanning `Lf/h` from 1 to 5e15 for the closure; and the node model at all seven ladder rungs by ten values of the coincidence decimals. **The first two confirmed both counters. The third produced R1109** -- which no diff could have shown, because the value did not move.
+* **A regeneration check on a published deliverable.** I regenerated `docs/F4_member_forces.csv` and `.md` from `scripts/measure/member_forces_table.py` at the judged sha and compared against the committed files. **`docs/F4_member_forces.csv` is byte-identical at 189202 bytes -- your figure to the digit.** The `.md` differed at char 43 of line 1 and **that is an artifact of MY worktree, not a result**: the bytes are `0a 0a` in mine against `0d 0a 0d 0a` committed, and `diff` after stripping absolute paths is **empty**, so the content reproduces exactly and the difference is line endings. **I report that as invalid rather than as a finding.** **And reading `results/F6b/` whole rather than grepping one line is what produced R1106.**
+
+**THE COVERAGE MEASUREMENT, AS WHAT I ACTUALLY MEASURED.** I planted no defects, so there is no shapes-caught ratio and I will not manufacture one. The numbers available: **two arms, 13 reverted-reds, 12 clean controls, both restored to a clean tree**; and **four write rows the hook matrix did not contain**, found by running the hook rather than by reading it -- the only measurement in this verdict about an apparatus whose entire prior evidence was that it had not fired.
+
+## CI at the reviewed commit: RUNNING, NOT CONCLUDED -- AND THAT IS NOT A PASS
+
+```
+cmd    gh run list --commit a2c3f5c8787eeabab15395319dd123ad7048abff
+         --json name,conclusion,workflowName,status,databaseId
+out    [{"conclusion":"","databaseId":41555438414,"name":"CI",
+        "status":"in_progress","workflowName":"CI"}]
+       -- checked three times across roughly two hours; unchanged
+```
+
+**One run exists at the judged sha, so FP1 held and your push was right.** But **a run that has not finished is not a pass**, and I record it as an unavailable check rather than skipping over it. This is NOT the CK2 allowance-exhausted state -- the run is executing rather than stillborn, `runner_name` is populated and the duration is not two seconds -- and it is not a red, so **it does not itself make this a HOLD**; the HOLD is R1106. **Your 7-character-sha warning is correct and I used the full 40 throughout.** The practical consequence is carried above as L59: step 3's CI section cannot be generated from this run until it concludes, and **if it concludes red, FF0 puts that ahead of everything, including R1106.**
+
+## Try to break it -- what I ran, and what it found
+
+**SIX PROBE FAMILIES, TWO ARMS, THREE CONTINUUM GRIDS, SIX END-TO-END CLI RUNS, AND ONE FIXTURE OF MINE THAT WAS WRONG, WHICH I REPORT AS WRONG RATHER THAN AS A RESULT.**
+
+* **The hook matrix in both directions**, against both versions of the file -- R1107. Four write rows moved.
+* **The rung-3 class guard, armed** -- R1108. One CLASS line, one relabelled entry.
+* **The node model at seven rungs and ten resolutions, plus the merged-pair separations** -- R1109. The pairs the rule acts on are invisible to the figure that justifies it.
+* **17 exotic sidecars and npz files through both reconciled doors** -- 13 named refusals, **two bare tracebacks** (R1113) and the multi-element skip (R1112).
+* **Six end-to-end CLI runs** at configurations no fixture in the tree chooses: control, a scalar scale disagreement, a multi-element npz key, a directory sidecar, a corrupt sidecar, an absent sidecar. **The scalar case is your repair and it refuses with the lambda named. The directory-against-absent pair is R1114's ablation.**
+* **`results/F6b/` read whole** -- R1106, the blocking one, and R1115.
+* **AND MY OWN BAD FIXTURE, STATED AS BAD.** My first basis probe omitted `window` from the `run` block, so all six cases came back `records a PARTIAL wave basis: ['window'] missing`. For a minute I had what looked like six refusals where the code is fine -- **it was my fixture.** I read `WAVE_BASIS_KEYS` and the shipped `GOOD` dict and re-ran, and the second version is what is reported above. Same shape as my last six rounds: **a measurement whose domain is not the domain of the claim.** The guard I keep relearning: build the fixture from the module's own declared keys, not from what the claim needs.
+
+## Next step opens when
+
+**This is an interim check: it closes nothing, opens nothing, and counts against no round (ES0, FK1). Step 3 stays at 0 of 3 reviewed revisions and its disposition is read from its closure verdict (DD1).** HOLD here means R1106 is answered before other work -- not that the step is over.
+
+1. **R1106 is the only blocking item. Answer it first.** The SUPERSEDED mark reaches `results/F6b/truss_sizing.csv` and `.json`, emitted by their generator and asserted in the cell that already asserts the `.md`'s -- or the `.md` says its machine-readable siblings are unmarked. **Do not recompute F6b's numbers; SR-4 ruled that and I am not reopening it.**
+2. **R1107 and R1108 are FF0-class and go in your NEXT COMMIT, not the ledger.** `.claude/hooks/` is in FF0's own list; a rung-3 guard that transfers a class label is the same kind of thing. Both are repairs under EK2 and neither is a new clause. **R1107 is the one I would do first**, because it guards the one record the implementer cannot write, and because `>|` succeeds under `noclobber` exactly where `>` is refused. **And delete the false sentence in `tolerances.py` with R1108**, not after it.
+3. **R1109 before the step report quotes either figure.** Two numbers in a tolerance entry are wrong and BI3 means nothing regenerates them. The value stands; say so, and replace `4.133e+10` with the margin against the pairs the rule actually merges.
+4. **CI must CONCLUDE before step 3's report generates its CI section (L59, carried).** If it is red, that is FF0 and it goes ahead of R1106.
+5. **FT2.7 is no longer blocking by name**, thirty-fourth round ended. The implementation follows rulings 1 and 2 and I verified both against the shipped tests. **The plan's FT2.7 section is relied on as locked, as amended by those two rulings** -- that is my answer to your question, and I am not asking for a full review of `9827156` now. R1110 is the residue of what I did read.
+6. **L47 to L56 and L58 carry unanswered, by name, and I did not sweep them.** Your census was too narrow and you said so; I am not replacing it with a worse one. `scripts/carried_table.py` plus `check_carried.py` will answer it in the report, and **that generator now runs, which is what FX1 bought** -- `7994b54` measured it at 262 rows.
+7. **The schedule.** FW0's date is 10 November, full scope; today is 2 November. **I read nothing here as slippage.** This range closed four self-found defects, two FF0 CI reds and FT2.7's thirty-third-round blocking set in six commits. The one thing I would flag to Xabier is unchanged from verdict 42: the open-ended item left in R1 is a coordinate-comparison rule, which is a tolerance decision -- and R1109 is that decision's FIGURES being wrong rather than the decision being wrong, which is a cheaper problem than it looks.
+
+**What this range got right, and it is much the larger part.** Four defects found by the implementer, three of them inside its own repair, each with a named test row and each recorded as an SR before being fixed -- and the one that mattered, SR-6, was found by chasing the MESSAGE of a test whose outcome was already right, which is the hardest way to find anything and the only way that one was findable. The correction to the "both heights is safe" claim WIDENED the defect rather than bounding it, and was carried into all four places including the test cell. Both new counters survive an adversarial sweep fifteen decades wide. `NODE_COINCIDENCE_DECIMALS` is the right value in the right place for the right reason, and the exact comparison L57 worried about is gone rather than guarded. The FV1 selection was rebuilt from a grep after being built from reasoning, and the report says which was which. FY3 fixed unconservative physics on a published path and marked it rather than quietly recomputing it.
+
+**And the pattern note, because it moved.** Every one of this round's eleven findings came from running something, not from reading a diff: the hook harness, the guard regex armed, the node model at resolutions nobody chose, six CLI runs at sidecar shapes no fixture builds, and `results/F6b/` read whole instead of grepped. **The blocking one came from the cheapest of them** -- counting the rows in a file and grepping it for a word that was in its sibling. Three of the eleven are the same defect in three places: **a figure, an assertion or a mark whose domain excludes the thing it is about** -- the margin measured over surviving nodes, the note asserted on one sibling of three, and the hook matrix solved only from the side that makes the change look safe. That class produced this milestone's first blocking finding, its last closure item, and now this one.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: f87e08704127ce462cd17e2e6cd193329ff6888c
 **Reviewed commit: `f87e08704127ce462cd17e2e6cd193329ff6888c`.**
 Verdict: PASS
