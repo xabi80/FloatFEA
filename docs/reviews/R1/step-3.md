@@ -1,3 +1,430 @@
+# Review — R1 step 3
+Reviewed commit: cd6d6fe8f067468645314e4109c823eef3cd21df
+**Reviewed commit: `cd6d6fe8f067468645314e4109c823eef3cd21df`.**
+Verdict: HOLD
+Tests: **6649 passed, 0 failed, 0 skipped, 2 warnings in 3628.56s (1:00:28)** -- my own `python -m pytest -q`, in my own worktree at the judged sha, tree clean (FV2). **The tree is GREEN at the reviewed commit: there are no reds at all**, so the FS1/FT1 boundary-red predicate has nothing to rule on this round and CZ1 (iv) is not reached. Separately, the three report-parametrised files alone: **2695 passed, 0 failed** -- my own confirmation that the eight reds of `4b5a2e9` all cleared at `cd6d6fe`, measured rather than read. The lint gate at CI's own scope: `ruff check floatfea tests scripts` -> `All checks passed!`; `black --check floatfea tests scripts` -> `162 files would be left unchanged.`; `mypy floatfea` -> `Success: no issues found in 45 source files`. Your three lint figures reproduce to the file and the source count.
+Scope: **REVIEWED REVISION 1 of the three ES0 allows. It consumes a round; step 3 stands at 1 of 3.** Not an interim check -- `docs/reports/R1/step-3.md` exists and answers the newest verdict.
+
+**I RULED UNDER FR1 WITH EZ0** (`CLAUDE.md` section "What blocks for the rest of R1", `docs/directives/FR.md`). **ONE FINDING BLOCKS** and I give it the sentence FR1 requires. One more is FF0-class and routes to your next commit rather than to the ledger; five are ledger rows. **R1106, R1107 and R1108 are all answered and I verified each by running something rather than by reading the report** -- six injection arms on R1106, my own 40-row matrix on R1107, and the R1108 guard armed at the state it was found with.
+
+**STEP 1b: THE `Answers:` HEADER NAMES THE NEWEST VERDICT.** `docs/reports/R1/step-3.md:2` is `Answers: verdict 44 @ 6f14aba`, and `6f14aba` is the newest commit touching `docs/reviews/` -- the addendum, not `ea92019`. Checked by reading and then mechanically: `test_the_answered_verdict_is_the_NEWEST_one` -> **1 passed**. No HOLD on that head.
+
+**WHERE I WORKED (FV2).** Three worktrees of my own outside the repository, all detached at `cd6d6fe`: one for the reads, the whole suite, the lint gate and the regenerations; one for the injection arms and the guard-state baseline; one for the single arm I ran on your own section 11 line. No `checkout`, `reset` or write of any kind in your tree. Every arm was reverted with `git checkout --` inside my own worktree and `git status --porcelain` was empty afterwards, checked each time. **And nothing was torn down while anything was still reading it** -- that is R1117, which was mine, and all three worktrees are still standing as I write this.
+
+**THE SCOPE SENTENCE UNDERSTATES THE UNREVIEWED RANGE AGAIN, AND THIS IS THE SECOND ROUND RUNNING.**
+
+```
+cmd    git log --oneline 6f14aba..HEAD | wc -l
+out    4          -- your invocation's range
+cmd    git log --oneline a2c3f5c..HEAD | wc -l
+out    9          -- the range NO VERDICT HAS JUDGED
+judge  verdict 43 and the addendum BOTH judged `a2c3f5c`. The addendum is a
+       verdict COMMIT, not a judged tree: `fa480e7`, `325fd2e`, `31bae09` and
+       `3861fa0` sit between the two and are unjudged by anything, and they
+       carry the whole of R1106's, R1107's and R1118's repairs. A reviewer who
+       took the four-commit range would have read none of the work it was
+       asked to verify.
+cmd    git diff --stat a2c3f5c..HEAD -- floatfea tests scripts results
+out    10 files changed, 651 insertions(+), 182 deletions(-)
+```
+
+Verdict 43 made this same correction one round ago. **It is not a complaint about the work -- the work in that range is good -- it is that "only one of them touches code" is true of the range you named and false of the revision.** I scanned all nine commits.
+
+**THE MANDATED SEPARATE DIFFS, OVER THE RANGE THAT IS ACTUALLY UNJUDGED.**
+
+```
+cmd    git diff a2c3f5c..HEAD -- floatfea/tolerances.py, non-comment lines only
+out    (empty)    -- 19 changed lines, every one a comment. NO constant moved.
+cmd    git diff a2c3f5c..HEAD -- tests/conftest.py 'tests/**/conftest.py'
+out    (empty)    -- no new or changed conftest, no new plugin
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py        -- the pathspec resolves, as my instructions
+                                   say it must. Not an empty result.
+cmd    the one conftest read whole for the CH2/CI0 channels
+out    `pytest_collection_modifyitems` at :53 is the ONLY hook. It adds a rung
+       marker from the directory and SORTS; it removes nothing. No
+       `pytest_runtest_makereport`, no `pytest_ignore_collect`, no
+       `pytest_report_teststatus`, no hookwrapper anywhere in the file (67
+       lines). `scripts/run_rung.sh` is untouched in the range.
+cmd    git diff --stat a2c3f5c..HEAD -- .claude docs/SUPERVISOR.md CLAUDE.md
+out    .claude/hooks/protect-reviews.sh | 35 ++++++++++---
+cmd    git show --name-only fa480e7
+out    .claude/hooks/protect-reviews.sh      -- and nothing else
+cmd    git diff --stat a2c3f5c..HEAD -- .claude/agents
+out    (empty)    -- my own definition did not move
+judge  **NOT A STOP, and I read the hook diff line by line rather than taking
+       the commit message.** `fa480e7` is a standalone `process:` commit whose
+       whole file list is the one instruction file, it cites R1107 and FF0, it
+       touches nothing under `floatfea/` or `tests/`, and it deletes no clause.
+       Every change makes the hook deny MORE, not less.
+cmd    git diff --stat a2c3f5c..HEAD -- tests/corpus .github
+out    (empty)    -- corpus untouched, CI config untouched
+```
+
+**CI AT THE REVIEWED COMMIT: GREEN, AND EVERY STEP RAN.**
+
+```
+cmd    gh run list --commit cd6d6fe8f067468645314e4109c823eef3cd21df
+         --json name,conclusion,workflowName,status,databaseId,event
+out    [{"conclusion":"success","databaseId":41597125558,"event":"push",
+        "name":"CI","status":"completed","workflowName":"CI"}]
+cmd    gh run view 41597125558 --json headSha,jobs -- job and step level
+out    success  lint, unit and guards
+         actionlint / ruff / black --check / mypy / unit tests /
+         guards and meta-tests   -- ALL SUCCESS, none skipped
+       success  the verification ladder
+         ladder 1,2,3,6,4,5      -- ALL SUCCESS
+       skipped  CI determinism -- leg
+       skipped  CI determinism -- ten legs agree
+       headSha cd6d6fe8f067468645314e4109c823eef3cd21df
+judge  CZ1 (iii) is satisfied by measurement: `guards and meta-tests` is seen
+       to have RUN rather than been skipped behind an earlier red. **The two
+       determinism jobs are UNAVAILABLE BY DESIGN, not CK2** -- `ci.yml:90` is
+       `if: github.event_name == 'workflow_dispatch'` under CK0, and the jobs
+       that ran had populated runners and thirty-minute durations, so this is
+       not the allowance-exhausted state. I record them as unavailable rather
+       than skipping over them. FP1 held: the judged commit has a run.
+```
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R1106** (the FY3 supersession reached one sibling of three) | **ANSWERED, AND I VERIFIED IT WITH SIX INJECTION ARMS RATHER THAN BY READING THE CELL.** | `results/F6b/truss_sizing.csv` carries a banner AND a per-row `superseded_FY3` column; `results/F6b/truss_sizing.json` carries a top-level `superseded` block AND a per-answer flag; both are emitted by `scripts/measure/f6b_truss_sizing.py:594`, `:649-668` and `:698-708`, not typed in. **84 triangle rows True, 84 box rows False, in both files.** My own cell-by-cell comparison against `a2c3f5c`: CSV **4872 cells on 29 shared columns, 0 differing**, one column added, none removed; JSON **4872 answer values, 0 differing**, with `splits`, `hand_table`, `cog_reachability` and `inputs` all identical -- so SR-4 held and no number was recomputed. **My six arms, one variable each, all red:** one mid-file triangle flag to False (`2 failed`); one box flag to True (`2 failed`); the three banner lines dropped (`2 failed`); the JSON `superseded` block removed (`2 failed`); all 168 JSON flags to False (`2 failed`); and **one last digit of `chord_force_N` on line 72** (`1 failed`). Baseline `74 passed`; tree restored clean each time. **The mark's domain is complete and I checked for a fourth sibling** -- `results/F6b/` holds exactly three files and nothing else under `results/` carries truss sizing. **The box control is correct and not an assumption:** a box's vertical face is genuinely vertical, so FY3's inclined-face ruling cannot reach it. |
+| **R1106's closing condition, read site by site** | **MET IN SUBSTANCE, with ONE DEVIATION I am recording rather than waiving.** | The condition asked for both marks "asserted in the same cell that already asserts the `.md`'s note, so the domain cannot drift apart again". They are asserted in a NEW cell beside the old one, not inside it. **I ruled that adequate because the drift it was meant to stop is closed another way:** all three artifacts pin the same `2026-10-31` and `FY3` strings, so a date or ruling change reddens in all three at once. I would not have accepted it if only one had been pinned. |
+| **R1107** (four write rows moved DENY to ALLOW) | **ANSWERED, AND YOU FOUND SIX MORE THAN I DID. I re-ran my own matrix against the repaired hook and extended it with shapes neither of us had.** | `.claude/hooks/protect-reviews.sh:168` (the optional pipe in the target class), `:199` (`pushd`), `:203` (the `UNRESOLVED` clause). All four of my rows are now DENY, and so are the append-clobber form, the fd-prefixed form, the no-space spelling, both substitution forms, both directions of `pushd`, `exec 3>`, a quoted target and a backslash-separated path. **Three repairs, three arms, each with a control -- I reproduced all three.** The over-refusal it costs is R1123 below and **you found and published it yourselves**, which is the part I want on the record. |
+| **R1108** (a CLASS label transferred to an entry that did not declare it) | **ANSWERED, AND I ARMED IT AT THE EXACT STATE IT WAS FOUND WITH.** | `tests/verification/rung3/test_tolerance_counter_cases.py:37-52`, the tempered negative lookahead. **Clean tree: the old and the new regex classify the same 55 entries with identical labels, and `# CLASS:` lines number 55** -- so it is a repair and not a change of rule, measured rather than asserted. **Armed with `# CLASS: STRUCTURAL` restored above `NODE_COINCIDENCE_DECIMALS`:** the OLD regex relabels `RECORDED_HEIGHT_PAIR_RELATIVE` from ACCURACY to STRUCTURAL, the NEW one does not, and `test_R1108_every_CLASS_line_CLASSIFIES_an_entry_so_none_is_ORPHANED` goes **red on `assert 56 == 55`**. `1 failed, 134 passed`; restored clean. **And the false sentence is gone from `floatfea/tolerances.py` with the repair, not after it** -- `grep -c "not edited inside a step commit" CLAUDE.md` is `0` and the same count for the rung-3 phrasing is `0`, which is the refutation the entry now carries itself. |
+| **R1118** (every reader of the gating record was blind to the newest verdict's findings) | **NOT MINE, FOUND BY YOU, AND IT IS THE BEST FINDING IN THE RANGE. The repair is HALF DONE AND THE REPORT SAYS IT IS WHOLE** -- R1120. | `scripts/carried_table.py:76-77` and `tests/test_report_carried.py:221,:366` now see the heading form: **262 ids, R1106 to R1117 all present**, and `test_the_report_carries_the_finding` is parametrised over **272**. `scripts/check_carried.py:34` and `scripts/answered_table.py:36` still see **250** and miss all twelve. |
+| **R1117** (the addendum's own, against me) | **NO REPAIR OWED AND NONE ATTEMPTED, correctly.** The id allocation in section 5a is right: mine is canonical, yours moved to R1118. | I allocate from **R1119** this round so the collision cannot recur. |
+| **L59 / verdict 42's point 5** (the CI section is generated only after every run it covers has CONCLUDED) | **CLOSED.** | The `a2c3f5c` run concluded `failure`; section 0 is generated from that concluded run; section 6 traces its reds. I re-measured that run myself: `1893 failed, 1442 passed, 1 skipped` in the guards step and **1893 unique FAILED ids in the log -- so section 0's figure is exactly right at that sha.** The FF0 item it exposed (`black` red at `31bae09`, skipping three steps) was repaired in `64af726`. |
+| **R1109** (two published margin figures in the `NODE_COINCIDENCE_DECIMALS` entry are wrong) | **CARRIES AS A LEDGER ROW, AND MY POINT 3 IS HONOURED: the report quotes neither figure.** | a grep for `4.133e+10`, `41.3261` and `18 and beyond` over the report is **empty**; the same grep over `floatfea/tolerances.py` still finds `:1789`, `:1799` and `:1800`. Correct disposition under FR1; the closure artifact is where it lands. |
+| **R1110 to R1116** | **CARRY, by name, unswept. I did not sweep them and this revision was not asked to.** | section 7 names all of them and section 8's generated table carries a state for each. R1115 has MOVED and is now R1122 below. |
+| **FT2.5 conditions 1, 2 and 3** | **STILL MET.** | `git diff a2c3f5c..HEAD -- floatfea/run/truss.py floatfea/run/sizing.py` is empty. Conditions 1 and 2 have their substance at `floatfea/cli.py:918`, `:942` and `floatfea/run/config.py:538-542`, read by me this round. |
+| **condition 4** of the FT2.5 ruling | **ITS SITE NOW EXISTS AND IT IS NOT THERE -- R1121.** Not blocking under FR1, and it is the only item on this step whose site cannot exist later. | a case-insensitive grep for "not re-solved", "is REPORTED", "declared section list" and "disclosure" over the report: **0 hits.** |
+| **L47 to L56, L58** | **CARRY unanswered, as the ledger rule allows -- but NINE OF THE ELEVEN ARE NAMED NOWHERE IN THE REPORT, which is R1124.** | measured id by id: L48, L49, L51, L52, L53, L54, L55, L56 and L58 -> **0 occurrences each**; L47 -> 1 (inside the range "L47-L60"); L50 -> 2 (as census noise). |
+| **FT2.6, FT2.7, and FR3's "all of it built before the first reviewed revision"** | **NOT REOPENED.** FT2.7's R867 to R870 were ruled non-blocking at verdict 43 and I am not re-reading them; FT2.6 has `tests/regression/test_ft26_multi_npz.py`. | I checked that the gate's named parts exist rather than assuming the interim checks covered them. |
+| **R1084, R1086, R1104, R1105** | **unchanged; nothing in this diff touches their sites.** | no finding. |
+| **`docs/USER_GUIDE.md`** | **STILL ABSENT and FL3's gate needs it.** | `test -e docs/USER_GUIDE.md` -> ABSENT. Step 4's work, and section 9 says so. |
+| **CZ1 (ii) and (iii)'s four outputs, and the suite-count line** | **the suite line is PAID (section 11, and I reproduced the whole-suite figure myself); the four CZ1 outputs are owed at the CLOSURE commit, which does not exist yet.** | not a finding against the work. |
+| **the EG4(e) corpus pause** | **HELD. ZERO new entries.** | `git diff a2c3f5c..HEAD -- tests/corpus` is empty and I added nothing. Neither exception opens. See the corpus section for the recorded substitute, which produced both of this round's non-ledger findings. |
+| **C42** (the replacement character in historical verdict headers) | **mine, accepted, carried.** | this body is ASCII throughout for that reason. |
+| **C26 to C45 and the rest of the ledger** | **carry to the closure artifact as a list**, not re-reviewed item by item (CZ0). | this row is the pointer, not the list. |
+
+## Findings
+
+### R1119 (BLOCKS). `scripts/ci_section.py` cannot see a failing test whose id contains a space, so the generated CI section published 1915 where the run itself failed 1917. 214 of the suite's 6649 ids are in the blind class, and two of them are the tolerance-counter injection gates.
+
+**The silently wrong result FR1 asks for:** section 0a of a published step report states **"Run `41570739300`, conclusion failure: 1915 failing test name(s) in the log"** and lists exactly those 1915 ids, when that run's own pytest summary is **1917 failed**. The two it cannot name were real defects. A reader -- and a reviewer applying EG3 (i), whose whole instruction is that EVERY `FAILED` id is matched individually -- traces the published list and clears the run while two reds are not in it. **A run whose only reds are in that class publishes "0 failing test name(s)" beside a job table that says the job failed**, and the function's own docstring says what that looks like: "a reader that names nothing looks exactly like a run with nothing to name."
+
+```
+claim  the run failed 1917 and the report publishes 1915
+cmd    gh run view 41570739300 --log-failed, the guards step summary line
+out    1917 failed, 1678 passed, 1 skipped, 1 warning in 1417.14s (0:23:37)
+cmd    grep -n "41570739300" docs/reports/R1/step-3.md
+out    3831:**Run `41570739300`, conclusion **failure**: 1915 failing test
+         name(s) in the log.**
+cmd    the ids listed under that line, counted
+out    1915 listed, 1915 unique
+cmd    my own extraction of unique FAILED ids from the same log
+out    1917
+cmd    the two in mine and not in the report
+out    tests/test_report_numbers_are_sourced.py::
+         test_every_number_in_prose_is_sourced_in_its_own_section[7. ...]
+       tests/test_report_numbers_are_sourced.py::
+         test_every_number_in_prose_is_sourced_in_its_own_section[9. The schedule]
+       -- both present in the log as real FAILED summary lines, which I pasted
+```
+
+```
+claim  the cause is the extractor, and it is one character class
+cmd    scripts/ci_section.py:412
+out    _FAILED = re.compile(r"(?:^|\s)FAILED (\S+?)(?:\s+-\s|\s*$)")
+cmd    that regex against the real log line, in isolation
+out    NO MATCH   FAILED ...[9. The schedule] - AssertionError: ...
+       MATCH      FAILED ...::test_the_report_carries_a_WHOLE_SUITE_count - ...
+       MATCH      FAILED ...[R1001-f6_results_report.py:718]
+judge  the non-space class cannot span the space inside "[9. The schedule]",
+       and the " - " terminator cannot be reached from any start position, so
+       the line yields NO target at all -- not a truncated one. This is
+       R1118's own defect one id-shape over, and the third instance in two
+       commits of a needle too narrow for the next shape.
+```
+
+```
+claim  the published figure IS the generator's output, not a hand edit
+cmd    python scripts/ci_section.py --rounds, at this commit, line 1910
+out    **Run `41570739300`, conclusion **failure**: 1915 failing test name(s)
+         in the log.**
+cmd    the committed section 0a against that regeneration, line by line
+out    identical up to the one new row for cd6d6fe's own run, which did not
+       exist when the report was committed (FT1 limb two, not a defect)
+```
+
+```
+claim  the blind class is not two rows -- it is 214 ids across at least 15
+         test functions, and it includes the counter-injection gates
+cmd    pytest tests --collect-only -q, ids containing a space, by function
+out    214 of 6649 ids
+         17  rung1/test_corpus_configurations::test_a_malformed_corpus_line_RAISES
+         15  test_report_numbers_are_sourced::test_every_number_in_prose_is_sourced
+         15  test_report_numbers_are_sourced::test_a_table_of_numbers_shows_where
+         12  unit/test_run_config::test_FQ2_R825_a_NON_STRING_NAME_KEY_is_REFUSED
+          7  test_counters_are_injected::test_the_counter_fails_when_its_gate_is_neutered
+          7  test_counters_are_injected::test_the_counter_fails_when_its_ceiling_is_widened
+          ... 9 more functions
+rule   CZ0 (b) and (c) are what `test_counters_are_injected` is about, so the
+       reds this reader cannot name include the ones about tolerance values
+```
+
+```
+claim  the report CONTRADICTS ITSELF about the same run, and neither half is
+         red, because each number is sourced in its own section
+cmd    section 10's per-class table for that run, summed
+out    1905 + 7 + 2 + 1 + 1 + 1 = 1917      -- hand-traced, and CORRECT
+cmd    section 0a's generated figure for that run
+out    1915                                 -- generated, and SHORT BY TWO
+judge  your hand trace is right and your generator is wrong, which is the
+       safest way round for this round and the most dangerous one for the
+       next: the trace found them because you had hit them locally, not
+       because the section named them.
+```
+
+**Why this is not FR1's class 2.** FR1 exempts "a census, needle or grep that is too narrow **where no wrong result follows**". A wrong result has already followed and it is published: a figure short by two and a list that cannot contain the shapes it omits. `scripts/ci_section.py` is also named in FF0's own list of apparatus that decides whether a green is believed, so the repair goes in the next commit either way -- **what makes it blocking is the published number, not the apparatus.**
+
+**Closed when** `_FAILED` extracts an id containing a space, measured **in both directions (EH4)**: (i) the strict direction -- re-run against run `41570739300` and get **1917** names, with both `test_every_number_in_prose_is_sourced_in_its_own_section` ids present by name; (ii) the weakening direction -- the widened pattern must not capture non-id text, with controls for the sandbox `FAILED` lines inside this suite's own tracebacks (the existing `startswith` guard), the `run_rung: failure` form, and a `FAILED` line with no " - " terminator; and (iii) the `a2c3f5c` run still yields exactly **1893**, so the repair moves nothing that was already right. **It is a repair of the extraction, not a second branch (EK2).** And section 0a's figure for `64af726` is regenerated in the same commit, because BP0 says a figure whose rule moved is regenerated or withdrawn.
+
+### R1120 (FF0, your next commit -- not the ledger). R1118's repair reached four of the six sites. The two it missed require a dot the verdicts do not write, so both are still blind to all twelve of the newest verdict's findings -- and the report says all six were widened.
+
+`scripts/check_carried.py:34` and `scripts/answered_table.py:36`.
+
+```
+claim  the six anchors do not agree, and the two that require a literal dot
+         miss the whole of the newest verdict
+cmd    each of the six patterns over docs/reviews/R1/step-3.md
+out    carried_table.FINDING             262   missing: none
+       carried_table.HEADING             248   missing: none
+       test_report_carried._FINDING      262   missing: none
+       test_report_carried inline        248   missing: none
+       check_carried._FINDING            250   MISSING R1106..R1117
+       answered_table._FINDING           250   MISSING R1106..R1117
+cause  both require a dot IMMEDIATELY after the number. Every finding in
+       verdicts 43 and 44 is written "### R1106 (BLOCKS)." -- the dot is
+       AFTER the parenthetical.
+cmd    python scripts/check_carried.py --verdict <the verdict> --report <the report>
+out    check_carried: all 250 findings carried        rc=0
+judge  250 is a count of EARLIER rounds, which the file accumulates. The
+       script's own "no findings parsed" guard at :127 fires only at ZERO, so
+       an accumulating verdict file can never reach it.
+```
+
+```
+claim  THE ABLATION, one variable moved: strip R1106 from the report
+cmd    every line mentioning R1106 removed (16 lines), then both checks
+out    check_carried.py      ->  "all 250 findings carried", rc=0
+       the backstop guard     ->  FAILED
+         test_the_report_carries_the_finding[R1106]   (1 failed, 271 passed)
+cell   one file edited, nothing else; restored clean afterwards
+judge  **THIS IS WHY IT DOES NOT BLOCK, and I say so rather than leaving it
+       implicit.** The deciding gate fires. What is wrong is the Stop hook's
+       fast signal (`.claude/hooks/require-verdict.sh:461`), which would clear
+       a turn on a report that had dropped the blocking finding, and an
+       `answered_table.py` whose subject lookup would give every one of those
+       twelve the class "carried" and the subject "carried from an earlier
+       verdict" instead of "blocks" and the verdict's own words. That
+       generator is not used in this report -- the four generated marks are
+       ci_section, ci_section, carried_table and untouched_sites -- so
+       nothing wrong is published by it today.
+```
+
+**And the report's own sentence about it is what makes this a finding rather than a note.** Section 5 says "widened identically at all six" and offers one measurement, taken at `carried_table.py`. The six regexes are not identical, and two of them cannot see the form the verdicts actually write. **Closed when** both sites accept `### R1106 (BLOCKS).` -- the two dot-requiring anchors reaching **262** alongside the dot-optional pair -- with `check_carried.py` re-run and its count pasted, and section 5's sentence reduced to what was measured. **A repair of two regexes, not a seventh copy and not a meta-test comparing them: no new apparatus through F6.** The six-copy drift stays a ledger row and I am not asking for it to be unified.
+
+### R1121 (ledger). FT2.5's condition 4 -- the one sentence of disclosure for Xabier -- is absent at the first revision in which its site exists. Its SUBSTANCE is in the tree, and that is the half I want on the record with it.
+
+The ruling's words were: "One sentence of DISCLOSURE in the report hand-written paragraph, for Xabier ... that FT2.5 grid is tubes because `docs/milestones/R1.md` section 4 says the candidate grid is the config declared section list, and that the truss resolution is REPORTED and not RE-SOLVED. He should not have to ask."
+
+```
+claim  the hand-written paragraph is section 9 and it carries the schedule alone
+cmd    case-insensitive grep for "not re-solved", "is REPORTED",
+         "declared section list" and "disclosure" over the report
+out    0 hits
+claim  and the SUBSTANCE is in the tree, which earlier verdicts had already
+         credited as more than the condition asked
+cmd    the same needles over floatfea/cli.py and floatfea/run/config.py
+out    cli.py:918   the acceptance is on the TUBE; the truss is reported, not solved
+       cli.py:942   configuration's declared section list ...
+       config.py:541-542  The truss is REPORTED at the accepted tube's forces
+                          and is not re-solved; truss_sizing.md says so in
+                          those words
+judge  so this is NOT "nothing was done". It is that the one part of that
+       ruling which LEAVES THE LOOP has no site but this report, and
+       `outputs.truss_sizing` is false by default, so no R1 deliverable
+       carries the sentence to Xabier either.
+```
+
+**Not blocking under FR1:** it is report prose and no number is wrong anywhere because of it. **I am giving it this much space for one reason** -- it is the single item on this step whose site cannot exist later. A closure commit that changes only prose is not reviewed (EQ0), so if the step closes without it, nothing downstream will ask again. **Closed when** section 9 carries the sentence, naming both halves: the grid is tubes because the plan's candidate grid is the config's declared section list, and the truss resolution is reported at the accepted tube's forces rather than re-solved.
+
+### R1122 (ledger). R1115 has MOVED, and the move is in the wrong direction. One of the two destinations the published note names now EXISTS and does not contain what the note says is in it.
+
+`results/F6b/truss_sizing.md:39-41`: "The corrected values are produced by `floatfea/run/truss.py` and published in R1's own `truss_sizing.md`; the per-cell old-versus-new table, with a ratio column, is in R1 step 3's report."
+
+```
+claim  destination one still does not exist; destination two now does and is empty
+cmd    find . -name "truss_sizing.md" -not -path "./.git/*"
+out    ./results/F6b/truss_sizing.md        -- there is no R1 truss_sizing.md
+cmd    ls docs/reports/R1/step-3.md
+out    the file exists, 8764 lines
+cmd    grep for "ratio column", "old/new", "old-versus-new" and "new/old" over it
+out    0 hits
+judge  when I ruled R1115 a ledger row, BOTH destinations were absent and a
+       reader could tell the note was ahead of the tree. Now a reader follows
+       a pointer that RESOLVES and finds nothing, which is worse. FZ rule 4's
+       old/new ratio table is still owed.
+```
+
+**Not blocking under FR1:** it is a wrong sentence rather than a wrong number, and the note is loud rather than silent -- a reader of a triangle row is told, correctly and in a heading, that the row is superseded, and the mechanism is spelled out. **Closed when** the note's two destinations exist, or the note states that the corrected values are not yet published anywhere and says where the reader should go instead.
+
+### R1123 (ledger). The over-refusal the hook repair costs is bigger than the one row you measured -- 5 of 10 legitimate reads -- and section 3 points at a ledger row that is not there.
+
+```
+claim  I extended your weak side with the combination your matrix could not
+         hold: a protected path PRESENT and the output path a variable
+cmd    10 rows through the repaired hook, agent_type=general-purpose
+out    DENY   grep -c R1106 <a verdict> > $SCRATCH/out.txt
+       DENY   python scripts/carried_table.py <a verdict> ... > "$SCRATCH/t.md"
+       DENY   cat <a verdict> > ${TMPDIR}/v.txt
+       DENY   wc -l <a verdict> > $(mktemp)
+       DENY   grep -c . tests/corpus/*.txt > $OUT
+       ALLOW  diff of two verdicts to /tmp ; a sed read to /tmp ; git log on
+              the tree ; an echo of the path ; a grep of a verdict
+       -- 5 of 10 mismatches, all of them READS
+judge  the second row is the FX1 command verbatim with the scratchpad path
+       spelled as a variable -- and the hook's own JSON hands every caller a
+       `scratchpad_dir`, so that spelling is the natural one. The hook
+       records this pattern about itself four times: "every widening of this
+       rule has cost a read and bought nothing."
+```
+
+**I am not asking for the clause to be reverted.** Failing closed is right here, you said so, and I asked for the variable write to be denied. Two things go on the ledger instead. **First**, section 3's closing sentence: "The row is added to the matrix in section 7's ledger" -- a grep for "matrix" over section 7 is **empty**, so it points at a row that does not exist. **Second**, the structural one: `hookmatrix.py` and `hookarms.py` are **untracked** (`git ls-files | grep hookmatrix` is empty), so the matrix the hook's own comment requires on every change is rebuilt from its author's memory each round -- which is exactly why five of this hook's defects were found by someone hitting them. **`tests/corpus/` is the structural home for those command shapes and it is mine, not yours** -- and EG4(e) forbids me to add them this round. **Closed when** section 3's pointer names a row that exists, or the sentence says the matrix is a scratch harness and the row cannot persist in it.
+
+### R1124 (ledger). Nine of the eleven carried L ledger ids are named nowhere in the report, and the cause is that no anchor in the repository can see an L.
+
+```
+claim  verdict 43's point 6 asked for L47 to L56 and L58 "by name"
+cmd    a word-boundary grep for each id over docs/reports/R1/step-3.md
+out    L47 1 (inside the range "L47-L60")   L50 2 (as census noise)
+       L48 L49 L51 L52 L53 L54 L55 L56 L58  ->  0 each
+cmd    section 7's own sentence about them
+out    "L47-L60 ARE NOT ROWS OF THIS REPORT'S CARRIED SET ... they are
+        discussed above because the reviewer named them"
+judge  the sentence is true of L57 and L60, which section 7 does discuss, and
+       false of the nine. The CAUSE is yours to have found and you did: every
+       one of the six finding anchors matches an R id only, so no generated
+       section can carry an L row, and section 7 says exactly that.
+```
+
+**Not blocking under FR1** -- they are closure items, and CZ0 says the whole list is fixed once in the closure commit and not re-reviewed item by item. **Closed when** section 7's list names the nine, or its sentence is narrowed to the two it is true of. **Do not widen an anchor to L ids to fix this**: that is apparatus, it is frozen, and a list of ids in prose costs nothing.
+
+### R1125 (ledger). Two triples whose out field is not what the cmd printed.
+
+```
+claim  section 1's triple shows two lines from a command that prints nine,
+         under a claim line that says three
+cmd    git log --oneline ea92019..HEAD | wc -l
+out    9
+cmd    the section 1 block's own out field
+out    two lines -- 325fd2e and fa480e7 -- under "claim three commits answer
+       this verdict, and the hook one is standalone"
+rule   BF0: the out field is what the command printed
+judge  the third commit is 31bae09, and the filtering is obvious to you and
+       invisible to a reader checking the triple by running it.
+claim  section 0a's rule sentence does not describe the two runs it is
+         applied to
+cmd    gh run list for 325fd2e and 3861fa0
+out    status "completed", conclusion "cancelled", both
+cmd    section 0a's sentence
+out    "A run that did not complete has **no result** and no job lines"
+judge  the DISPOSITION is right -- a cancelled run reached no verdict on
+       anything -- and section 10 gives the real reason ("my own next push").
+       It is the stated ground that is wrong, and the same wording is in your
+       invocation to me.
+```
+
+**Closed when** section 1's out field is the command's output with the filter stated, and section 0a's sentence says that a run which did not reach a conclusion ABOUT THE CODE -- cancelled or still running -- has no result.
+
+## One correction to the invocation, which is not a finding against the repository
+
+**`guards and meta-tests` does NOT run `tests/regression`, so it is not what makes that tree green at the pushed sha.** The invocation says it "runs the whole suite, so the whole of `tests/regression` is green at the pushed sha (the half FV1 assigns to CI)". The conclusion is TRUE and the step named is wrong:
+
+```
+cmd    .github/workflows/ci.yml:414
+out    pytest tests --ignore=tests/unit --ignore=tests/verification
+         --ignore=tests/regression -q
+cmd    .github/workflows/ci.yml:510
+out    sh scripts/run_rung.sh empty:tests/verification/rung6 full:tests/regression
+cmd    the step conclusions at cd6d6fe, run 41597125558
+out    "ladder 6 -- it stays fixed" => success
+judge  `tests/regression` is green at the pushed sha through the LADDER job's
+       rung-6 step, under run_rung.sh's `full:` mode -- which refuses an empty
+       collection and cross-checks pytest's exit code against the junit
+       report. That is a better certificate than the one claimed and it is
+       the one to cite.
+```
+
+## Tolerances touched
+
+**NONE, and I measured it over the range no verdict has judged rather than over the one I was given.**
+
+```
+cmd    git diff a2c3f5c..HEAD -- floatfea/tolerances.py, every added or
+         removed line that is neither a comment nor blank
+out    (empty)
+cmd    git diff a2c3f5c..HEAD -- floatfea/tolerances.py | wc -l
+out    30     -- 19 changed lines, all prose, all the R1108 CW0 record
+```
+
+**So EU1 does not attach and no adversarial ladder case is owed.** Your statement that none was touched holds on the narrow range and on the wide one. The five declarations verdict 43 swept are unmoved; `NODE_COINCIDENCE_DECIMALS` is still `Final[int] = 9` at `floatfea/tolerances.py:1804`, which is the line section 7 corrects itself to, and I read that line rather than the one the draft cited.
+
+## Corpus (EG4(e))
+
+**THE PAUSE HELD. ZERO NEW ENTRIES, AND I ADDED NONE.** `git diff a2c3f5c..HEAD -- tests/corpus` is empty; `tests/corpus/` holds 49 files and its newest commit is still `ba1527e`, batch 47. Neither exception opens: nothing in this range touches F4's load-mapping gate, and EB6's label-provenance gate is elsewhere. **The lapsed pause date was raised with Xabier once, at verdict 41, and CLAUDE.md says to say it once.**
+
+**I RAN THE RECORDED SUBSTITUTE, BOTH HALVES, AND IT PRODUCED BOTH OF THIS ROUND'S NON-LEDGER FINDINGS.**
+
+* **A regeneration check on a published deliverable.** Four of them. `results/F6b/truss_sizing.csv` and `.json` compared cell by cell against `a2c3f5c` (**4872 and 4872, 0 differing**); section 8's Carried table regenerated from `scripts/carried_table.py` (**272 rows, identical**); section 8b regenerated from `scripts/untouched_sites.py` (**1905 rows, identical on item, site and state**); and section 0a regenerated from `scripts/ci_section.py --rounds`. **The fourth is R1119**: the regeneration reproduced the wrong figure, which is what localised the defect to the generator rather than to a paste.
+* **A continuum grid over the parameter space a decision rule guards.** Three. The hook's decision space -- **40 command shapes** over redirects, mutating verbs, cwd changes and substitutions, in both directions; **R1123** came out of the ten weak-side rows. The `superseded_FY3` rule over the generator's whole declared grid -- **42 distinct (h, b) by 2 sections = 168 rows**, Lf/h from **1.0050** to **2.2361**, 8 rows above 1.5x, 2 above 2.0x, and **0 rows where Lf/h is exactly 1**, so the mark is non-vacuous on all 84 and your figures reproduce to the digit. The class-attribution regex over the clean and the armed state -- **55 entries, identical labels clean, one relabelled armed**.
+* **And one arm on my own instructions rather than on yours.** I replaced the sha in section 11's whole-suite line with a bogus value and ran the 25 affected ids: **25 passed.** I was ready to report that the line's sha is unchecked, and then I read the file: `test_the_report_carries_a_WHOLE_SUITE_count` asserts only that the line exists and that the passed count exceeds 100, because the commit-distance rule was RETIRED under DR0 after producing a finding against itself in four consecutive verdicts, with "WHAT REPLACES IT: NOTHING" written out. **That is deliberate and documented, so it is not a finding, and asking for it back would be the fifth attempt at a rule four attempts could not express.** I record the measurement so a later reader does not believe the sha is validated.
+
+**THE COVERAGE MEASUREMENT, AS WHAT I ACTUALLY MEASURED.** I planted no defects in your code, so there is no shapes-caught ratio and I will not manufacture one. What is available: **six injection arms on R1106, all six red against a 74-passed baseline, with the box control and a last-digit perturbation among them**; **one armed state on R1108, red on the new cell and silently mis-labelling under the old regex**; **40 hook rows, 5 mismatches on the weak side**; **one ablation on the carried-finding gate, which separated the deciding gate from the fast signal**; and **two reds in a CI log that the apparatus cannot name**. Every one of those came from running something. **The blocking one came from the cheapest of them: adding up a table you had written by hand and comparing it with a number your own generator printed about the same run.**
+
+## Try to break it -- what I ran, and what it found
+
+* **The R1106 mark in six directions, including the two that weaken it (EH4).** The box control flagged True; a triangle row flagged False mid-file; the banner removed; the JSON block removed; all 168 flags cleared; one published digit moved. All six red. **And the direction nobody would check: whether the new CSV column breaks a consumer.** A grep for `truss_sizing` over every `.py`, `.sh`, `.yml` and `.json` in the tree finds no programmatic reader of that CSV outside the generator and the FY3 cell, so the schema change reaches nothing.
+* **The corrected allocation itself, because the published note points readers at it.** `floatfea/run/truss.py:200` is `abs(vz) * lf / (2.0 * h) + abs(q * lf)` with `lf = hypot(h, 0.5 * b)`, which makes new/old exactly Lf/h -- the identity I derived independently of your figure, and it holds for the shear-flow term as well as for the shear. The pointer in the note is sound even though the table it promises is not.
+* **The R1108 guard armed**, and both regexes measured on the clean tree before I would believe the repair was a repair.
+* **40 hook shapes in both directions**, including nine write forms outside the verb list -- `ln -sf`, `patch`, `git apply`, a `python -c` open-for-write, `perl -i`, `ed`, `gawk -i inplace`, `sponge`, and a heredoc into `python -`. **All nine ALLOW, and none of them is a finding**, because the hook declares exactly that limitation in its own header ("a mutating verb outside the list" is not caught) and names the outside witness's commit-separation check as the guard that does not depend on it. **Adding them to the verb list would be extending a list, which EK2 forbids and which this hook's own commit message argues against in so many words.**
+* **AND ONE OF MY OWN ROWS WAS WRONG AND I REPORT IT AS WRONG.** My first matrix showed a backslash-separated path at a protected directory as ALLOW and I nearly wrote it up as a hole. It was my fixture: Python read the backslash-r in a non-raw string as a carriage return, so the string I sent the hook was not the string I meant. **Re-run with a raw string: DENY, in both the reviews and the corpus direction.** Same shape as the five instances my predecessors recorded -- a measurement whose domain is not the domain of the claim.
+* **The whole suite, the three guard files alone, and the lint gate at CI's scope**, all at the judged sha in my own worktrees.
+* **`tests/conftest.py` read whole for the CH2/CI0 forgery channels** even though its diff is empty, because that is the one file from which every gate's input can be rewritten. One hook, markers and a sort, nothing removed.
+
+## Next step opens when
+
+**This is REVIEWED REVISION 1 of 3 and it consumes a round. HOLD means R1119 is answered before other work; the step is not over, and its disposition is read from its closure verdict (DD1).**
+
+1. **R1119 is the only blocking item. Answer it first.** `scripts/ci_section.py:412` extracts an id containing a space; solved in BOTH directions with the three controls named in the finding; 1917 and 1893 both reproduced; section 0a's figure for `64af726` regenerated in the same commit (BP0).
+2. **R1120 is FF0-class and goes in that commit or the next, not the ledger.** Two regexes at `scripts/check_carried.py:34` and `scripts/answered_table.py:36`, `check_carried.py` re-run with its count pasted, and section 5's "widened identically at all six" reduced to what was measured. **No seventh copy and no meta-test comparing them.**
+3. **R1121 before this step closes, because its site cannot exist later.** One sentence in section 9, both halves.
+4. **R1122, R1123, R1124 and R1125 are ledger rows for the closure artifact** and are not re-reviewed item by item. R1109 to R1116 carry unchanged.
+5. **FT2.7, FT2.6 and FT2.5's conditions 1 to 3 are not reopened.** R867 to R870 stay non-blocking by name. I checked that the gate's named parts exist and I did not re-read them.
+6. **The schedule.** FW0's date is 10 November; it is 3 November, so seven days remain. **I read nothing here as slippage and nothing is escalated under FZ (e).** Section 9's "Today is 2 November" was true at its commit -- your commits are stamped 2 November PST and CI ran at 07:33Z on the 3rd -- so I am NOT asking you to re-date it, and I agree that voiding section 11's figure to replace one true dated sentence with another would be the worse trade. `docs/digests/2026-11-03.md` does not exist and that is correct: at `cd6d6fe` it was still 2 November where you are, and the 2 November digest is current and thorough.
+7. **What this revision got right, and it is much the larger part.** R1106 is answered better than the condition asked -- a per-row flag in both machine-readable siblings because `csv.DictReader` takes a comment line as a header, which you found by hitting it rather than by reasoning about it, with the box control asserted on the False side and not one of 9744 published cells moved. R1107 came back with **ten** rows where I had measured four, with three distinct causes, three arms and a weak side. R1108 was armed rather than argued, and the false sentence in `tolerances.py` went out with it. **R1118 is the best finding in the range and it is yours**: a guard parametrised through an anchor that could not see the finding the verdict blocked on, found while building a table rather than by reading a regex. And section 10 is a section I do not often see -- three things the revision got wrong about itself, each with the measurement that refuted it, including a stale line number corrected in the open rather than quietly.
+8. **The pattern note, because it moved.** Four of this round's seven findings are one defect: **a needle that cannot match the next shape of the thing it looks for.** `_FAILED` cannot see a space; two anchors cannot see a dot that moved; no anchor can see an L; and your own census of the ledger ids was too narrow, which you said first. R1118 is the same defect and you fixed it; R1119 is the same defect inside the repair's own evidence. **The transferable form is not about regexes.** It is that every one of these was verified by running the needle over the shapes its author already knew, and the only thing that found any of them was running it over a shape nobody had chosen -- which is what the corpus exists for and what the pause has suspended.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
 # Review — R1 step 3 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: a2c3f5c8787eeabab15395319dd123ad7048abff
 **Reviewed commit: `a2c3f5c8787eeabab15395319dd123ad7048abff`.**
