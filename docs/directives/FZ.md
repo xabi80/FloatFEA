@@ -300,3 +300,71 @@ review, but by reading my own diff with the comments stripped and asking what ev
 computed expression does at its boundaries. `ratio` was the only arithmetic in the
 function. Three rows pin it, including `-0.0`, where the sign is invisible in the text
 and the division would still have failed.
+
+**SR-10: the F6b sizing generator wrote both deliverables and then exited 1.**
+*Ruling applied:* FZ rule 1 (not blocking under FR1) with rule 5 (self-found defect:
+fix and add a named row).
+*Why:* recorded here because SR-1 rules that this file is the record and SR-10 reached
+only `docs/digests/2026-11-02.md`. It is SR-5's defect in a second generator:
+`args.out.relative_to(ROOT)` on the closing log line raises `ValueError` for any `--out`
+outside the repository root, after both the CSV and the JSON are on disk. A caller
+reading the exit code concludes nothing was produced. The repair is a `_shown()` helper
+that falls back to the absolute path, and
+`test_SR10_the_SIZING_generator_also_does_not_crash_AFTER_writing`. **Four sites still
+carry the bare form** under `scripts/measure/` — `api_wsd_utilisation.py`,
+`f6a_premise_check.py`, `f6a_report.py`, `f6a_required_section.py` — recorded at
+`member_forces_table.py:486` before I found this one, so the family is a known deferral
+and not a discovery of mine.
+
+**SR-11: 1905 report-guard reds whose test ids each name a site of the newest verdict —
+boundary reds under FS1's first limb, or CZ1 (iv)?**
+*Ruling applied:* FZ rule 7 (ambiguous wording → the reading consistent with existing
+conventions), with rule 5 (self-found defect: fixed, named row).
+*Why:* two readings, and the literal one is wrong. FS1's predicate is "every red names a
+finding or a site of the newest verdict". All 1905 ids of
+`test_every_named_site_is_touched_or_declared` do exactly that, so read as a pattern
+match on the id, every one is waived. **Taken: they are not boundary reds.** EG3 names
+two states and both are self-clearing — state (1) is cleared by the verdict, state (2)
+**by the answering report and not by time**, which is the eighty-third verdict's own
+sharpening. Here the verdict exists *and* the answering report exists, so neither state
+obtains; a red that survives both is not at a boundary, it is a defect in the report.
+And it was: the revision omitted the generated declaration block entirely. Step 2's own
+report carries **367** `no change` lines; the draft of this one carried **0**.
+
+The reading matters beyond this instance, so it is stated as a rule rather than as an
+outcome: **FS1's limbs are tests of the CAUSE of a red, not patterns over its id.** A
+waiver read as a pattern over ids would have passed 1905 unanswered sites into a
+reviewed revision, which is the `R29` shape — half of an item is not the item — at a
+scale no reviewer could be expected to notice by reading.
+
+*The repair:* `python scripts/untouched_sites.py` generates §8b, and the reason column
+is keyed on the same pointer file §8's table is generated from. All 1905 rows fall in
+one class, `later`, because the diff reaches every site of `R1106`, `R1107` and `R1108`
+and every other row belongs to a finding §7 carries unswept.
+
+**SR-12: `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` is one of the two tests FT1's
+limb two exists for. It was red. Is it waived?**
+*Ruling applied:* FZ rule 7, and `CLAUDE.md`'s own sentence that both limbs are reasons
+and neither is a list of names.
+*Why:* **no.** FT1 names that test because *no run exists for a commit before it is
+pushed* — that is the reason, and the two names are illustrations of it. This red had a
+different cause: the revision carried no `## 0a` table at all, because the assembler ran
+`scripts/ci_section.py` and never `--rounds`. A waiver claimed on the name would have
+hidden a missing generated section behind a rule written for a missing CI run.
+
+This is the same error as SR-11 in the opposite direction — there a red was waived by
+matching an id, here one would be waived by matching a name — and it is why the
+enumerated lists went in the first place. **A red is ruled on by its cause.** With §0a
+present the test passes, which is the control: one variable moved.
+
+**SR-13: a published figure of mine was stale by eleven lines.**
+*Ruling applied:* FZ rule 5 (self-found defect: fixed, stated rather than quietly
+corrected).
+*Why:* §7 cited `NODE_COINCIDENCE_DECIMALS` at `floatfea/tolerances.py:1793`. That was
+the line when I measured it; `325fd2e` then added eleven lines above the declaration and
+the line became **1804**. Nothing re-takes a measurement when the file beneath it moves.
+**This is the fourth figure of mine in two days voided by the same ordering**, which is
+what CP3 exists for — the paste is the LAST edit — and the fourth instance is the reason
+it is recorded as a ruling rather than as a typo. The report states the correction in the
+`judge` field of the triple that carries the new figure, so a reader who remembers `1793`
+is told what happened to it.
