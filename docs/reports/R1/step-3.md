@@ -1,0 +1,2646 @@
+# R1 step 3 — revision 1
+Answers: verdict 43 @ ea92019
+
+**Revision 1 of the three ES0 allows.** Verdict 43 was an ES0 interim check and
+counted against no round, so step 3 stood at 0 of 3 before this revision.
+
+## 0. CI at `a2c3f5c`, the commit verdict 43 judged — conclusion **FAILURE**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 43 at `a2c3f5c` through the report's own `Answers:` line. Run `41555438414`, event `push`, conclusion **failure**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| lint, unit and guards | 1442 | 1893 | 1 |
+| the verification ladder | 2568 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 1 not green.**
+
+- lint, unit and guards (failure)
+
+**Failing tests named in the log: 1893.**
+
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R845]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R846]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R847]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R848]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R849]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R850]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R851]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R852]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R853]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R854]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R855]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R856]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R857]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R858]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R859]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R860]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R861]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R862]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R863]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R864]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R865]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R866]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R867]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R868]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R869]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R870]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R871]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R872]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R873]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R874]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R875]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R876]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R877]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R878]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R879]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R880]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R881]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R882]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R883]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R884]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R885]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R886]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R887]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R888]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R889]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R890]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R891]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R892]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R893]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R894]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R895]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R896]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R897]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R898]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R899]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R900]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R901]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R902]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R903]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R904]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R905]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R906]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R907]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R908]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R909]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R910]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R911]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R912]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R913]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R914]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R915]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R916]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R917]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R918]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R919]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R920]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R921]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R922]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R923]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R924]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R925]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R926]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R927]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R928]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R929]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R930]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R931]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R932]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R933]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R934]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R935]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R936]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R937]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R938]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R939]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R940]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R941]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R942]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R943]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R944]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R945]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R946]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R947]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R948]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R949]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R950]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R951]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R952]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R953]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R954]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R955]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R956]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R957]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R958]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R959]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R960]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R961]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R962]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R963]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R964]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R965]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R966]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R967]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R968]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R969]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R970]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R971]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R972]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R973]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R974]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R975]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R976]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R977]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R978]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R979]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R980]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R981]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R982]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R983]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R984]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R985]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R986]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R987]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R988]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R989]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R990]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R991]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R992]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R993]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R994]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R995]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R996]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R999]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1000]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1001]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1002]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1003]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1005]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1006]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1007]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1008]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1009]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1010]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1011]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1012]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1013]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1014]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1015]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1016]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1017]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1018]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1021]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1022]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1023]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1024]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1025]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1026]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1027]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1028]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1029]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1030]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1031]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1032]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1033]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1034]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1035]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1036]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1037]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1038]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1039]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1040]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1042]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1043]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1044]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1045]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1046]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1047]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1048]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1049]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1050]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1051]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1052]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1053]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1054]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1055]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1056]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1057]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1058]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1059]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1060]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1061]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1062]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1063]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1064]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1065]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1066]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1067]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1068]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1069]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1070]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1071]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1072]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1073]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1074]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1075]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1076]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1077]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1078]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1079]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1080]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1081]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1082]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1083]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1084]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1085]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1086]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1087]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1088]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1089]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1090]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1091]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1092]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1093]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1094]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1095]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1096]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1097]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1098]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1099]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1100]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1101]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1102]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1103]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1104]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1105]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_Carried_table_is_what_the_generator_produces` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_generator_would_catch_a_row_under_the_wrong_number` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_WHOLE_SUITE_count` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1001-f6_results_report.py:718]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1001-floatfea/run/pipeline.py:793]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1001-floatfea/run/pipeline.py:794]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1001-floatfea/run/pipeline.py:795]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1001-floatfea/run/pipeline.py:796]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1001-floatfea/run/pipeline.py:797]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1001-floatfea/run/pipeline.py:798]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1001-floatfea/run/pipeline.py:799]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1001-floatfea/run/pipeline.py:800]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1001-floatfea/run/pipeline.py:801]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1001-floatfea/run/pipeline.py:802]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1001-floatfea/run/pipeline.py:803]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1001-floatfea/run/pipeline.py:804]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1001-floatfea/run/pipeline.py:805]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1001-floatfea/run/pipeline.py:806]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1003-docs/reports/R1/step-3-answers.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1003-docs/reports/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1005-pipeline.py:1239]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1005-pipeline.py:1252]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1005-pipeline.py:1262]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1005-post/forces_table.py:463]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1005-scripts/export_f4_dynamic_inputs.py:419]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1006-test_one_gravity.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1006-test_one_gravity.py:128]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1006-test_period_band.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1006-tests/regression/test_r1_example_golden.py:385]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1006-tests/regression/test_r1_example_golden.py:386]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1006-tests/regression/test_r1_example_golden.py:387]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1006-tests/regression/test_r1_example_golden.py:388]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1006-tests/test_no_tolerance_literals.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1006-tests/unit/test_period_band.py:150]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1007-pipeline.py:893]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1009-tests/unit/test_period_band.py:151]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1010-basis.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1010-f6_results_report.py:970]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1010-member_forces_table.py:209]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1010-member_forces_table.py:681]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1010-period_band.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1011-pipeline.py:772]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1011-pipeline.py:773]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1011-pipeline.py:774]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1011-pipeline.py:1194]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1013-pipeline.py:793]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1013-pipeline.py:794]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1013-pipeline.py:795]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1013-pipeline.py:796]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1013-pipeline.py:797]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1013-pipeline.py:798]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1013-pipeline.py:799]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1013-pipeline.py:800]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1013-pipeline.py:801]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1013-pipeline.py:802]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1013-pipeline.py:803]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1013-pipeline.py:804]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1013-pipeline.py:805]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1013-pipeline.py:806]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1017-docs/milestones/F2a.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1017-tests/regression/test_fl2d_band_check.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1018-test_one_gravity.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1018-test_period_band.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1018-tests/test_one_gravity.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1018-tests/test_one_gravity.py:148]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1018-tests/unit/test_period_band.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1022-member_forces_table.py:330]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1022-scripts/f4_dynamic_residual.py:193]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1022-scripts/measure/f6_results_report.py:565]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1023-F2a.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1023-docs/milestones/F2a.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1023-scripts/run_rung.sh]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1023-tests/regression/test_fl2d_band_check.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1023-tests/test_ci_runs_the_whole_suite.py:56]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1023-tests/test_tree_prose_consistent.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1024-test_period_band.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1025-tests/unit/test_forces_table_reexports.py:91]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1026-docs/F4_member_forces.md:57]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1026-f6_results_report.py:743]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1026-floatfea/cli.py:292]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1026-member_forces_table.py:220]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1026-results/R1/example/report.md:30]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1026-scripts/measure/member_forces_table.py:671]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1027-floatfea/basis.py:89]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1027-floatfea/cli.py:23]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1027-period_band.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1028-config.py:211]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1030-tests/test_no_tolerance_literals.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1032-tests/test_report_carried.py:358]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1032-tests/test_report_carried.py:359]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1032-tests/test_report_carried.py:360]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1032-tests/test_report_carried.py:361]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1032-tests/test_report_carried.py:362]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1032-tests/test_report_carried.py:363]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1032-tests/test_report_carried.py:364]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1033-docs/F4_member_forces.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1033-f6_results_report.py:577]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1033-floatfea/run/config.py:295]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1033-floatfea/run/pipeline.py:1360]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1033-member_forces_table.py:365]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1033-scripts/export_f4_dynamic_inputs.py:419]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1034-tests/verification/rung4/test_f4_g41_dynamic.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1035-config.py:1072]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1037-scripts/export_f4_dynamic_inputs.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1038-tests/unit/test_forces_table_reexports.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1039-.claude/agents/gating-supervisor.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:699]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:700]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:701]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:702]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:703]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:704]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:705]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:706]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:707]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1259]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1260]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1261]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1262]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1263]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1264]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1265]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1266]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1267]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1269]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1270]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1271]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1272]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1273]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1274]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1275]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1276]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1277]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1278]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1279]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1280]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1281]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1282]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1283]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1284]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1285]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1286]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1287]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1288]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1289]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1290]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1291]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1292]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1293]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1294]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1295]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1296]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1297]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1298]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1299]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1300]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1301]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-floatfea/run/pipeline.py:1302]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-scripts/measure/f6a_premise_check.py:189]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1042-tests/regression/test_r1_example_golden.py:401]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1043-floatfea/run/config.py:295]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1043-floatfea/run/pipeline.py:1360]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1043-tests/verification/rung4/test_f4_g41_dynamic.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1049-scripts/ci_section.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1049-scripts/write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1051-docs/load-interchange-v1.md:110]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1051-floatfea/post/forces_table.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1051-floatfea/post/forces_table.py:123]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1051-floatfea/post/forces_table.py:464]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1051-forces_table.py:448]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1051-forces_table.py:464]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1051-pipeline.py:1288]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1051-pipeline.py:1564]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1051-scripts/export_f4_dynamic_inputs.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1051-scripts/measure/f6a_premise_check.py:208]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1051-scripts/measure/member_forces_table.py:406]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1052-scripts/measure/f6a_premise_check.py:189]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1055-test_figure_local_check.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1055-test_marker_exemption_corpus.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1055-test_precommit_stale.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1055-test_supervisor_conftest_pathspec.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1058-docs/load-interchange-v1.md:110]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1058-floatfea/io/reader.py:68]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1058-floatfea/io/reader.py:345]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1058-floatfea/post/forces_table.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1058-floatfea/post/forces_table.py:582]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1058-floatfea/run/pipeline.py:967]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1058-floatfea/run/pipeline.py:1525]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1058-reader.py:378]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1058-scripts/export_f4_dynamic_inputs.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1058-scripts/export_f4_dynamic_inputs.py:476]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1059-docs/load-interchange-v1.md:110]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1060-premise_check.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1060-scripts/measure/f6a_premise_check.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1060-tests/regression/test_generators_refuse_mismatched_inputs.py:19]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1061-floatfea/post/forces_table.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1062-floatfea/run/pipeline.py:1196]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-docs/load-interchange-v1.md:110]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-floatfea/post/forces_table.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-floatfea/post/forces_table.py:88]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-floatfea/post/forces_table.py:89]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-floatfea/post/forces_table.py:90]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-floatfea/post/forces_table.py:91]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-floatfea/post/forces_table.py:92]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-floatfea/post/forces_table.py:93]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-floatfea/post/forces_table.py:94]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-floatfea/post/forces_table.py:582]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-floatfea/post/forces_table.py:613]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-forces_table.py:88]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-forces_table.py:89]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-forces_table.py:90]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-forces_table.py:91]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-forces_table.py:92]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-forces_table.py:93]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-forces_table.py:94]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-scripts/export_f4_dynamic_inputs.py:233]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-scripts/export_f4_dynamic_inputs.py:234]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-test_fl2d_band_check.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1063-test_ft24_required_section.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1064-premise_check.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1065-scripts/measure/f6a_required_section.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1066-scripts/export_f4_dynamic_inputs.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1067-required_section.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1067-scripts/export_f4_dynamic_inputs.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1068-f6a_premise_check.py:365]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1068-scripts/measure/f6a_report.py:411]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1068-scripts/measure/f6a_required_section.py:585]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1069-floatfea/run/truss.py:425]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1069-floatfea/run/truss.py:426]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1069-floatfea/run/truss.py:427]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1069-floatfea/run/truss.py:428]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1069-floatfea/run/truss.py:429]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1069-floatfea/run/truss.py:430]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1069-scripts/measure/f6b_truss_sizing.py:402]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1069-scripts/measure/f6b_truss_sizing.py:403]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1069-scripts/measure/f6b_truss_sizing.py:404]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1070-floatfea/post/forces_table.py:303]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1070-scripts/export_f4_dynamic_inputs.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1070-scripts/export_f4_dynamic_inputs.py:233]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-docs/milestones/F6b.md:32]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/cli.py:613]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/cli.py:614]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/cli.py:615]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/cli.py:616]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/cli.py:617]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/cli.py:618]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/cli.py:619]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/cli.py:620]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/cli.py:621]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/cli.py:631]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/cli.py:632]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/cli.py:633]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/cli.py:634]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/cli.py:635]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/cli.py:636]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/run/truss.py:170]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/run/truss.py:171]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/run/truss.py:172]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-floatfea/run/truss.py:432]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-scripts/measure/f6b_truss_sizing.py:155]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-scripts/measure/f6b_truss_sizing.py:156]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-scripts/measure/f6b_truss_sizing.py:157]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-scripts/measure/f6b_truss_sizing.py:158]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-scripts/measure/f6b_truss_sizing.py:159]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-scripts/measure/f6b_truss_sizing.py:160]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-scripts/measure/f6b_truss_sizing.py:161]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1072-tests/regression/test_ft25_truss_sizing.py:497]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1073-floatfea/cli.py:653]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1073-floatfea/cli.py:654]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1073-floatfea/cli.py:655]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1073-floatfea/cli.py:656]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1073-floatfea/cli.py:657]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1073-floatfea/cli.py:658]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1073-floatfea/cli.py:659]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1073-floatfea/cli.py:660]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1073-floatfea/cli.py:661]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1073-floatfea/cli.py:662]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1073-floatfea/cli.py:663]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1073-floatfea/cli.py:664]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1073-floatfea/cli.py:665]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1073-floatfea/cli.py:666]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1074-floatfea/cli.py:526]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1074-floatfea/cli.py:527]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1074-floatfea/cli.py:528]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1074-floatfea/cli.py:529]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1074-floatfea/cli.py:627]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1074-floatfea/cli.py:628]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1074-floatfea/cli.py:629]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1074-floatfea/cli.py:630]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1074-floatfea/cli.py:631]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1074-floatfea/cli.py:632]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1074-floatfea/cli.py:633]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1075-floatfea/cli.py:630]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1075-floatfea/cli.py:631]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1075-floatfea/cli.py:632]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1075-floatfea/cli.py:633]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:690]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:691]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:692]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:693]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:694]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:695]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:696]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:697]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:698]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:699]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:700]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:701]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:702]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:703]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:704]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:705]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:706]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:707]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1076-floatfea/cli.py:708]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1077-floatfea/cli.py:627]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1077-floatfea/cli.py:628]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1077-floatfea/cli.py:629]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1077-floatfea/cli.py:630]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1077-floatfea/cli.py:631]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1077-floatfea/cli.py:632]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1077-floatfea/cli.py:633]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1077-floatfea/cli.py:655]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1077-floatfea/cli.py:656]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1077-floatfea/cli.py:657]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1077-floatfea/cli.py:658]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1077-floatfea/cli.py:659]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1077-floatfea/cli.py:660]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1077-floatfea/cli.py:661]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1077-floatfea/cli.py:662]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1077-floatfea/cli.py:663]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-f6b_truss_sizing.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-floatfea/cli.py:523]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-floatfea/cli.py:524]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-floatfea/cli.py:525]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-floatfea/cli.py:526]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-floatfea/cli.py:527]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-floatfea/cli.py:528]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-floatfea/cli.py:529]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-floatfea/cli.py:530]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-floatfea/cli.py:531]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-floatfea/cli.py:532]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-floatfea/cli.py:533]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-floatfea/cli.py:534]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-floatfea/cli.py:535]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-floatfea/cli.py:536]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-floatfea/cli.py:537]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-floatfea/cli.py:538]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-floatfea/cli.py:539]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1078-test_r1_example_regenerates.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1079-floatfea/cli.py:709]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1079-floatfea/cli.py:710]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1079-floatfea/cli.py:711]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1079-floatfea/cli.py:712]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1079-floatfea/cli.py:713]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1079-floatfea/cli.py:714]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1080-floatfea/cli.py:747]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1080-floatfea/cli.py:748]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1080-floatfea/cli.py:749]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1080-floatfea/cli.py:750]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1080-floatfea/cli.py:751]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1080-floatfea/cli.py:752]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1080-floatfea/run/truss.py:457]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1081-floatfea/cli.py:680]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1081-floatfea/cli.py:681]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1081-floatfea/cli.py:682]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1081-floatfea/cli.py:683]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-docs/directives/FR.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-docs/reports/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-floatfea/cli.py:572]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-floatfea/cli.py:573]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-floatfea/cli.py:574]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-floatfea/cli.py:575]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-floatfea/cli.py:576]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-floatfea/cli.py:577]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-floatfea/cli.py:578]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-floatfea/cli.py:579]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-floatfea/cli.py:580]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-floatfea/cli.py:581]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-floatfea/cli.py:582]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-floatfea/cli.py:583]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-scripts/write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-step-1-answers.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-step-1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1082-step-2-answers.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1083-docs/milestones/R1.md:374]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1083-docs/milestones/R1.md:375]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1083-docs/reports/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1083-floatfea/cli.py:710]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1083-floatfea/cli.py:711]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1083-floatfea/cli.py:712]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1083-floatfea/cli.py:713]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1083-floatfea/cli.py:714]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1083-test_ft24_required_section.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1083-test_tree_prose_consistent.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1084-floatfea/cli.py:805]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1084-floatfea/cli.py:806]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1084-floatfea/cli.py:807]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1084-floatfea/cli.py:808]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1085-floatfea/cli.py:552]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1085-floatfea/cli.py:553]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1085-floatfea/cli.py:554]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1085-floatfea/cli.py:555]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1085-floatfea/cli.py:556]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1086-tests/regression/test_ft25_truss_sizing.py:1079]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1086-tests/regression/test_ft25_truss_sizing.py:1080]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1086-tests/regression/test_ft25_truss_sizing.py:1081]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-floatfea/run/truss.py:210]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-floatfea/run/truss.py:211]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:885]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:886]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:887]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:888]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:889]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:890]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:891]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:892]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:893]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:894]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:895]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:896]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:897]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:898]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:899]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:900]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:901]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:902]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1087-tests/regression/test_ft25_truss_sizing.py:903]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1088-floatfea/cli.py:804]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1088-floatfea/cli.py:805]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1089-floatfea/cli.py:557]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1089-floatfea/cli.py:558]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1089-floatfea/cli.py:559]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1089-floatfea/cli.py:560]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1089-tests/regression/test_ft25_truss_sizing.py:1011]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1089-tests/regression/test_ft25_truss_sizing.py:1012]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1089-tests/regression/test_ft25_truss_sizing.py:1013]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1089-tests/regression/test_ft25_truss_sizing.py:1014]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1089-tests/regression/test_ft25_truss_sizing.py:1015]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1089-tests/regression/test_ft25_truss_sizing.py:1016]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1089-tests/regression/test_ft25_truss_sizing.py:1017]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1089-tests/regression/test_ft25_truss_sizing.py:1018]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1089-tests/regression/test_ft25_truss_sizing.py:1019]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1089-tests/regression/test_ft25_truss_sizing.py:1020]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1089-tests/regression/test_ft25_truss_sizing.py:1021]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1090-tests/regression/test_ft25_truss_sizing.py:1099]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1090-tests/regression/test_ft25_truss_sizing.py:1100]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1090-tests/regression/test_ft25_truss_sizing.py:1101]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1091-floatfea/cli.py:810]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1091-floatfea/cli.py:811]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1091-floatfea/cli.py:812]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1091-floatfea/cli.py:813]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1091-floatfea/cli.py:814]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1091-floatfea/cli.py:815]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1091-floatfea/cli.py:816]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1091-floatfea/cli.py:817]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1091-floatfea/cli.py:818]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1092-floatfea/cli.py:813]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1092-floatfea/cli.py:814]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1092-floatfea/cli.py:815]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1092-floatfea/cli.py:816]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1093-floatfea/cli.py:333]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1093-floatfea/cli.py:334]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1093-floatfea/cli.py:335]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1093-floatfea/cli.py:336]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1093-floatfea/cli.py:337]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1093-floatfea/cli.py:338]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1093-floatfea/cli.py:339]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1093-floatfea/cli.py:340]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1093-floatfea/cli.py:341]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1093-floatfea/cli.py:342]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1093-floatfea/cli.py:344]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1093-floatfea/cli.py:345]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1093-floatfea/cli.py:346]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1093-pipeline.py:1791]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1094-floatfea/cli.py:358]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1094-floatfea/cli.py:359]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1094-floatfea/cli.py:360]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1094-floatfea/cli.py:361]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1094-floatfea/cli.py:362]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1094-floatfea/cli.py:363]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1094-floatfea/cli.py:364]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1094-floatfea/cli.py:365]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1094-floatfea/cli.py:366]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1094-floatfea/cli.py:367]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1094-floatfea/cli.py:368]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1094-floatfea/cli.py:369]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1094-floatfea/cli.py:370]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1094-floatfea/cli.py:371]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1094-floatfea/cli.py:372]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1094-floatfea/run/pipeline.py:1694]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-floatfea/cli.py:350]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-floatfea/cli.py:351]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-floatfea/cli.py:352]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-floatfea/cli.py:353]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-floatfea/cli.py:354]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-floatfea/cli.py:355]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-floatfea/cli.py:356]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-floatfea/cli.py:357]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:707]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:708]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:709]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:710]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:711]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:712]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:713]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:714]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:715]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:716]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:717]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:718]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:719]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:1255]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:1256]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:1257]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:1258]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:1259]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:1260]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:1261]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:1262]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1095-pipeline.py:1263]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1096-floatfea/cli.py:417]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1096-floatfea/cli.py:418]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1097-floatfea/cli.py:294]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1097-floatfea/cli.py:295]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1097-floatfea/cli.py:296]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1098-floatfea/cli.py:262]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1098-floatfea/cli.py:263]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1098-floatfea/cli.py:264]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1098-floatfea/cli.py:265]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1098-floatfea/cli.py:266]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1098-floatfea/cli.py:267]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1098-floatfea/cli.py:268]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1098-floatfea/cli.py:269]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1098-floatfea/cli.py:270]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1098-floatfea/cli.py:271]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1099-floatfea/cli.py:268]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1099-floatfea/cli.py:269]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1099-floatfea/cli.py:270]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1099-floatfea/cli.py:271]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1100-config.py:194]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1100-floatfea/run/pipeline.py:698]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1100-floatfea/run/pipeline.py:699]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1100-floatfea/run/pipeline.py:700]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1100-floatfea/run/pipeline.py:701]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1100-floatfea/run/pipeline.py:702]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1100-floatfea/run/pipeline.py:703]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1100-floatfea/run/pipeline.py:704]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1100-floatfea/run/pipeline.py:705]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1100-floatfea/run/pipeline.py:706]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1100-floatfea/run/pipeline.py:707]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1100-floatfea/run/pipeline.py:708]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1101-floatfea/run/pipeline.py:690]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1101-floatfea/run/pipeline.py:691]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1101-floatfea/run/pipeline.py:692]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1101-floatfea/run/pipeline.py:693]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1101-floatfea/run/pipeline.py:694]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-cli.py:209]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-cli.py:210]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-cli.py:211]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:73]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:74]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:75]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:76]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:77]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:78]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:79]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:80]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:81]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:82]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:83]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:84]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:85]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:86]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:87]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:88]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:89]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:90]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1102-floatfea/post/forces_table.py:91]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1103-floatfea/cli.py:89]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1103-floatfea/cli.py:90]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1103-floatfea/cli.py:91]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1103-floatfea/cli.py:92]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1103-floatfea/cli.py:93]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1103-floatfea/cli.py:94]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-cli.py:146]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-cli.py:147]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-cli.py:148]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-cli.py:149]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-cli.py:150]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-cli.py:151]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-cli.py:152]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-cli.py:153]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-config.py:1532]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-config.py:1533]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-config.py:1534]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-config.py:1535]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-config.py:1536]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-config.py:1537]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-docs/milestones/R1.md:396]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-docs/milestones/R1.md:397]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-docs/milestones/R1.md:398]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-docs/milestones/R1.md:399]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-docs/milestones/R1.md:400]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-floatfea/cli.py:474]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-floatfea/run/config.py:1532]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1104-floatfea/run/pipeline.py:788]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1105-docs/reports/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1105-floatfea/post/forces_table.py:405]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1105-floatfea/run/pipeline.py:793]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1105-step-2-answers.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R850-floatfea/cli.py:296]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R850-floatfea/cli.py:297]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R850-floatfea/cli.py:298]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R850-floatfea/cli.py:299]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R850-floatfea/run/pipeline.py:605]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R850-floatfea/run/pipeline.py:672]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R850-tests/regression/test_r1_example_regenerates.py:54]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R850-tests/regression/test_r1_example_regenerates.py:55]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R850-tests/regression/test_r1_example_regenerates.py:56]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-floatfea/run/config.py:507]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-floatfea/run/config.py:508]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-floatfea/run/config.py:509]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-floatfea/run/config.py:510]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-floatfea/run/config.py:511]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-floatfea/run/config.py:512]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-floatfea/run/config.py:513]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-floatfea/run/config.py:514]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-floatfea/run/config.py:515]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-floatfea/run/config.py:516]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-floatfea/run/config.py:517]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-floatfea/run/config.py:518]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-floatfea/run/config.py:519]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-floatfea/run/config.py:520]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-floatfea/run/config.py:521]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-floatfea/run/config.py:522]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-floatfea/run/config.py:523]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-tests/regression/test_r1_example_regenerates.py:105]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-tests/regression/test_r1_example_regenerates.py:106]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-tests/regression/test_r1_example_regenerates.py:107]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-tests/regression/test_r1_example_regenerates.py:108]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-tests/regression/test_r1_example_regenerates.py:109]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-tests/regression/test_r1_example_regenerates.py:110]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-tests/regression/test_r1_example_regenerates.py:111]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R851-tests/regression/test_r1_example_regenerates.py:112]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R852-docs/directives/FO.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R853-tests/regression/test_r1_example_regenerates.py:62]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R853-tests/regression/test_r1_example_regenerates.py:63]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R853-tests/regression/test_r1_example_regenerates.py:64]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R854-tests/regression/test_r1_example_regenerates.py:48]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R854-tests/regression/test_r1_published_artifacts.py:69]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R856-docs/directives/FR.md:28]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R856-docs/directives/FR.md:29]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R856-docs/directives/FR.md:30]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R856-docs/directives/FR.md:31]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R856-docs/directives/FR.md:32]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R856-docs/directives/FR.md:33]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R856-scripts/write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R856-scripts/write_verdict.py:179]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R856-scripts/write_verdict.py:180]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R856-scripts/write_verdict.py:181]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R856-step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R858-tests/regression/test_r1_example_regenerates.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R860-floatfea/cli.py:297]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R860-floatfea/run/pipeline.py:605]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R860-tests/regression/test_r1_example_regenerates.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R861-tests/regression/test_r1_example_regenerates.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R861-tests/test_collected_set_golden.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R862-floatfea/run/pipeline.py:673]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R862-pipeline.py:673]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R862-tests/regression/test_r1_example_golden.py:318]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R862-tests/regression/test_r1_example_golden.py:321]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R863-floatfea/run/pipeline.py:605]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R863-tests/regression/test_r1_example_regenerates.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R865-tests/regression/test_r1_example_regenerates.py:224]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R865-tests/regression/test_r1_example_regenerates.py:225]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R865-tests/regression/test_r1_example_regenerates.py:226]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R865-tests/regression/test_r1_example_regenerates.py:227]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R865-tests/regression/test_r1_example_regenerates.py:228]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R865-tests/regression/test_r1_example_regenerates.py:229]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R866-floatfea/cli.py:354]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R866-floatfea/cli.py:355]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R866-floatfea/cli.py:356]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R866-floatfea/cli.py:357]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R866-floatfea/cli.py:358]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R866-floatfea/cli.py:359]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R866-floatfea/cli.py:360]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R866-floatfea/cli.py:361]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R866-floatfea/cli.py:362]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R866-floatfea/cli.py:407]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R866-floatfea/run/config.py:425]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R866-floatfea/run/pipeline.py:515]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R866-floatfea/run/pipeline.py:543]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R866-floatfea/run/pipeline.py:558]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R866-report.md:7]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R866-report.md:23]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R866-report.md:55]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R867-floatfea/post/forces_table.py:169]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R867-floatfea/run/config.py:898]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R867-floatfea/solve/static.py:135]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R868-tests/unit/test_topology_from_config.py:92]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R869-floatfea/model/platform.py:626]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R869-floatfea/post/forces_table.py:169]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R869-floatfea/solve/static.py:135]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R870-docs/milestones/R1.md:81]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R870-docs/milestones/R1.md:352]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R870-floatfea/run/pipeline.py:123]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R870-floatfea/run/pipeline.py:180]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R871-CLAUDE.md:421]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R871-docs/SUPERVISOR.md:1]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R871-docs/SUPERVISOR.md:547]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R872-floatfea/run/config.py:189]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R872-floatfea/run/pipeline.py:586]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R873-floatfea/run/pipeline.py:583]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R873-floatfea/run/pipeline.py:584]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R873-floatfea/run/pipeline.py:585]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R873-floatfea/run/pipeline.py:586]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R874-floatfea/cli.py:146]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R874-floatfea/run/config.py:199]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R874-floatfea/run/pipeline.py:583]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R874-floatfea/run/pipeline.py:584]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R874-floatfea/run/pipeline.py:585]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R874-floatfea/run/pipeline.py:586]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R875-docs/SUPERVISOR.md:549]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R875-docs/SUPERVISOR.md:555]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R875-docs/SUPERVISOR.md:556]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R875-docs/SUPERVISOR.md:557]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-docs/conventions.md:143]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-docs/conventions.md:144]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-docs/conventions.md:145]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-docs/conventions.md:146]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-docs/conventions.md:147]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:583]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:584]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:585]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:586]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:629]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:630]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:687]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:688]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:689]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:690]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:691]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:692]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:693]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:694]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:695]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:696]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:697]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:698]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-floatfea/run/pipeline.py:699]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-report.md:23]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R877-tests/regression/test_r1_example_golden.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-cli.py:147]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-docs/directives/FR.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-docs/milestones/F2a.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/cli.py:138]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/cli.py:139]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/cli.py:140]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/cli.py:141]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/cli.py:146]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/cli.py:147]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/cli.py:148]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/cli.py:149]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/cli.py:262]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/cli.py:263]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/cli.py:264]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/cli.py:265]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/cli.py:395]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/cli.py:396]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/cli.py:397]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/run/pipeline.py:695]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/run/pipeline.py:696]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/run/pipeline.py:697]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/run/pipeline.py:698]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-floatfea/run/pipeline.py:699]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-scripts/f4_dynamic_residual.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-scripts/write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-tests/conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R878-tests/test_supervisor_conftest_pathspec.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R879-config.py:212]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R879-floatfea/run/config.py:202]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R879-floatfea/run/config.py:208]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R879-floatfea/run/config.py:212]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R879-floatfea/run/pipeline.py:581]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R879-floatfea/run/pipeline.py:582]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R879-floatfea/run/pipeline.py:583]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R879-floatfea/run/pipeline.py:584]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R879-floatfea/run/pipeline.py:585]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R879-floatfea/run/pipeline.py:586]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R879-floatfea/run/pipeline.py:587]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R879-floatfea/run/pipeline.py:588]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R879-floatfea/run/pipeline.py:589]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R879-floatfea/run/pipeline.py:590]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R879-floatfea/run/pipeline.py:591]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R879-floatfea/run/pipeline.py:592]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R879-floatfea/run/pipeline.py:593]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-.claude/agents/gating-supervisor.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-.claude/hooks/require-verdict.sh]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:429]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:458]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:459]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:460]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:461]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:462]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:463]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:464]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:465]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:466]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:467]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:468]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:469]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:470]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:471]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:472]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:473]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:474]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:475]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:476]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:477]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:478]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-CLAUDE.md:479]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-config.py:196]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-data/f4/dynamic_inputs.provenance.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-docs/directives/FR.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-docs/directives/FT.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-docs/milestones/F2.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-docs/milestones/F2a.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-docs/reports/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-f6a_premise_check.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-pipeline.py:1027]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-scripts/f4_dynamic_residual.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-scripts/measure/f6a_required_section.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-scripts/measure/f6b_truss_sizing.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-scripts/write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-step-1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-tests/conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-tests/test_plan_figures.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R880-tests/test_tree_prose_consistent.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R881-floatfea/run/config.py:190]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R881-floatfea/run/config.py:931]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R881-floatfea/run/pipeline.py:52]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R881-floatfea/run/pipeline.py:722]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R882-floatfea/run/pipeline.py:589]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R882-floatfea/run/pipeline.py:597]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R882-floatfea/run/pipeline.py:633]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R883-floatfea/run/pipeline.py:712]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R884-floatfea/run/pipeline.py:802]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R885-docs/conventions.md:150]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R885-readers/capytaine.py:191]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R885-readers/capytaine.py:192]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R885-readers/capytaine.py:193]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R885-readers/capytaine.py:194]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R885-scripts/export_f4_dynamic_inputs.py:524]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R885-scripts/report_joint_reactions.py:93]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R886-tests/unit/test_headings_and_bem_coverage.py:35]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R887-.../repo/docs/reports/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R887-docs/reports/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R887-docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R887-step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R887-tests/test_report_guard_states.py:90]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R887-tests/test_report_guard_states.py:91]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R887-tests/test_report_guard_states.py:494]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R888-.claude/hooks/require-verdict.sh:240]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R888-.claude/hooks/require-verdict.sh:276]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R888-docs/reports/F7/step-1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R888-docs/reports/R1/step-4.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R889-.claude/hooks/require-verdict.sh:157]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R889-docs/directives/FT.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R889-docs/directives/FT.md:44]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R890-results/R1/example/report.md:89]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R890-scripts/measure/f6a_required_section.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R890-scripts/measure/f6b_truss_sizing.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R891-docs/reports/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R892-...docs/reports/R1/step-2.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R892-.claude/hooks/require-verdict.sh]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R892-docs/reports/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R893-F2.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R893-docs/milestones/F2.md:22]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R893-docs/milestones/F6.md:145]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R893-docs/milestones/R1.md:5]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R893-docs/milestones/R1.md:6]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R893-docs/reports/F6/step-1.md:22]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R894-docs/directives/FT.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R894-docs/milestones/R1.md:352]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R894-docs/milestones/R1.md:353]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R894-docs/milestones/R1.md:354]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R894-docs/milestones/R1.md:355]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R894-docs/milestones/R1.md:356]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R894-docs/milestones/R1.md:357]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R894-docs/milestones/R1.md:358]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-cli.py:147]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-cli.py:148]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-cli.py:266]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-config.py:931]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-floatfea/run/pipeline.py:682]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-floatfea/run/pipeline.py:683]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-floatfea/run/pipeline.py:684]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-floatfea/run/pipeline.py:685]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-floatfea/run/pipeline.py:686]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-floatfea/run/pipeline.py:687]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-floatfea/run/pipeline.py:688]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-floatfea/run/pipeline.py:689]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-floatfea/run/pipeline.py:690]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-floatfea/run/pipeline.py:691]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-floatfea/run/pipeline.py:692]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-floatfea/run/pipeline.py:693]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-floatfea/run/pipeline.py:694]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-floatfea/run/pipeline.py:695]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-floatfea/run/pipeline.py:696]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-scripts/measure/f6_results_report.py:400]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R895-scripts/measure/f6_results_report.py:401]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R896-config.py:189]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R896-config.py:190]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R896-conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R896-docs/directives/FR.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R896-docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R896-step-1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R896-tests/conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R896-tests/regression/test_f6_deliverable_agrees_with_itself.py:235]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R897-.../repo/docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R897-docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R897-step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R897-tests/test_report_guard_states.py:536]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-.claude/hooks/require-verdict.sh]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-.claude/hooks/require-verdict.sh:285]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-.claude/hooks/require-verdict.sh:286]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-.claude/hooks/require-verdict.sh:287]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-.claude/hooks/require-verdict.sh:288]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-.claude/hooks/require-verdict.sh:289]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-config.py:189]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-config.py:190]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-config.py:191]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-config.py:192]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-config.py:193]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-config.py:194]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-config.py:195]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-config.py:196]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-docs/directives/FR.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-docs/reports/R1/step-4.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-docs/reviews/R1/step-1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-step-1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-tests/conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R898-tests/unit/test_forces_table_reexports.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R899-.claude/agents/gating-supervisor.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R899-docs/SUPERVISOR.md:24]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R899-docs/SUPERVISOR.md:25]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R899-docs/SUPERVISOR.md:26]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R899-docs/SUPERVISOR.md:27]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R899-docs/SUPERVISOR.md:28]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R899-docs/SUPERVISOR.md:29]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R899-docs/SUPERVISOR.md:30]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R899-docs/SUPERVISOR.md:31]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R899-docs/SUPERVISOR.md:32]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R899-docs/SUPERVISOR.md:33]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R902-docs/F4_member_forces.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R902-f6_results_report.py:76]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R902-member_forces_table.py:143]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-config.py:196]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-config.py:733]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:961]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:962]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:963]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:964]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:965]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:966]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:967]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:968]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:969]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:970]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:971]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:972]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:973]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:974]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:975]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:976]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:977]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:978]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:979]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:980]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R903-pipeline.py:981]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R904-docs/reports/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R904-docs/reviews/R1/step-10.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R904-tests/test_report_guard_states.py:851]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R904-tests/test_report_guard_states.py:852]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R904-tests/test_report_guard_states.py:853]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R904-tests/test_report_guard_states.py:854]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R904-tests/test_report_guard_states.py:855]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R904-tests/test_report_guard_states.py:856]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R904-tests/test_report_guard_states.py:857]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R904-tests/test_report_guard_states.py:858]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R904-tests/test_report_guard_states.py:859]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R904-tests/test_report_guard_states.py:860]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R904-tests/test_report_guard_states.py:861]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R905-config.py:196]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R905-tests/prose_triple_controls.txt]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R906-docs/directives/FR.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R906-docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R906-f6a_premise_check.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R906-scripts/f4_dynamic_residual.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R906-scripts/measure/f6a_premise_check.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R906-scripts/measure/f6a_premise_check.py:188]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R906-step-1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R906-tests/conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R906-tests/regression/test_f6_deliverable_agrees_with_itself.py:492]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R906-tests/unit/test_forces_table_reexports.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R906-tests/unit/test_forces_table_reexports.py:47]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R907-docs/F4_member_forces.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R907-f6_results_report.py:1052]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R907-test_f6_deliverable_agrees_with_itself.py:235]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-docs/F4_member_forces.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-f6a_premise_check.py:185]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-member_forces_table.py:287]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1012]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1013]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1014]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1015]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1016]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1017]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1027]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1028]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1029]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1030]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1031]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1032]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1033]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1034]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1035]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1036]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1037]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1038]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-pipeline.py:1039]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-scripts/export_f4_dynamic_inputs.py:430]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R908-tests/regression/test_r1_example_golden.py:420]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R909-pipeline.py:1043]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R909-pipeline.py:1044]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R909-pipeline.py:1045]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R909-pipeline.py:1046]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R909-pipeline.py:1047]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R909-pipeline.py:1048]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R909-pipeline.py:1049]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R909-pipeline.py:1050]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R911-floatfea/io/integrator.py:30]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R911-pipeline.py:704]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R911-pipeline.py:705]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R911-pipeline.py:706]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R911-pipeline.py:707]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R911-pipeline.py:708]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R911-pipeline.py:709]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R911-pipeline.py:710]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R911-pipeline.py:711]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R911-pipeline.py:712]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R911-pipeline.py:713]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R911-pipeline.py:714]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R911-pipeline.py:715]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R911-pipeline.py:716]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R911-pipeline.py:717]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R913-floatfea/cli.py:145]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R913-floatfea/cli.py:146]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R913-floatfea/cli.py:147]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R913-floatfea/cli.py:148]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R913-floatfea/cli.py:149]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R914-scripts/measure/member_forces_table.py:147]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R914-scripts/measure/member_forces_table.py:148]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R914-scripts/measure/member_forces_table.py:149]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R914-scripts/measure/member_forces_table.py:150]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R914-scripts/measure/member_forces_table.py:151]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R914-scripts/measure/member_forces_table.py:152]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R914-scripts/measure/member_forces_table.py:153]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R917-pipeline.py:869]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R918-member_forces_table.py:312]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-f6a_premise_check.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-pipeline.py:1027]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-pipeline.py:1028]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-pipeline.py:1029]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-pipeline.py:1030]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-pipeline.py:1031]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-pipeline.py:1032]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-pipeline.py:1033]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-pipeline.py:1034]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-pipeline.py:1035]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-pipeline.py:1036]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-pipeline.py:1037]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-pipeline.py:1038]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-pipeline.py:1039]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-results/F6a/premise_check.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-results/F6a/required_section.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-scripts/measure/f6a_premise_check.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R919-scripts/measure/f6a_report.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R920-floatfea/run/pipeline.py:944]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R920-floatfea/run/pipeline.py:945]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R920-floatfea/run/pipeline.py:946]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R920-test_r1_example_golden.py:402]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R921-scripts/measure/f6a_premise_check.py:358]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R922-f6a_premise_check.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R922-tests/regression/test_f6_deliverable_agrees_with_itself.py:490]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R924-docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R924-scripts/measure/member_forces_table.py:148]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R924-scripts/measure/member_forces_table.py:149]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R924-scripts/measure/member_forces_table.py:150]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R924-scripts/measure/member_forces_table.py:151]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R924-scripts/measure/member_forces_table.py:152]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R924-scripts/measure/member_forces_table.py:153]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R924-scripts/measure/member_forces_table.py:154]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R925-config.py:507]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R925-docs/F4_member_forces.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R925-docs/F4_member_forces.md:21]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R925-member_forces_table.py:252]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R925-scripts/measure/member_forces_table.py:252]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R926-f6_results_report.py:428]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R926-f6a_premise_check.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R927-docs/F4_member_forces.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R927-f6a_premise_check.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R927-member_forces_table.py:285]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R927-member_forces_table.py:312]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R927-pipeline.py:999]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R930-member_forces_table.py:166]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R932-f6a_premise_check.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-cli.py:142]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-cli.py:143]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-cli.py:144]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-cli.py:145]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-cli.py:146]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-cli.py:147]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-cli.py:148]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-cli.py:149]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-cli.py:150]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1098]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1099]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1100]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1101]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1102]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1103]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1104]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1107]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1108]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1110]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1111]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1113]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1114]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1115]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1116]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1117]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1118]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R934-pipeline.py:1120]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R935-docs/reports/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R935-docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R935-tests/unit/test_headings_and_bem_coverage.py:34]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R935-tests/unit/test_headings_and_bem_coverage.py:35]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R935-tests/unit/test_headings_and_bem_coverage.py:36]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R935-tests/unit/test_headings_and_bem_coverage.py:37]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R935-tests/unit/test_headings_and_bem_coverage.py:38]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R935-tests/unit/test_headings_and_bem_coverage.py:39]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R935-tests/unit/test_headings_and_bem_coverage.py:40]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R936-docs/F4_member_forces.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R936-member_forces_table.py:493]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-docs/F4_member_forces.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:343]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:344]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:348]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:429]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:430]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:431]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:432]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:433]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:434]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:435]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:436]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:437]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:438]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:439]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:440]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:441]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:442]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:443]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:444]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:445]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R937-member_forces_table.py:446]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R938-f6_results_report.py:305]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R938-f6_results_report.py:341]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R938-f6_results_report.py:342]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R938-f6_results_report.py:343]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R938-f6_results_report.py:344]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R938-f6_results_report.py:481]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R939-docs/directives/FR.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R939-docs/milestones/F2a.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R939-docs/reports/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R939-docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R939-scripts/f4_dynamic_residual.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R939-scripts/measure/f6a_premise_check.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R939-scripts/write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R939-step-1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R939-tests/conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R939-tests/test_report_guard_states.py:896]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R941-pipeline.py:688]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R943-docs/reports/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R943-docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R944-docs/F4_member_forces.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R944-member_forces_table.py:655]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R944-member_forces_table.py:656]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R944-member_forces_table.py:657]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R944-member_forces_table.py:658]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R944-member_forces_table.py:659]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R944-member_forces_table.py:660]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R944-member_forces_table.py:661]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R944-member_forces_table.py:662]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R944-member_forces_table.py:663]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R944-member_forces_table.py:664]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R944-member_forces_table.py:665]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R944-member_forces_table.py:666]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:332]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:333]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:334]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:335]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:336]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:337]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:338]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:339]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:340]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:341]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:342]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:343]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:344]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:345]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:346]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:347]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:348]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:349]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:350]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:351]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:352]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:353]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:354]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:355]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:356]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:357]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:358]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:359]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-f6_results_report.py:360]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-tests/regression/test_generators_refuse_mismatched_inputs.py:143]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-tests/regression/test_generators_refuse_mismatched_inputs.py:144]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-tests/regression/test_generators_refuse_mismatched_inputs.py:145]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-tests/regression/test_generators_refuse_mismatched_inputs.py:146]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-tests/regression/test_generators_refuse_mismatched_inputs.py:147]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-tests/regression/test_generators_refuse_mismatched_inputs.py:148]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-tests/regression/test_generators_refuse_mismatched_inputs.py:149]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-tests/regression/test_generators_refuse_mismatched_inputs.py:150]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-tests/regression/test_generators_refuse_mismatched_inputs.py:151]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-tests/regression/test_generators_refuse_mismatched_inputs.py:152]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R945-tests/regression/test_generators_refuse_mismatched_inputs.py:153]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-f6_results_report.py:377]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:156]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:157]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:158]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:159]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:160]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:161]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:162]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:163]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:164]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:165]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:166]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:167]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:168]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:169]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:170]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:171]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:172]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:173]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:174]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:175]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:176]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:177]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:178]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R946-tests/regression/test_generators_refuse_mismatched_inputs.py:179]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R947-f6_results_report.py:333]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R947-f6_results_report.py:334]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R947-f6_results_report.py:335]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R947-f6_results_report.py:336]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R947-f6_results_report.py:337]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R947-f6_results_report.py:338]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R947-f6_results_report.py:347]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R947-f6_results_report.py:348]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R948-tests/test_no_tolerance_literals.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-docs/F4_member_forces.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-docs/directives/FR.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-member_forces_table.py:677]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-member_forces_table.py:678]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-member_forces_table.py:679]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-member_forces_table.py:680]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-member_forces_table.py:681]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-member_forces_table.py:683]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-member_forces_table.py:684]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-member_forces_table.py:685]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-member_forces_table.py:686]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-member_forces_table.py:687]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-member_forces_table.py:688]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-member_forces_table.py:689]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-member_forces_table.py:690]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-member_forces_table.py:691]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-member_forces_table.py:692]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-member_forces_table.py:693]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-scripts/run_rung.sh]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-step-1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R950-tests/conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R951-f6_results_report.py:636]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R951-f6_results_report.py:637]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R951-f6_results_report.py:638]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R951-member_forces_table.py:542]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R952-f6_results_report.py:354]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R952-f6_results_report.py:355]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R952-f6_results_report.py:356]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R952-f6_results_report.py:357]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R952-f6_results_report.py:358]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R952-f6_results_report.py:359]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R952-f6_results_report.py:360]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R953-member_forces_table.py:683]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R953-member_forces_table.py:684]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R953-member_forces_table.py:685]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R953-member_forces_table.py:686]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R953-member_forces_table.py:687]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R953-member_forces_table.py:688]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R953-member_forces_table.py:689]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R953-member_forces_table.py:690]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R953-member_forces_table.py:691]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R953-member_forces_table.py:692]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R953-member_forces_table.py:693]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R954-tests/regression/test_generators_refuse_mismatched_inputs.py:9]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R954-tests/regression/test_generators_refuse_mismatched_inputs.py:10]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R954-tests/regression/test_generators_refuse_mismatched_inputs.py:11]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R954-tests/regression/test_generators_refuse_mismatched_inputs.py:12]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R954-tests/regression/test_generators_refuse_mismatched_inputs.py:13]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R954-tests/regression/test_generators_refuse_mismatched_inputs.py:14]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R954-tests/regression/test_generators_refuse_mismatched_inputs.py:15]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R955-member_forces_table.py:396]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R955-member_forces_table.py:397]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R957-dynamic_inputs.provenance.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R957-f6_results_report.py:656]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R957-f6_results_report.py:657]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R957-f6_results_report.py:658]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R957-f6_results_report.py:659]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R957-f6_results_report.py:660]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R957-f6_results_report.py:661]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R957-floatfea/run/pipeline.py:684]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R957-floatfea/run/pipeline.py:685]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R957-floatfea/run/pipeline.py:686]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R957-floatfea/run/pipeline.py:687]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R957-floatfea/run/pipeline.py:688]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R957-floatfea/run/pipeline.py:689]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R957-floatfea/run/pipeline.py:690]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R958-floatfea/run/pipeline.py:1132]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R958-scripts/measure/f6_results_report.py:558]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R958-scripts/measure/f6_results_report.py:570]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R959-conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R959-docs/F4_member_forces.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R959-docs/directives/FR.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R959-docs/directives/FT.md:17]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R959-docs/directives/FT.md:18]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R959-docs/directives/FT.md:19]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R959-docs/milestones/F2a.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R959-docs/reports/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R959-docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R959-scripts/run_rung.sh]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R959-scripts/write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R959-step-1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R959-tests/conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R959-tests/unit/test_forces_table_reexports.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R960-api_wsd_utilisation.py:241]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R960-api_wsd_utilisation.py:242]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R960-f6a_premise_check.py:360]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R960-f6a_report.py:411]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R960-f6a_required_section.py:575]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R960-f6a_required_section.py:576]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R960-f6b_report.py:414]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R960-f6b_truss_sizing.py:679]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R960-f6b_truss_sizing.py:680]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R960-g41_dynamic.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R960-scripts/measure/member_forces_table.py:458]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R961-f6_results_report.py:240]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R961-f6_results_report.py:656]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R961-member_forces_table.py:248]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R961-member_forces_table.py:440]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R966-f6_results_report.py:551]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R967-docs/directives/FT.md:17]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R967-docs/directives/FT.md:18]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R967-docs/directives/FT.md:19]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R967-docs/milestones/F2a.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R967-docs/reports/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R967-scripts/measure/api_wsd_utilisation.py:150]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R967-scripts/measure/api_wsd_utilisation.py:151]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R967-scripts/measure/f6_results_report.py:1172]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R967-scripts/measure/f6_results_report.py:1173]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R967-scripts/measure/f6_results_report.py:1174]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R967-scripts/write_verdict.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R968-dynamic_inputs.provenance.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R968-f6_results_report.py:585]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R968-f6_results_report.py:586]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R968-f6_results_report.py:587]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R968-f6_results_report.py:656]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R968-f6_results_report.py:657]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R968-f6_results_report.py:658]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R968-f6_results_report.py:659]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R968-f6_results_report.py:660]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R968-f6_results_report.py:661]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R968-floatfea/run/pipeline.py:1132]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R968-scripts/export_f4_dynamic_inputs.py:527]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R968-scripts/measure/member_forces_table.py:660]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R969-conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R969-docs/directives/FR.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R969-docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R969-f6_results_report.py:570]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R969-f6_results_report.py:661]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R969-floatfea/run/config.py:949]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R969-scripts/run_rung.sh]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R969-step-1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R969-tests/conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R970-docs/F4_member_forces.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R970-docs/F6_utilisation.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R970-export_platform_deck.py:225]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R970-results/F6a/premise_check.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R970-results/F6a/required_section.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R970-test_generators_refuse_mismatched_inputs.py:504]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R970-test_marker_exemption_corpus.py:493]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R970-test_platform_deck_export.py:109]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R970-tests/regression/test_f6_deliverable_agrees_with_itself.py:40]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R970-tests/regression/test_r1_example_golden.py:56]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R970-tests/regression/test_r1_example_regenerates.py:138]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R971-tests/regression/test_generators_refuse_mismatched_inputs.py:504]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R975-tests/test_tree_prose_consistent.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-docs/directives/FR.md:14]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-docs/directives/FR.md:15]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-docs/directives/FR.md:16]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-docs/directives/FR.md:17]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-docs/directives/FR.md:18]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-docs/directives/FR.md:19]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-docs/directives/FR.md:20]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-docs/directives/FR.md:21]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-docs/directives/FR.md:22]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-docs/directives/FR.md:23]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-docs/directives/FR.md:24]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-docs/directives/FR.md:25]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-docs/directives/FR.md:26]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-f6_results_report.py:615]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-f6_results_report.py:616]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-f6_results_report.py:617]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-f6_results_report.py:639]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-f6_results_report.py:640]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-f6_results_report.py:641]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-f6_results_report.py:642]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-f6_results_report.py:643]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-f6_results_report.py:644]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-f6_results_report.py:661]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-floatfea/run/config.py:949]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-scripts/run_rung.sh]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-step-1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R976-tests/conftest.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R977-dynamic_inputs.provenance.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R977-scripts/export_f4_dynamic_inputs.py:69]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R977-scripts/export_f4_dynamic_inputs.py:402]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R977-scripts/export_f4_dynamic_inputs.py:527]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R977-tests/regression/test_generators_refuse_mismatched_inputs.py:622]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-api_wsd_utilisation.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-api_wsd_utilisation.py:77]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-api_wsd_utilisation.py:196]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-api_wsd_utilisation.py:197]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-api_wsd_utilisation.py:198]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-api_wsd_utilisation.py:199]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-api_wsd_utilisation.py:200]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-api_wsd_utilisation.py:201]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-api_wsd_utilisation.py:202]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-api_wsd_utilisation.py:203]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-api_wsd_utilisation.py:204]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-api_wsd_utilisation.py:205]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-api_wsd_utilisation.py:206]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-api_wsd_utilisation.py:207]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-api_wsd_utilisation.py:208]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-api_wsd_utilisation.py:209]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-f6_results_report.py:48]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-f6_results_report.py:602]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-f6_results_report.py:603]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-floatfea/checks/api_wsd.py:561]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-floatfea/checks/api_wsd.py:562]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-floatfea/checks/api_wsd.py:563]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-floatfea/checks/api_wsd.py:564]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-scripts/measure/api_wsd_utilisation.py:205]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-scripts/measure/api_wsd_utilisation.py:206]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-scripts/measure/api_wsd_utilisation.py:207]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-scripts/measure/api_wsd_utilisation.py:208]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-scripts/measure/api_wsd_utilisation.py:209]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R978-scripts/measure/api_wsd_utilisation.py:229]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-api_wsd_utilisation.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-api_wsd_utilisation.py:56]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-api_wsd_utilisation.py:164]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-api_wsd_utilisation.py:165]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-api_wsd_utilisation.py:166]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-api_wsd_utilisation.py:167]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-api_wsd_utilisation.py:168]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-api_wsd_utilisation.py:169]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-api_wsd_utilisation.py:170]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-api_wsd_utilisation.py:171]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-api_wsd_utilisation.py:172]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-api_wsd_utilisation.py:173]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-api_wsd_utilisation.py:174]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-api_wsd_utilisation.py:175]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-api_wsd_utilisation.py:176]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-api_wsd_utilisation.py:177]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-api_wsd_utilisation.py:178]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-docs/reports/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-floatfea/post/forces_table.py:435]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-floatfea/post/forces_table.py:504]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-floatfea/run/config.py:419]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R979-member_forces_table.py:161]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R981-api_wsd_utilisation.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R981-api_wsd_utilisation.py:241]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R981-f6_results_report.py:250]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R981-f6a_premise_check.py:360]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R981-f6a_report.py:411]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R981-f6a_required_section.py:575]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R981-f6b_report.py:414]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R981-f6b_truss_sizing.py:679]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R981-member_forces_table.py:461]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R981-tests/regression/test_generators_refuse_mismatched_inputs.py:89]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R983-api_wsd_utilisation.py:61]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R986-docs/directives/FT.md:17]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R986-docs/directives/FT.md:18]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R986-docs/directives/FT.md:19]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R986-docs/directives/FT.md:20]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R986-docs/directives/FT.md:21]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R986-docs/directives/FT.md:22]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R986-docs/directives/FT.md:23]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R986-docs/directives/FT.md:24]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R986-docs/milestones/F6.md:102]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R986-f6_results_report.py:795]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R986-f6_results_report.py:796]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R986-f6_results_report.py:797]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R986-f6_results_report.py:1219]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R986-f6_results_report.py:1220]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R986-f6_results_report.py:1221]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R986-f6_results_report.py:1222]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R987-docs/milestones/R1.md:356]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R987-scripts/export_f4_dynamic_inputs.py:104]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R987-scripts/export_f4_dynamic_inputs.py:524]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R987-scripts/report_joint_reactions.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R988-floatfea/run/config.py:419]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R990-docs/reports/R1/step-2-answers.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R990-docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R990-step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-docs/directives/FT.md:21]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-docs/directives/FT.md:22]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-docs/directives/FT.md:23]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-docs/directives/FT.md:24]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-docs/directives/FT.md:25]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-docs/directives/FT.md:26]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-docs/directives/FT.md:27]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-docs/directives/FT.md:28]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-f6_results_report.py:981]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-f6_results_report.py:1537]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-f6_results_report.py:1538]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-f6_results_report.py:1539]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-f6_results_report.py:1540]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-f6_results_report.py:1541]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-f6_results_report.py:1542]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-f6_results_report.py:1543]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-f6_results_report.py:1544]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-f6_results_report.py:1545]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-f6_results_report.py:1546]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R991-f6_results_report.py:1547]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-api_wsd_utilisation.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-api_wsd_utilisation.py:125]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-api_wsd_utilisation.py:126]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-api_wsd_utilisation.py:127]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-api_wsd_utilisation.py:128]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-api_wsd_utilisation.py:129]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-api_wsd_utilisation.py:130]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-api_wsd_utilisation.py:131]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-api_wsd_utilisation.py:132]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-api_wsd_utilisation.py:166]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-api_wsd_utilisation.py:167]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-api_wsd_utilisation.py:168]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-api_wsd_utilisation.py:169]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-api_wsd_utilisation.py:170]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-api_wsd_utilisation.py:171]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-api_wsd_utilisation.py:172]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-f6_results_report.py:926]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-f6_results_report.py:1459]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-f6_results_report.py:1461]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/checks/api_wsd.py:561]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/checks/api_wsd.py:562]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/checks/api_wsd.py:563]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/checks/api_wsd.py:564]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:389]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:390]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:391]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:392]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:393]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:394]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:395]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:396]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:397]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:398]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:399]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:400]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:401]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:402]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:403]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:404]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:405]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:406]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-floatfea/post/forces_table.py:407]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R992-member_forces_table.py:777]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R996-docs/reports/R1/step-2-answers.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R996-docs/reports/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R996-docs/reviews/R1/step-3.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R999-floatfea/cli.py:193]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R999-floatfea/cli.py:194]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R999-scripts/measure/member_forces_table.py:505]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R999-scripts/measure/member_forces_table.py:506]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+
+## 1. What this revision answers, and what it does not
+
+Verdict 43 was an ES0 interim check that returned **HOLD** on one blocking
+finding and routed two items under FF0. This is revision **1 of the three ES0
+allows**.
+
+| item | class in the verdict | here |
+|---|---|---|
+| R1106 | **BLOCKS** | answered, §2 |
+| R1107 | FF0, next commit | answered, §3, in `fa480e7` |
+| R1108 | FF0, next commit | answered, §4 |
+| R1117 | not in the verdict — found here | answered, §5 |
+| R1109–R1116 | ledger | carried by name, §7 |
+| everything earlier | carried | carried by name, §7 |
+
+```
+claim  three commits answer this verdict, and the hook one is standalone
+cmd    git log --oneline ea92019..HEAD
+out    325fd2e R1 step 3: FY3's supersession reaches the machine-readable
+               siblings, and a class label that transferred (R1106, R1108)
+       fa480e7 process: a redirect the target class could not see, and two more
+               ways to the same write (R1107)
+judge  R1107 is separate because CLAUDE.md requires `.claude/hooks/` to change in
+       a standalone `process:` commit, never beside `floatfea/` or `tests/`. The
+       verdict said both FF0 items go in "your next commit"; two commits back to
+       back satisfies that without breaking the standalone rule, which is FZ
+       rule 7 resolving wording toward an existing convention.
+```
+
+**AND THE VERDICT CORRECTED MY SCOPE SENTENCE, WHICH I ACCEPT AND HAD MEASURED
+WRONG.** My invocation said two substantive commits were unreviewed.
+
+```
+claim  six substantive code commits were unreviewed, not two
+cmd    git rev-list --count f87e087..a2c3f5c ; then each commit touching
+         floatfea/ or tests/
+out    18
+       481438f 11970cd 7d38450 9af011b 2b3f14e e8a35c1
+cmd    git log --oneline f87e087..a2c3f5c | tail -1
+out    ae96a38 review: R1 step 3 interim check at f87e087 ...
+judge  verdict 42 judged `f87e087`, which is the range's BASE, so nothing in the
+       range had been reviewed by it. I understated the reading load by four
+       commits and the range by one.
+```
+
+## 2. R1106 — the FY3 supersession reached one artifact of three
+
+```
+claim  the mark was in the .md and NEITHER machine-readable sibling
+cmd    grep -c -iE "superseded|FY3|R1072" over the three, at a2c3f5c
+out    .md 3      .csv 0      .json 0
+rule   FY3 ruled the inclined-face shear allocation unconservative
+judge  the silently wrong result, stated as FR1 requires: a reader or a script
+       taking a triangle row from that CSV gets sizing from the allocation FY3
+       ruled unconservative, with nothing in the file saying so.
+```
+
+```
+claim  84 of 168 data rows are triangle rows
+cmd    the CSV parsed with the `#` banner stripped, rows counted by section
+out    data rows 168   triangle 84   box 84
+```
+
+**A BANNER COULD NOT HAVE CARRIED IT, AND THAT IS WHY THE MARK IS PER ROW.**
+
+```
+claim  csv.DictReader does not skip `#` lines; it takes the first as the header
+cmd    csv.DictReader over the committed file with no stripping
+out    field names came back as the banner text, every value under one key
+judge  so a script reading this file the obvious way never sees a comment block.
+       The repair is a `superseded_FY3` column on every row, a banner for the
+       human in a spreadsheet, and a `superseded` block in the JSON stated as
+       data. I hit the DictReader behaviour directly while measuring the finding,
+       which is how the per-row form was chosen rather than assumed.
+```
+
+```
+claim  one assignment marks both siblings, so they cannot drift (R983)
+cmd    the diff at scripts/measure/f6b_truss_sizing.py, the row dict
+out    + "superseded_FY3": section == "triangle",
+rule   `cols = sorted({k for a in answers for k in a})` -- the CSV columns are
+       the union of the answer dicts' keys, and the JSON holds the same dicts
+judge  two writers that each had to be told would be two things that can drift,
+       which is the shape of R1106 itself.
+```
+
+**AND NOT ONE NUMBER MOVED, WHICH SR-4 REQUIRES.** The control was run BEFORE the
+mark was added, because a regeneration that moved a number would have forbidden
+this route entirely.
+
+```
+claim  regeneration reproduces both siblings byte-identically at a2c3f5c
+cmd    regenerate to a scratch dir, then cmp against the committed files
+out    truss_sizing.csv IDENTICAL     truss_sizing.json IDENTICAL
+```
+
+```
+claim  after the mark, every shared value is unchanged
+cmd    168 rows parsed both ways, every shared cell compared
+out    CSV rows 168 -> 168
+       columns ADDED ['superseded_FY3']   REMOVED []
+       cells that MOVED on the shared columns: 0
+       triangle rows 84 all flagged True ; box rows 84 all flagged False
+       JSON top-level ADDED ['superseded']
+       JSON answer values that MOVED: 0
+       inputs / hand_table / splits identical: True True True
+rule   SR-4: this file is the record of what F6b published
+judge  the box rows are the CONTROL and are flagged False, because a flag that is
+       True everywhere marks nothing.
+```
+
+```
+claim  the .md does not move either, though its generator reads this JSON
+cmd    f6b_report.py against the NEW json, compared with the committed .md
+out    byte-identical: True
+judge  the extra keys are inert to that generator, measured rather than assumed.
+```
+
+```
+claim  the two new cells are RED on the pre-repair deliverables
+cmd    a2c3f5c's .csv and .json restored, the FY3 file run, then restored
+out    2 failed, 72 passed
+       FAILED test_R1106_the_SUPERSESSION_reaches_BOTH_MACHINE_READABLE_SIBLINGS
+       FAILED test_SR10_the_SIZING_generator_also_does_not_crash_AFTER_writing
+cell   only the two deliverables moved; the other 72 rows are unaffected, so the
+       arm is isolated to the cells it is meant to reach.
+```
+
+## 3. R1107 — the hook's target class could not see a clobber redirect
+
+In `fa480e7`, standalone.
+
+```
+claim  TEN write rows reached ALLOW, not the four the verdict measured
+cmd    a 35-row matrix against the hook as it stood, both directions
+out    rows: 35   mismatches: 10
+       MISMATCHED: clobber >|, clobber 1>|, variable target, pushd,
+       append clobber >>|, clobber no space, clobber 2>| corpus,
+       pushd corpus, backtick target, dollar-paren target
+judge  the verdict's four, plus six more in the same families that nobody had
+       enumerated -- including both directions of `pushd` and two substitution
+       forms.
+```
+
+```
+claim  three distinct causes, so three repairs rather than one patch
+cmd    the diff at .claude/hooks/protect-reviews.sh
+out    the target class gained an optional `\|`; the cwd clause names `pushd` as
+       well as `cd`; a target carrying a shell expansion is no longer cleared
+rule   EK2: a repair of the extraction, not a fifth `or` branch
+```
+
+```
+claim  every row matches after the repair, and the reads FX exists for still pass
+cmd    the same matrix against the repaired hook
+out    rows: 35   mismatches: 0
+       gating-supervisor at a verdict: ALLOW (want ALLOW)
+judge  the nine ALLOW rows are a CONTROL, not decoration: if the repair had
+       broken this helper's quoting the empty-`hit` guard would deny everything,
+       and an all-DENY matrix looks like a strong gate.
+```
+
+```
+claim  each of the three repairs is load-bearing and independent
+cmd    three arms, one clause reverted per arm
+out    arm 1 clobber   reverted ALLOW x4   control DENY   restored DENY x4
+       arm 2 pushd     reverted ALLOW x2   control DENY   restored DENY x2
+       arm 3 unresolved reverted ALLOW x2  control DENY   restored DENY x2
+cell   one clause reverted, the other two held; each arm's control is a shape the
+       reverted clause does not touch and it stays DENY, so the arm measures its
+       own clause rather than a collapse of the helper.
+```
+
+**AND THE REPAIR HAS A COST I DID NOT FIND UNTIL IT BIT ME.**
+
+```
+claim  a legitimate READ of a verdict with a VARIABLE output path is now refused
+cmd    python scripts/carried_table.py docs/reviews/R1/step-3.md ... > "$S/x.md"
+out    PreToolUse refused: docs/reviews/ is written only by the gating-supervisor
+rule   the unresolvable-target clause this commit added
+judge  the hook cannot tell `> $V` pointing at a verdict from `> $S/x` pointing at
+       a scratch file without resolving it, and failing closed is the right
+       default -- the verdict asked for the variable write to be DENIED. But my
+       weak-side matrix MISSED this row: its "read -> scratch" case used a literal
+       `/tmp/out.txt` and its "redirect to var" case had no protected path, so the
+       one combination that matters was in neither. The command was re-run with a
+       literal target, which gives the hook a resolvable path rather than
+       defeating it. The row is added to the matrix in §7's ledger.
+```
+
+## 4. R1108 — a rung-3 class label transferred to an entry that did not declare it
+
+```
+claim  the tempered regex changes NOTHING on the clean tree
+cmd    both forms over tolerances.py: CLASS lines, entries classified, labels
+out    CLASS lines 55   old classifies 55   new classifies 55
+       names only old finds: []   only new finds: []   labels that DISAGREE: {}
+judge  a repair, not a change of rule.
+```
+
+```
+claim  armed, the old form relabels an entry and the new one does not
+cmd    `# CLASS: STRUCTURAL` restored above NODE_COINCIDENCE_DECIMALS, a Final[int]
+out    ARMED: CLASS lines 56
+       RECORDED_HEIGHT_PAIR_RELATIVE   old=STRUCTURAL   new=ACCURACY
+rule   STRUCTURAL FORBIDS a counter and that entry HAS one
+judge  so the obligation failed on the wrong entry, silently.
+```
+
+```
+claim  the new cell is green clean and red armed
+cmd    the rung-3 guard clean, then armed, with a hash-verified restore
+out    CLEAN rc=0  135 passed
+       ARMED rc=1  1 failed, 134 passed
+             FAILED test_R1108_every_CLASS_line_CLASSIFIES_an_entry_so_none_is_ORPHANED
+       restored byte-identical: True
+cell   one line added, nothing else held back; keyed on the COUNT rather than a
+       name, because the next orphan will be above some other constant.
+```
+
+**AND THE DEFERRAL REASON I HAD WRITTEN WAS FALSE (CW0).**
+
+```
+claim  the rule I cited to defer this fix does not exist
+cmd    grep -c "not edited inside a step commit" CLAUDE.md
+out    0
+cmd    grep -cin "rung 3's guards\|rung-3 guards" CLAUDE.md
+out    0
+judge  I invented a rule to justify deferring a fix. The standalone-`process:`
+       rule covers `.claude/agents/`, `.claude/hooks/` and `docs/SUPERVISOR.md`
+       -- the reviewer's instruments -- and `tests/verification/rung3/` is an
+       ordinary test directory. The sentence is deleted and replaced with what
+       actually happened.
+```
+
+**One defect of my own inside this repair.** My edit stranded an assertion out of
+the meta-test above it, so the first arm came back red for a reason unrelated to
+the defect (`NameError: name 'found' is not defined`). I found it by reading the
+failure message rather than assuming the red was the armed state, and moved the
+line back. It is the fifth self-inflicted defect of the day inside a repair.
+
+## 5. R1117 — every reader of the gating record was blind to the newest verdict's findings
+
+Not in the verdict. Found while building §8's table.
+
+```
+claim  the Carried table could not see ONE finding of the verdict it answers
+cmd    python scripts/carried_table.py docs/reviews/R1/step-3.md <answers>
+out    rows 260, highest id R1105
+cmd    grep -cE '^\*\*R[0-9]+[.\s]' and grep -cE '^#{2,4} R[0-9]+' over the
+         newest verdict's own text, lines 1-533
+out    bold: 0   heading: 11
+rule   FINDING = re.compile(r"^\*\*(R\d+)[.\s]") -- bold at line start
+judge  the newest verdict writes `### R1106 (BLOCKS).` as a markdown heading, so
+       the anchor matched nothing. The silently wrong result: the Carried table is
+       a GENERATED SECTION OF A PUBLISHED REPORT and it omitted the blocking
+       finding. The guard that should have demanded R1106 in the report --
+       `test_the_report_carries_the_finding` -- is parametrised through the same
+       anchor, so it did not know the finding existed either. I could have
+       published this report with R1106 missing and nothing would have caught it.
+```
+
+```
+claim  one decision at SIX sites, every one blind
+cmd    the census over the apparatus
+out    scripts/carried_table.py:76 HEADING, :77 FINDING
+       scripts/check_carried.py:34 _FINDING
+       scripts/answered_table.py:36 _FINDING
+       tests/test_report_carried.py:221 _FINDING, :366 inline
+rule   FF0: apparatus that decides whether a green is believed is fixed in the
+       next commit, under EK2's repair-not-extend
+judge  widened identically at all six rather than unified, because unifying means
+       the test importing the scripts at module scope -- restructuring a guard,
+       which is not a repair and would be new apparatus. The six-copy drift is a
+       ledger row, named site by site.
+```
+
+```
+claim  the repair makes the verdict's findings visible
+cmd    the generator re-run after the widening
+out    rows 272, highest id R1116
+       R1106 **open** -- blocking, and not answered in this round
+       R1107 .. R1116 present
+judge  R1104 from verdict 42 was missed the same way and is now present too.
+```
+
+### The day's self-rulings, recorded in `docs/directives/FZ.md`
+
+SR-6 through SR-9 are in that file and in `docs/digests/2026-11-02.md`. SR-6 was
+the FR1-blocking defect answered in `481438f`: `exported_wave_basis` resolved the
+wave basis against a `run.lambda` it had never reconciled against the npz key, so
+FY2's derivation published a height at the wrong scale at exit 0. SR-7, SR-8 and
+SR-9 were defects in that repair — a copied exception tuple blind to `EOFError`
+and `zipfile.BadZipFile`, four json sites blind to `UnicodeDecodeError`, and a
+quotient in a refusal message that divided by zero. SR-10 is the sizing
+generator's exit code, §2's last triple.
+
+**And a correction to something I said about SR-10's family.**
+
+```
+claim  the five unguarded `relative_to(ROOT)` sites are a RECORDED deferral, not
+       something I found
+cmd    sed -n '486,488p' scripts/measure/member_forces_table.py
+out    The five other `scripts/measure/` scripts still carry the bare form. They
+       are outside this round's conditions and are named here rather than left
+       silent.
+judge  I reported them as my own discovery before reading that docstring. The
+       count there is now four, because §2's repair took one of the five.
+cmd    both guard forms over six path shapes
+out    agree on 5 of 6; they differ only on './results/F6b/x.csv', where the bare
+       form keeps the './' and the resolve() form normalises it away
+judge  and I claimed the two printed a repo-relative path against an absolute
+       one. That was wrong and unmeasured: the divergence is one cosmetic
+       character pair in a log line.
+```
+
+## 6. The CI red at `a2c3f5c`, traced per id rather than by family
+
+§0 carries the run. The guards step failed; `ruff`, `black --check`, `mypy` and
+`unit tests` all passed, and `guards and meta-tests` RAN rather than being
+skipped behind an earlier red, which is the hiding CZ1 (iii) exists to prevent.
+
+```
+claim  all 1893 failing ids live in exactly two files
+cmd    the ids extracted from CI's own log, counted by file
+out    1886  tests/test_report_carried.py
+          7  tests/test_report_guard_states.py
+judge  the two report-guard files, which is what EG3 state (2) predicts -- but
+       "they are all in the state-(2) files" is a FAMILY argument, and EG3 (i)
+       exists because eight planted states were once ruled as one cascade and the
+       eighth was a real defect.
+```
+
+```
+claim  each class satisfies the FS1/FT1 predicate for a stated reason
+cmd    the distinct test functions behind the 1893 ids
+out    1626 test_every_named_site_is_touched_or_declared
+        255 test_the_report_carries_the_finding
+          7 test_the_guard_survives_the_state
+          1 test_the_report_carries_a_WHOLE_SUITE_count
+          1 test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+          1 test_the_generator_would_catch_a_row_under_the_wrong_number
+          1 test_the_Carried_table_is_what_the_generator_produces
+          1 test_the_CI_section_is_about_the_REVIEWED_commit
+judge  1881 are parametrised over the newest verdict's own findings and sites,
+       `[R887-tests/test_report_guard_states.py:90]`, so they reach limb one
+       directly. Two are the names FT1 names for limb two. Four read
+       `docs/reports/R1/step-3.md`, which did not exist.
+```
+
+```
+claim  the seven that name no finding and no site are state-dependent, and I did
+       not rule them by family
+cmd    the harness constants resolved
+out    MILESTONE R1   STEP 2   REPORT_NAME step-2.md   VERDICT_STEP 3
+rule   `_build` COPIES the real tree -- docs/, tests/, floatfea/, scripts/ and
+       the real .git -- and runs the guard in that copy
+judge  so the synthetic repository it builds inherits a newest report at step 2
+       against a newest verdict at step 3, which IS an EG3 state (2) tree. The
+       guard fails wholesale there and the harness's own `everything_failed`
+       assertion fires -- an assertion whose stated purpose is that "a guard that
+       fails wholesale is reporting the state of its own inputs". `[baseline]`
+       failing is that, not a defect in the baseline.
+```
+
+The clearing control is this report: EG3 state (2) says the answering report
+clears them, and §9's whole-suite line is taken after it exists.
+
+## 7. The carried items, every one named, and none of them swept
+
+**This section exists so that every row of §8's table points somewhere real.**
+A pointer at the Carried table itself is refused by the guard, and rightly --
+an item whose discussion is the table that lists it has no discussion. So each
+id is named here with its disposition.
+
+**THE DISPOSITION IS THE SAME FOR ALMOST ALL OF THEM AND I AM NOT DRESSING IT
+UP: carried by name, unswept.** ES0 makes an interim check light -- the suite
+and CI at the commit plus a CZ0 (a)-(d) scan -- and the reviewer's own words
+for the ledger rows were "carry by name, unswept (ES0)". This revision
+answered the three items the verdict blocked or routed under FF0. It did not
+re-read two hundred and fifty findings, and a report claiming otherwise would
+be the kind of sentence BF0 exists to stop.
+
+**Two are CLOSED, and the verdict verified both rather than taking my word:**
+
+* **L57** -- `round(c, 9)`, an undeclared coordinate-comparison epsilon on the
+  production path. Now `round(c, NODE_COINCIDENCE_DECIMALS)` at
+  `floatfea/model/platform.py:766`, with `NODE_COINCIDENCE_DECIMALS: Final[int]
+  = 9` at `floatfea/tolerances.py:1793`, landed in `e8a35c1`.
+* **L60** -- the plan's "THREE, all the same shape". `docs/milestones/R1.md:666`
+  now reads THREE SITES, **TWO SHAPES**.
+
+**And one correction to my own census of them, because it was worthless and I
+reported it as evidence.** I grepped the tree for repairs *citing* their ledger
+id and read "not mentioned" for L47-L56, L58 and L59 as though that told me
+something. It does not: a repair need not cite the id, and two of its hits
+(`tests/corpus/g22_model_configurations.txt` for "L50",
+`tests/regression/f2_shipped_matrices.json` for "L60") were substring noise in
+a corpus text file and a JSON matrix. It is the narrow-needle shape, and the
+honest statement is that those rows are unmeasured here rather than clean.
+
+### Every carried id, by name
+
+Grouped only to be readable. The status column is the generator's, in §8.
+
+* `R1`, `R835`, `R836`, `R838`, `R843`, `R845`, `R846`, `R847`, `R848`, `R849`, `R850`, `R851`
+* `R852`, `R853`, `R854`, `R855`, `R856`, `R857`, `R858`, `R859`, `R860`, `R861`, `R862`, `R863`
+* `R864`, `R865`, `R866`, `R867`, `R868`, `R869`, `R870`, `R871`, `R872`, `R873`, `R874`, `R875`
+* `R876`, `R877`, `R878`, `R879`, `R880`, `R881`, `R882`, `R883`, `R884`, `R885`, `R886`, `R887`
+* `R888`, `R889`, `R890`, `R891`, `R892`, `R893`, `R894`, `R895`, `R896`, `R897`, `R898`, `R899`
+* `R900`, `R901`, `R902`, `R903`, `R904`, `R905`, `R906`, `R907`, `R908`, `R909`, `R910`, `R911`
+* `R912`, `R913`, `R914`, `R915`, `R916`, `R917`, `R918`, `R919`, `R920`, `R921`, `R922`, `R923`
+* `R924`, `R925`, `R926`, `R927`, `R928`, `R929`, `R930`, `R931`, `R932`, `R933`, `R934`, `R935`
+* `R936`, `R937`, `R938`, `R939`, `R940`, `R941`, `R942`, `R943`, `R944`, `R945`, `R946`, `R947`
+* `R948`, `R949`, `R950`, `R951`, `R952`, `R953`, `R954`, `R955`, `R956`, `R957`, `R958`, `R959`
+* `R960`, `R961`, `R962`, `R963`, `R964`, `R965`, `R966`, `R967`, `R968`, `R969`, `R970`, `R971`
+* `R972`, `R973`, `R974`, `R975`, `R976`, `R977`, `R978`, `R979`, `R980`, `R981`, `R982`, `R983`
+* `R984`, `R985`, `R986`, `R987`, `R988`, `R989`, `R990`, `R991`, `R992`, `R993`, `R994`, `R995`
+* `R996`, `R999`, `R1000`, `R1001`, `R1002`, `R1003`, `R1005`, `R1006`, `R1007`, `R1008`, `R1009`, `R1010`
+* `R1011`, `R1012`, `R1013`, `R1014`, `R1015`, `R1016`, `R1017`, `R1018`, `R1021`, `R1022`, `R1023`, `R1024`
+* `R1025`, `R1026`, `R1027`, `R1028`, `R1029`, `R1030`, `R1031`, `R1032`, `R1033`, `R1034`, `R1035`, `R1036`
+* `R1037`, `R1038`, `R1039`, `R1040`, `R1042`, `R1043`, `R1044`, `R1045`, `R1046`, `R1047`, `R1048`, `R1049`
+* `R1050`, `R1051`, `R1052`, `R1053`, `R1054`, `R1055`, `R1056`, `R1057`, `R1058`, `R1059`, `R1060`, `R1061`
+* `R1062`, `R1063`, `R1064`, `R1065`, `R1066`, `R1067`, `R1068`, `R1069`, `R1070`, `R1071`, `R1072`, `R1073`
+* `R1074`, `R1075`, `R1076`, `R1077`, `R1078`, `R1079`, `R1080`, `R1081`, `R1082`, `R1083`, `R1084`, `R1085`
+* `R1086`, `R1087`, `R1088`, `R1089`, `R1090`, `R1091`, `R1092`, `R1093`, `R1094`, `R1095`, `R1096`, `R1097`
+* `R1098`, `R1099`, `R1100`, `R1101`, `R1102`, `R1103`, `R1104`, `R1105`, `R1109`, `R1110`, `R1111`, `R1112`
+* `R1113`, `R1114`, `R1115`, `R1116`
+
+**268 ids, carried by name.** `R1106`, `R1107` and `R1108` are not in
+this list because they are answered in §2, §3 and §4 respectively.
+
+## 8. Carried
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R1 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R835 | **later** — §7 | (EG3's enumeration) \| still open, still Xabier's; this commit is its eighth measurement \| of... |
+| R836 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R838 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R843 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R845 | **later** — §7 | (not one number in the three published R1 deliverables is compared against anything) \| ANSWERED... |
+| R846 | **later** — §7 | (the R838 repair is green on three injections one step above the one it was built for) \|... |
+| R847 | **later** — §7 | (section 3's "0 of 49 rows" does not reproduce; the generator emits 23) \| still open, correctly... |
+| R848 | **later** — §7 | (the empty-directory refusal admits ., ./, .., " . ") \| still open, untouched by this diff, and... |
+| R849 | **later** — §7 | (the caveat, disclaimer and provenance gates quantify over a hard-coded three-file tuple, and... |
+| R850 | **later** — §7 | THE WALL-CLOCK EXCLUSION COVERS THREE OF THE FIVE ROWS THE GENERATOR WRITES, SO TWO WALL-CLOCK... |
+| R851 | **later** — §7 | THE PROVENANCE EXCLUSION IS CHECKED BY BASENAME ONLY, AND THE KEY-SET PIN READS report.md... |
+| R852 | **later** — §7 | A CAVEAT TRUNCATED TO ITS OWN MARKER IS GREEN ON 31 OF 31 CASES. TABLE_CAVEATS[8] reduced from... |
+| R853 | **later** — §7 | "102, 1289 AND 73 COMPARABLE LINES" DOES NOT REPRODUCE. The comparable counts are 99, 1286 and... |
+| R854 | **later** — §7 | R849 NOW HAS A SECOND SITE. The new gate repeats the hard-coded three-file tuple, so FR3's two... |
+| R855 | **later** — §7 | THE SUITE WAS NOT RUN AT A PUSHED, REVIEWED COMMIT, AND THE TREE'S NINE REDS WERE NOT RECORDED... |
+| R856 | **later** — §7 | scripts/write_verdict.py REFUSES TO WRITE A VERDICT FOR A STEP THAT HAS NO REPORT, AND FR3 PLUS... |
+| R857 | **later** — §7 | R853'S REPAIR REPUBLISHED R853'S DEFECT. The corrected figure 99, 1286 and 70 COMPARABLE lines... |
+| R858 | **later** — §7 | THE FILE STILL ASSERTS THAT BOTH EXCLUDED CLASSES "ARE CHECKED SEPARATELY", AND NOTHING IN THE... |
+| R859 | **later** — §7 | THE NEW COMMENT NAMES THE WRONG ASSERTION. It says a sixth stage row "reddens HERE rather than... |
+| R860 | **later** — §7 | _TIMING_STAGES IS A HAND COPY OF THE LITERAL TUPLE AT floatfea/cli.py:297, AND NOTHING COMPARES... |
+| R861 | **later** — §7 | THE BASELINE OF NINE REDS WAS WRONG WITHIN ONE COMMIT OF MY WRITING IT. The tree is at 78, and... |
+| R862 | **later** — §7 | "THERE IS NO SECOND COPY" IS REFUTED BY ONE GREP. THREE HAND COPIES OF THE STAGE SET REMAIN AND... |
+| R863 | **later** — §7 | THE EXCLUSION SET IS NOW DEFINED BY THE CODE UNDER TEST, SO A SIXTH PUBLISHED ROW IS EXEMPTED... |
+| R864 | **later** — §7 | "THE REFACTOR PRODUCES BYTE-IDENTICAL DELIVERABLES" IS TRUE, AND THE REGENERATION GATE CANNOT... |
+| R865 | **later** — §7 | THE DOCSTRING OF THE FUNCTION WHOSE COMMENT WAS CORRECTED STILL SAYS "A FOURTH... |
+| R866 | **later** — §7 | load_cases.headings IS PARSED, RANGE-CHECKED, REPEAT-CHECKED -- AND READ BY NOTHING. floatfea... |
+| R867 | **later** — §7 | DECLARATION ORDER AND DIRECTION DECIDE WHETHER A DECLARED TOPOLOGY CAN BE RUN AT ALL. The... |
+| R868 | **later** — §7 | THE COMMITTED TEST FOR "A NON-STAR TOPOLOGY" BUILDS THE ONE ORDER THAT CANNOT BE RUN, AND NO... |
+| R869 | **later** — §7 | A DECLARED TOPOLOGY THAT DOES NOT REACH THE CENTRE BUILDS HAPPILY, AND _build_body RIGID-LINKS... |
+| R870 | **later** — §7 | FL2(a) AS SHIPPED IS A SUBSET OF THE LOCKED PLAN'S (a), AND TWO SENTENCES IN... |
+| R871 | **later** — §7 | FS1'S OWN COMMIT LEFT A HAND LIST IN MY INSTRUCTIONS AND REMOVED IT FROM CLAUDE.md. Its check... |
+| R872 | **later** — §7 | headings: [360.0] IS INSIDE THE DECLARED DOMAIN AND IS REFUSED AGAINST AN EXPORT AT 0 DEG,... |
+| R873 | **later** — §7 | A SIDECAR WHOSE heading_deg IS A LIST MAKES THE COMPARISON RAISE TypeError INSTEAD OF... |
+| R874 | **later** — §7 | THE DECLARED SIDE REFUSES A BOOL BY NAME AND THE RECORDED SIDE COERCES ONE. heading_deg: true... |
+| R875 | **later** — §7 | 82f922c FIXED THE LIST R871 NAMED AND LEFT ITS SIBLING TWO PARAGRAPHS ABOVE. docs/SUPERVISOR.md... |
+| R876 | **later** — §7 | R872 PUT AN EQUIVALENCE RELATION INSIDE A GATE AND CALLED IT ARITHMETIC. NOTHING IN THE 29... |
+| R877 | **later** — §7 | R874's REPAIR IS GATED BEHIND load_cases.headings BEING DECLARED, AND R874's OWN PUBLISHED... |
+| R878 | **later** — §7 | floatfea/cli.py:146-149 SUBSCRIPTS FOUR KEYS THAT exported_wave_basis BUILDS ONE KEY AT A TIME.... |
+| R879 | **later** — §7 | TWO OF THE THREE THINGS R873's AND R874's CONDITIONS NAMED ARE NOT DONE AND NOT DECLARED... |
+| R880 | **later** — §7 | .claude/agents/gating-supervisor.md TELLS ME TO READ "EH1, EJ2 AND FC1 -- THE TWO BOUNDARY... |
+| R881 | **later** — §7 | THE RECORDED HEADING GETS ALL THREE OF THE DECLARED SIDE'S CHECKS AND THE TWO RECORDED WAVE... |
+| R882 | **later** — §7 | R877's CLOSING CONDITION NAMED TWO SITES AND THE SECOND IS UNTOUCHED AND NOT DECLARED LEFT. THE... |
+| R883 | **later** — §7 | TWO SENTENCES IN _validated_wave_basis's OWN DOCSTRING AND REFUSAL TEXT ARE FALSE AT THIS... |
+| R884 | **later** — §7 | COMPLETE-OR-EMPTY HOLDS ONLY WHEN run IS A MAPPING. A SIDECAR WHOSE run BLOCK IS A LIST... |
+| R885 | **later** — §7 | THE RAW DOMAIN CHECK REFUSES A SIGNED RECORDING, AND docs/conventions.md:150 RECORDS THAT THE... |
+| R886 | **later** — §7 | THE # noqa: F401 THIS COMMIT ADDED SUPPRESSES NOTHING TODAY AND COVERS FOUR IMPORTS TOMORROW.... |
+| R887 | **later** — §7 | ba0ce03 MOVED THE MARKER TO A STEP WITH NO REPORT, AND THE NEGATIVE-CONTROL HARNESS DERIVES ITS... |
+| R888 | **later** — §7 | THE R799/R800 ORPHAN SWEEP GLOBS docs/reports/F/step-.md, AND R1 IS THE ACTIVE MILESTONE. AN... |
+| R889 | **later** — §7 | "A DEADLOCK THAT HAD ABSORBED SEVEN INTERIM CHECKS" IS A CAUSAL CLAIM IN THREE SHIPPED PLACES... |
+| R890 | **later** — §7 | THE CHECKPOINT'S "OF STEP 3'S NINE CODE COMMITS, TWO WERE NEW FL2 ITEMS AND FIVE WERE REPAIRS... |
+| R891 | **later** — §7 | REPLAY 1 IN f9954f7's MESSAGE -- "(empty) exit=0 <- THIS TREE CLEARS" -- IS FALSE AT HEAD. AT... |
+| R892 | **later** — §7 | "AND THE CONTROL, ONE VARIABLE MOVED -- THE OLD HOOK ON THIS SAME TREE" MOVED TWO. THE STASH... |
+| R893 | **later** — §7 | ONE LIVE SITE STILL STATES THE PREMISE FT0 RETIRED AS A RULE, AND NO LIVE PLAN STATES THE RULE... |
+| R894 | **later** — §7 | R1's STEP-3 GATE ROW DOES NOT CARRY FT2's ITEMS 6 AND 7, AND THE STEP WILL BE CLOSED AGAINST... |
+| R895 | **later** — §7 | THE RECORDED WAVE-HEIGHT PAIR IS NEVER CHECKED AGAINST LAMBDA, AND WAVE_HEIGHT's [0, 100] m IS... |
+| R896 | **later** — §7 | THE SAME DEFECT AT A SECOND DOOR, AND IT IS THE ONE EZ0 NAMES BY NAME.... |
+| R897 | **later** — §7 | R887 IS NOT CLOSED. TWO NEGATIVE-CONTROL STATES NOW DIE IN _build WITH shutil.SameFileError... |
+| R898 | **later** — §7 | closed_by_a_pass READS ANY Verdict: PASS IN A STEP'S REVIEW FILE AS CLOSURE, AND R888's GLOB... |
+| R899 | **later** — §7 | docs/SUPERVISOR.md STATES CZ0's FOUR HEADS AS THE CRITERION BOTH REVIEWERS RULE UNDER, NAMES... |
+| R900 | **later** — §7 | "ALL FOUR ARE PUSHED (FP1), SO EACH HAS A CI RUN AVAILABLE" IS FALSE. TWO OF THE FOUR HAVE NO... |
+| R901 | **later** — §7 | NEXT CARRIES TWO STACKED DOCSTRINGS AND THE SECOND IS A DEAD STRING LITERAL. claim the new... |
+| R902 | **later** — §7 | THE GENERATOR NOW VALIDATES THE RECORDED WAVE HEIGHT AND THEN IGNORES IT. EVERY NUMBER THE... |
+| R903 | **later** — §7 | THE REPAIR ROUTED THE FOUR WAVE_BASIS_KEYS AND LEFT FIVE RECORDED FIELDS AT THE SAME READER... |
+| R904 | **later** — §7 | THE REPAIRED ASSERTION IS TWO SCALAR COMPARISONS WHERE THE CLOSING CONDITION SAID "EVERY COPY... |
+| R905 | **later** — §7 | R895's REPAIR REPLACED ONE UNVERIFIABLE ABSENCE CLAIM IN floatfea/ WITH ANOTHER, AND ADDED TWO... |
+| R906 | **later** — §7 | A RED TEST AT THE REVIEWED COMMIT THAT FAILS BOTH LIMBS OF THE PREDICATE. c071e68 DELETED... |
+| R907 | **later** — §7 | THE R902 REPAIR REACHED THE COMPUTED TABLE AND LEFT THE PUBLISHED VERDICTS. AT A RECORDED... |
+| R908 | **later** — §7 | THE REPAIR MADE sidecar.run.lambda THE FROUDE SCALE OF A PUBLISHED CSV, AND NOTHING COMPARES IT... |
+| R909 | **later** — §7 | run.periods_full_s IS NOT MERELY PRINTED -- IT IS THE LOOP VARIABLE OF THE BAND TABLE. A... |
+| R910 | **later** — §7 | THE R904 LOOP INSPECTS 16 OF THE 29 ACTIONS STATES CARRIES AND SKIPS 13 UNDER A SILENT else:... |
+| R911 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R912 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R913 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R914 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R915 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R916 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R917 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R918 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R919 | **later** — §7 | THE R906 REPAIR PUT A PUBLISHED-DELIVERABLE GENERATOR ON AN AUTHORITY NOTHING CROSS-CHECKS AND... |
+| R920 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R921 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R922 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R923 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R924 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R925 | **later** — §7 | THE FROUDE CONVERSION FACTORS ARE PUBLISHED AS lambda = 50 LITERALS INTO BOTH F4 DELIVERABLES,... |
+| R926 | **later** — §7 | THE REPAIR ROUTED TWO OF THE THREE PUBLISHING READERS THROUGH THE VALIDATOR. THE THIRD --... |
+| R927 | **later** — §7 | --provenance IS DECLARED AS "the authority for the scale and the height" AND THIS COMMIT TOOK... |
+| R928 | **later** — §7 | The R909 orphan check compares a sidecar float against a float parsed back out of a... |
+| R929 | **later** — §7 | R909's condition said "in both directions". set(_recorded) - _solved is computed; _solved -... |
+| R930 | **later** — §7 | member_forces_table.py:166 says of the GOVERNING_PERIODS docstring that "no number for them is... |
+| R931 | **later** — §7 | SENSITIVITY_PERIODS = (10.0, 20.0) at :180 is referenced by nothing -- grep -rn... |
+| R932 | **later** — §7 | validated_export_scale raises ConfigError, and neither generator catches it, so an... |
+| R933 | **later** — §7 | grep -rn "R907\\|R909" tests/ --include=.py is empty, and nothing in tests/ or .github/ invokes... |
+| R934 | **later** — §7 | The two scripts/measure/ readers now REFUSE a disagreeing npz/sidecar pair; floatfea run -- the... |
+| R935 | **later** — §7 | The five new cells import validated_export_scale function-locally, five times, rather than... |
+| R936 | **later** — §7 | THE FA0 CLAUSE IS GATED ON A MEMBERSHIP PREDICATE, NOT ON THE SEA STATE FA0 RULED ON, SO... |
+| R937 | **later** — §7 | THE R925 REPAIR PUBLISHES THE TWO CONVERSION FACTORS THROUGH :.0f, SO THE FACTOR IN BOTH F4... |
+| R938 | **later** — §7 | f6_results_report.py NOW RESOLVES THE SCALE AND THE WAVE BASIS FROM --npz AND --provenance AND... |
+| R939 | **later** — §7 | The new destination-only arm asserts the wrong directory for append_finding, and declares three... |
+| R940 | **later** — §7 | The new gate's property (iii) is green on the tree R925 lived in, and no test anywhere asserts... |
+| R941 | **later** — §7 | validated_export_scale's explicit-sidecar form inherits the default form's silent skip: the... |
+| R942 | **later** — §7 | Two prose residues of the new two-branch form. The computed branch's "breaking ... <list>"... |
+| R943 | **later** — §7 | results/F6/F4_member_forces.csv is a third copy of the SCALE line, byte-identical to... |
+| R944 | **later** — §7 | THE R936 REPAIR PUBLISHES "T = 12.5 s IS INSIDE THE BAND AT THIS HEIGHT" AT EVERY RECORDED... |
+| R945 | **later** — §7 | THE NEW JOIN IS A SUBSTRING TEST, SO A FORCES TABLE GENERATED AT lambda = 500 IS ACCEPTED AT... |
+| R946 | **later** — §7 | test_R933_ANOTHER_SEA_STATE_RUNS_rather_than_refusing[f6_results_report.py] ASSERTS EXIT 0 FOR... |
+| R947 | **later** — §7 | The published-factor format now has TWO definitions. f6_results_report.py:333-338 re-implements... |
+| R948 | **later** — §7 | The node-id diff that could not see the eleventh id: the added id is in... |
+| R949 | **later** — §7 | R918's shape, with a second witness: member_forces_table.py ends with... |
+| R950 | **later** — §7 | THE R944 REPAIR REPLACED A ONE-SIDED TEST WITH A FOUR-WAY CATEGORY AND THEN READ THREE OF THE... |
+| R951 | **later** — §7 | f6_results_report.py:636 STILL DECIDES "IS THIS THE REFERENCE SEA STATE?" WITH THE MEMBERSHIP... |
+| R952 | **later** — §7 | THE NEW HEIGHT JOIN SKIPS WHEN THE HEADER CARRIES NO HEIGHT -- if _seen_h and ... -- SO R938... |
+| R953 | **later** — §7 | The other boundary of the R944 else arm, solved because EH4 asks for both. Just above H =... |
+| R954 | **later** — §7 | tests/regression/test_generators_refuse_mismatched_inputs.py:9-15 says "The cells are cheap... |
+| R955 | **later** — §7 | member_forces_table.py:396-397 prints args.out.relative_to(ROOT) AFTER both files are written,... |
+| R956 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R957 | **later** — §7 | THE R951 REPAIR DROPPED THE FOUR MEMBERSHIP CONJUNCTS AND KEYS ON HEIGHT ALONE, SO THE... |
+| R958 | **later** — §7 | THE PERIOD JOIN IS ONE-DIRECTIONAL. set(_recorded) - _solved REFUSES A DECLARED PERIOD WITH NO... |
+| R959 | **later** — §7 | , AND CA2: A RED CI IS A HOLD) CI IS RED AT THE REVIEWED COMMIT. ladder 6 -- it stays fixed... |
+| R960 | **later** — §7 | scripts/measure/member_forces_table.py:458 says "The five other scripts/measure/ scripts still... |
+| R961 | **later** — §7 | _shown is now defined twice, identically, at f6_results_report.py:240 and... |
+| R962 | **later** — §7 | FA0 ruled at one sea state. The predicate now reads that height from a mutable input file... |
+| R963 | **later** — §7 | R950's decision boundary is not bracketed by any cell. With params at 10.0 and 14.21 (the... |
+| R964 | **later** — §7 | test_R951's claimed needle is asserted nowhere to be FOUND: grep -rn "The governing basis is... |
+| R965 | **later** — §7 | The height-mismatch refusal interpolates a Python list: "the CSV's own caveats state H =... |
+| R966 | **later** — §7 | One document, one height, two spellings: f6_results_report.py:551 writes H = {h_full} m and... |
+| R967 | **later** — §7 | THE THIRD INPUT IS JOINED TO NOTHING. --util CARRIES EVERY UTILISATION THE REPORT PUBLISHES AND... |
+| R968 | **later** — §7 | R957 IS NOT CLOSED. THE REFERENCE GATE IS A HEIGHT COMPARISON AND THE NEW JOIN DOES NOT... |
+| R969 | **later** — §7 | THE JOIN COMPARES SETS WHERE THE DOCUMENT ITERATES A LIST. A DUPLICATE DECLARED PERIOD PASSES... |
+| R970 | **later** — §7 | THE R959 CLASS IS CLOSED FOR CSVs AND OPEN FOR EVERY OTHER DELIVERABLE. IN A FRESH CHECKOUT AT... |
+| R971 | **later** — §7 | R959's CONDITION (ii) IS UNMET AT THE SITE I NAMED, AND THE REPORT DOES NOT SAY THE SITE WAS... |
+| R972 | **later** — §7 | test_R959's docstring says ".csv -text stores the bytes. This asserts the property directly." I... |
+| R973 | **later** — §7 | OBSERVED LIVE, WITH A TRACEBACK) My first probe handed the generator a forces CSV with no... |
+| R974 | **later** — §7 | git worktree list carries twelve AppData/Local/Temp/suite-count-/tree registrations, and git... |
+| R975 | **later** — §7 | .gitattributes says "Every tracked CSV here is a generator artifact, so the rule is the file... |
+| R976 | **later** — §7 | A DUPLICATED UTILISATION ROW PASSES BOTH NEW JOINS AND IS PUBLISHED TWICE. ONE VARIABLE MOVED... |
+| R977 | **later** — §7 | R968 IS NOT CLOSED. THE NEW CONJUNCT READS ITS REFERENCE FROM THE SAME FILE --provenance... |
+| R978 | **later** — §7 | THE UTIL JOIN COMPARES KEYS AND PERIODS AND NOT THE QUANTITY THE TWO TABLES SHARE. ONE VARIABLE... |
+| R979 | **later** — §7 | THE DERIVATION MIRRORS TWO OF THE PRODUCER'S FOUR CONJUNCTS. IT IS AN OVER-REFUSAL AND NEVER A... |
+| R980 | **later** — §7 | THE JOIN IS VACUOUS WHEN BOTH DERIVED SETS ARE EMPTY, AND THE ONLY THING THAT CATCHES IT IS THE... |
+| R981 | **later** — §7 | R918 / R956's REPAIR REACHED TWO FILES AND THE CENSUS IS SEVEN SHORT. I HIT IT LIVE:... |
+| R982 | **later** — §7 | THE NEW UTIL REFUSAL'S NARRATIVE HALF IS ONE-DIRECTIONAL. Driving the _util_extra branch prints... |
+| R983 | **later** — §7 | STATIONS_CHECKED ARRIVES FROM floatfea.run.pipeline, WHICH DOES NOT WRITE THE FILE.... |
+| R984 | **later** — §7 | THE JOIN KEYS DROP body. _util_expected, _util_got and _periods_for key on (member, station)... |
+| R985 | **later** — §7 | _wrong_period COMPARES PERIODS AS STRINGS (r.get("period_full_s", "") against a set of strings)... |
+| R986 | **later** — §7 | THREE OF THE SEVEN CLAIMS IN THE PARAGRAPH _reference GUARDS ARE ABOUT THE STRESS BOUND, WHICH... |
+| R987 | **later** — §7 | THE RECORDED HEADING AND THE RECORDED PERIOD COUNT ARE PUBLISHED AS LITERALS AT FOUR SITES... |
+| R988 | **later** — §7 | FOUR MORE LITERALS OF THE SAME CLASS ARE TRUE TODAY AND GO FALSE AT A NAMED NEXT ITEM. :713... |
+| R989 | **later** — §7 | THE TURN'S SUITE FIGURE IS NOT A WHOLE-SUITE FIGURE: --ignore=tests/test_report_carried.py... |
+| R990 | **later** — §7 | MY OWN STATE-(2) CONTROL DID NOT MEASURE WHAT I SAID IT MEASURED. docs/reviews/R1/step-3.md... |
+| R991 | **later** — §7 | THE THREE BOUND SENTENCES ARE NOW INTERPOLATED, AND TWO OF THEIR CONCLUSIONS ARE STILL DECIDED... |
+| R992 | **later** — §7 | THE NEW VALUE JOIN REACHES ALL 23 PUBLISHED UTILISATION COLUMNS AND DOES NOT REACH sigma_Pa,... |
+| R993 | **later** — §7 | THE EH4 TABLE IN test_R978_a_CHANGE_BELOW_THE_PUBLISHED_PRECISION_is_accepted's DOCSTRING IS... |
+| R994 | **later** — §7 | FOUR MORE LITERAL CLAIMS ABOUT THE RUN SIT OUTSIDE THE CENSUS'S STATED DOMAIN, AND TWO OF THEM... |
+| R995 | **later** — §7 | git diff --stat HEAD~1 IS 816 insertions(+), 102 deletions(-), NOT 792. git diff --shortstat... |
+| R996 | **later** — §7 | A NEGATIVE NEEDLE THAT EMBEDS A SPELLED COUNT IS VACUOUS AT ANY OTHER COUNT. assert "largest of... |
+| R999 | **later** — §7 | THE DIFF MADE sigma_Pa AND tau_Pa ORPHAN COLUMNS OF A PUBLISHED DELIVERABLE, AND IT IS THE ONE... |
+| R1000 | **later** — §7 | A RANK CLAUSE CAN PUBLISH TWO EQUAL FIGURES AS THE EVIDENCE FOR A STRICT ORDERING. At my states... |
+| R1001 | **later** — §7 | TWO CITATIONS IN THE NEW R994 COMMENT RESOLVE ONE FRAME AND FIVE LINES OFF.... |
+| R1002 | **later** — §7 | R993's RESIDUE: THE DOCSTRING STILL PUBLISHES THREE ROWS WHILE THE CELL RUNS ONE OF THEM. The... |
+| R1003 | **later** — §7 | MY VERDICT 21 NAMED THE RIGHT REPAIR FOR R992 FOR THE WRONG REASON, AND THE WRONG REASON WAS... |
+| R1005 | **later** — §7 | THE NPZ RECORDS EACH CASE'S PERIOD TWICE, NOTHING COMPARES THE TWO, AND FL2(d)'s SCREEN IS... |
+| R1006 | **later** — §7 | and (d), FR1) TWO RED TESTS AT THE REVIEWED COMMIT THAT FAIL THE FS1/FT1 BOUNDARY PREDICATE, IN... |
+| R1007 | **later** — §7 | A MALFORMED SIDECAR run BLOCK NOW SILENTLY DISABLES THE WHOLE FL2(d) SCREEN, AND I MEASURED THE... |
+| R1008 | **later** — §7 | out_of_band_governing ADMITS A BREAKING WAVE WITH NO FURTHER DECLARATION, AND BREAKING HAS NO... |
+| R1009 | **later** — §7 | THE EH4 BREAKING CELL ASSERTS THE LABEL WHERE THE LOAD-BEARING PROPERTY IS THE DECISION.... |
+| R1010 | **later** — §7 | TEN LIVE COPIES OF THE BAND AND STEEPNESS COEFFICIENTS REMAIN IN THE TWO EZ0 GENERATOR SCRIPTS... |
+| R1011 | **later** — §7 | _recorded_height's DOCSTRING STATES A FALSE CALL GRAPH AS THE REASON FOR ITS ASYMMETRY WITH... |
+| R1012 | **later** — §7 | refuse_cases_that_cannot_govern SILENTLY SKIPS A DECLARED PERIOD THAT IS NOT IN THE FILE. Both... |
+| R1013 | **later** — §7 | FOUR STALE LINE CITATIONS IN THE LIVE TREE; THE CENSUS IS IN ANSWER (5c) ABOVE AND YOUR LIST OF... |
+| R1014 | **later** — §7 | THE FU0 EXEMPTION'S REVERSE GUARD PASSES ON A PARTIAL REPAIR. Three arms in answer (4) above.... |
+| R1015 | **later** — §7 | THE H = 0 REFUSAL IS RIGHT AND ITS MESSAGE IS ODD, AND CALM WATER CAN SET AN ENVELOPE IF... |
+| R1016 | **later** — §7 | A NEGATIVE CONTROL THAT DIES IN next().... |
+| R1017 | **later** — §7 | NO CI JOB RUNS tests/regression/, SO FL2(d)'s END-TO-END GATE HAS NO INDEPENDENT WITNESS.... |
+| R1018 | **later** — §7 | THE NEW test_one_gravity.py RELOADS A LIBRARY MODULE AND POISONS IT FOR THE REST OF THE... |
+| R1021 | **later** — §7 | R1005 REPAIR IS EVADED BY DELETING THE SECOND RECORD AT EXACTLY THE INDICES THAT DISAGREE,... |
+| R1022 | **later** — §7 | R1019 DOMAIN CHECK REACHES ONE OF THE THREE READERS OF periods_full_s, AND THE TWO IT MISSES... |
+| R1023 | **later** — §7 | R1017 IS FALSE: tests/regression/ RUNS ON EVERY PUSH, IN THE ladder JOB. The entry I routed to... |
+| R1024 | **later** — §7 | THE R1018 FOUR-ARM TABLE IN THE COMMIT MESSAGE IS STALE BY THE TWO CELLS THE SAME COMMIT ADDED.... |
+| R1025 | **later** — §7 | R1010 REPAIR IS HOLDABLE BY A TEST, MEASURED, SO "A NO-OP SUBSTITUTION CANNOT BE DETECTED" IS... |
+| R1026 | **later** — §7 | FIVE PUBLISHED LITERALS OF THE BAND AND STEEPNESS CONSTANTS SURVIVE R1010 SWEEP, AND ONE OF... |
+| R1027 | **later** — §7 | floatfea/basis.py:89 SAYS period_band.py IS "THE ONLY CONSUMER OF THESE THREE CONSTANTS", AND... |
+| R1028 | **later** — §7 | TWO OBSERVATIONS ON R1019 PLACEMENT, BOTH ABOUT WHERE RATHER THAN WHETHER. (i) The refusal sits... |
+| R1029 | **later** — §7 | THE DEFECT ARM 06 FOUND IN THE NEW REFUSAL IS STILL STANDING IN THE OLD ONE, WHICH IS THE... |
+| R1030 | **later** — §7 | THE # not-a-tolerance: MARKER IS AN UNCONDITIONAL, FREE-TEXT SILENCER ON THE COMPARISON OWN... |
+| R1031 | **later** — §7 | tests/unit IS A PUSH PATH, AND THE STEP IT RUNS IN GREW BY 149 SECONDS AT THIS COMMIT. The CI... |
+| R1032 | **later** — §7 | THE GUARD THAT READS WHICH FINDINGS A VERDICT MARKS AS BLOCKING CANNOT TELL "BLOCKS" FROM "DOES... |
+| R1033 | **later** — §7 | THE TYPE GATE THIS COMMIT ADDED FOR THAT FAMILY LISTS THE PYTHON TYPES A JSON SIDECAR CAN... |
+| R1034 | **later** — §7 | THE mass_eps CONCLUSION IS RIGHT AND NEITHER REASON GIVEN FOR IT IS WHAT HOLDS IT. The turn's... |
+| R1035 | **later** — §7 | THE EMPTY-SEQUENCE ALLOWANCE IS SAFE AND ITS STATED REASON NAMES A CHECK THAT NEVER RUNS ON IT.... |
+| R1036 | **later** — §7 | THE DOOR'S DOCSTRING MEASURES THE MODEL-SCALE CASE AT ONE OF ITS THREE CALLERS. I WENT TO SHOW... |
+| R1037 | **later** — §7 | THE NEW REFUSAL'S REMEDY SENTENCE WILL BE WRONG FOR THE FILES THIS STEP'S OWN GATE PRODUCES.... |
+| R1038 | **later** — §7 | THE DUPLICATED not-a-tolerance: BLOCK. tests/unit/test_forces_table_reexports.py carries the... |
+| R1039 | **later** — §7 | R899's COUNT IS WRONG IN ONE DIRECTION AND THE DRIFT IS REAL IN THE OTHER. Verdict 24 reported... |
+| R1040 | **later** — §7 | THERE IS A THIRD RECORD OF THE SAME QUANTITY AND NOTHING COMPARES IT. The sidecar's run block... |
+| R1042 | **later** — §7 | THE SAME DEFECT AT A FOURTH SITE, IN THE SAME FUNCTION AS THE THIRD, FOUR LINES BELOW THE... |
+| R1043 | **later** — §7 | with CA2: a red test and a red CI at the reviewed commit, failing BOTH limbs of the FS1/FT1... |
+| R1044 | **later** — §7 | of my own amended R1033 condition, and it was neither met nor stated as left) THE MEMBERSHIP IS... |
+| R1045 | **later** — §7 | THE DOCSTRING THAT TELLS A READER WHICH BRANCH IS LIVE IS FALSE IN ITS FIRST CLAUSE.... |
+| R1046 | **later** — §7 | A SHAPE-(2,) froude_lambda IS REFUSED WITH "the npz could not be read". Driven: np.array([50.0,... |
+| R1047 | **later** — §7 | THE PRE-COMMIT SELECTION RULE WAS "WHAT DID I EDIT" AND IT HAS TO BE "WHAT EXERCISES WHAT I... |
+| R1048 | **later** — §7 | A WAITER ANCHORED ON [0-9]+ failed, FIRED ON AN INNER SYNTHETIC RUN'S SUMMARY AT 52%. They... |
+| R1049 | **later** — §7 | scripts/write_verdict.py STAMPS HEAD, AND HEAD IS NOT THE JUDGED COMMIT WHEN THE IMPLEMENTER... |
+| R1050 | **later** — §7 | THE TRACKED FILE THAT REVERTED AT 17:36 WAS ME, NOT A SYNC. The implementer measured a tracked... |
+| R1051 | **later** — §7 | THE JOINT-REACTION ARRAY'S DTYPE IS CHECKED NOWHERE. A BOOL-TYPED case{i}/lam IS ACCEPTED,... |
+| R1052 | **later** — §7 | THE TWO SCALE READERS RAISE AN UNCAUGHT AttributeError OR OverflowError ON SIX SIDECAR SHAPES... |
+| R1053 | **later** — §7 | THE COMMIT MESSAGE'S OWN git diff --name-only OUTPUT NAMES TWO FILES WHERE THE DIFF IS THREE.... |
+| R1054 | **later** — §7 | floatfea/run/config.py SAYS "every one of numpy's twenty-two dtype KINDS is a single non-empty... |
+| R1055 | **later** — §7 | THE COMPLEMENT NAMES 17 EXCLUDED ROOT FILES AS "the remaining root-level report guards". AT... |
+| R1056 | **later** — §7 | THE R1044 REPAIR IS CORRECT AND HELD BY NOTHING. Restoring kind in "iuf" in place of the tuple... |
+| R1057 | **later** — §7 | A NEW PARAMETER'S OWN LABEL DESCRIBES A DIFFERENT VALUE. In the R1042 cell: pytest.param("JSON... |
+| R1058 | **later** — §7 | A NON-FINITE case{i}/lam IS ACCEPTED, SOLVED AND PUBLISHED. THE GOVERNING CASE SET TO NaN GIVES... |
+| R1059 | **later** — §7 | THE ADMITTED SET IS float16, float32 AND float64, AND THE DOCSTRING'S OWN REASON -- TRUNCATION... |
+| R1060 | **later** — §7 | THE INSTINCT WAS RIGHT, THE CONCLUSION IS RIGHT, AND THE RUN YOU PASTED DID NOT REACH THE CODE... |
+| R1061 | **later** — §7 | FOUR MEASUREMENTS ARE PUBLISHED IN A floatfea/ DOCSTRING AND IN A USER-FACING REFUSAL, AND... |
+| R1062 | **later** — §7 | THE REFUSAL DOES NOT NAME THE FILE, AND THIS STEP'S OWN GATE PUTS SEVERAL FILES IN ONE RUN.... |
+| R1063 | **later** — §7 | A case{i}/lam WITH ZERO TIMESTEPS IS ACCEPTED, SOLVED AND PUBLISHED. THE GOVERNING CASE EMPTIED... |
+| R1064 | **later** — §7 | THE TREE FINGERPRINT CARRIES NO COMMAND AND THIRTEEN RECIPES DO NOT REPRODUCE IT.... |
+| R1065 | **later** — §7 | test_the_SEARCH_reads_no_gravity_at_all IS FUNCTION-LOCAL AND CANNOT SEE A HELPER A SEARCH... |
+| R1066 | **later** — §7 | A BIG-ENDIAN >f8 lam IS REFUSED WITH A MESSAGE THAT BLAMES THE WIDTH, WHICH IS NOT WHAT IS... |
+| R1067 | **later** — §7 | "candidate {index} of {count}" MIXES A ZERO-BASED INDEX WITH A ONE-BASED COUNT, IN A... |
+| R1068 | **later** — §7 | THE R1060 INCIDENTAL IS AT A SECOND SITE. scripts/measure/f6a_required_section.py:585 and... |
+| R1069 | **later** — §7 | THE DIAGONAL FORCE AND THE DIAGONAL'S BUCKLING LENGTH ARE BOTH BUILT FROM panel_and_diagonal's... |
+| R1070 | **later** — §7 | R1063 SURVIVES ONE MORE KEY EDIT. NOTHING BOUNDS EITHER WINDOW LENGTH BELOW, SO EMPTYING lam... |
+| R1071 | **later** — §7 | sections.truss.d_over_t AND joint_allowance ACCEPT A BOOL AND A STRING, IN A FUNCTION THAT... |
+| R1072 | **later** — §7 | THE TRIANGLE'S FACE-SHEAR ALLOCATION DOES NOT CLOSE AGAINST Vz OR T, THE BOX'S CLOSES EXACTLY,... |
+| R1073 | **later** — §7 | THE REWRITTEN BULLET PUBLISHES THE FORCE FACTOR AS THE AREA FACTOR, AND THE AREA FACTOR IS... |
+| R1074 | **later** — §7 | THE GENERATOR HARD-CODES FOUR FIGURES ABOUT THIS DECK AND THIS GRID INTO AN ARTIFACT IT WRITES... |
+| R1075 | **later** — §7 | THE NEW PARAGRAPH PUBLISHES "A ROW WITH A LARGE TORSION PUTS uniform_panel AHEAD FOR BOTH... |
+| R1076 | **later** — §7 | THE AREA-FACTOR TABLE IS A FOUR-ROW SAMPLE AT ONE UNSTATED LOAD AND ONE UNSTATED READING OF A... |
+| R1077 | **later** — §7 | THE R1075 REPAIR PUT FOUR NEW DECK-SPECIFIC LITERALS, INCLUDING THE WORDS "ON THIS DECK", INTO... |
+| R1078 | **later** — §7 | THE COMPUTED FIGURE THAT REPLACED R1074 HARD-CODED ONE IS COUNTED OVER A DOMAIN THAT CANNOT... |
+| R1079 | **later** — §7 | THE SENTENCE THAT REPLACED THE RETRACTED "NONE OF IT IS THE BRACED LENGTH" PUBLISHES A BOUND --... |
+| R1080 | **later** — §7 | THE BULLET THAT TELLS A READER WHETHER THE KNOWN DEFECT REACHES A PUBLISHED NUMBER CONDITIONS... |
+| R1081 | **later** — §7 | THE R1077 REPAIR DELETED THE DECK-SPECIFIC LITERALS AND ALSO DELETED THE QUALIFIER THAT MADE... |
+| R1082 | **later** — §7 | _margin NEW LABEL IS FALSE AT AN ADMISSIBLE GRID SHAPE: AT depths: [3.0, 3.0] THE ARTIFACT... |
+| R1083 | **later** — §7 | NOTHING IN THE TREE HOLDS L43's REPAIR, AND THE COMMIT MESSAGE'S ARM FIGURE FOR IT DOES NOT... |
+| R1084 | **later** — §7 | EXACT IS THE RIGHT WORD AND I PROVED THE HALF YOU COULD NOT -- BUT THE SAME CLAUSE RE-OPENS... |
+| R1085 | **later** — §7 | L46's TRAILING CAUSE IS A FOURTH COMMA-ITEM IN A LIST IT IS TRUE OF ONLY ONE MEMBER OF, SO AT A... |
+| R1086 | **later** — §7 | THE TEST COMMENT SAYS THE RETIRED WORDING IS forbidden. NOTHING FORBIDS IT, AND NOTHING CAN,... |
+| R1087 | **later** — §7 | THE NEW ASSERTIONS READ A FIFTH FIELD FROM A FIXTURE WHOSE DOCSTRING SAYS IT CARRIES FOUR, AND... |
+| R1088 | **later** — §7 | no triangle figure in these tables is ever HIGH IS FALSE UNDER ONE OF THE THREE CORRECTIONS THE... |
+| R1089 | **later** — §7 | R1085's REPAIR INTRODUCES A THIRD AGREEMENT PAIR INTO THAT ONE SENTENCE AND ONLY THE SINGULAR... |
+| R1090 | **later** — §7 | R1086 IS CLOSED AT A SITE MY CONDITION DID NOT NAME AND OPEN AT THE ONE IT DID.... |
+| R1091 | **later** — §7 | YOUR QUALIFIER IS TRUE -- WIDER THAN YOU VERIFIED IT -- AND THE ENUMERATION BEHIND IT IS... |
+| R1092 | **later** — §7 | : 1890 cells, 139 identical, 154 MISMATCHES cmd which reading, and how much out all 154 are... |
+| R1093 | **later** — §7 | report.md PUBLISHES THE FIRST FILE'S WAVE BASIS AS "THE WAVE BASIS THESE LOADS WERE EXPORTED... |
+| R1094 | **later** — §7 | THE FL2(d) SECTION STATES ONE FILE'S ASSOCIATED-PERIOD BAND AS THE BAND, OVER A TABLE... |
+| R1095 | **later** — §7 | A MIXED SET -- ONE FILE THAT RECORDS A HEIGHT AND ONE THAT DOES NOT -- PUBLISHES A... |
+| R1096 | **later** — §7 | Checked stations: 64. Over unity: 16. ON A MODEL WITH 32 STATIONS, 12 OF THEM OVER UNITY. THE... |
+| R1097 | **later** — §7 | _governing_provenance's DOCSTRING STILL DESCRIBES THE IMPLEMENTATION THE REPAIR DELETED, AND... |
+| R1098 | **later** — §7 | "THE FIELDNAMES ARE STATED EXPLICITLY RATHER THAN INFERRED FROM THE RECORD" IS FALSE, AND I... |
+| R1099 | **later** — §7 | YOUR READING OF FW1's SCOPE IS RIGHT. THE CONSEQUENCE IS THAT utilisation.csv NOW CARRIES 32... |
+| R1100 | **later** — §7 | THE ONE-FILE AND MULTI-FILE HEADING COMPARISONS ARE DIFFERENT FUNCTIONS WITH DIFFERENT... |
+| R1101 | **later** — §7 | A REFUSAL THIS COMMIT ADDS HAS AN AGREEMENT PAIR WITH NO SINGULAR BRANCH, AND NOTHING ASSERTS... |
+| R1102 | **later** — §7 | Row.source AND Row.heading_deg CARRY DEFAULTS, SO MY "APPEND WITH NO DEFAULT" CONSTRAINT BOUGHT... |
+| R1103 | **later** — §7 | TWO OF THE THREE ARTIFACTS' SHARED CAVEATS ARE SINGULAR PROSE ABOUT A PLURAL RUN, AND ONE OF... |
+| R1104 | **later** — §7 | TWO DIFFERENT DECLARED FILES WHOSE BASENAMES COLLIDE ARE ACCEPTED AT EXIT 0, AND EVERY ARTIFACT... |
+| R1105 | **later** — §7 | WHAT CANCELLED THE RUN IS A PUSH FROM YOUR SIDE, AND THE MECHANISM WILL DO IT EVERY TIME.... |
+| R1106 | **answered** — §2 | . The FY3 supersession reached ONE of three sibling artifacts. 84 of 168 rows in a published... |
+| R1107 | **answered** — §3 | . The hook narrowing moved FOUR WRITE rows from DENY to ALLOW, and >\| is the one that matters.... |
+| R1108 | **answered** — §4 | . The rung-3 class guard transfers a CLASS label to an entry that did not declare it. Your... |
+| R1109 | **later** — §7 | . The coincidence rule's TABLE 1 reproduces exactly. BOTH of TABLE 2's published margin figures... |
+| R1110 | **later** — §7 | . The plan declares NODE_COINCIDENCE_DECIMALS STRUCTURAL; the file deliberately declares no... |
+| R1111 | **later** — §7 | . wave_basis_from_sidecar is a third door and it CANNOT reconcile. Your two doors are right;... |
+| R1112 | **later** — §7 | . A multi-element froude_lambda makes _npz_scale_key return None, which SKIPS the... |
+| R1113 | **later** — §7 | . The third wrong-exception-class site, which you asked me to assume exists. It does, and... |
+| R1114 | **later** — §7 | . exported_wave_basis gates on is_file() and wave_basis_from_sidecar on exists(), so R1007's... |
+| R1115 | **later** — §7 | . A published supersession note points at a document that does not exist.... |
+| R1116 | **later** — §7 | . The new != is exact in the strict direction, as you claim. The weakening direction has one... |
+
+## 9. The schedule
+
+*The one hand-written paragraph this report is allowed. Everything else above is
+a generated section or a `claim/cmd/out` triple.*
+
+**Measured against 10 November (FW0), and it holds — with the arithmetic stated
+rather than asserted.** Today is 2 November, so eight days remain. This is step
+3's first reviewed revision of three. Step 4 is the guide and the witness, and
+the plan's own estimate for it is **one and a half to two days including writing
+`docs/USER_GUIDE.md`** (`docs/milestones/R1.md:52`), which does not yet exist.
+Eight days against step 3's two remaining revisions plus two days of step 4 is
+headroom, not a slip, so **nothing is escalated under FZ (e)**. I will not call
+the headroom comfortable: six of today's self-rulings were defects I introduced
+while repairing an earlier one, and each cost a cycle that no estimate contains.
+The date holds on today's measurement, and the margin is consumed by exactly
+that kind of round.
+

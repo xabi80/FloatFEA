@@ -1,0 +1,1110 @@
+{
+  "_": [
+    "POINTERS ONLY (CH4). No prose here -- every row points at the section",
+    "that discusses it, and the guard checks that the section MENTIONS the id.",
+    "",
+    "R1 STEP 3, REVISION 1 of the three ES0 allows. Answers verdict 43 @ a2c3f5c,",
+    "the ES0 interim check that returned HOLD on one blocking finding.",
+    "",
+    "THREE ITEMS ARE ANSWERED IN THIS REVISION AND THEY ARE THE VERDICT'S OWN:",
+    "",
+    "  R1106  BLOCKING. FY3's supersession reached one artifact of three.  -> \u00a72",
+    "  R1107  FF0. The hook's target class could not see a clobber redirect. -> \u00a73",
+    "  R1108  FF0. A rung-3 class label transferred to another entry.      -> \u00a74",
+    "",
+    "EVERY OTHER ROW POINTS AT \u00a77, which carries them BY NAME AND UNSWEPT.",
+    "That is ES0's own disposition for an interim check -- the reviewer wrote",
+    "'L47-L56, L58 carry by name, unswept (ES0)' and this revision does not",
+    "pretend to have swept them. \u00a77 names each one so the pointer is real.",
+    "",
+    "The row set is the UNION of what carried_table.py produces and what",
+    "check_carried.py demands, because C15 records that the two differ by",
+    "construction and a row reaching only the checker is still a row."
+  ],
+  "answered": {
+    "R1": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R835": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R836": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R838": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R843": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R845": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R846": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R847": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R848": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R849": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R850": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R851": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R852": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R853": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R854": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R855": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R856": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R857": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R858": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R859": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R860": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R861": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R862": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R863": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R864": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R865": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R866": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R867": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R868": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R869": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R870": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R871": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R872": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R873": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R874": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R875": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R876": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R877": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R878": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R879": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R880": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R881": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R882": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R883": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R884": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R885": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R886": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R887": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R888": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R889": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R890": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R891": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R892": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R893": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R894": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R895": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R896": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R897": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R898": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R899": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R900": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R901": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R902": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R903": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R904": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R905": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R906": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R907": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R908": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R909": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R910": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R911": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R912": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R913": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R914": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R915": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R916": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R917": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R918": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R919": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R920": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R921": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R922": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R923": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R924": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R925": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R926": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R927": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R928": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R929": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R930": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R931": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R932": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R933": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R934": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R935": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R936": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R937": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R938": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R939": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R940": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R941": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R942": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R943": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R944": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R945": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R946": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R947": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R948": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R949": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R950": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R951": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R952": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R953": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R954": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R955": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R956": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R957": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R958": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R959": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R960": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R961": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R962": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R963": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R964": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R965": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R966": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R967": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R968": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R969": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R970": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R971": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R972": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R973": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R974": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R975": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R976": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R977": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R978": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R979": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R980": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R981": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R982": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R983": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R984": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R985": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R986": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R987": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R988": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R989": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R990": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R991": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R992": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R993": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R994": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R995": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R996": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R999": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1000": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1001": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1002": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1003": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1005": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1006": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1007": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1008": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1009": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1010": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1011": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1012": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1013": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1014": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1015": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1016": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1017": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1018": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1021": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1022": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1023": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1024": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1025": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1026": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1027": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1028": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1029": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1030": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1031": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1032": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1033": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1034": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1035": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1036": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1037": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1038": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1039": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1040": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1042": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1043": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1044": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1045": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1046": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1047": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1048": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1049": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1050": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1051": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1052": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1053": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1054": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1055": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1056": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1057": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1058": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1059": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1060": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1061": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1062": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1063": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1064": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1065": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1066": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1067": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1068": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1069": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1070": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1071": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1072": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1073": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1074": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1075": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1076": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1077": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1078": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1079": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1080": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1081": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1082": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1083": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1084": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1085": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1086": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1087": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1088": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1089": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1090": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1091": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1092": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1093": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1094": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1095": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1096": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1097": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1098": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1099": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1100": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1101": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1102": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1103": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1104": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1105": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1106": {
+      "state": "answered",
+      "where": "\u00a72"
+    },
+    "R1107": {
+      "state": "answered",
+      "where": "\u00a73"
+    },
+    "R1108": {
+      "state": "answered",
+      "where": "\u00a74"
+    },
+    "R1109": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1110": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1111": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1112": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1113": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1114": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1115": {
+      "state": "later",
+      "where": "\u00a77"
+    },
+    "R1116": {
+      "state": "later",
+      "where": "\u00a77"
+    }
+  }
+}
