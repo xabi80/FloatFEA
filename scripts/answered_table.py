@@ -35,9 +35,7 @@ GENERATED_MARK = "<!-- generated: scripts/answered_table.py -->"
 
 # R1117: accepts a markdown heading as well as bold. See
 # `scripts/carried_table.py` for the measurement and why six copies.
-_FINDING = re.compile(
-    r"^(?:\*\*|#{2,4}\s+)(R\d+)\.\s*(?:\(([^)]*)\))?\s*(.*)$", re.MULTILINE
-)
+_FINDING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)\.\s*(?:\(([^)]*)\))?\s*(.*)$", re.MULTILINE)
 
 
 def _subjects(verdict: str) -> dict[str, tuple[str, str]]:
