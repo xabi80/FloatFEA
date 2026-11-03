@@ -1,4 +1,659 @@
 # Review — R1 step 3
+Reviewed commit: 6fb64c6f6958414c336dd4a483c6b5611270b8b0
+**Reviewed commit: `6fb64c6f6958414c336dd4a483c6b5611270b8b0`.**
+Closes: R1/step-3
+Verdict: PASS
+Tests: **6948 passed, 0 failed, 0 skipped, 2 warnings in 3679.27s (1:01:19)** -- my own `python -m pytest -q`, in my own worktree at the judged sha, tree clean (FV2), exit 0. **THE TREE IS GREEN AT THE REVIEWED COMMIT: there are no reds at all**, `grep -c "^FAILED"` over my log is **0**, so CZ0 (d) is not reached and the FS1/FT1 boundary-red predicate has nothing to rule on this round. **6948 is also exactly what `pytest tests --collect-only -q` collects at this commit, so nothing was deselected, skipped or lost between collection and result.** The eight reds `00cbafb` carried cleared TOGETHER, which I measured over the whole suite and not only over the three files that produce them.
+Scope: **REVIEWED REVISION 3 of the three ES0 allows -- the LAST. It consumes the third round, so step 3 CLOSES with this verdict (CZ0, ES0), and this verdict carries `Closes:` (FK1).** Not an interim check: `docs/reports/R1/step-3.md` carries a `# Revision 3` block and it answers the newest verdict.
+
+**I RULED UNDER FR1 WITH EZ0** (`CLAUDE.md` section "What blocks for the rest of R1"). **ONE FINDING BLOCKS** and I give it the sentence FR1 requires. It is R1128's own residual, one path-FORM over rather than one extension over, and it carries by name into step 4's `Carried` and stays blocking there. Everything else is a ledger row or a closure item. **Your three asks are each answered with a measurement, and the first one -- the anchor forms -- is answered with the enumerated set you asked for and a committed arm.**
+
+**STEP 1b: THE `Answers:` HEADER NAMES THE NEWEST VERDICT.**
+
+```
+cmd    git log --oneline -1 -- docs/reviews/
+out    1d23985 review: R1 step 3 revision 2 at 2ead3d6 -- HOLD, one blocking
+         finding under FR1
+cmd    grep -h "^Answers: verdict" docs/reports/R1/step-3.md
+out    Answers: verdict 44 @ 6f14aba
+       Answers: verdict 45 @ 903f38b
+       Answers: verdict 46 @ 1d23985      -- the NEWEST revision's
+judge  one comparison, not a diff. The newest revision names the newest
+       verdict. No HOLD on that head.
+```
+
+**WHERE I WORKED (FV2).** Three worktrees of my own outside the repository, all detached at `6fb64c6`: one for the reads and the whole suite, one for the three report-parametrised files and the FL2 gate tests, and one for the arms, where I made a commit of my own (`5693ce3`) and then `git reset --hard` back. **No `checkout`, `reset` or write of any kind in your tree** -- `git status --porcelain` in your checkout is empty and `git rev-parse HEAD` there is `6fb64c6`, checked at the end. Every arm was restored inside my own worktree and `git status --porcelain` was empty afterwards, checked each time.
+
+**THE MANDATED SEPARATE DIFFS, over `2ead3d6..HEAD` -- three commits, your range, and it is the right one.**
+
+```
+cmd    git log --oneline 2ead3d6..HEAD | wc -l
+out    3          -- 1d23985 (my verdict), 00cbafb (the repairs), 6fb64c6 (s.11)
+cmd    git diff 2ead3d6..HEAD -- floatfea/tolerances.py | wc -l
+out    0          -- the file is not in the diff at all
+cmd    git diff --stat 2ead3d6..HEAD -- floatfea
+out    (empty)    -- NO production code moved in this range
+cmd    git diff 2ead3d6..HEAD -- tests/conftest.py 'tests/**/conftest.py' | wc -l
+out    0          -- no new or changed conftest, no new plugin
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py    -- the pathspec RESOLVES, as my instructions say
+                               it must. Not an empty result.
+cmd    tests/conftest.py read WHOLE by me, 67 lines, not inherited from
+         verdict 46's reading (CH2/CI0)
+out    `pytest_collection_modifyitems` at :53 is the ONLY hook. It derives a
+       rung marker from the directory and SORTS by rung; `items.sort` removes
+       nothing. No `pytest_runtest_makereport`, no `pytest_ignore_collect`,
+       no `pytest_report_teststatus`, no hookwrapper anywhere in the file.
+       The rest of the file is two hypothesis profiles.
+cmd    git ls-files | grep -i "conftest\|plugin"
+out    tests/conftest.py
+       tests/test_supervisor_conftest_pathspec.py
+       -- ONE conftest in the repository, at depth one
+cmd    grep -n "addopts" pyproject.toml
+out    56:addopts = "-ra --strict-markers --strict-config"
+       -- no `-p` plugin injection, so nothing else loads a hook
+cmd    git diff --stat 2ead3d6..HEAD -- .claude docs/SUPERVISOR.md CLAUDE.md
+out    (empty)    -- NOT A STOP. My own instructions did not move.
+cmd    git log --oneline -3 -- .claude docs/SUPERVISOR.md, each commit's own
+         --stat, to check the standalone-`process:`-commit rule over the step
+out    fa480e7  .claude/hooks/protect-reviews.sh only
+       bb1a750  CLAUDE.md and docs/SUPERVISOR.md only
+       7994b54  .claude/hooks/protect-reviews.sh only
+       -- all three standalone `process:` commits, none touching floatfea/ or
+          tests/. No STOP-class finding anywhere in the step.
+cmd    git diff --stat 2ead3d6..HEAD -- tests/corpus .github scripts/run_rung.sh
+out    (empty)    -- corpus untouched, CI config untouched, rung script untouched
+cmd    git diff 2ead3d6..HEAD -- scripts tests | grep "^[-+].*re\.compile"
+out    5 removed, 5 added -- EVERY added `re.compile` is the replacement of a
+       removed one, at the same name. 0 new test functions, 0 new files.
+       **No new apparatus (EK2): your claim holds and I measured it over the
+       whole diff rather than over one file.**
+```
+
+**CI AT THE REVIEWED COMMIT: GREEN, AND EVERY STEP OF BOTH JOBS RAN. I WAITED FOR THE RUN RATHER THAN RECORDING AN UNFINISHED ONE (CA2).** It was `in_progress` when I began, with the ladder on rung 6 and `guards and meta-tests` not yet started, and I watched it to its own conclusion. **You were right not to guess it, and the answer is success.**
+
+```
+cmd    gh run list --commit 6fb64c6f6958414c336dd4a483c6b5611270b8b0
+         --json name,conclusion,workflowName,status,databaseId,event
+out    run 41665006727, workflow CI, event push -- `in_progress` when I began
+       and `completed success` at its conclusion
+cmd    gh run view 41665006727 --json jobs -- job AND step level, at the end
+out    success  lint, unit and guards
+         1 Set up job / 2 checkout / 3 setup-python / 4 pip install /
+         5 actionlint / 6 ruff / 7 black --check / 8 mypy / 9 unit tests /
+         10 guards and meta-tests / 18-21 post steps
+         -- ALL SUCCESS, NONE SKIPPED
+       success  the verification ladder
+         5 ladder 1 -- the solver is a solver      => success
+         6 ladder 2 -- the element is the element  => success
+         7 ladder 3 -- the model is the platform   => success
+         8 ladder 6 -- it stays fixed              => success
+         9 ladder 4 -- the loads are the loads     => success
+        10 ladder 5 -- independent confirmation    => success
+       skipped  CI determinism -- leg
+       skipped  CI determinism -- ten legs agree
+cmd    .github/workflows/ci.yml:90
+out    `if: github.event_name == 'workflow_dispatch'`
+judge  **CZ1 (iii) is satisfied by measurement:** `guards and meta-tests` is
+       seen to have RUN rather than skipped behind an earlier red step, and so
+       is every rung of the ladder -- so `tests/regression` is green at the
+       pushed sha through rung 6 under `run_rung.sh`'s `full:` mode, which is
+       the half FV1 assigns to CI. No low rung is red, so no higher rung is
+       uninterpretable. **The two determinism jobs are UNAVAILABLE BY DESIGN
+       and NOT CK2:** I read `ci.yml:90` rather than taking your sentence, and
+       both jobs that ran had populated steps and real durations, so this is
+       not the allowance-exhausted state. I record them as unavailable rather
+       than skipping over them, and the generated section 0 now does too,
+       which was R1137. **FP1 held: the judged commit has a run and it is the
+       run I read.** No FF0 item arises from CI.
+```
+
+**AND EG3's CONDITION (ii), WHICH IS THE HALF THE IMPLEMENTER'S SIDE CANNOT TAKE AND MINE CAN.** The eight reds `00cbafb` carried are measured CLEARED at the commit that carries section 11, in a clean worktree of my own at the judged sha.
+
+```
+cmd    python -m pytest tests/test_report_carried.py
+         tests/test_report_numbers_are_sourced.py
+         tests/test_report_guard_states.py -q
+out    2993 passed in 735.30s (0:12:15)     `grep -c "^FAILED"` = 0
+judge  **2969 + 24 = 2993, which is your two figures to the digit**, and 0
+       failed means all eight cleared TOGETHER rather than seven of them.
+       Section 11's prediction is paid. **The FS1/FT1 boundary-red predicate
+       therefore has nothing to rule on this round and CZ1 (iv) is not
+       reached** -- there are no reds at the reviewed commit at all, so there
+       is no trace to test per id. Your trace of `00cbafb`'s eight is sound in
+       its own terms and I checked the one thing that settles it: the section
+       count against the FAILED count, and then the clearing. I did not
+       re-run `00cbafb` and I do not need to -- a trace whose prediction is
+       that all eight clear together is confirmed or refuted by the next
+       commit, and it is confirmed.
+cmd    pytest tests --collect-only -q, at the judged commit
+out    6948 tests collected
+judge  6948 - 2993 = 3955, which is section 11's first figure EXACTLY. The two
+       counts partition the collection with nothing between them, and the
+       two-case difference from section 11's 6946 is section 11 itself: the
+       commit that publishes it adds two per-section cases to
+       `test_report_numbers_are_sourced`.
+```
+
+**AND THE STEP'S OWN GATE, because this verdict CLOSES the step and a closing verdict that only ran the apparatus would be certifying the apparatus.**
+
+```
+cmd    python -m pytest tests/regression/test_ft25_truss_sizing.py
+         tests/regression/test_ft26_multi_npz.py
+         tests/regression/test_ft27_topology_solve.py
+         tests/regression/test_fl2d_band_check.py
+         tests/unit/test_topology_from_config.py
+         tests/unit/test_run_pipeline_refusals.py
+         tests/unit/test_headings_and_bem_coverage.py
+         tests/unit/test_period_band.py -q
+out    398 passed in 984.96s (0:16:24)
+rule   docs/milestones/R1.md, step 3's gate: member topology from the config
+       with the star default, the sizing analyses re-solving at the selected
+       sections and refusing by name when the grid is exhausted, the optional
+       analyses off by default, headings as a list with `export` refusing
+       uncovered ones by name, the band check per case with out-of-band cases
+       unable to govern, FT2.6's multi-npz envelope and FT2.7's eight
+       topologies
+judge  **FL2's gate is green at the commit this verdict closes**, measured by
+       me and not inherited. `git diff --stat 2ead3d6..HEAD -- floatfea` is
+       empty, so nothing in this range could have moved it, and FR3's ordering
+       -- all of FL2 built before the first reviewed revision -- is why this
+       range is apparatus and not production code.
+```
+
+**THE LINT GATE AT CI's OWN SCOPE, reproduced in my own worktree.**
+
+```
+cmd    ruff check floatfea tests scripts
+out    All checks passed!
+cmd    black --check floatfea tests scripts
+out    162 files would be left unchanged.
+cmd    mypy floatfea
+out    Success: no issues found in 45 source files
+judge  all three of your figures reproduce to the file count and the source
+       count.
+```
+
+**AND YOUR FV1 ROOT SELECTION, REPRODUCED AT THE JUDGED COMMIT RATHER THAN AT `00cbafb`.**
+
+```
+cmd    python -m pytest tests/unit tests/test_no_tolerance_literals.py
+         tests/test_tree_prose_consistent.py
+         tests/test_collected_set_golden.py tests/test_one_gravity.py -q
+out    691 passed in 181.61s (0:03:01)
+judge  your figure to the digit, one commit later than you took it.
+```
+
+**AND I RAN THE PARENT COMMIT MYSELF, so your red trace is VERIFIED rather than accepted. YOUR THIRD ASK, ANSWERED: IT IS A TRACE.**
+
+```
+cmd    in a clean worktree of my own at `00cbafb`:
+         python -m pytest tests/test_report_carried.py
+         tests/test_report_numbers_are_sourced.py
+         tests/test_report_guard_states.py -q
+out    8 failed, 2982 passed, 1 skipped in 690.63s (0:11:30)
+cmd    grep "^FAILED" over that log
+out    test_the_report_carries_a_WHOLE_SUITE_count
+       test_the_guard_survives_the_state[baseline]
+       test_the_guard_survives_the_state[non_numeric_step_suffix]
+       test_the_guard_survives_the_state[superscript_digit_step_number]
+       test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]
+       test_the_guard_survives_the_state[step_number_is_the_empty_string]
+       test_the_guard_survives_the_state[verdict_amended_after_the_commit_
+         the_report_answers]
+       test_the_guard_survives_the_state[zero_padded_step_number]
+       -- EIGHT, and `grep -c` is 8
+rule   EG3 (i): every FAILED id is tested against the FS1/FT1 predicate
+       INDIVIDUALLY, never as a cascade ruled by class -- which is R629, the
+       eighth member of exactly such a group that turned out to be real
+judge  **the ids are exactly the eight section 11 names, the counts are
+       exactly 8 / 2982 / 1, and there is NO NINTH.** So the thing R629
+       warns about is not present here, and I established that by running the
+       commit rather than by reading your list. **Per id:**
+       `test_the_report_carries_a_WHOLE_SUITE_count` is FT1's LIMB TWO -- its
+       subject IS the commit carrying it, because `scripts/suite_count.py`
+       measures a clean worktree AT a commit and the line naming a sha cannot
+       be inside that sha. The seven harness states are that same guard run
+       inside a COPY of the tree with exit 0 required, so each one's red is
+       the first one's red at one level of indirection; your per-section
+       measurement -- `1 failed, 2934 passed` in each, the single named id the
+       whole-suite guard, `other nested reds` empty in all seven -- is what
+       makes that a measurement per id and not a family ruling, and the
+       section count checked against the FAILED count (7 and 7) is what
+       catches the probe defect you had last revision. **And the predicate's
+       limb one is not needed for any of the eight.** All eight are gone at
+       `6fb64c6`: my whole-suite run there is 6948 passed, 0 failed.
+cmd    python -m pytest tests/verification/rung1 -q, at the judged commit
+out    1276 passed, 2 warnings in 81.20s
+judge  no low rung is red, so no higher rung is uninterpretable -- checked
+       directly as well as through CI.
+```
+
+## Carried
+
+| item | status | where, measured by me |
+|---|---|---|
+| **R1128** (the site pattern admitted only five extensions; 95 sites structurally absent) -- verdict 46's ONLY blocking finding | **ANSWERED, in both EH4 directions, and I re-derived every figure rather than taking it. ONE RESIDUAL, WHICH IS R1139 AND BLOCKS.** | `tests/test_report_carried.py:281`. **Strict side:** with the extension class reverted to the five, `SITES` is **2124**; at HEAD it is **2227**; delta **103**, lost **0**. The three sites your condition named by hand are present by id -- `results/F6b/truss_sizing.csv` 3 rows (R1106, R1115, R1128), `docs/F4_member_forces.csv` 13 rows, and `:17` appears for R925, R937 AND R1128 -- the line verdict 46 named as the site of a wrong published number, `.github/workflows/ci.yml` 6 rows including `:403` and `:41`. **All 103 are untouched by the diff and all 103 carry a `no change` row in s.8b: 2167 rows, 103 of them a new-extension cell, 0 rows lacking the literal.** **Weakening side:** 26 distinct new paths, 20 separator-bearing and 6 bare basenames, **0 bare-and-untracked**; `_is_a_site` of `frames.txt` is `False`; the four `R507` controls rule as measured. **AND THE HALF YOUR TRIPLE DOES NOT SAY, which I am recording rather than making a finding of: 11 of the 20 separator-bearing paths are NOT tracked at the reviewed commit** -- `.../h000/dynamic_inputs.npz`, `../data/f4/dynamic_inputs.npz`, `d0/../d0/v000.npz`, `d5/V000.npz`, `home/someone-else/junk/other_cases.npz`, `leg/regression.xml`, `with_sidecar/dynamic_inputs.npz` and four more. They are fixture and printed-output paths in verdict prose, admitted by R518's separator rule -- which is DESIGNED and pre-existing, not something the widening introduced -- and they are noise rather than lost sites, so each one costs a declaration row and nothing else. Your triple says "separator-bearing : 20 -> sites by R518, even if absent", which is true; **the sentence that completes it is that 11 of them are in fact absent.** **Condition (iii):** the two copies of the extension class are now character-identical -- `tests/test_report_carried.py:282` and `scripts/carried_table.py:119`, eleven names each. **And the gate carries its own failure on the new class:** every `no change` for `results/F6b/truss_sizing.csv` broken, one variable, asserted substitution, 3 rows edited -> **`3 failed, 2224 passed`**, named by id; tree restored. |
+| **R1129** (the answered_table half widened past the other five anchors; eight class flips) -- FF0 | **ANSWERED, AND BETTER THAN MY OWN CONDITION ASKED. I measured the consequence rather than the line set, and the line-set clause of my condition was the WRONG test -- I WITHDRAW IT.** | `scripts/answered_table.py:82`. Three states of `_subjects()` over the same verdict bytes: **pre-R1120 at `903f38b` 257 ids, the R1120 state at `2ead3d6` 279, HEAD 279.** **The eight you named all read `blocks` again** -- R906, R925, R936, R944, R950, R959, R967, R1069, each verified individually -- **and four more that nobody named do too**: R877, R887, R895, R897, each restored from a prose line to its original heading and class. **For all 257 ids the pre-R1120 state had, class AND subject are identical at HEAD: 257 of 257, 0 differing.** 0 ids lost, 22 gained. **My condition's literal clause -- "matches the same LINE set as carried_table.FINDING" -- is NOT met and MUST NOT BE: carried_table takes 49 lines answered_table refuses and 0 the other way, and matching those 49 prose lines is exactly what produced the wrong classes.** The measured half of the condition is met completely. |
+| **R1138** (yours, against your own repair: a finding of my newest verdict invisible to all six anchors) | **CONFIRMED, REPRODUCED IN BOTH DIRECTIONS, AND IT IS THE BEST FINDING IN THE RANGE. It is also mine to have caused -- I wrote the comma.** | All four id-set anchors, read from their own modules rather than retyped, over the verdict at `1d23985`: **279, 279, 279, 279, all four equal, `R1136` in every one.** `check_carried: all 279 findings carried`, rc 0. **The weakening direction over the WHOLE real corpus, which is the direction you said you could not check from inside:** the comma lookahead gains exactly **2 lines across all 17 verdict files** -- `R1136,` and `R1033, CONDITION AMENDED`, both real finding headings, the second one nobody named -- and **0 lines that are not findings**. The comma LIST stays refused on every shape I tried: `R950, R951 AND R952`, `R978,R986`, `R123,` + two spaces + `R124`, `R123,` + tab + `R124` all refused; `R123, and`, `R123,rest`, `R123,Rest` admitted. **And the repair carries its own failure, which no measurement before it could:** R1136's two rows deleted from the newest revision -> `test_the_report_carries_the_finding[R1136]` red BY NAME plus `test_the_Carried_table_is_what_the_generator_produces`, and `check_carried` rc 1, "verdict declares 279 findings; 278 are carried". Before the repair that assertion could not exist. |
+| **R1130** (the generator still emitted "a run that did not complete has no result") | **CLOSED at the GENERATOR, which is more than the condition asked.** | `scripts/ci_section.py:835` and `:865`. The emitted sentence now reads "A run that reached no conclusion ABOUT THE CODE -- cancelled, or still running -- has no result ... A cancelled run IS completed, which is why the test is the conclusion and not the status". I regenerated s.0a at the judged commit and it reproduces byte-for-byte. `grep -n "did not complete"` over the report returns the two HISTORICAL generated sections of revisions 1 and 2 and the two lines of s.4 that quote the defect -- nothing live. |
+| **R1131** (s.1's scope triple stale at its own commit) | **CLOSED on the second branch, and it is the right branch.** | s.1 states the commit each figure was taken at, `1d23985`, and says in the same block why a range taken before a commit cannot include it. That is R349's convention and FT1's limb two, and it survives a later edit where a re-take does not. |
+| **R1132** (s.4's needle selected 15 where the out field said seven) | **CLOSED IN FORM, AND ITS REPAIR PUBLISHES TWO WRONG `out` FIELDS -- R1142, closure item.** | the wide needle gives **17**, which the report has right; the report then says that set spans **"R1110 to R1137"** and the needle cannot match above R1129 -- the matched ids are R1110 to R1125, R1128, R1129. And the narrow needle given beside it is published as `out 7` where the command prints **9**. |
+| **R1133** (the answers file's underscore block described revision 1) | **CLOSED, verified against the data and not against the prose.** | The block names "R1 STEP 3, REVISION 3", names verdict 46 at `1d23985`, says "11 ITEMS ARE ANSWERED" and lists 11; the `answered` rows with state `answered` are 11 and the same set. |
+| **R1134** (a figure whose rule moved, regenerated in one place and not the other) | **CLOSED on the second branch, AND I RULE THAT IT IS THE STRONGER BRANCH, NOT THE WEAKER ONE. You asked; this is the answer.** | `docs/reports/R1/step-3.md:8638-8646`. The figure is marked in place -- "THIS IS THE OUTPUT AT `cd6d6fe` AND IS NOT WHAT THE COMMAND PRINTS NOW" -- with `1917` beside it and the per-class table that sums to it. **Re-taking it would have made revision 1's prose claim revision 1 had seen a number it had not**, which is a worse defect than the one being fixed, and EK3's reasoning points the same way. BP0's subject is a GENERATED section whose rule moved, and revision 1's s.0a WAS regenerated. Both figures present: `1915` twice, `1917` three times. |
+| **R1135** (s.2's weakening claim wider than what was measured) | **NOT CLOSED. The report, s.5's table and SR-24 all say it is. This is R1141, and it is R1130's own shape for the third time in this step.** | `docs/reports/R1/step-3.md:8914` still reads `claim  the weakening direction: the wider pattern takes no text that is not an id`, byte-identical to revision 2. `git diff -U0 2ead3d6..HEAD -- docs/reports/R1/step-3.md` has exactly **two** hunks, `@@ -8638,0 +8639,8 @@` and `@@ -12019,0 +12028,3437 @@`, so revision 2's s.2 was never touched. **The ruling on the branch you took is RIGHT and I endorse it** -- refusing to add an id-shaped predicate to a reader whose live domain is clean at 0 of 3810 is correct, and SR-24's reasoning is sound. The sentence it was supposed to replace is still there. |
+| **R1136** (SR-16's refuted reason) | **CLOSED, and the handling is the right one.** | `docs/directives/FZ.md`: the refuted claim is left standing with "ITS STATED REASON WAS REFUTED BY VERDICT 46 (R1136)" in its own heading, my arm quoted as a triple, and "What survives / What does not" beneath it. s.10 point 1 says the same in the report. **A record that quietly drops a refuted reason cannot be checked later, and you did not drop it.** |
+| **R1137** (two skipped jobs published as zeros under "0 not green") | **CLOSED at the GENERATOR, and I regenerated it to check.** | `scripts/ci_section.py:640-655` and `:758-773`. `python scripts/ci_section.py` at the judged commit emits, identical to the committed s.0, "2 job(s) SKIPPED, so unavailable rather than passing: `CI determinism -- leg`, `CI determinism -- ten legs agree`. A skipped job measured nothing; its zeros are an absence of evidence and not a pass." And `ci.yml:90` is `if: github.event_name == 'workflow_dispatch'` -- I read the line, so unavailable BY DESIGN and not CK2. |
+| **R1125** | **CLOSED, by R1130's repair.** Its first half closed in revision 2 and I verified that then. | no finding. |
+| **R1122** (a published pointer resolves and is empty) | **CARRIES to the closure artifact, unchanged. s.6 states it and claims nothing more.** | `results/F6b/truss_sizing.md:41` still points at a table this report does not carry. Still owed. |
+| **R1123** (the hook's over-refusal) | **CARRIES to the closure artifact -- AND YOU BOUGHT TWO MORE ROWS AND REPORTED THEM AGAINST YOURSELF, WITH THE SHAPE RATHER THAN THE COUNT.** | s.6 carries seven rows and the finding that the refusal keys on **a redirect operator plus a mention**, not on the read: a heredoc whose text quotes a verdict path is denied while the same path passed as an argument is allowed. **Nothing was reshaped either time (FM1), and you say so.** That is the right handling and I record it as such. I am not asking for the clause to be relaxed; failing closed is right. |
+| **R1124** | **CLOSED by verdict 46 and still closed.** | all eleven `L` ids named individually in s.7 of the newest revision -- L47 to L56 once each, L58 twice, with L57 and L60 present as well; R1109 to R1116 each named, at 6, 36, 10, 12, 5, 5, 12 and 6. |
+| **R1119, R1120, R1121, R1127** | **CLOSED by verdict 46. Not reopened, and nothing in this range could move them.** | `git diff 2ead3d6..HEAD -- floatfea` is empty, and the four anchor replacements are the only pattern changes in the diff. |
+| **R1126** (the collected-set golden protected 685 of 1629) | **CLOSED, AND I RE-MEASURED IT AT THE JUDGED COMMIT RATHER THAN INHERITING VERDICT 46's MEASUREMENT** -- the collection moved by 143 cases between `2ead3d6` and here, so that was worth re-taking. | in a clean worktree at `6fb64c6`: `python scripts/regen_collected_golden.py` then `git diff --numstat` gives an EMPTY numstat, so the committed golden IS the regeneration at this commit. `pytest tests --collect-only -q` gives **6948**. Restored, `git status --porcelain` empty. |
+| **R1109 to R1116** | **CARRY, by name, unswept, as ES0 allows.** This was the last revision and they were never going to be swept in it; they go to the closure artifact. | each named in s.7, counted above. |
+| **FT2.5 conditions 1-3, FT2.6, FT2.7, FR3; R867-R870** | **STILL MET / NOT REOPENED -- and I ran the step's own gate rather than taking it from a previous verdict.** | `git diff --stat 2ead3d6..HEAD -- floatfea` is empty, so nothing in this range could move them, and I ran the FL2 gate tests myself; the result is in the Tests line and in the section below. |
+| **the EG4(e) corpus pause** | **HELD. ZERO new entries, and I added none.** | `git diff --stat 2ead3d6..HEAD -- tests/corpus` is empty; `tests/corpus/` holds 49 files and its newest commit is still `ba1527e`, batch 47. Neither exception opens. The recorded substitute is below, and both halves of it produced a finding. |
+| **CZ1 (ii) and (iii), the four outputs** | **OWED at the closure commit, which does not exist yet.** The whole-suite line is paid in s.11 and I reproduced it. **And EQ0 attaches: R1139's repair is a GATE change, so if it lands in the closure commit that commit is REVIEWED, at no step's cost (EB4).** | not a finding against the work. |
+| **C26 to C45 and the rest of the ledger** | **carry to the closure artifact as a list**, not re-reviewed item by item (CZ0). | this row is the pointer, not the list. |
+
+## Findings
+
+### R1139 (BLOCKS, and it carries by name into step 4). The site pattern cannot match a STEMLESS DOTFILE at all, whatever the extension class, so `.gitattributes` -- named in the blocks of R959, R967 and R975 -- is structurally absent from `SITES`. Section 8b publishes 2167 rows under the heading "Every site verdict 46 names that this diff does not touch" where the complete set is 2170. This is R1128 one path-FORM over, not one extension over, and extending the extension list cannot reach it.
+
+**THE SILENTLY WRONG RESULT FR1 ASKS FOR, stated as one sentence.** Section 8b of the published revision-3 report, under a universal heading, publishes **2167** rows where the set it claims to be complete over is **2170**; and `test_every_named_site_is_touched_or_declared` collects **no parametrised case for `.gitattributes`**, so a closing condition naming that path reads as answered however the diff turned out. **R959 and R967 are the two findings about the BYTE CONTENT of published CSV deliverables** -- `docs/F6_utilisation.csv` stored LF-normalised -- and `.gitattributes` is the file that decides those bytes. That is the EZ0 class, and it is the half of it the gate still cannot see.
+
+```
+claim  the extension class is not the binding constraint; the STEM is
+cmd    tests/test_report_carried.py:282, read at the judged commit
+out    r"(?<![\w.-])(?:R\d+-)*((?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|
+       json|csv|yml|yaml|npz|toml|xml))(?::(\d+)(?:-(\d+))?)?"
+cmd    one variable: `gitattributes` and `gitignore` ADDED to the extension
+       class, nothing else touched, `_sites_by_finding()` re-run
+out    rows gained 0
+judge  **the widening route is dead for this shape.** `[\w.-]+\.` requires at
+       least one character before the dot, and `.gitattributes` has none, so
+       no extension list can admit it. The repair you chose for R1128 is the
+       right repair and it does not reach here -- which is why this is a new
+       finding rather than R1128 unanswered.
+```
+
+```
+claim  with an ALTERNATIVE for the stemless form, three real rows appear and
+         nothing is lost
+cell   ONE VARIABLE at `tests/test_report_carried.py:282`: the captured path
+       becomes `(?:[\w.-]+\.(?:<the eleven>)|\.(?:gitattributes|gitignore|
+       gitkeep))`. Nothing else edited, in a worktree of my own at the judged
+       commit; restored, `git status --porcelain` empty.
+out    rows gained 3   rows lost 0
+         ('R959',  '.gitattributes', 0)
+         ('R967',  '.gitattributes', 0)
+         ('R975',  '.gitattributes', 0)
+cmd    each of the three through `state_of`'s own rule
+out    3 of 3 UNTOUCHED, so 3 of 3 would print as rows in section 8b
+cmd    `_is_a_site('.gitattributes')`, which is UNCHANGED by this
+out    True   -- it is a tracked file, so the bare-token filter admits it and
+              nothing about `frames.txt` moves
+rule   the section's own heading, and CLAUDE.md "A closing condition that
+       names sites is closed site by site"
+```
+
+```
+claim  the three are sites of REAL findings, not of prose
+cmd    the heading of each, in the verdict file at the answered commit
+out    :12837 / :13121  **R959 CLOSES ... / **R959. CLOSED ...
+       :12533 / :12935  **R967. THE CASE-SET HALF CLOSES ...
+       :13246           **R975. (DOES NOT BLOCK -- ledger ...)**
+         `.gitattributes` says "Every tracked CSV here is a generator
+         artifact, so the rule is the file set rather than a list of names"
+judge  R975's SUBJECT IS the file. R959's and R967's blocks name it as the
+       mechanism of a published CSV's stored bytes. Three findings, one path,
+       no case in the gate.
+```
+
+```
+claim  and this is the WHOLE residual over the repository, measured rather
+         than guessed -- so the repair is bounded and this is the last of it
+cmd    every tracked file's extension, counted, against the eleven in the
+         class
+out    py 179 IN, md 108 IN, txt 53 IN, json 24 IN, csv 8 IN, sh 4 IN,
+       npz 2 IN, yaml 2 IN, yml 1 IN, toml 1 IN
+       gitignore 2 NOT, gitattributes 1 NOT, gitkeep 1 NOT, flr 1 NOT,
+       empty-by-design 1 NOT
+cmd    of the five NOT in the class, which are named verbatim in the verdict
+         file at the answered commit
+out    1 -- `.gitattributes`, 9 occurrences in the step-3 verdict file and
+       present in 2 of the 17. **`.gitignore` the PATH appears 0 times: the
+       two `grep -c gitignore` hits are the WORD "gitignored", at :13912 and
+       :14618, which is why the stemless alternative gains nothing for it.**
+       `.gitkeep` 0, `.flr` 0, `empty-by-design` 0.
+judge  the eleven extensions cover every tracked extension that a verdict
+       names EXCEPT the stemless dotfiles, and `.gitattributes` is the only
+       one of those that is live today. **This is a bounded residual, not an
+       open-ended one, and that is the argument for fixing it rather than
+       documenting around it.**
+```
+
+```
+claim  THE WEAKENING DIRECTION OF THE PROPOSED REPAIR, OVER THE WHOLE CORPUS
+         AND NOT OVER THE ONE FILE -- so the closing condition below is a
+         measurement I have already taken and not a request
+cmd    the alternative form against all 17 verdict files, distinct tokens it
+         gains over the shipped pattern
+out    1   `.gitattributes`, in 2 files, tracked, no separator
+cmd    hostile shapes through it, one row each
+out    `.gitattributes`          -> .gitattributes
+       `.gitattributes-backup`   -> refused
+       `.gitattributesX`         -> refused
+       `x.gitattributes`         -> refused
+       `.github`                 -> refused
+       `a/.gitattributes:12`     -> a/.gitattributes, line 12
+       `foo/.gitkeep`            -> foo/.gitkeep
+rule   EH4: the boundary is solved from the side that WEAKENS the gate too
+judge  **one token gained in 17 files and it is a tracked file; every hostile
+       shape refused.** A trailing `(?![\w-])` is what keeps
+       `.gitattributes-backup` out, and without it the repair would widen in
+       the direction that must not widen. I am stating the form because I
+       measured it, not because the repair has to be this one.
+```
+
+**Closed when** either branch is taken, measured in BOTH directions (EH4):
+
+**(i) the pattern admits a stemless dotfile.** The three rows present as collected cases by id -- `[R959-.gitattributes]`, `[R967-.gitattributes]`, `[R975-.gitattributes]` -- section 8b's row count moving to **2170** with the three declared rather than left red, `test_the_R507_cases_rule_as_measured` green and `frames.txt` still out, the count moving by EXACTLY three with no token that is not a site entering, and **the two copies of the decision made to agree again**, since `scripts/carried_table.py:119` has the same stem requirement. A parser repair under EK2, no regex added, no guard extended -- the same class as R1128's.
+
+**(ii) or the narrow domain is declared.** Section 8b's heading and the gate's docstring state the domain IN WORDS -- "every site named in a path with a stem and one of these eleven extensions" -- the two copies are made to agree, and the closure list records that no closing condition naming a dotfile can be closed by that gate. **Either is acceptable to me. What may not stand is the universal heading over the narrow set**, which is verdict 46's own condition and the only part of it this revision did not meet.
+
+**Why this is blocking rather than ledgered, said plainly so the ruling can be argued with.** FR1's first head is "a wrong number in a gate, a CSV, **a report** or any published deliverable". A row count published under a universal heading is a number, not wording, so FR1's third non-blocking class does not reach it; and FR1's second class is "a needle too narrow **where no wrong result follows**", which is not this case, because the row count is wrong and the gate's collected set cannot contain the fault. Verdict 46 blocked the identical shape on the identical sentence at 2057-against-2152, and ruling it differently at 2167-against-2170 would make the criterion a function of the count rather than of the kind. **And blocking costs no round: the step closes with this verdict either way, so the only thing this decides is that step 4's first commit carries a one-line parser repair and three declaration rows instead of a list entry.**
+
+### R1140 (DOES NOT BLOCK -- R1 ledger; FR1's second class exactly). **YOUR FIRST ASK, ANSWERED WITH THE ENUMERATED SET AND A COMMITTED ARM.** Five planted heading forms are invisible to ALL SIX anchors; the live census over all 17 verdict files finds 14 heading-shaped lines outside every anchor, on TWO separators -- a colon and an apostrophe -- and the apostrophe is one I had not planted at all; and the comma form you just admitted is visible to the four id-set anchors and invisible to the two CLASS anchors, so a BLOCKING finding written that way cannot reach `_blocking()`.
+
+**You asked which of the six takes each form. There are not six behaviours, there are THREE** -- `carried_table.FINDING`, `check_carried._FINDING` and `test_report_carried._FINDING` are now character-identical; `carried_table.HEADING` and the inline copy at `tests/test_report_carried.py:403` are character-identical; `answered_table._FINDING` is its own. Every pattern below was read from its own module and not retyped, because that is the probe that misled you last round.
+
+```
+claim  thirty forms through all six anchors. ID = the three identical id-set
+         anchors, AT = answered_table, CLS = the two class anchors
+cmd    each form as one line, each anchor asked
+out    FORM                                     ID   AT   CLS
+       bold + dot, the canonical bold form       yes  yes  yes
+       heading + paren + dot, canonical          yes  yes  yes
+       bold + COMMA, R1138's own shape           yes  yes  NO
+       heading + comma                           yes  yes  NO
+       bold + SEMICOLON                          NO   NO   NO
+       heading + SEMICOLON                       NO   NO   NO
+       bold + COLON                              NO   NO   NO
+       heading + COLON                           NO   NO   NO
+       bold + EM DASH, unspaced                  NO   NO   NO
+       bold + EM DASH, spaced                    yes  NO   NO
+       heading + EM DASH, unspaced               NO   NO   NO
+       bold + EN DASH, unspaced                  NO   NO   NO
+       bold + double hyphen                      NO   NO   NO
+       BACKTICKED id, bold                       NO   NO   NO
+       BACKTICKED id, heading                    NO   NO   NO
+       id in a numbered LIST item                NO   NO   NO
+       id in a bullet LIST item                  NO   NO   NO
+       bold-wrapped whole heading                NO   NO   NO
+       five hashes                               NO   NO   NO
+       one hash                                  NO   NO   NO
+       no space after the hashes                 NO   NO   NO
+       leading whitespace before the hashes      NO   NO   NO
+       id then SLASH then a second id            NO   NO   NO
+       bold closed, then prose, then a colon     NO   NO   NO
+       parenthetical with no gap after the id    NO   NO  yes
+       heading with a colon after the class      yes  yes  yes
+       bold + TAB before the parenthetical       yes  NO  yes
+       bold + parenthetical, NO DOT              yes  NO  yes
+       comma LIST of three ids                   NO   NO   NO  correct
+       comma then another id after a word        NO   NO   NO  correct
+rule   check_carried's own purpose, and the domain of `_blocking()`
+judge  **the row that matters most is `bold + COMMA`: ID yes, CLS NO.** That
+       is R1136's live form. A finding written that way is in the id set and
+       in the Carried table, and `_blocking()` -- which reads the
+       parenthetical anchor -- cannot see it, so if it said BLOCKS,
+       `test_a_blocking_item_is_not_routed_to_4a` could not catch the report
+       re-filing it to 4a. Today no such finding exists and that is the only
+       reason this is a ledger row.
+```
+
+```
+claim  one of those forms -- the COLON -- is not hypothetical, it is in the
+         verdict files already; and the live corpus finds a SECOND separator
+         I had not planted at all
+cmd    every line in docs/reviews, 17 files, matching a LOOSE superset of a
+         finding heading, classified per anchor
+out    702 heading-shaped lines; 46 taken by NO anchor
+cmd    of those 46, how many are a comma or range LIST of ids -- which every
+         anchor is RIGHT to refuse -- and how many are not
+out    lists 32      not lists 14
+cmd    the 14, by separator
+out    a COLON after the id, in a hash heading            2
+         `## R650: THE COUNT, SETTLED ...`
+         `## R649: ANSWERED, AND THE ROOT CAUSE ...`
+       an APOSTROPHE after the id                        12
+         `## R799s repair, reviewed ...`  (twice)
+         `### R798s withdrawal is the right disposition ...`
+         `**R855s standing condition is MET ...`  (four times)
+         `**R895s repair is the one place a tolerance ...`  (twice)
+         `**R965s SHAPE RECURS IN THE NEW MESSAGE.**`
+         `**R925s repair is not a tolerance either ...`
+         `**R898s practical effect today is still nil ...`
+judge  **none of the 14 is a finding DECLARATION** -- the two colon lines are
+       response sections and the twelve apostrophe lines are discussion
+       paragraphs about a finding, so every one of the 14 is refused
+       CORRECTLY and no finding is lost today. That is precisely why this does
+       not block. **What it measures is that the separator set's residual is
+       live and not hypothetical: 14 lines in 17 files already sit outside it,
+       and the colon form has been used for a heading twice.** The next one
+       may be a declaration, and nothing in the repository would say so --
+       `check_carried` would print "all N findings carried".
+```
+
+```
+claim  the arm, because a forms table is a regex result and not a measurement
+         of the GATE
+cell   SIX findings planted in the verdict file at the judged commit, ONE PER
+       HEADING FORM, five in forms neither of us has used and one CANONICAL
+       CONTROL, each naming a site under floatfea. Committed in my own
+       worktree as `5693ce3`, and the report's `Answers:` header retargeted to
+       it so the gate reads the planted file. Reverted with `git reset --hard`
+       and `git status --porcelain` empty afterwards.
+cmd    python scripts/check_carried.py
+out    check_carried: the newest report's Carried section omits R9996
+         verdict declares 280 findings; 279 are carried
+cmd    the planted SITES, one row per form
+out    COLON       NOT IN SITES
+       SEMICOLON   NOT IN SITES
+       EM DASH     NOT IN SITES
+       BACKTICK    NOT IN SITES
+       LIST ITEM   NOT IN SITES
+       CONTROL     [('R9996', 'floatfea/plant_ctl.py', 17)]
+cmd    SITES before and after the plant
+out    2227 -> 2228, exactly one new row
+judge  **five of six planted findings are invisible, and their SITES are LOST
+       rather than misattributed** -- `_sites_by_finding` truncates a block at
+       the next hash-form heading and starts one only at a MATCHED finding, so
+       the region between the two belongs to nobody. The gate named only the
+       canonical control. **Your coverage measurement for this round, as the
+       only ratio I can honestly give: 1 of 6 planted heading forms caught,
+       and the one caught is the one that was never at risk.**
+```
+
+**Why it does NOT block, under FR1 and not by preference.** Every one of verdict 46's ten findings is visible to all four id-set anchors; all 279 ids are carried; the Carried table regenerates identically; no number anyone acts on is wrong today. FR1's second non-blocking class is "a census, needle or grep that is **too narrow where no wrong result follows**", and this is that class in its purest form.
+
+**And CLAUDE.md forbids me the repair I would otherwise ask for.** "No new apparatus through F6 ... An existing guard that fails false is fixed or deleted, never extended" -- so a meta-test comparing the six anchors is out, and verdict 46 refused one already. **The durable fix is on MY side of the loop and I am taking it rather than asking you for it: from this verdict on I write every finding in one of the two canonical forms, and the enumerated refusal set above is on record so a later reviewer can check that I did.** R1138 happened because I wrote a comma. The anchors' residual is a function of what I write, which is R861's lesson about my own baseline figure.
+
+### R1141 (DOES NOT BLOCK -- closure item). R1135 is recorded CLOSED in three places and is not closed: the sentence it was to replace is byte-identical to revision 2's.
+
+`docs/reports/R1/step-3.md:8914`.
+
+```
+claim  the sentence verdict 46 asked to be reduced is unchanged
+cmd    grep -n "takes no text that is not an id" docs/reports/R1/step-3.md
+out    8914:claim  the weakening direction: the wider pattern takes no text
+              that is not an id
+       12581:       it takes no text that is not an id. I did NOT add an
+              id-shaped ...            -- s.4's own account of the repair
+cmd    git diff -U0 2ead3d6..HEAD -- docs/reports/R1/step-3.md, hunk headers
+out    @@ -8638,0 +8639,8 @@       -- R1134's mark
+       @@ -12019,0 +12028,3437 @@  -- revision 3
+judge  **two hunks, both pure additions, neither of them in revision 2's s.2.**
+       s.4 says "s.2 now says the wider pattern refuses the four shapes
+       measured ... rather than claiming it takes no text that is not an id";
+       s.5's table says "closed, s.4 -- first branch"; SR-24 says "the
+       sentence is reduced to the shapes measured instead". All three describe
+       an edit that is not in the diff.
+rule   R1135's own closing condition, and R1130's second branch
+```
+
+**Not blocking:** R1135's subject was measured unreachable at **0 of 3810** real extracted names, so no wrong number follows from the sentence standing, and a report sentence about a report sentence is FR1's third non-blocking class twice over. **The RULING you took is right and I endorse it** -- adding an id-shaped predicate to that reader would narrow a predicate to close a sentence, which is this step's own recurring defect, and SR-24 states it better than I would. **Closed when** either the sentence at `:8914` is reduced, or s.4, s.5 and SR-24 say that the branch taken was to leave it and record the limit instead. **This is the third instance in this step of a repair pointing at a repair that does not exist** -- R1123 bought it, R1130 was it, and here it is inside the answer to R1130's own sibling. The transferable form is CP2 verbatim: the attention goes to the thing being fixed, and the prose written around the fix inherits none of the discipline being applied to it.
+
+### R1142 (DOES NOT BLOCK -- closure item). R1132's repair publishes two wrong `out` fields, and one of them is the same defect R1132 was.
+
+Section 4, the R1132 block.
+
+```
+claim  the wide needle's span, as published and as it can be
+cmd    grep -c "^### R11[12][0-9] " docs/reviews/R1/step-3.md
+out    17                        -- the report has this right
+cmd    the ids that needle actually matches, listed
+out    R1110 R1111 R1112 R1113 R1114 R1115 R1116 R1117 R1119 R1120 R1121
+       R1122 R1123 R1124 R1125 R1128 R1129
+judge  the report says "17 headings, spanning **R1110 to R1137**". The digit
+       class tops out at 29, so the span cannot exceed R1129, and it does not.
+       R1130 to R1137 are written in the bold form and are not hash headings
+       at all -- which is the very thing s.3a of the same revision tabulates.
+claim  the narrow needle, as published and as it prints
+cmd    grep -c "^### R112[0-9] \|^### R1119 " docs/reviews/R1/step-3.md
+out    9                         -- the report publishes `out 7`
+judge  **7 is verdict 45's finding count, which was the ORIGINAL claim**; the
+       needle offered to support it also selects verdict 46's R1128 and R1129.
+       An `out` field that describes a different set from the one the command
+       printed is R1132 verbatim, inside R1132's repair.
+```
+
+**Closed when** both `out` fields say what their commands print, or the needles are narrowed to the sets claimed. **Not blocking:** FR1's second and third classes, and no gate, CSV or deliverable reads either number.
+
+### R1143 (DOES NOT BLOCK -- closure item). Section 2's four site counts are stale by exactly the R1138 repair that landed in the same commit, and I can name the variable.
+
+Section 2, the "AND THE NUMBER IS 103" triple and "the three the condition names".
+
+```
+claim  the published figures, and what the commands print at the shipping
+         commit
+cmd    len(SITES) at the judged commit, answering verdict 46
+out    2227                       -- the report publishes 2226
+cmd    the three named paths, rows each
+out    results/F6b/truss_sizing.csv   3   -- the report publishes 2
+       docs/F4_member_forces.csv     13   -- the report publishes 12
+       .github/workflows/ci.yml       6   -- the report publishes 5
+cell   ONE VARIABLE: the FINDING anchor reverted to the pre-R1138 separator,
+       the widened site class kept. `SITES` becomes **2226** -- 3 rows gained
+       by the repair and 2 re-attributed out: `R1136 / FZ.md`,
+       `R1136 / test_report_carried.py` and
+       `R1033 / floatfea/run/config.py` in; `R1135 / FZ.md` and
+       `R1135 / test_report_carried.py` out.
+rule   CP3 -- the paste is the LAST edit, and if an edit follows it the paste
+       is void -- and BP0, because the rule that produces the figure moved
+judge  **the cause is established rather than guessed: all four figures are
+       the pre-R1138 measurement, and R1138's repair is in the same commit.**
+       The gate, s.8b and the answers file are all correct at 2227 and 2167,
+       so nothing downstream is wrong. `103` is right; `2226`, `2`, `12` and
+       `5` are each one short, from one cause.
+```
+
+**Closed when** the four figures are re-taken at the shipping commit, or the triple states the state they were taken in. **Not blocking:** no gate or deliverable reads them. It earns one line in the closure list because **this is the fourth stale-figure instance in the step and the second inside the repair of a stale-figure finding** -- R1131 and R1134 were the same thing, and the commit that fixed both introduced this one.
+
+### R1144 (DOES NOT BLOCK -- R1 ledger). The site gate's declaration lookup is keyed on the PATH and not on the finding, so one `no change` line satisfies every finding naming that path. Measured by my own VOID arm.
+
+`tests/test_report_carried.py:3555-3562`.
+
+```
+claim  breaking ONE finding's declaration of a path leaves the gate green
+cell   `no change` -> `NOTHING CHANGED` in the single
+       `R1106 / results/F6b/truss_sizing.csv` row of s.8b, asserted
+       substitution, nothing else edited
+out    2227 passed                -- the gate did not fire
+cmd    the same with EVERY row naming that path broken, 3 rows, asserted
+out    3 failed, 2224 passed, the three named by id
+judge  **my first arm was VOID and I report it as void**, which is the second
+       time in two verdicts a reviewer's arm on this gate measured a domain
+       that was not the claim's. The reason is in the gate: it searches the
+       whole newest revision for any line carrying `no change` AND the site
+       string, with no reference to the finding -- so a NEW finding naming a
+       path an OLD finding already declared is answered by the old row.
+rule   CLAUDE.md, "A closing condition that names sites is closed site by
+       site"
+```
+
+**Not blocking:** s.8b is GENERATED per finding-and-site with an EMPTY reason column, so the row still appears and a reader can see it; the weakness is in the assertion, not in the published set, and no wrong number follows today. **Closed when** the lookup requires the finding id on the declaring line, or the gate's docstring says it does not. It is apparatus, so under "no new apparatus through F6" it is a REPAIR of an existing guard if it is done at all. On the ledger rather than asked for.
+
+## Closure items (CZ0: listed, fixed once in the closure commit, not re-reviewed item by item)
+
+**R1141, R1142 and R1143** are stated in full above with their closing conditions; they are closure items and are listed here so the closure artifact has them in one place. **R1140 and R1144 are R1 LEDGER rows** -- they are findings against the gating apparatus rather than against prose, and `CLAUDE.md`'s FF0 clause would normally put an apparatus item in the next commit; I am not invoking FF0 for either, because neither guard "fails false" today and the only available repairs are new apparatus or a convention I have taken on myself.
+
+**R1145.** `docs/reports/R1/step-3.md`, section 10, second block: the closing code fence carries prose on the fence line -- "``` `_is_a_site` does not ask that:" -- so the block does not close where it was meant to and the paragraph after it renders inside or beside the fence depending on the reader. fence lines in the newest revision that carry trailing content: **1**, and it is this one. **Closed when** the fence is on its own line. Pure formatting; FR1's third class.
+
+**R1146.** The `_` block of the answers file says "R1132 Section 4's needle selected 15 headings where the out field said seven". Verdict 46 measured 15; the needle prints **17** at this commit, which section 4 of the same revision has right. One stale number in a pointer block, from the same cause as R1143. **Closed when** it says 17 or stops quoting the count.
+
+## Tolerances touched
+
+**NONE, and I measured it rather than taking your sentence.**
+
+```
+cmd    git diff 2ead3d6..HEAD -- floatfea/tolerances.py | wc -l
+out    0      -- the file is not in the diff at all, not even a comment
+cmd    git diff --stat 2ead3d6..HEAD -- floatfea
+out    (empty)
+```
+
+**So EU1 does not attach and no adversarial ladder case is owed.** No value, no counter, no form and no injection site moved. Your statement holds.
+
+## Corpus (EG4(e))
+
+**THE PAUSE HELD. ZERO NEW ENTRIES, AND I ADDED NONE.** `git diff --stat 2ead3d6..HEAD -- tests/corpus` is empty; `tests/corpus/` holds 49 files and its newest commit is still `ba1527e`, batch 47. Neither exception opens -- nothing in this range touches F4's load-mapping gate or EB6's label-provenance gate. **New entries this round: 0. Caught by your checks: not applicable, and I will not manufacture a ratio.** The lapsed pause date was raised with Xabier once, at verdict 41, and `CLAUDE.md` says to say it once.
+
+**I RAN THE RECORDED SUBSTITUTE, BOTH HALVES, AND BOTH PRODUCED A FINDING.**
+
+* **A continuum grid over the parameter space a decision rule guards.** Three grids. **(1) The heading-form axis**: thirty forms times six anchors, every pattern read from its own module, then the LIVE domain -- all **702** heading-shaped lines across all **17** verdict files, per anchor. That gave R1140, and it also gave the one measurement your invocation asked for and could not take from inside. **(2) The site-pattern axis over the repository's COMPLETE tracked-extension census** -- all 15 extensions git tracks, against the eleven in the class, then which of the FIVE outside it a verdict names verbatim. That gave **R1139**, and it is the blocking one. **(3) The comma lookahead's weakening direction over the whole corpus** -- exactly 2 lines gained in 17 files, both real findings, 0 noise, plus nine hostile comma shapes. That found nothing, and I record the clean result because a swept axis with nothing on it is the sentence R755 was about.
+* **A regeneration check on a published deliverable.** Section 8b regenerated through the guard's own `SITES` and `TOUCHED`: **2167 generated rows against 2167 committed, item, site and state identical cell by cell.** Section 8 regenerated through `scripts/carried_table.py`: **290 rows, 0 differing**, and `R1136` present in both. Section 0 and section 0a regenerated through `scripts/ci_section.py`: identical, including the two figures I could have refuted and could not -- the `3764` that differs from verdict 46's `3608` is a DIFFERENT RUN at a different commit, which I checked before writing it down.
+* **And two arms on the gates themselves**, which is where the coverage number comes from: the site gate armed on a new-extension row (void first, then 3 failed by id), and the carried gate armed on R1136's own rows (2 failed by id plus rc 1).
+
+**THE COVERAGE MEASUREMENT, AS WHAT I ACTUALLY MEASURED.** **Six heading forms planted, five of them unseen: 1 of 6 caught, and the one caught is the canonical control that was never at risk.** That is the number this round, it is worse than any corpus batch in this milestone, and it is the measurement behind R1140. On the other side: **two gates armed and red at exactly the state each was repaired for**, both by id; **one bounded residual found by a census the author of the repair did not run** (R1139); **one of my own arms void and reported as void** (R1144); and **one closing condition of my own withdrawn as the wrong test** (R1129's line-set clause).
+
+## Try to break it -- what I ran, and what it found
+
+* **The site pattern's path-FORM axis**, which the extension axis cannot reach. That is R1139, with both EH4 directions run on the proposed repair and the residual bounded by a complete census of tracked extensions.
+* **The six anchors over thirty forms and then over 702 real lines**, which is R1140, with a committed arm that measured the GATE and not the regex.
+* **R1138's comma lookahead from the weakening side**, over all 17 verdict files plus nine hostile comma shapes: 2 lines gained, both real findings, 0 noise. **Your repair is clean and I could not break it.**
+* **R1129's repair against the configuration nobody chose** -- not the eight flips you named but ALL 257 ids of the pre-R1120 state, class and subject: 257 of 257 identical, 0 lost, and four more flips restored than were named.
+* **Both gates armed**, one of my arms void and reported.
+* **The PARENT commit run in a clean worktree of my own**, so the eight-red trace is verified by its ids and its counts rather than accepted: `8 failed, 2982 passed, 1 skipped`, the eight ids exactly as section 11 names them, and no ninth. That is EG3 (i) applied by me and not inherited.
+* **The three report-parametrised files and the whole suite at the judged commit in my own worktrees**, plus the step's own FL2 gate tests, because this is the verdict that CLOSES the step and a closing verdict that never ran the step's gate would be certifying apparatus.
+* **`tests/conftest.py` read whole for the CH2/CI0 forgery channels** even though its diff is empty, because that is the one file from which every gate's input can be rewritten. `pytest_collection_modifyitems` is the only hook; it adds a rung marker from the directory and sorts, and removes nothing. No `pytest_runtest_makereport`, no `pytest_ignore_collect`, no `pytest_report_teststatus`, no hookwrapper. `scripts/run_rung.sh` is untouched in the range.
+* **The reviewer-instruction history over the whole step**, not only this range: three `process:` commits, each touching only `.claude/hooks/` or only `CLAUDE.md` and `docs/SUPERVISOR.md`, none touching `floatfea/` or `tests/`. No STOP-class finding.
+
+## Next step opens when
+
+**THIS IS REVIEWED REVISION 3 OF 3. THE STEP CLOSES WITH THIS VERDICT (CZ0, ES0), AND THIS VERDICT CARRIES `Closes: R1/step-3` (FK1).** Its disposition is read from here and not from any later line written into this file (DD1).
+
+**On the disposition, said once and plainly, because PASS beside a blocking finding needs saying.** The step's three reviewed revisions are spent. `CLAUDE.md` is explicit about what happens then: "After the third, the step closes. A blocking item still open at that point carries by name into the next step's `Carried` section and stays blocking there." A HOLD would ask for a fourth revision that ES0 forbids, and the `Stop` hook would then refuse every turn until the step reached PASS -- which is the deadlock `CLAUDE.md` records at the cost of two verdicts. **So: PASS closes the step, and R1139 carries by name into step 4 and stays BLOCKING there. PASS is the cap closing the step; it is not a ruling that R1139 is answered.**
+
+1. **R1139 is the only blocking item and it is step 4's first commit.** `tests/test_report_carried.py:282` and `scripts/carried_table.py:119`, in both EH4 directions, with the three measurements named in the finding -- or close it the other way by declaring the domain in words at both the heading and the docstring. **A universal heading over the narrow set is what may not stand**, which is verdict 46's condition unchanged and the only part of it this revision left.
+2. **R1140 and R1144 go on the R1 ledger**, not into a round. Neither asks anything of you: R1140's durable half is a convention on MY side and I have taken it, and R1144's only repairs are new apparatus, which `CLAUDE.md` forbids through F6.
+3. **R1141, R1142, R1143, R1145 and R1146 are closure items** and are not re-reviewed item by item. **R1141 is the one to read first of the five**, because it is a sentence that says a repair was made and the repair is not in the diff -- that is the third instance in this step and the only closure item here that could mislead a later reader about the state of the tree.
+4. **R1122, R1123, R1109 to R1116, the eleven `L` ids and the older ledger set carry to the closure artifact as a list.**
+5. **R1128, R1129, R1130, R1131, R1132, R1133, R1134, R1136, R1137 and R1125 are CLOSED**, each verified by me running something rather than by reading the report. **R1135 is the one that is not**, which is R1141.
+6. **R1138 is yours and it is the best finding in the range.** It was found by printing a count before publishing it and noticing that 9 disagreed with a set you could enumerate, which is the cheapest detector in this repository and the only reason it was found at all -- six anchors agreed, nothing was red, CI was green. **Its repair is clean in both directions and it now carries its own failure, which no state before it could.** And the part worth keeping: you reported the two repairs that FAILED, and which repair works was the whole content of the finding.
+7. **FT2.5's conditions 1 to 3, FT2.6, FT2.7 and FR3 are not reopened, and I ran the step's own gate rather than inheriting that ruling.** R867 to R870 stay non-blocking by name.
+8. **The schedule.** FW0's date is 10 November; it is 3 November, so seven days remain against a step 4 the plan estimates at one and a half to two days. I read nothing here as slippage and nothing is escalated under FZ (e). Section 9's arithmetic, its citations and its reservation all reproduce: `grep -c "FT2.5"` is 74 in the verdicts and 0 in the plan, `one and a half to two days` is at `docs/milestones/R1.md:52`, and `docs/USER_GUIDE.md` is still ABSENT. **That file is the thing that is not built, and step 4 is where it gets built.**
+9. **What this revision got right, and it is much the larger part.** R1128 was answered in both directions with every figure re-derived rather than taken, and the repair was chosen -- widening, not narrowing -- for the reason that matters: a gate that cannot see a site in a published CSV is the EZ0 class CZ0 was amended to protect, and SR-21 says so. R1129 was repaired at the predicate rather than relaxed, **and it is better than my own closing condition asked**: 257 of 257 ids identical on class and subject, four more flips restored than I named, and the line-set clause I wrote turned out to be the wrong test, which I withdraw. R1138 is yours and it is the kind of finding that only comes from checking your own output. All eleven closure items were taken in the last revision rather than deferred, with SR-22 giving the reason. Two of your own figures were refuted by you before I saw them, and five needles of yours were wrong and reported as wrong. **The pattern note is now seven instances and I am adding the eighth and ninth: R1139 is the sixth form of one defect and R1140 is the seventh, and both were found the same way -- running a needle over a shape nobody chose.** The transferable form has not changed, and your own section 10 states it better than my last three verdicts did.
+10. **TWO MECHANICAL CONSEQUENCES OF THIS BEING THE CLOSING VERDICT, because they are invisible from your side until they bite.** **(a)** This entry carries `Closes: R1/step-3`, and `cz1_record()` routes on that line alone: `if not closes -> report; if the milestone differs -> report; if docs/closure/R1.md does not exist -> report; else the CZ1 block, or "" if the file has no block`. `docs/closure/R1.md` is **ABSENT** today -- I checked -- so the guards still read the step report and nothing reddens from my line. **But the moment `docs/closure/R1.md` is created it MUST carry the `<!-- cz1-closure-outputs -->` block, or `cz1_record()` returns the empty string and the report guards fail with no fallback.** That is R803's deliberate design and not a defect; it is also the one thing a closure commit can get wrong in a way no local run before it can see (CZ1's reusable half). **(b)** EK3: the step-3 closure commit may NOT touch `docs/reports/R1/step-3.md` once this verdict exists, measured three ways in `CLAUDE.md`. So CZ1 (ii) and (iii)'s four outputs for that commit go into **step 4's report `Carried`**, not into this step's report -- and if that closure commit changes a gate or a tolerance, which R1139's repair does, **EQ0 makes it REVIEWED, at no step's cost (EB4)**. I will review it on that basis if it is invoked.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 3
 Reviewed commit: 2ead3d6064604a2ba2531caa8445105538fdb6e3
 **Reviewed commit: `2ead3d6064604a2ba2531caa8445105538fdb6e3`.**
 Verdict: HOLD
