@@ -410,3 +410,72 @@ step, which produced a §0 about verdict 42 that read perfectly. Neither was cau
 reading; both were caught by `test_the_answered_verdict_is_the_NEWEST_one`, which fired
 only once the report commit existed — CZ1's reusable half, since the comparison is
 between the report's commit and the verdict's.
+
+**SR-16: BP0 asked for §0a's figure in the repair commit and it could not go there.**
+*Ruling applied:* FZ rule 1 (what blocks: FR1 only) and FZ rule 7 (ambiguous wording
+resolved toward existing conventions).
+*Why:* verdict 45's closing condition for R1119 says "section 0a's figure for `64af726`
+is regenerated in the same commit, because BP0 says a figure whose rule moved is
+regenerated or withdrawn". Touching the report at all, without also writing revision 2's
+`Answers:` header, makes `test_the_answered_verdict_is_the_NEWEST_one` red — measured in
+a worktree of my own at `903f38b` by appending one comment line and committing: `1 failed,
+2637 deselected`, "the report at `e1e3c6d` is newer than the verdict at `903f38b` and
+names `6f14aba`". That red names no finding and no site of the newest verdict and its
+subject is not its own commit, so under FS1/FT1 it **blocks**, and no revision existed yet
+that could clear it. So the figure moved one commit later, the repair commit's own message
+said it was known wrong in between and why, and revision 2 carries it.
+
+**The reusable half:** "in the same commit" is a reasonable instruction that two other
+rules make impossible to obey here. Resolving it toward the convention — a report revision
+is a unit, and a figure inside one moves with its header — was the only reading that did
+not ship a blocking red to buy a correct figure one commit earlier.
+
+**SR-17: a seventh copy of the finding anchor, ruled blocking-class and repaired at once.**
+*Ruling applied:* FZ rule 5 (self-found defect: fixed, named test row) and FZ rule 1.
+*Why:* `tests/test_report_carried.py:3411` at `cd6d6fe` was `^\*\*(R\d+)[.\s]` — bold
+only — in a function no enumeration of the six copies ever named. Measured: the shipped
+anchor saw **250** distinct findings and **none** of R1106 and above; `_FINDING` sees
+**269** including all nineteen heading-form findings. So `SITES` was empty for every
+finding of verdicts 43, 44 and 45, `test_every_named_site_is_touched_or_declared` passed
+vacuously for all of them, and revision 1's published §8b — headed "every site the verdict
+names that this diff does not touch" — contained **1938 rows and not one site of the
+verdict it answered**. Repaired by using the module's own constant: seven copies become
+six and R983's ledger row becomes true as written. Not ledgered, because a published
+section with a wrong row set and a gate that cannot fire are FR1's first head.
+
+**The reusable half, and it is why this was not found by reading:** R1118 and R1120 were
+both found by reading a regex, and this survived both readings. It was found by asking why
+a generated table had 1938 rows and none of them belonged to the verdict in its own
+heading — a row count taken as a measurement instead of as a question.
+
+**SR-18: the collected-set golden was 944 names stale, and that is not blocking.**
+*Ruling applied:* FZ rule 1 (what blocks: FR1 only).
+*Why:* `tests/goldens/collected_tests.txt` protected **685** test functions of **1629**;
+`tests/regression` was protecting 9 of 192 and `tests/unit` 73 of 253. The guard is
+one-directional, so everything it did carry was still checked and nothing it reported was
+false — no wrong number anywhere and no input used other than as declared, so it cannot
+produce a silently wrong result. What it meant is that 944 test functions could have been
+deleted with nothing in the repository saying so. Regenerated in its own commit, where the
+addition-only property is readable: 949 insertions, 5 deletions, **all five of them
+`[root] N` count headers and none a test name**.
+
+**SR-19: §8b's reason column gained a fourth class rather than reusing `later`.**
+*Ruling applied:* FZ rule 7 (ambiguous wording resolved toward existing conventions).
+*Why:* R1106, R1107, R1108 and R1117 are **closed** by verdict 45, not carried unswept, so
+their untouched sites could not honestly read "carried by name in §7, unswept (ES0)". A
+`carried` class was added to the three the fill script already had, keyed on the same
+pointer file §8's table is generated from so a site's disposition and its finding's cannot
+disagree. 25 rows take it. The alternative — calling a closed item `later` — is the kind of
+sentence a reader would take at face value.
+
+**SR-20: revision 1's §0a was regenerated IN PLACE rather than withdrawn.**
+*Ruling applied:* FZ rule 6 (derived values marked in human-readable outputs only) and
+FZ rule 7.
+*Why:* BP0 allows "regenerated or withdrawn". Revision 2's own §0a is anchored on
+`cd6d6fe` and mentions the run whose figure was wrong **0 times**, so the corrected figure
+had nowhere else to go. §0 was left untouched and that is a measurement, not a choice:
+regenerating it gave **1912 lines against 1912, 0 changed**, which is verdict 45's closing
+condition (iii) — the `a2c3f5c` run still yields exactly 1893 — confirmed through the
+generator rather than through the regex. §0a changed by **five lines**: the figure, the two
+ids the old reader could not name, and one table row for a run that did not exist when
+revision 1 was committed.
