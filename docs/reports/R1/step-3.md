@@ -1,14 +1,17 @@
 # R1 step 3 — revision 1
-Answers: verdict 43 @ ea92019
+Answers: verdict 44 @ 6f14aba
 
-**Revision 1 of the three ES0 allows.** Verdict 43 was an ES0 interim check and
-counted against no round, so step 3 stood at 0 of 3 before this revision.
+**Revision 1 of the three ES0 allows.** Verdict 43 and the addendum at `6f14aba`
+were both ES0 interim checks and counted against no round, so step 3 stood at 0
+of 3 before this revision. The addendum is the newest verdict and the one this
+report answers; §5a records that the first commit of this revision named the
+older sha, and what that cost.
 
-## 0. CI at `a2c3f5c`, the commit verdict 43 judged — conclusion **FAILURE**
+## 0. CI at `a2c3f5c`, the commit verdict 44 judged — conclusion **FAILURE**
 
 <!-- generated: scripts/ci_section.py -->
 
-Generated: `python scripts/ci_section.py`, anchored on verdict 43 at `a2c3f5c` through the report's own `Answers:` line. Run `41555438414`, event `push`, conclusion **failure**.
+Generated: `python scripts/ci_section.py`, anchored on verdict 44 at `a2c3f5c` through the report's own `Answers:` line. Run `41555438414`, event `push`, conclusion **failure**.
 
 | job | passed | failed | skipped |
 |---|---|---|---|
@@ -1917,11 +1920,11 @@ Generated: `python scripts/ci_section.py`, anchored on verdict 43 at `a2c3f5c` t
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
 - `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
 
-## 0a. Runs since the commit verdict 43 judged
+## 0a. Runs since the commit verdict 44 judged
 
 <!-- generated: scripts/ci_section.py -->
 
-Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 43 at `a2c3f5c` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 44 at `a2c3f5c` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that did not complete has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it (CX0, R449).
 
 | run | event | head | outcome |
 |---|---|---|---|
@@ -5753,7 +5756,8 @@ allows**.
 | R1106 | **BLOCKS** | answered, §2 |
 | R1107 | FF0, next commit | answered, §3, in `fa480e7` |
 | R1108 | FF0, next commit | answered, §4 |
-| R1117 | not in the verdict — found here | answered, §5 |
+| R1118 | not in the verdict — found here | answered, §5 |
+| R1117 | the ADDENDUM's own, against the reviewer | answered, §5a |
 | R1109–R1116 | ledger | carried by name, §7 |
 | everything earlier | carried | carried by name, §7 |
 
@@ -5983,7 +5987,7 @@ the defect (`NameError: name 'found' is not defined`). I found it by reading the
 failure message rather than assuming the red was the armed state, and moved the
 line back. It is the fifth self-inflicted defect of the day inside a repair.
 
-## 5. R1117 — every reader of the gating record was blind to the newest verdict's findings
+## 5. R1118 — every reader of the gating record was blind to the newest verdict's findings
 
 Not in the verdict. Found while building §8's table.
 
@@ -6058,6 +6062,77 @@ judge  and I claimed the two printed a repo-relative path against an absolute
        character pair in a log line.
 ```
 
+## 5a. The addendum's own finding, R1117, and why mine is now R1118
+
+**This revision answers verdict 44, not verdict 43, and I had the wrong one.**
+`6f14aba` is an ES0 addendum to the interim check at `a2c3f5c`, written after
+`3861fa0` published revision 1. It was my report's own guard that said so, not my
+reading.
+
+```
+claim  the report named an older verdict than the newest one available
+cmd    python -m pytest tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one -q
+out    AssertionError: the report at `9dc9d54` is newer than the verdict at
+       `6f14aba` and names `ea92019`. Written with the newest verdict available,
+       it must answer that one.
+rule   the `Answers:` sha is the VERDICT COMMIT, and every generated section
+       anchors on it -- so §0, §0a, §8 and §8b were all produced against the
+       verdict file as it stood BEFORE the addendum
+judge  the same defect as anchoring on `a2c3f5c` earlier in this step, which
+       produced a complete, plausible, wrong §0. A generator given a stale
+       anchor does not fail; it succeeds against the wrong input.
+
+claim  the addendum adds one finding and it is against the reviewer, not the work
+cmd    git show 6f14aba, the Scope and Carried rows
+out    "It adds no finding, withdraws no finding, and changes no disposition:
+        the HOLD stands on R1106 alone." / every carried row "UNCHANGED."
+rule   FR1: a finding blocks only if it can cause a silently wrong result
+judge  so nothing in it reopens R1106, R1107 or R1108, and no repair is owed. One
+       thing IS owed: the id.
+
+claim  R1117 IS ALREADY TAKEN, AND NOT BY ME
+cmd    python scripts/carried_table.py <verdict> <answers> | grep -cE '^\| R1117 \|'
+out    1
+rule   `docs/reviews/` is written only by `scripts/write_verdict.py`; the
+       implementer never writes a verdict, so the reviewer allocates ids
+judge  the addendum's `### R1117 (against me, not against the work)` is the
+       canonical R1117 -- the reviewer removed its own worktree while a
+       measurement was still reading it, and 33 of that run's 1942 reds were
+       that. I had independently taken R1117 for the finding-anchor defect while
+       the addendum was being written. **A carried row pointing at a section
+       about a different finding is a wrong published pointer**, so mine moves to
+       **R1118** and the row above points at §5.
+```
+
+**What cannot move is the three commit messages that already call it R1117** —
+`31bae09`, `3861fa0` and `64af726`. History here is linear and force-push is
+forbidden, so this paragraph is the record instead of an amend. A reader who
+greps the log for `R1117` gets four hits, three of them mine and one the
+reviewer's, and this is the sentence that tells them which is which.
+
+**And the addendum's four instructions, each answered rather than acknowledged:**
+
+```
+claim  (1) R1106 is still the only blocking item and none of the 33 joins it
+out    answered in §2; no repair is owed for any of the 33, which describe the
+       reviewer's cleanup and not this tree
+claim  (2) do not treat `1942 failed` as this commit's count; take a whole-suite
+         number at the report's own commit
+out    §11 is that number, taken by `scripts/suite_count.py` in a clean worktree
+       at this revision's own commit. The addendum's figure appears nowhere in
+       this report as a count of anything.
+claim  (3) the three figures the reviewer stands behind at `a2c3f5c` are unchanged
+out    not re-measured here and not re-quoted as mine; §0 and §6 carry the CI
+       record at that sha instead
+claim  (4) L59: the step-3 report's CI section waits for the `a2c3f5c` run to
+         CONCLUDE, and a red there is FF0 ahead of R1106
+out    it concluded `failure`. §0 is generated from that concluded run and §6
+       traces its reds per id. The FF0 item it exposed -- `black` red in CI,
+       skipping three steps -- was repaired in `64af726` and is recorded in §10.
+rule   a closing condition that names items is closed item by item; half of an
+       item is not the item
+```
+
 ## 6. The CI red at `a2c3f5c`, traced per id rather than by family
 
 §0 carries the run. The guards step failed; `ruff`, `black --check`, `mypy` and
@@ -6108,7 +6183,7 @@ judge  so the synthetic repository it builds inherits a newest report at step 2
 ```
 
 The clearing control is this report: EG3 state (2) says the answering report
-clears them, and §9's whole-suite line is taken after it exists.
+clears them, and §11's whole-suite line is taken after it exists.
 
 ## 7. The carried items, every one named, and none of them swept
 
@@ -6182,7 +6257,7 @@ judge  a corpus configuration file and twenty-four occurrences inside a JSON
 
 claim  the count below is the pointer file's, not a hand tally
 cmd    python -I -c "import json,pathlib;a=json.loads(pathlib.Path('docs/reports/R1/step-3-answers.json').read_text('utf-8'))['answered'];h={k for k,v in a.items() if v['state']=='answered'};print('pointers:',len(a),' answered here:',len(h),' carried by name:',len(a)-len(h))"
-out    pointers: 271  answered here: 3  carried by name: 268
+out    pointers: 272  answered here: 4  carried by name: 268
 rule   the row set is the generator's; a count taken by hand is the thing BF0 stops
 ```
 
@@ -6214,8 +6289,8 @@ Grouped only to be readable. The status column is the generator's, in §8.
 * `R1098`, `R1099`, `R1100`, `R1101`, `R1102`, `R1103`, `R1104`, `R1105`, `R1109`, `R1110`, `R1111`, `R1112`
 * `R1113`, `R1114`, `R1115`, `R1116`
 
-**268 ids, carried by name.** `R1106`, `R1107` and `R1108` are not in
-this list because they are answered in §2, §3 and §4 respectively.
+**268 ids, carried by name.** `R1106`, `R1107`, `R1108` and `R1117`
+are not in this list: they are answered in §2, §3, §4 and §5a respectively.
 
 ## 8. Carried
 
@@ -6494,7 +6569,7 @@ this list because they are answered in §2, §3 and §4 respectively.
 | R1114 | **later** — §7 | . exported_wave_basis gates on is_file() and wave_basis_from_sidecar on exists(), so R1007's... |
 | R1115 | **later** — §7 | . A published supersession note points at a document that does not exist.... |
 | R1116 | **later** — §7 | . The new != is exact in the strict direction, as you claim. The weakening direction has one... |
-| R1117 | **open** — recordable at 4a in the verdict's own classification | . I removed my own worktree while a measurement was still running in it, and 33 reds are the... |
+| R1117 | **answered** — §5a | . I removed my own worktree while a measurement was still running in it, and 33 reds are the... |
 
 ## 8b. Every site the verdict names that this diff does not touch
 
@@ -6513,10 +6588,11 @@ out    rows filled by class: {'later': 1905}  total: 1905
        table-looking lines the pattern did NOT fill: 1   (the header)
 rule   CZ0: a closing condition that names sites is closed site by site
 judge  THE UNIFORMITY IS THE MEASUREMENT AND NOT A SHORTCUT. Not one site of
-       R1106, R1107 or R1108 is in this table: the diff reaches every site of
-       all three, which is why the `answered` class is empty. Every other row
-       belongs to a finding §7 carries unswept, so every row says so. A filler
-       that produced a variety of reasons here would be inventing them.
+       R1106, R1107, R1108 or R1117 is in this table: the diff reaches every
+       site of the first three, and the addendum's R1117 names none, which is
+       why the `answered` class is empty. Every other row belongs to a finding
+       §7 carries unswept, so every row says so. A filler that produced a
+       variety of reasons here would be inventing them.
 ```
 
 *Why this section exists at all, stated plainly: the draft of this revision

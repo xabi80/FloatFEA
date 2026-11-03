@@ -3,14 +3,16 @@
     "POINTERS ONLY (CH4). No prose here -- every row points at the section",
     "that discusses it, and the guard checks that the section MENTIONS the id.",
     "",
-    "R1 STEP 3, REVISION 1 of the three ES0 allows. Answers verdict 43 @ a2c3f5c,",
-    "the ES0 interim check that returned HOLD on one blocking finding.",
+    "R1 STEP 3, REVISION 1 of the three ES0 allows. Answers the ADDENDUM at",
+    "6f14aba -- an ES0 interim check too, which adds one finding against the",
+    "REVIEWER and changes no disposition: the HOLD stands on R1106 alone.",
     "",
     "THREE ITEMS ARE ANSWERED IN THIS REVISION AND THEY ARE THE VERDICT'S OWN:",
     "",
     "  R1106  BLOCKING. FY3's supersession reached one artifact of three.  -> \u00a72",
     "  R1107  FF0. The hook's target class could not see a clobber redirect. -> \u00a73",
     "  R1108  FF0. A rung-3 class label transferred to another entry.      -> \u00a74",
+    "  R1117  THE ADDENDUM'S OWN, against the reviewer. No repair owed.   -> \u00a75a",
     "",
     "EVERY OTHER ROW POINTS AT \u00a77, which carries them BY NAME AND UNSWEPT.",
     "That is ES0's own disposition for an interim check -- the reviewer wrote",
@@ -1105,6 +1107,10 @@
     "R1116": {
       "state": "later",
       "where": "\u00a77"
+    },
+    "R1117": {
+      "state": "answered",
+      "where": "\u00a75a"
     }
   }
 }

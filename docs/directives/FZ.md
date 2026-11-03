@@ -368,3 +368,45 @@ what CP3 exists for — the paste is the LAST edit — and the fourth instance i
 it is recorded as a ruling rather than as a typo. The report states the correction in the
 `judge` field of the triple that carries the new figure, so a reader who remembers `1793`
 is told what happened to it.
+
+**SR-14: the reviewer and I both allocated `R1117`, to different findings.**
+*Ruling applied:* FZ rule 7 (ambiguous wording → the reading consistent with existing
+conventions), with rule 5.
+*Why:* I took `R1117` for the finding-anchor defect, found while building the Carried
+table, at a moment when the verdict file's highest id was `R1116`. The reviewer
+concurrently took `R1117` for a finding against itself in the addendum `6f14aba` — it
+removed its own worktree while a two-hour measurement was still reading it, and 33 of
+that run's reds were that. **Taken: the reviewer's allocation is canonical and mine
+moves to `R1118`.** `docs/reviews/` is written only by `scripts/write_verdict.py` and
+the implementer never writes a verdict, so the ledger's numbering is the reviewer's to
+allocate; there is no competing convention and nothing to escalate under rule 6.
+
+It is not a cosmetic clash. `scripts/carried_table.py` generates a row for `R1117` from
+the verdict, and the report's §5 was titled `R1117`: **a carried row resolving to a
+section about a different finding is a wrong pointer in a published deliverable**, which
+is what FR1's first head covers. The report now carries `R1118` in §5 and the addendum's
+`R1117` in §5a.
+
+**What cannot be corrected is three commit messages** — `31bae09`, `3861fa0` and
+`64af726` — which call the anchor defect `R1117`. History here is linear and force-push
+is forbidden. §5a is the record, and it says which of the log's four `R1117` hits is
+whose, because a reader grepping the log would otherwise find a contradiction with no
+resolution in the repository.
+
+**SR-15: the first commit of revision 1 answered the wrong verdict, and every generated
+section inherited it.**
+*Ruling applied:* FZ rule 5 (self-found defect: fixed, named test row).
+*Why:* the `Answers:` line named `ea92019`, verdict 43. The addendum `6f14aba` is a
+newer verdict entry, written after `3861fa0` published revision 1. Every generated
+section anchors on that sha — `scripts/ci_section.py` walks `Answers:` → the verdict's
+own header → the judged commit — so §0, §0a, §8 and §8b were all produced against the
+verdict file **as it stood before the addendum existed**. The repair is one line of
+header and a full regeneration, not an edit.
+
+**The reusable half, and it is the second instance in this step:** a generator given a
+stale anchor does not fail. It succeeds, against the wrong input, and emits a complete
+and plausible section. The first instance was anchoring on `a2c3f5c` earlier in this
+step, which produced a §0 about verdict 42 that read perfectly. Neither was caught by
+reading; both were caught by `test_the_answered_verdict_is_the_NEWEST_one`, which fired
+only once the report commit existed — CZ1's reusable half, since the comparison is
+between the report's commit and the verdict's.
