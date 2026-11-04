@@ -277,9 +277,31 @@ _MENTION = re.compile(r"\bR\d+\b")
 # of the six added names a real path in the verdicts: `.csv` 201 occurrences,
 # `.npz` 103, `.yml` 28, `.yaml` 19, `.toml` 1 (`pyproject.toml`), `.xml` 1
 # (`leg/regression.xml`). `_is_a_site` is UNCHANGED, so a bare `a.npz` with no
-# separator still has to be tracked to count, and `frames.txt` stays out.
+# separator still has to be tracked to count, and `frames.txt` stays out.#
+# AND A STEMLESS DOTFILE IS A SITE (R1139). `[\w.-]+\.` requires at least one
+# character BEFORE the dot, so `.gitattributes` could not enter `SITES` AT ALL
+# -- whatever the extension class. Adding `gitattributes` to the list above
+# gains ZERO rows, which is why R1128's repair does not reach this shape and
+# why it needed its own alternative.
+#
+# It is named in the blocks of R959, R967 and R975, and those are the findings
+# about the BYTE CONTENT of published CSV deliverables -- which is what
+# `.gitattributes` decides. So a closing condition naming it read as answered
+# however the diff turned out, and section 8b published a row count under a
+# universal heading that the set did not support.
+#
+# THE EXTENSION BRANCH COMES FIRST so it still wins where both could match:
+# `.github/workflows/ci.yml` is the extension form with `.github/` as a
+# directory, not the stemless form stopping at `.github`. The trailing
+# `(?![\w-])` is not what refuses `.gitattributes-backup` -- the greedy class
+# takes the whole token and `_is_a_site` refuses it as untracked -- but it
+# keeps the match from ending mid-token, which is the same reason the
+# lookbehind exists. `_is_a_site` is UNCHANGED.
 _SITE = re.compile(
-    r"(?<![\w.-])(?:R\d+-)*((?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|json|csv|yml|yaml|npz|toml|xml))"
+    r"(?<![\w.-])(?:R\d+-)*("
+    r"(?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|json|csv|yml|yaml|npz|toml|xml)"
+    r"|(?:\.?[\w.-]+/)*\.[\w-]+(?![\w-])"
+    r")"
     r"(?::(\d+)(?:-(\d+))?)?"
 )
 
@@ -3424,7 +3446,31 @@ DECLARE them, which is the honest handling of a site nobody may edit.
 
 
 def _is_a_site(path: str) -> bool:
-    """The rule `_sites_by_finding()` applies, as one callable (R511, R518)."""
+    """The rule `_sites_by_finding()` applies, as one callable (R511, R518).
+
+    A STEMLESS DOTFILE MUST BE TRACKED, SEPARATOR OR NOT (R1139). R518's rule
+    -- a path with a separator is a site even if nothing is there yet, because
+    a closing condition may name a file to be CREATED -- rests on the
+    extension telling a filename from a directory name. A stemless dotfile has
+    no extension, so nothing distinguishes the two, and admitting every
+    separator-bearing one let `./.git` in: a fragment of
+    `find . -not -path "./.git/*"` inside R1122's block, which is a directory
+    in a shell exclusion and not a site at all.
+
+    Measured: with this clause the dotfile branch gains EXACTLY the three
+    `.gitattributes` rows R1139 names (R959, R967, R975) and nothing else;
+    without it, four, the fourth being `./.git`.
+
+    WHAT THIS NARROWING COSTS, stated rather than left to be found: a stemless
+    dotfile a closing condition asks to be CREATED is not a site until it
+    exists. That is the one direction R518 says must never be silent, so it is
+    said here -- it is narrower than the extension form deliberately, and the
+    extension form is UNCHANGED: `tests/verification/rung1/test_new_thing.py`
+    is still a site before it exists.
+    """
+    base = path.rsplit("/", 1)[-1]
+    if base.startswith(".") and "." not in base[1:]:
+        return _tracked_at_reviewed(path)
     return "/" in path or _tracked_at_reviewed(path)
 
 

@@ -1,0 +1,1221 @@
+{
+  "_": [
+    "POINTERS ONLY (CH4). No prose here -- every row points at the section",
+    "that discusses it, and the guard checks that the section MENTIONS the id.",
+    "",
+    "R1 STEP 4, THE STEP-OPENING COMMIT. It answers verdict 47 at 779e79a,",
+    "which ruled 6fb64c6 PASS and CLOSED step 3 carrying one blocking item.",
+    "",
+    "THIS IS NOT A REVIEWED REVISION UNDER ES0. It changes a gate, so EQ0",
+    "makes it reviewed and EB4 charges it to no step's rounds. All three of",
+    "step 4's ES0 revisions remain available after it.",
+    "",
+    "2 ITEMS ARE ANSWERED HERE -- the count on this line is DERIVED",
+    "from the list below rather than typed (R1133):",
+    "",
+    "  R1139  BLOCKING, carried by name from verdict 47. A stemless dotfile could not enter SITES at all.          -> §2",
+    "  R1141  R1135's weakening sentence was recorded as reduced and never edited.                                 -> §3",
+    "",
+    "The other 297 rows are ledger rows and point at §7,",
+    "which names every one of them. Nothing is claimed as answered here that",
+    "this commit did not touch."
+  ],
+  "answered": {
+    "R1": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R835": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R836": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R838": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R843": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R845": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R846": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R847": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R848": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R849": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R850": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R851": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R852": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R853": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R854": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R855": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R856": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R857": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R858": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R859": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R860": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R861": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R862": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R863": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R864": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R865": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R866": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R867": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R868": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R869": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R870": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R871": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R872": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R873": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R874": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R875": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R876": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R877": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R878": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R879": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R880": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R881": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R882": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R883": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R884": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R885": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R886": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R887": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R888": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R889": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R890": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R891": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R892": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R893": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R894": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R895": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R896": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R897": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R898": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R899": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R900": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R901": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R902": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R903": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R904": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R905": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R906": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R907": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R908": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R909": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R910": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R911": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R912": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R913": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R914": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R915": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R916": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R917": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R918": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R919": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R920": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R921": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R922": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R923": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R924": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R925": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R926": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R927": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R928": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R929": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R930": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R931": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R932": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R933": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R934": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R935": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R936": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R937": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R938": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R939": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R940": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R941": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R942": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R943": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R944": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R945": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R946": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R947": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R948": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R949": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R950": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R951": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R952": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R953": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R954": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R955": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R956": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R957": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R958": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R959": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R960": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R961": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R962": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R963": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R964": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R965": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R966": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R967": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R968": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R969": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R970": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R971": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R972": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R973": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R974": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R975": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R976": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R977": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R978": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R979": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R980": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R981": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R982": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R983": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R984": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R985": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R986": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R987": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R988": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R989": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R990": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R991": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R992": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R993": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R994": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R995": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R996": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R999": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1000": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1001": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1002": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1003": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1005": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1006": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1007": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1008": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1009": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1010": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1011": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1012": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1013": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1014": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1015": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1016": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1017": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1018": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1021": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1022": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1023": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1024": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1025": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1026": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1027": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1028": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1029": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1030": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1031": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1032": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1033": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1034": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1035": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1036": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1037": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1038": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1039": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1040": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1042": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1043": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1044": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1045": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1046": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1047": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1048": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1049": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1050": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1051": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1052": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1053": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1054": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1055": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1056": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1057": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1058": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1059": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1060": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1061": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1062": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1063": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1064": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1065": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1066": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1067": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1068": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1069": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1070": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1071": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1072": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1073": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1074": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1075": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1076": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1077": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1078": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1079": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1080": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1081": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1082": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1083": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1084": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1085": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1086": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1087": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1088": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1089": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1090": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1091": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1092": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1093": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1094": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1095": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1096": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1097": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1098": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1099": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1100": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1101": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1102": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1103": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1104": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1105": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1106": {
+      "state": "carried",
+      "where": "§7"
+    },
+    "R1107": {
+      "state": "carried",
+      "where": "§7"
+    },
+    "R1108": {
+      "state": "carried",
+      "where": "§7"
+    },
+    "R1109": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1110": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1111": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1112": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1113": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1114": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1115": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1116": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1117": {
+      "state": "carried",
+      "where": "§7"
+    },
+    "R1119": {
+      "state": "carried",
+      "where": "§7"
+    },
+    "R1120": {
+      "state": "carried",
+      "where": "§7"
+    },
+    "R1121": {
+      "state": "carried",
+      "where": "§7"
+    },
+    "R1122": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1123": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1124": {
+      "state": "carried",
+      "where": "§7"
+    },
+    "R1125": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1126": {
+      "state": "carried",
+      "where": "§7"
+    },
+    "R1127": {
+      "state": "carried",
+      "where": "§7"
+    },
+    "R1128": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1129": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1130": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1131": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1132": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1133": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1134": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1135": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1136": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1137": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1139": {
+      "state": "answered",
+      "where": "§2"
+    },
+    "R1140": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1141": {
+      "state": "answered",
+      "where": "§3"
+    },
+    "R1142": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1143": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1144": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1145": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1146": {
+      "state": "later",
+      "where": "§7"
+    }
+  }
+}

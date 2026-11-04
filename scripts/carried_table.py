@@ -116,7 +116,13 @@ MENTION = re.compile(r"\bR\d+\b")
 # These two copies differed by `yml` until that finding, which is how the drift
 # was found: the generator validating a declared site accepted a `.yml` and the
 # gate checking it could not see one.
-SITE = re.compile(r"((?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|json|csv|yml|yaml|npz|toml|xml))")
+# R1139: the same stemless-dotfile alternative as `_SITE`. This copy had the
+# identical stem requirement, so the two would have drifted again the moment
+# one was repaired alone -- which is how R1128 was found.
+SITE = re.compile(
+    r"((?:\.?[\w.-]+/)*[\w.-]+\.(?:py|md|sh|txt|json|csv|yml|yaml|npz|toml|xml)"
+    r"|(?:\.?[\w.-]+/)*\.[\w-]+(?![\w-]))"
+)
 
 
 def classify(verdict_text: str) -> dict[str, str]:
