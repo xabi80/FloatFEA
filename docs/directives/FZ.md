@@ -610,3 +610,62 @@ locked plan disagree about which step FL3 is**, and the one that is written in t
 is the one that is wrong. I am not starting FL3 against it. It needs a standalone `plan:`
 commit renumbering the headers to four steps before step 4 opens — a plan amendment,
 recorded, not an inline edit made while implementing.
+
+**SR-28 IS WRONG, AND THE CLAIM ABOVE IS LEFT STANDING WITH THE CORRECTION BENEATH IT**
+(the SR-16 convention: a refuted ruling is corrected, not rewritten, so a later reader sees
+what was believed as well as what is true).
+
+*Corrected under GB1, 3 November.* The plan does **not** contradict itself. Section 3's own
+rows have read `Step 1`, `Step 2`, `Step 3`, `Step 4` all along, with **Step 4 — guide and
+witness (FR4)**; the renumbering was announced *and carried out*. The three lines I quoted
+as "its section headers" are **directive FL's own words, inside `## 1. The directive,
+verbatim`** — I read a verbatim quotation as the plan's structure.
+
+**The mechanical cause, because it is reusable and the misreading was not carelessness:**
+that quotation is **unfenced**, and FL's `**FL3 — STEP 3: USER GUIDE AND WITNESS**` renders
+identically to one of the plan's own bold step rows. The first fence in the file opens ten
+lines *after* section 1 ends, so nothing in the rendering distinguishes quoted text from
+plan text. The figures are in `218730a`'s message, re-run at that commit.
+
+**What GB1 authorised therefore had no target**, and I did not manufacture one. GB1 asked
+for the header diff old → new; there is none, and inventing one to satisfy the instruction
+would have been the silent plan adaptation SR-28 was right to refuse even while being wrong
+about what it had found.
+
+**SR-29: the supersession is carried by a NOTE above the quotation, not by renumbering it.**
+*Ruling applied:* FZ rule 7 (ambiguous wording resolved toward existing conventions).
+*Why:* under FP0 a verbatim record is never rewritten. Renumbering FL's quoted `STEP 3` to
+`STEP 4` would have falsified the record of what FL said in order to fix a *rendering*
+problem. The convention already in the repository is a note carrying the supersession —
+`docs/directives/README.md` does exactly this where FY5 supersedes FY1 — so the note names
+FL's numbering as FL's, points at section 3 as governing, and leaves the quotation
+byte-identical. The diff is `15 insertions, 0 deletions`; no step's content, condition,
+scope or order moved. **The fence measurement and the line numbers are deliberately NOT in
+the note:** a claim about this repository written in a plan is a test, a triple or deleted
+(CW0), and R349 is that a line number shifts under the next insertion above it — this
+commit moved the first fence from 150 to 165 as it was written.
+
+**SR-30: seven local-only commits archived to `origin/archive/*` before confirming the
+push state.**
+*Ruling applied:* FZ rule 5 (self-found defect: fixed, with the measurement named).
+*Why:* GB asked for a one-line confirmation that nothing is unpushed so the repo can be
+moved off OneDrive. The sweep made that line **false**:
+`git rev-list --all --not --remotes=origin | wc -l` printed **7**. Five were duplicates or
+wip whose content is reproduced on origin, but **two were reviewer addenda whose text
+existed nowhere on origin** — both self-corrections of 28 October, `37` and `64` non-blank
+lines absent, written on side branches that were never fast-forwarded into F3. A fresh
+clone would have dropped two verdicts. Pushing an existing reviewer-authored commit to a
+new ref is not writing a verdict, so this is not a FZ (d) escalation; nothing under
+`docs/reviews/` was edited and `scripts/write_verdict.py` was not bypassed. After the
+archive the count is **0**, and the only remaining worktree dirt is `2728` deletions inside
+`suite_count.py`'s own scratch trees under `%TEMP%`, which are a script's leftovers.
+
+**SR-31: `docs/directives/GA.md` does not exist and I am NOT reconstructing it.**
+*Ruling applied:* FZ rule 7, resolved toward the README's existing provenance discipline.
+*Why:* GB cites `GA4` and `GA5`, and GA is recorded in no file —
+`grep -rn "GA[0-9]" --include='*.md' docs/ CLAUDE.md` outside `GB.md` prints nothing, while
+the same needle finds 8 inside it, so the needle is live and the absence is real. **This is
+C25 one directive letter after FP0 was adopted for C25.** `FL.md` is reconstructed from a
+session summary and the README says so, because a faithful summary existed; for GA there is
+none. A record that invents a directive's wording is worse than a record that says it is
+missing, so `GB.md` says it is missing and the README's provenance list says why.
