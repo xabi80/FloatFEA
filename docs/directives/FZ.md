@@ -562,6 +562,20 @@ nothing; `./.git`, `.github`, `.gitattributes-backup`, `.gitattributesX` and
 extension class gains 0 rows, because `[\w.-]+\.` needs a character before the dot. The
 reviewer measured that too, independently.
 
+**SR-25's FIGURE IS CORRECTED: THE DELTA IS FOUR ROWS, NOT THREE.** Left standing with the
+correction beneath it, as SR-16 and SR-28 are. *Corrected 3 November, at step 4's first
+commit.* The sentence "gains EXACTLY the three rows R1139 names" was correct when taken and
+describes a tree that has moved: **`SITES` is derived from the NEWEST verdict file**, the
+patch was measured while verdict 46 was newest, and verdict 47's own R1139 block names
+`.gitattributes` in its text. So the set is `('R959', …)`, `('R967', …)`, `('R975', …)` **and
+`('R1139', '.gitattributes', 0)`**. This is BP0 — when the rule beneath a figure moves, the
+figure is regenerated or withdrawn in the same commit — and the rule that moved is which
+verdict is newest. **A repair whose row count depends on which verdict is newest is not a
+fixed delta**, which is the reusable half: the same holds for verdict 47's own `2167 of
+2170`, correct against verdict 46 and stale the moment 47 existed. Both directions were
+re-measured at the shipped tree and only `.gitattributes` is gained; the five refused shapes
+and `frames.txt` are unchanged.
+
 **SR-26: `_is_a_site` is NARROWED for stemless dotfiles, and the cost is stated.**
 *Ruling applied:* FZ rule 5 (self-found defect: fixed, with the measurement named).
 *Why:* the first form of the repair gained FOUR rows, not three. The fourth was
@@ -669,3 +683,43 @@ C25 one directive letter after FP0 was adopted for C25.** `FL.md` is reconstruct
 session summary and the README says so, because a faithful summary existed; for GA there is
 none. A record that invents a directive's wording is worse than a record that says it is
 missing, so `GB.md` says it is missing and the README's provenance list says why.
+
+**SR-32: the step-opening commit is labelled `# Revision 1` and is NOT a reviewed revision
+under ES0.**
+*Ruling applied:* FZ rule 7 (ambiguous wording resolved toward existing conventions).
+*Why:* GB2 says this commit "returns for review at no step's cost", which is EQ0 plus EB4 —
+it changes a gate, so it is reviewed, and the review is charged to no step's rounds. But
+every generator and guard in this repository finds the newest block by its `# Revision N`
+header, and `scripts/ci_section.py` anchors on that block's `Answers:` line. **Inventing a
+different header to express "not a round" would have broken the anchor rather than
+expressed the ruling**, so the header keeps the form the tools read and the report says in
+its own first section that the header is not a claim on a round. ES0 counts REVISIONS, and
+the count that matters is the reviewer's; the report asks it to rule on that basis
+explicitly rather than leaving the arithmetic implicit. All three of step 4's revisions
+remain available.
+
+**SR-33: R1141 is corrected in step 4's report and NOT at the sentence's own site.**
+*Ruling applied:* GB3's own routing, which is FZ rule 7 applied to EK3.
+*Why:* the sentence lives at exactly one site, `docs/reports/R1/step-3.md:8914`, and that
+report's final verdict is 47. **EK3 forbids a commit touching a step report after that
+report's final verdict**, and it is mechanical rather than a preference: the guard compares
+the newest commit touching the report against the newest touching the verdict, so even
+reverting the content byte-identical leaves it red (`7 failed` three ways, one variable
+moved). GB3 anticipates this — "if it lives only in the closed step-3 report (EK3), the
+step-4 report carries the correction and points to it" — so section 3 of step 4's report
+quotes the false sentence, states the narrow claim that was actually measured, and names the
+site. **No id-shaped predicate is added to the reader**, which was SR-24's ruling and
+verdict 47 endorsed it.
+
+**SR-34: three more rows of R1123, and nothing was reshaped.**
+*Ruling applied:* FZ rule 1 (FR1 only blocks) — the refusals fail CLOSED, so no wrong result
+is possible and this is a ledger row rather than a finding.
+*Why:* the hook refused three commands in this turn: a heredoc whose text quoted a verdict
+path; a read whose only redirect was `2>/dev/null` beside a verdict-path mention; and the
+heredoc that would have written the report's own assembly script, because the script names
+the verdict file it reads. **Each time I used the editing tool instead** — never a reshaped
+command, never an obfuscated path (FM1). The refusal keys on **a redirect operator plus a
+mention**, not on the read: the same verdict path passed as an argument to
+`scripts/carried_table.py` is allowed, and was. **I am not asking for the clause to be
+relaxed; failing closed is right**, and the cost is that an assembly script which must name
+the verdict it reads cannot be written with a heredoc at all.
