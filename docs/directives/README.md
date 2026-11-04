@@ -19,7 +19,12 @@ against.
 Each file records where its text came from. **This is not uniform and the record says so:**
 
 * `FM.md`, `FN.md`, `FO.md`, `FP.md`, `FQ.md`, `FR.md`, `FS.md`, `FT.md`, `FU.md`,
-  `FV.md`, `FW.md` — **verbatim** from the directive message.
+  `FV.md`, `FW.md`, `GB.md` — **verbatim** from the directive message.
+* `GB.md` — verbatim, and it additionally records that **`GA.md` does not exist and is
+  not reconstructible.** GB cites `GA4` and `GA5`; GA was acted on and committed
+  nowhere, so GB's two quotations are the only surviving text of it in this
+  repository. That is C25 one directive letter after FP0 was adopted for C25. No
+  wording is invented — the file says the record is missing instead.
 * `FZ.md` — **verbatim** from the directive message. Issued by Xabier, 2026-10-31.
   **It also carries the running SR log**: FZ asks that every self-ruling taken under its
   standing rulings be recorded as `SR-<n>`, and SR-1 is the ruling that they all go in that
