@@ -1,0 +1,78 @@
+# CORPUS: PATH FORMS for the site pattern `_SITE` / `_is_a_site`.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the forty-eighth verdict on R1, the first verdict
+# on step 4 (HEAD 66c7331).
+#
+# WHY THIS FILE EXISTS (BE3). The site pattern has now been repaired twice on two
+# different axes and each repair was verified against shapes its own author chose.
+# R1128 widened the EXTENSION class from five names to eleven; R1139 then found
+# that the extension class was never the binding constraint -- `[\w.-]+\.` needs a
+# character before the dot, so no extension list can admit a STEMLESS DOTFILE.
+# Step 4's first commit repairs that with a second alternative and narrows
+# `_is_a_site` so a stemless dotfile must be tracked.
+#
+# The commit's own EH4 table carries ELEVEN shapes and concludes "only
+# `.gitattributes` is GAINED". The repair in fact gains SIX rows over three paths
+# -- `.gitattributes`, `.gitignore` and `.gitkeep` -- and the repository has FOUR
+# tracked stemless dotfile basenames, the fourth being `.empty-by-design`. All
+# three of the unlisted ones are named inside the very verdict block the repair
+# answers. That is the gap this file measures: not whether the repair works, but
+# whether the set it is claimed over is the set it acts on.
+#
+# WHAT A PASSING SCAN MEANS. For each entry the shipped tree is asked two
+# questions in order: does `_SITE` match the token, and does `_is_a_site` admit
+# the captured path. `measured` is what the tree at 66c7331 answered; `expect` is
+# what the entry requires. Where the two differ the entry is a MISS and the
+# pattern's domain does not contain a shape a verdict can legitimately write.
+# A passing scan is every line with expect == measured. It does NOT certify that
+# the gate's DECLARATION lookup is per-finding -- that is R1144, open, and 1141
+# of 2261 rows share a site with another finding.
+#
+# FORMAT
+#   id=<name> expect=<site|not-a-site> measured=<site|not-a-site>
+#   captured=<the path _SITE captured, or - for no match> token=<the literal text>
+#
+# TWO ENTRIES WHOSE OUTCOME IS RIGHT FOR A REASON WORTH NAMING, so a later reader
+# does not take them as clean. `dotfile_trailing_slash_path` is TRUNCATED --
+# `.gitignore/foo` captures `.gitignore` and is admitted because that truncation
+# happens to be a tracked file, not because the token names it. And
+# `dotfile_capitalised` is refused only by case: the tracked-path check is
+# case-sensitive, so a verdict that writes the name in capitals loses the site
+# silently.
+#
+# THE TWO `to_be_created` ENTRIES ARE THE COST OF THE NARROWING, measured rather
+# than stated. R518 is that a path with a separator is a site even before the file
+# exists, because a closing condition may name a file to be CREATED and dropping
+# it reads as answered. The narrowing suspends R518 for stemless dotfiles, and the
+# docstring says so. These two entries are what that costs, and the entry beside
+# them -- `extension_form_to_be_created` -- is the measurement that the extension
+# form kept R518.
+
+id=bare_tracked_dotfile expect=site measured=site captured=.gitattributes token=.gitattributes
+id=bare_tracked_dotfile_gitignore expect=site measured=site captured=.gitignore token=.gitignore
+id=bare_tracked_dotfile_gitkeep expect=site measured=site captured=.gitkeep token=.gitkeep
+id=bare_tracked_dotfile_emptybydesign expect=site measured=site captured=.empty-by-design token=.empty-by-design
+id=dotfile_with_line_suffix expect=site measured=site captured=.gitattributes token=.gitattributes:12
+id=dotfile_range_suffix expect=site measured=site captured=.gitattributes token=.gitattributes:3-5
+id=real_tracked_dotfile_with_dir expect=site measured=site captured=artifacts/.gitignore token=artifacts/.gitignore
+id=real_tracked_dotfile_with_dir2 expect=site measured=site captured=docs/closure/.gitkeep token=docs/closure/.gitkeep
+id=real_tracked_dotfile_rung6 expect=site measured=site captured=tests/verification/rung6/.empty-by-design token=tests/verification/rung6/.empty-by-design
+id=dotfile_to_be_created_with_dir expect=not-a-site measured=not-a-site captured=tests/verification/rung7/.empty-by-design token=tests/verification/rung7/.empty-by-design
+id=dotfile_to_be_created_bare expect=not-a-site measured=not-a-site captured=.newdotfile token=.newdotfile
+id=git_dir_fragment expect=not-a-site measured=not-a-site captured=./.git token=./.git
+id=git_dir_in_worktree expect=not-a-site measured=not-a-site captured=wt/.git token=wt/.git
+id=dot_github_dir expect=not-a-site measured=not-a-site captured=.github token=.github
+id=bare_extension_word expect=not-a-site measured=not-a-site captured=.py token=.py
+id=attribute_access_in_prose expect=not-a-site measured=not-a-site captured=.conclusion token=.conclusion
+id=format_spec_in_prose expect=not-a-site measured=not-a-site captured=.0f token=.0f
+id=numeric_fragment expect=not-a-site measured=not-a-site captured=.555556e-02 token=.555556e-02
+id=dotfile_suffixed expect=not-a-site measured=not-a-site captured=.gitattributes-backup token=.gitattributes-backup
+id=dotfile_capitalised expect=not-a-site measured=not-a-site captured=.GITATTRIBUTES token=.GITATTRIBUTES
+id=dotfile_trailing_slash_path expect=site measured=site captured=.gitignore token=.gitignore/foo
+id=dotfile_possessive expect=site measured=site captured=.gitignore token=.gitignore's
+id=double_dot_prefix expect=not-a-site measured=not-a-site captured=- token=..gitignore
+id=dotfile_inside_word expect=not-a-site measured=not-a-site captured=- token=x.gitattributes
+id=extension_form_to_be_created expect=site measured=site captured=tests/verification/rung1/test_new_thing.py token=tests/verification/rung1/test_new_thing.py
+id=bare_broken_fragment expect=not-a-site measured=not-a-site captured=frames.txt token=frames.txt
