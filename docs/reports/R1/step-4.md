@@ -54,7 +54,20 @@ Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 47 at `6
 | `41665006727` | push | `6fb64c6` | conclusion **success** |
 | `41678716379` | push | `628f134` | conclusion **success** |
 | `41769148306` | push | `218730a` | **no result** (`cancelled`) |
-| `41769547062` | push | `efd2722` | **no result** (status `in_progress`) |
+| `41769547062` | push | `efd2722` | **no result** (`cancelled`) |
+| `41776482587` | push | `489bad7` | **no result** (`cancelled`) |
+| `41776618449` | push | `8800696` | conclusion **failure** |
+
+**Run `41776618449`, conclusion **failure**: 9 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_guard_reads_the_step_being_worked_on` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_WHOLE_SUITE_count` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
 
 ## 1. What this commit is, and what it is not
 
@@ -1014,7 +1027,7 @@ rule   R1122 is that this pointer RESOLVES and the table is not there. The line
 
 ## 8b. Every site verdict 47 names that this diff does not touch
 
-**2228 rows, generated.** The set is read from `tests/test_report_carried.py`'s own `SITES` and `TOUCHED`, so the table cannot enumerate a different set than the check does.
+**2226 rows, generated.** The set is read from `tests/test_report_carried.py`'s own `SITES` and `TOUCHED`, so the table cannot enumerate a different set than the check does.
 
 **THE HEADING IS NOT UNIVERSAL BY ACCIDENT ANY MORE.** R1139 was that section 8b of the previous revision published 2167 rows under exactly this heading where the complete set was 2170, because a path form could not enter `SITES` at all. The repair in section 2 is what makes the heading true, and the row count below is the generator's at this commit rather than a carried figure.
 
@@ -2290,7 +2303,6 @@ rule   R1122 is that this pointer RESOLVES and the table is not there. The line
 | R888 | `.claude/hooks/require-verdict.sh:240` | the file is untouched |  **no change.** Verdict 47 is a PASS that closes step 3; this commit answers its one blocking finding at the pattern, and the diff is three files. Nothing in it reaches this site. |
 | R888 | `.claude/hooks/require-verdict.sh:276` | the file is untouched |  **no change.** Verdict 47 is a PASS that closes step 3; this commit answers its one blocking finding at the pattern, and the diff is three files. Nothing in it reaches this site. |
 | R888 | `docs/reports/F7/step-1.md` | the file is untouched |  **no change.** Verdict 47 is a PASS that closes step 3; this commit answers its one blocking finding at the pattern, and the diff is three files. Nothing in it reaches this site. |
-| R888 | `docs/reports/R1/step-4.md` | the file is untouched |  **no change.** Verdict 47 is a PASS that closes step 3; this commit answers its one blocking finding at the pattern, and the diff is three files. Nothing in it reaches this site. |
 | R889 | `.claude/hooks/require-verdict.sh:157` | the file is untouched |  **no change.** Verdict 47 is a PASS that closes step 3; this commit answers its one blocking finding at the pattern, and the diff is three files. Nothing in it reaches this site. |
 | R889 | `docs/directives/FT.md` | the file is untouched |  **no change.** Verdict 47 is a PASS that closes step 3; this commit answers its one blocking finding at the pattern, and the diff is three files. Nothing in it reaches this site. |
 | R889 | `docs/directives/FT.md:44` | the file is untouched |  **no change.** Verdict 47 is a PASS that closes step 3; this commit answers its one blocking finding at the pattern, and the diff is three files. Nothing in it reaches this site. |
@@ -2387,7 +2399,6 @@ rule   R1122 is that this pointer RESOLVES and the table is not there. The line
 | R898 | `conftest.py` | the file is untouched |  **no change.** Verdict 47 is a PASS that closes step 3; this commit answers its one blocking finding at the pattern, and the diff is three files. Nothing in it reaches this site. |
 | R898 | `docs/SUPERVISOR.md` | the file is untouched |  **no change.** Verdict 47 is a PASS that closes step 3; this commit answers its one blocking finding at the pattern, and the diff is three files. Nothing in it reaches this site. |
 | R898 | `docs/directives/FR.md` | the file is untouched |  **no change.** Verdict 47 is a PASS that closes step 3; this commit answers its one blocking finding at the pattern, and the diff is three files. Nothing in it reaches this site. |
-| R898 | `docs/reports/R1/step-4.md` | the file is untouched |  **no change.** Verdict 47 is a PASS that closes step 3; this commit answers its one blocking finding at the pattern, and the diff is three files. Nothing in it reaches this site. |
 | R898 | `docs/reviews/R1/step-1.md` | the file is untouched |  **no change.** Verdict 47 is a PASS that closes step 3; this commit answers its one blocking finding at the pattern, and the diff is three files. Nothing in it reaches this site. |
 | R898 | `docs/reviews/R1/step-2.md` | the file is untouched |  **no change.** Verdict 47 is a PASS that closes step 3; this commit answers its one blocking finding at the pattern, and the diff is three files. Nothing in it reaches this site. |
 | R898 | `docs/reviews/R1/step-3.md` | the file is untouched |  **no change.** Verdict 47 is a PASS that closes step 3; this commit answers its one blocking finding at the pattern, and the diff is three files. Nothing in it reaches this site. |
@@ -3251,14 +3262,94 @@ rule   R1122 is that this pointer RESOLVES and the table is not there. The line
 | R999 | `scripts/measure/member_forces_table.py:506` | the file is untouched |  **no change.** Verdict 47 is a PASS that closes step 3; this commit answers its one blocking finding at the pattern, and the diff is three files. Nothing in it reaches this site. |
 | R999 | `test_r1_example_golden.py` | the file is untouched |  **no change.** Verdict 47 is a PASS that closes step 3; this commit answers its one blocking finding at the pattern, and the diff is three files. Nothing in it reaches this site. |
 
+## 10. CI at the judged commit, and why there is no run at it
+
+**FP1 is that the report commit is pushed before the reviewer is invoked so the commit under
+judgement always has a CI run. THIS COMMIT HAS NONE, AND THAT IS CK0's DESIGN RATHER THAN A
+MISSED PUSH.** It is pushed; GitHub created no run for it.
+
+```
+claim  the judged commit has no CI run, and the reason is its own pathspec
+cmd    gh run list --commit $(git rev-parse HEAD) --json databaseId,conclusion,status
+out    []
+cmd    git show --stat --format='' HEAD
+out    docs/reports/R1/step-4.md   (one file)
+cmd    grep -n -A 2 'paths-ignore' .github/workflows/ci.yml
+out    24:    paths-ignore:
+       25-      - "docs/reports/**"
+rule   CK0. A commit whose whole diff is path-ignored creates no run at all, so
+       `[]` is "CI was not asked", not "CI has no answer"
+```
+
+**EVERY RUN ID AND CONCLUSION IS IN SECTION 0a, WHICH IS GENERATED, AND NOT HERE.** CX0
+forbids a run id in prose and the first draft of this section carried three; the guard
+caught it. Section 0a is regenerated at this commit and carries the rows for the step's own
+commits with their conclusions, so the ids are checkable rather than retyped.
+
+**THE NEAREST ANCESTOR CI DID ANSWER IS SECTION 11's OWN PARENT, AND IT CONCLUDED
+`failure`.** Its failing step is `guards and meta-tests`, and steps `actionlint`, `ruff`,
+`black --check`, `mypy` and `unit tests` are all green above it — so that step RAN rather
+than being hidden behind an earlier red, which is what CZ1 (iii) exists to show.
+
+**ALL NINE OF ITS REDS ARE THE BOUNDARY SET, TRACED BY NAME AND NOT BY FAMILY (EG3 (i)):**
+
+```
+claim  CI's reds at section 11's parent are the same nine the clean worktree
+       measured in section 11, id for id
+cmd    gh run view <the id in section 0a> --log-failed
+         | grep -oE 'FAILED [^ ]+' | sort -u
+out    test_the_guard_reads_the_step_being_worked_on
+       test_the_report_carries_a_WHOLE_SUITE_count
+       test_the_guard_survives_the_state[baseline]
+       test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]
+       test_the_guard_survives_the_state[non_numeric_step_suffix]
+       test_the_guard_survives_the_state[step_number_is_the_empty_string]
+       test_the_guard_survives_the_state[superscript_digit_step_number]
+       test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]
+       test_the_guard_survives_the_state[zero_padded_step_number]
+rule   FS1/FT1. The first two reach LIMB TWO -- their subject is the commit
+       carrying them: no step-4 verdict can exist before step 4's report is
+       pushed, and a suite line cannot name a sha from inside that sha. The
+       other seven are verdict 47 item 6's shape, a `survives_the_state` case
+       whose inner list names those. NO red fails the predicate, so CZ1 (iv) is
+       not reached and this is not an FF0 CI-only red
+```
+
+**AND `test_the_report_carries_a_WHOLE_SUITE_count` IS GREEN AT THIS COMMIT**, because
+section 11 is what this revision adds. CI could not see that: the run is section 11's
+parent, and the commit that answers it is path-ignored. **So eight of the nine remain at
+`HEAD` and the ninth closed between the run and here** — the same ordering CZ1's reusable
+half describes, arriving from CI's side.
+
+```
+claim  eight remain in my own tree, one fewer than CI's nine
+cmd    python -m pytest -q tests/test_report_carried.py
+         tests/test_report_guard_states.py tests/test_report_numbers_are_sourced.py
+out    8 failed, 3031 passed in 533.98s (0:08:53)
+note   the first draft of this line said `3029 passed` -- the figure from the
+       run taken BEFORE sections 10 and 11 existed, and those two sections add
+       two parametrised cases to the section-sourcing guard. The failure count
+       did not move; the pass count did, which is why CP3 makes the paste the
+       last edit and why I re-ran it here rather than carrying it forward
+cell   one variable moved -- section 11's existence -- and nothing else. The
+       guards half gave 9 failed with section 11 absent; this gives 8 with it
+       present, and the id that left the list is the one that reads it
+```
+
+**What the reviewer is asked to check**, since I cannot hand it a green run at the judged
+sha: that those nine are the boundary set by the predicate rather than by my say-so, and
+that the ninth's closure is section 11 and not a silenced assertion. Reverting section 11
+reddens it again, which is the cell above.
+
 ## 11. The whole suite, from my own run
 
-**Both halves, at `8800696`, in a clean worktree at that commit, taken AFTER every other
-edit to this revision (R309).** EI0 splits them because the combined run does not fit a
-window — and the default `both` is still the combined form, which is the trap I fell into:
-I launched `python scripts/suite_count.py` with no flag, it ran past forty-five minutes, and
-the script's own docstring says that run "was stopped at a thirty-minute limit three
-times". The two halves below are what EI0 exists for.
+**Both halves, at the commit each line names, in a clean worktree at it, taken AFTER
+every other edit to this revision (R309).** EI0 splits them because the combined run
+does not fit a window -- and the default `both` is still the combined form, which is
+the trap I fell into: I launched `python scripts/suite_count.py` with no flag, it ran
+past forty-five minutes, and the script's own docstring records that the combined run
+"was stopped at a thirty-minute limit three times". The two halves below are what EI0
+exists for.
 
 **Whole suite at `8800696`: 3955 passed, 0 failed, 0 skipped.** Generated by `python scripts/suite_count.py --half main`, run after every other edit to this revision, in a clean worktree at that commit. It excludes 3035 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py); those are measured by `--half guards` and their line is beside this one. R339: the count of what is excluded is part of the line. R497: so is its result.
 
