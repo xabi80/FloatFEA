@@ -684,6 +684,12 @@ session summary and the README says so, because a faithful summary existed; for 
 none. A record that invents a directive's wording is worse than a record that says it is
 missing, so `GB.md` says it is missing and the README's provenance list says why.
 
+*CORRECTED IN PLACE, 4 November 2026 (SR-16 convention).* **GA now exists.** Xabier
+reissued its text as GC0 of directive GC and it is recorded at `docs/directives/GA.md`.
+The ruling above was right and is now spent: the record was missing, nothing was invented,
+and the gap was closed by the author rather than by me. `GB.md`'s section carries a
+supersession pointer and its text is left standing.
+
 **SR-32: the step-opening commit is labelled `# Revision 1` and is NOT a reviewed revision
 under ES0.**
 *Ruling applied:* FZ rule 7 (ambiguous wording resolved toward existing conventions).
@@ -723,3 +729,31 @@ mention**, not on the read: the same verdict path passed as an argument to
 `scripts/carried_table.py` is allowed, and was. **I am not asking for the clause to be
 relaxed; failing closed is right**, and the cost is that an assembly script which must name
 the verdict it reads cannot be written with a heredoc at all.
+
+**SR-35: GA's record is incomplete in two places and I am inventing wording for neither.**
+*Ruling applied:* FZ rule 7, resolved toward the README's provenance discipline — the same
+ground as SR-31, now applied to a record that exists but is partial.
+*Why:* **GA6 has no text anywhere.** GC0's own heading says `GA6 replaced by GC5`, and GC0
+does not reproduce it, so `GA.md` records the replacement and no clause. **And GB1 quotes
+"my GA5" as "step 4, then FL3", which is not GC0's GA5** (priority is tool function;
+apparatus and documentation beyond `USER_GUIDE.md` go to R2). Two different texts under one
+number. I do not know whether GA5 carried both, whether GB1 pointed at another sentence of
+the GA message, or whether the numbering slipped — **GC0 is what Xabier reissued, so GC0's
+GA5 is what the file records**, and the discrepancy is noted rather than reconciled by
+guess. Not an escalation: no published number depends on it, so FZ (f) is not reached.
+
+**SR-36: this commit is PUSHED, which GA2 would otherwise forbid.**
+*Ruling applied:* FZ rule 7 — GC5 is the later and more specific instruction.
+*Why:* GA2 is "push only immediately before invoking the reviewer (FP1) or at end of day",
+and no reviewer is invoked here. **GC5 requires `git rev-list --all --not --remotes=origin`
+to be 0 and then has Xabier clone to a non-OneDrive folder**, which is unsatisfiable if the
+directive record is left local. GA2 resumes at the next round.
+
+**SR-37: R1152's duplicate README line is fixed here rather than ledgered.**
+*Ruling applied:* FZ rule 5 (a self-found defect is fixed) read against GC4 and GA1.
+*Why:* `GB.md` appeared twice in the provenance list. GA1 says an apparatus defect that
+cannot hide a blocking finding gets one ledger line and no investigation — but this is one
+line in a file **this commit edits anyway** for GA and GC, and leaving a record wrong while
+rewriting the paragraph around it is not a saving. No census of sibling entries was run,
+which is the part of GA1 that governs. The remaining verdict-48 items (R1147, R1148,
+R1150, R1151, R1153, R1154) stay for revision 2 under GC4.

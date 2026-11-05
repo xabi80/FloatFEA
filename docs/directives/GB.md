@@ -42,6 +42,11 @@ worktree holds unpushed work, so Xabier can move the repo off OneDrive.
 
 ## GA IS MISSING FROM THIS RECORD, AND I CANNOT RECONSTRUCT IT
 
+**SUPERSEDED, 4 November 2026 — GA is recorded at `docs/directives/GA.md`.** Xabier
+reissued its text as GC0 of directive GC. The section below is left standing rather than
+rewritten, which is how a corrected record is kept here; what it asked for in its last
+sentence is what happened.
+
 GB cites two of its own predecessor's clauses — **GA4** (daily digest, one screen) and
 **GA5** (which GB1 now corrects as wording rather than a ruling). There is no
 `docs/directives/GA.md`, and GA is cited **nowhere else in the repository either**:

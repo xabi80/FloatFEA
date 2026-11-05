@@ -19,12 +19,18 @@ against.
 Each file records where its text came from. **This is not uniform and the record says so:**
 
 * `FM.md`, `FN.md`, `FO.md`, `FP.md`, `FQ.md`, `FR.md`, `FS.md`, `FT.md`, `FU.md`,
-  `FV.md`, `FW.md`, `GB.md` — **verbatim** from the directive message.
-* `GB.md` — verbatim, and it additionally records that **`GA.md` does not exist and is
-  not reconstructible.** GB cites `GA4` and `GA5`; GA was acted on and committed
-  nowhere, so GB's two quotations are the only surviving text of it in this
-  repository. That is C25 one directive letter after FP0 was adopted for C25. No
-  wording is invented — the file says the record is missing instead.
+  `FV.md`, `FW.md`, `GB.md`, `GC.md` — **verbatim** from the directive message.
+  (`GB.md` was listed twice here until GC's commit — R1152.)
+* `GA.md` — **verbatim, but REISSUED rather than received in its own turn.** GA was issued
+  in the supervisor channel and never delivered to this session; its text reached the
+  repository inside `GC.md` as GC0, and `GA.md` holds that text. Two consequences the
+  record states rather than smooths over: **`GA6` has no text here**, because GC0 replaced
+  it with GC5 and did not reproduce it; and GB1's reference to "my GA5" quotes a different
+  sentence from GC0's GA5, which `GA.md` notes and does not reconcile.
+* `GB.md` — verbatim. Its section headed "GA IS MISSING FROM THIS RECORD" was true when
+  written and is **superseded by `GA.md`**; the section carries a pointer and its text is
+  left standing rather than rewritten. GB cited `GA4` and `GA5` with GA recorded nowhere,
+  which was C25 one directive letter after FP0 was adopted for C25.
 * `FZ.md` — **verbatim** from the directive message. Issued by Xabier, 2026-10-31.
   **It also carries the running SR log**: FZ asks that every self-ruling taken under its
   standing rulings be recorded as `SR-<n>`, and SR-1 is the ruling that they all go in that
