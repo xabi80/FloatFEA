@@ -21,6 +21,12 @@ Each file records where its text came from. **This is not uniform and the record
 * `FM.md`, `FN.md`, `FO.md`, `FP.md`, `FQ.md`, `FR.md`, `FS.md`, `FT.md`, `FU.md`,
   `FV.md`, `FW.md`, `GB.md`, `GC.md` — **verbatim** from the directive message.
   (`GB.md` was listed twice here until GC's commit — R1152.)
+* `GD` — **verbatim, and it has no file of its own.** GD's own `Record:` line said to
+  append it to `GC.md` rather than open a new file, so its text is at
+  `GC.md:109-144` and `GC.md` says where it begins. R1164 was that this roll did not
+  mention GD at all, so a reader looking for `GD.md` found neither a file nor a
+  pointer; the rule itself was never missing, which is the difference between this
+  and C25.
 * `GA.md` — **verbatim, but REISSUED rather than received in its own turn.** GA was issued
   in the supervisor channel and never delivered to this session; its text reached the
   repository inside `GC.md` as GC0, and `GA.md` holds that text. Two consequences the

@@ -98,10 +98,12 @@ verified under.
 That is the whole interface for an analysis: **one command, one configuration file.** It
 prints its progress as it goes, and § 8 walks through the output line by line.
 
-**Budget a minute to five.** It was 64–70 s on the machine this guide was written on, and
-the committed `results/R1/example/report.md` records `solve | 190.07` from a slower one, so
-do not read either figure as a specification. The solve is the whole of it; nothing else in
-the run takes measurable time.
+**Budget a minute to five.** It was 64–70 s on the machine this guide was written on.
+**This guide quotes no committed wall clock, deliberately (R1157).** `report.md` carries a
+`solve` row from whichever machine last regenerated it, so a sentence citing that value is
+stale the next time anyone runs the example — which is how the first draft of this
+paragraph came to cite a figure its own commit had already moved. The solve is the whole of
+it; nothing else in the run takes measurable time.
 
 ---
 
@@ -248,7 +250,9 @@ one-variable reruns reported beside the main result as the extra columns
 `utilisation_K_sens` and `utilisation_Cm_sens` in `utilisation.csv`. The identical unit and
 bounds invite the other reading — under which `1.0` would mean "no change" and the shipped
 example would publish two dead columns — so it is worth being explicit: in the shipped
-example those columns differ from `utilisation` on 10 of 32 rows.
+example `utilisation_Cm_sens` differs from `utilisation` on **10** of 32 rows,
+`utilisation_K_sens` on **2**, and at least one of the two on **12** (R1159: the first
+draft gave the `Cm_sens` figure alone for a sentence about both columns).
 
 **Where `C_m` acts, and the two clauses are not the same one.** `C_m` multiplies the
 bending term in **section 3.3.2's amplified interaction** — `u_axial + C_m·u_bending /
@@ -535,6 +539,16 @@ breaking wave set.
 
 The band is `sqrt(6.5·H) .. sqrt(11·H)`, computed from the height **the file itself
 records**, and the deep-water breaking limit is `H/λ ≤ 1/7`.
+
+**The `lambda` in `H/lambda` is NOT the `froude_lambda` of § 4.1, and the collision is in
+the artifact's own column name (R1161).** Here — and in § 8.3's admissibility table —
+`lambda` is the deep-water **wavelength**, `L = g T² / 2π` with FloatSim's `g = 9.81`
+(`floatfea/loads/period_band.py:165`), so `H/lambda` is wave **steepness** and `1/7` is the
+limiting value for a deep-water wave. § 4.1's and § 4.7's λ is the **Froude scale**
+relating the model-scale run to full scale, `50.0` by default. A reader who takes § 4.1's
+definition computes `24.2 / 50 = 0.484` against a stated limit of `0.1429` and cannot make
+the refusal's own number appear; the quantity the limit applies to is
+`24.2 / 243.95 = 0.0992`, which is what the message prints.
 
 `# fix` — two choices, and they are different statements:
 
@@ -889,8 +903,9 @@ about one axis and nothing about the others.
 
 **Torsion is where the round-off lives**, and the four values differ — `0`, `-3.5e-24`,
 `-9.5e-10`, `-1.2e-24`. That is the arithmetic of four arms at four different orientations
-reaching the same answer by different routes, not four different answers; the largest is
-`1e-10 N·m` against a root moment of `1.9e+08`. Reading those columns one place to the left
+reaching the same answer by different routes, not four different answers; the largest in
+magnitude is `9.5e-10 N·m` — printed in full as `-9.513095e-10` — against a root moment of
+`1.9e+08`. Reading those columns one place to the left
 is an easy mistake to make, and it is how this guide's first draft published them as `Mz`.
 
 ### 8.6 Finding a section that passes
@@ -941,20 +956,17 @@ git diff -U0 results/R1/example/ | grep -E '^[+-][^+-]' | grep -vE '^[+-]\| (bui
 (no output)
 ```
 
-No output is the pass. For reference, the changed rows themselves:
+No output is the pass. To see *which* rows moved — and **no figure is quoted here, for
+the reason in § 3 (R1158)**: both sides of that diff are wall clocks, yours and whichever
+machine last regenerated the file:
 
 ```bash
 git diff -U0 results/R1/example/ | grep -E '^[+-]\|'
 ```
 
-```
--| build | 0.12 |
-+| build | 0.13 |
--| solve | 190.07 |
-+| solve | 70.47 |
--| total | 190.20 |
-+| total | 70.61 |
-```
+Every line it prints is one of `| build |`, `| load |`, `| solve |`, `| code_check |` or
+`| total |`. **A line that is anything else is the finding** — that is what the first
+command checks, and it is the one worth running.
 
 `git checkout -- results/R1/example/` puts them back. If the first command prints anything,
 that is a real finding and worth reporting.

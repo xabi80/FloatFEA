@@ -277,7 +277,8 @@ _MENTION = re.compile(r"\bR\d+\b")
 # of the six added names a real path in the verdicts: `.csv` 201 occurrences,
 # `.npz` 103, `.yml` 28, `.yaml` 19, `.toml` 1 (`pyproject.toml`), `.xml` 1
 # (`leg/regression.xml`). `_is_a_site` is UNCHANGED, so a bare `a.npz` with no
-# separator still has to be tracked to count, and `frames.txt` stays out.#
+# separator still has to be tracked to count, and `frames.txt` stays out.
+#
 # AND A STEMLESS DOTFILE IS A SITE (R1139). `[\w.-]+\.` requires at least one
 # character BEFORE the dot, so `.gitattributes` could not enter `SITES` AT ALL
 # -- whatever the extension class. Adding `gitattributes` to the list above

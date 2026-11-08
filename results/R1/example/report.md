@@ -72,7 +72,7 @@ The associated-period band at the recorded height is `12.542 .. 16.316 s`, and t
 * FA0: a governing period sitting just below the associated-period band's lower bound is admitted by FA0's ruling rather than by rounding. Which period governs is a RESULT of this run and is in the period column; it is not a property of the band.
 * FA1: a generic 0.6*Fy reference stress is NOT the API bending allowable and is SUPERSEDED by the clause results in these columns. Section 3.2.3's branches decide the bending allowable from D/t, not from 0.6*Fy.
 * R741 / R742 / FQ0: section 3.2.2(b) local buckling is implemented and applies for 60 < D/t <= 300. Section 3.2.3's third range ends at a FLAT D/t <= 300 -- not a grade-dependent limit -- above which the section is refused rather than extrapolated. F_b = 0.75*Fy IS the compact allowable; section 3.2.3's reductions apply above the compact limit, not below it. Every clause is verified against an independent hand calculation in tests/verification/rung5/.
-* R743 / R1156: C_m MULTIPLIES the bending term in section 3.3.2's AMPLIFIED interaction -- the compression branch -- so a LARGER C_m RAISES the compression utilisation and leaves every row whose governing_clause reads `3.3.1 interaction` (tension + bending) untouched. The VALUE 0.85 is tabulated in section 3.3.1 case (a), members in frames subject to joint translation; the TERM it multiplies is in 3.3.2. The value used is in the provenance above, and the run reports a one-variable sensitivity beside it.
+* R743 / R1156 / R1162: C_m MULTIPLIES the bending term in section 3.3.2's AMPLIFIED interaction -- the compression branch -- so a LARGER C_m NEVER LOWERS the compression utilisation and RAISES it wherever the amplified form governs. The response is NON-DECREASING rather than strictly increasing, because the clause also requires the simpler form and the larger of the two governs: below the C_m at which amplified overtakes simple, the column is flat in C_m. It leaves every row whose governing_clause reads `3.3.1 interaction` (tension + bending) untouched. The VALUE 0.85 is tabulated in section 3.3.1 case (a), members in frames subject to joint translation; the TERM it multiplies is in 3.3.2. The value used is in the provenance above, and the run reports a one-variable sensitivity beside it.
 
 ## The governing utilisation
 
@@ -100,9 +100,9 @@ body rather than summed, because two bodies out in opposite directions would can
 |---|---|
 | build | 0.12 |
 | load | 0.00 |
-| solve | 63.96 |
+| solve | 64.39 |
 | code_check | 0.00 |
-| total | 64.08 |
+| total | 64.51 |
 
 ## Declared, and what became of it
 

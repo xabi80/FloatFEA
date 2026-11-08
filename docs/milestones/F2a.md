@@ -349,3 +349,58 @@ the same temptation.
 `workflow_dispatch` only, so its `:133` invocation of `tests/regression` does not run on
 push. That is by design -- it is the ten-leg determinism measurement, not a gate -- and
 `:510` is the gate. Nothing is owed, and no apparatus is needed.
+
+## R1165 — `docs/USER_GUIDE.md` is a published deliverable that no guard reads
+
+*Added by verdict 50 (the addendum to R1 step 4's ES0 interim check), where it was `L9`.
+Apparatus goes through this plan and not into a step commit, which is why it is here and not
+built: `CLAUDE.md` forbids new apparatus through F6 and GA1 re-forbids it until R1 is tagged.*
+
+`tests/test_tree_prose_consistent.py` is what holds prose in the source tree to CW0 — a claim
+about the repository is a test, a triple, or deleted — and its `ROOTS` does not include `docs/`
+at large:
+
+```
+claim  the guard's roots, read rather than described, and the guide is outside them
+cmd    sed -n '99p' tests/test_tree_prose_consistent.py
+out    ROOTS = ("floatfea", "tests", "scripts", "docs/milestones", "docs/verification")
+rule   EZ0 -- a published deliverable is any file sent to Xabier. The guide is the
+       deliverable R1 step 4 exists to produce
+```
+
+```
+claim  two tests MENTION the guide in a message and NEITHER OPENS IT, so nothing
+       compares what it says with what the tree does
+cmd    grep -rn "USER_GUIDE" tests/ scripts/
+out    tests/regression/test_r1_published_artifacts.py:363   (a docstring)
+       tests/regression/test_r1_published_artifacts.py:437   (an assertion message)
+cmd    the same two sites, asked whether either READS the path
+out    neither is a `read_text`, a `Path(...)` or an `open(...)`; both are prose
+       inside a test about `results/R1/example/`
+rule   CW0's own lesson from the other side -- a needle anchored on the NAME finds
+       a mention. The first version of this entry claimed `grep -rln` was empty and
+       it is not, because this revision's own R1162 assertion message names the file
+```
+
+**What the absence cost in the file's first week is measured and not estimated.** The FL3
+witness and the reviewer between them found five wrong figures in it — `R1157` and `R1158`
+(the same committed wall clock, invalidated by the commit that wrote the sentences citing
+it), `R1159` (a count attributed to two columns and swept over one), `R1160` (one order of
+magnitude, self-contradicting two sentences apart) and `R1161` (λ used for the Froude scale
+and for the wavelength with no note). Every one was found by a human-shaped reader running
+the commands the document prints. None could be found by `pytest`.
+
+```
+claim  the size of the surface, at this commit
+cmd    wc -l < docs/USER_GUIDE.md
+out    1008
+rule   BI3 -- the figure carries the command that produces it, because this one
+       moves every time the guide is edited
+```
+
+**What it would assert**, and the reason it is not a simple extension of `ROOTS`: the guide is
+not source prose, so CW0's "a test, a triple, or deleted" does not fit it — a user guide is
+nothing but prose. What fits is the shape `tests/regression/test_r1_published_artifacts.py`
+already has for `report.md`: the commands the document prints are RUN, and their output is
+compared with what the document says they print. That is a doctest over a deliverable, and it
+is the only form in which a guide this size stays true as the tree moves under it.

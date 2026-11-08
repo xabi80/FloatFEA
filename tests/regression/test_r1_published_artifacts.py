@@ -405,6 +405,15 @@ def test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES
         "`floatfea.cli.TABLE_CAVEATS` still says C_m multiplies the bending term in "
         "section 3.3.1's interaction. 3.3.1 is tension + bending and carries no C_m."
     )
+    # R1162: the DIRECTION the same sentence states. It said a larger C_m "RAISES" the
+    # compression utilisation, unconditionally; `u_combined = max(amplified, simple)`
+    # makes it non-decreasing and flat below the overtake. The control is at the foot of
+    # this test.
+    assert "NEVER LOWERS" in source and "NON-DECREASING" in source, (
+        "`floatfea.cli.TABLE_CAVEATS` states C_m's direction without the bound R1162 "
+        "names. The column is `max(amplified, simple)`, so a larger C_m cannot lower it "
+        "and does not always raise it."
+    )
 
     # ---- the published sentence, in every artifact -------------------------------
     for path in ARTIFACTS:
@@ -421,6 +430,11 @@ def test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES
         assert "section 3.3.1 case" in text, (
             f"{path.name} dropped where the VALUE 0.85 comes from. Correcting the clause "
             f"of the term must not delete the true fact the old sentence contained."
+        )
+        assert "NEVER LOWERS" in text and "NON-DECREASING" in text, (
+            f"{path.name} states C_m's direction without R1162's bound. Two published "
+            f"deliverables disagreeing about the same monotonicity -- this caveat and "
+            f"`docs/USER_GUIDE.md` section 4.6 -- is the state R1162 was raised about."
         )
 
     # ---- and the code, one variable moved ----------------------------------------
@@ -471,4 +485,30 @@ def test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES
         f"({compress_lo.utilisation!r} -> {compress_hi.utilisation!r}). R743's correction "
         f"was that a larger C_m gives a larger utilisation; if this fires, either the "
         f"direction or the branch has moved."
+    )
+
+    # ---- R1162: the response is NON-DECREASING, and the flat band is where ----------
+    #
+    # `u_combined = max(amplified, simple)` (`api_wsd.py:600-602`), so C_m is FLAT below
+    # the value at which the amplified form overtakes the simple one, and the two
+    # assertions above -- 0.85 against 1.20 -- step straight over that band without
+    # measuring it. At THIS member the overtake is at `cm = 0.9757684714917533`
+    # (bisected, 80 iterations, the reviewer's figure reproduced), so `0.90` is inside
+    # the band and `1.20` is outside it. That is the published sentence as a control
+    # rather than as prose, and it is the band R1163 recorded as unmeasured.
+    compress_mid = check_member(axial_n=-6.0e6, cm=0.90, **common)  # type: ignore[arg-type]
+    assert compress_mid.interaction_form == "simple", (
+        f"at cm = 0.90 this member's interaction form is "
+        f"{compress_mid.interaction_form!r}, not 'simple'. The flat band below the "
+        f"overtake is what this control is about; if the member has moved so that the "
+        f"amplified form already governs here, the band is elsewhere and this assertion "
+        f"is measuring nothing."
+    )
+    # not-a-tolerance: EXACT equality. Below the overtake the simple form IS the column,
+    # so the two are the same float and not nearby ones.
+    assert compress_mid.utilisation == compress_lo.utilisation, (
+        f"moving C_m from 0.85 to 0.90 moved the compression utilisation "
+        f"{compress_lo.utilisation!r} -> {compress_mid.utilisation!r}, inside the band "
+        f"where `max(amplified, simple)` returns `simple` at both. If this fires the "
+        f"caveat's NON-DECREASING sentence is wrong in the strict direction."
     )

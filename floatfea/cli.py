@@ -108,13 +108,16 @@ TABLE_CAVEATS = (
     "extrapolated. F_b = 0.75*Fy IS the compact allowable; section 3.2.3's reductions "
     "apply above the compact limit, not below it. Every clause is verified against an "
     "independent hand calculation in tests/verification/rung5/.",
-    "R743 / R1156: C_m MULTIPLIES the bending term in section 3.3.2's AMPLIFIED "
-    "interaction -- the compression branch -- so a LARGER C_m RAISES the compression "
-    "utilisation and leaves every row whose governing_clause reads `3.3.1 interaction` "
-    "(tension + bending) untouched. The VALUE 0.85 is tabulated in section 3.3.1 case "
-    "(a), members in frames subject to joint translation; the TERM it multiplies is in "
-    "3.3.2. The value used is in the provenance above, and the run reports a "
-    "one-variable sensitivity beside it.",
+    "R743 / R1156 / R1162: C_m MULTIPLIES the bending term in section 3.3.2's AMPLIFIED "
+    "interaction -- the compression branch -- so a LARGER C_m NEVER LOWERS the "
+    "compression utilisation and RAISES it wherever the amplified form governs. The "
+    "response is NON-DECREASING rather than strictly increasing, because the clause also "
+    "requires the simpler form and the larger of the two governs: below the C_m at which "
+    "amplified overtakes simple, the column is flat in C_m. It leaves every row whose "
+    "governing_clause reads `3.3.1 interaction` (tension + bending) untouched. The VALUE "
+    "0.85 is tabulated in section 3.3.1 case (a), members in frames subject to joint "
+    "translation; the TERM it multiplies is in 3.3.2. The value used is in the provenance "
+    "above, and the run reports a one-variable sensitivity beside it.",
 )
 """What the COLUMNS mean, which is the writer's business rather than the builder's.
 

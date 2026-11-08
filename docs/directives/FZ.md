@@ -573,7 +573,12 @@ figure is regenerated or withdrawn in the same commit — and the rule that move
 verdict is newest. **A repair whose row count depends on which verdict is newest is not a
 fixed delta**, which is the reusable half: the same holds for verdict 47's own `2167 of
 2170`, correct against verdict 46 and stale the moment 47 existed. Both directions were
-re-measured at the shipped tree and only `.gitattributes` is gained; the five refused shapes
+re-measured at the shipped tree: the branch gains SIX rows over THREE paths —
+`.gitattributes`, `.gitignore` and `.gitkeep`, measured at verdict 48's own judged commit
+`66c7331`, where the two extra paths come from verdict 47's R1139 block naming them in its
+own text (R1147). The count is a function of WHICH VERDICT FILE IS NEWEST and has now read
+three, then four, then six, then eleven for that reason — so it is cited here with the
+commit it was taken at rather than as a property of the branch. The five refused shapes
 and `frames.txt` are unchanged.
 
 **SR-26: `_is_a_site` is NARROWED for stemless dotfiles, and the cost is stated.**
@@ -853,3 +858,60 @@ by `git log --all --name-only -- '*USER_GUIDE*'`, which is not a user action.
 the fix is a `README.md` on the default branch and GA5 routes it to R2. Recorded for Xabier
 rather than written, and it is the second time this gap has been raised -- the first was my
 own ledger note before the witness ran, and the witness is what measured it.
+
+**SR-45: R1162 -- the published caveat's DIRECTION was non-strict and is FIXED, not ledgered,
+although the reviewer ruled it a ledger row.**
+*Ruling applied:* FZ rule 5 (a self-found defect is fixed with a named test row), read with
+CZ0's EZ0 carve-out. The reviewer's ledger ruling is a floor on what blocks, not a ceiling on
+what may be repaired.
+*Why:* the caveat published in `report.md` and both CSVs said a larger `C_m` "RAISES the
+compression utilisation", unconditionally. `check_member` forms
+`u_combined = max(amplified, simple)`, so the response is **non-decreasing and flat below the
+`C_m` at which the amplified form overtakes the simple one** -- and `docs/USER_GUIDE.md`
+section 4.6 already said so. **Two published deliverables disagreeing about the same
+monotonicity is the state worth one string edit**, and the sentence it corrects is the
+sentence R1156 had just corrected on its other axis, so leaving it invited a third round on
+one line. The repair is held by the existing R1156 row rather than a new one, and it reddens
+on a revert of the source alone, on a revert of the artifacts alone, and on removal of the
+`max()`. **NOT an FZ (c) escalation:** no clause changed, no computed value moved, `U` is
+`1.71167` on both sides.
+
+**SR-46: R1163's blind band is ANSWERED BY MEASUREMENT and the gate is NOT re-aimed.**
+*Ruling applied:* EH4 (a boundary is solved in both directions) with EK2 (a guard that fails
+false is fixed, not extended) -- and FZ rule 7 on where a fix belongs.
+*Why:* the reviewer measured that `test_R1156_...`'s compression control steps `C_m` by
+`0.35` while the amplified form overtakes at `cm = 0.9757684714917533`, so the row is blind to
+any `C_m` defect inside `[0.85, 0.9758)` at its chosen member. I reproduced the overtake to
+the digit. **The repair is NOT to re-aim the row at the magnitude**, because the magnitude is
+held elsewhere and I measured that rather than relaying it: injecting `0.85 -> 0.8585`, a one
+per cent change, reddens two rows in `tests/verification/rung5/`. What the row was missing is
+the band itself as a *statement*, so it now asserts that `C_m = 0.90` leaves the compression
+utilisation EXACTLY where `0.85` does -- the published "non-decreasing" sentence as a control
+rather than as prose -- and the `max()` ablation fires it. Recording a band and leaving the
+gate aimed where it was aimed is a different act from widening it.
+
+**SR-47: R1157 and R1158 are closed by WITHDRAWING the figure, not by re-citing it.**
+*Ruling applied:* FZ rule 7 (resolve toward existing conventions) with CP3 -- the paste is the
+last edit -- and the closing condition's own second branch, "or withdraws the figure".
+*Why:* both were wall clocks in `docs/USER_GUIDE.md` quoting `results/R1/example/report.md`,
+and `a596fa7` invalidated them by regenerating that file in the same commit that wrote the
+sentences. Re-citing the committed value would have been correct for about one hour: this
+revision regenerates `report.md` again, for R1162, and the figure would have been stale a
+second time by the same mechanism. **A guide that quotes no committed wall clock cannot have a
+stale one.** So section 3 says it quotes none and why, and section 8.7's reference diff prints
+the row NAMES a reader should expect instead of the values -- which is also the check worth
+running. The instance was the finding; the class is the repair.
+
+**SR-48: the `docs/reviews/` hook refuses a READ of a verdict path, and I did not work around
+it.**
+*Ruling applied:* FM1 -- never construct a command to get past a hook -- with GA1, which gives
+an apparatus finding one ledger line and no investigation.
+*Why:* to reproduce the reviewer's `+6 rows over 3 paths` figure at `66c7331` I needed that
+commit's newest verdict file, and `git show 66c7331:docs/reviews/R1/step-3.md` redirected into
+the scratchpad was **refused by the `PreToolUse` hook**: the clause covers Bash, and a command
+mentioning the path reads as a write whichever direction the bytes travel. Rephrasing it to
+get past the match is exactly what FM1 forbids, so I did not. **The consequence is stated in
+the report rather than hidden:** the `66c7331` figure is cited as the reviewer's own
+measurement, at its verdict line, and the figure I measured myself is at my own commit --
+`+11 rows over 7 paths, 0 lost`. One ledger line, no hook change; `.claude/hooks/` is not
+editable inside a step commit in any case.
