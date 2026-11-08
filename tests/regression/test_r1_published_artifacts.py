@@ -432,9 +432,10 @@ def test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES
             f"of the term must not delete the true fact the old sentence contained."
         )
         assert "NEVER LOWERS" in text and "NON-DECREASING" in text, (
-            f"{path.name} states C_m's direction without R1162's bound. Two published "
-            f"deliverables disagreeing about the same monotonicity -- this caveat and "
-            f"`docs/USER_GUIDE.md` section 4.6 -- is the state R1162 was raised about."
+            f"{path.name} states C_m's direction without R1162's bound. `u_combined` is "
+            f"`max(amplified, simple)`, so C_m is FLAT below the value at which the "
+            f"amplified form overtakes the simple one -- the control at the foot of this "
+            f"test measures that band at its own member."
         )
 
     # ---- and the code, one variable moved ----------------------------------------

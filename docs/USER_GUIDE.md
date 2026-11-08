@@ -256,9 +256,12 @@ draft gave the `Cm_sens` figure alone for a sentence about both columns).
 
 **Where `C_m` acts, and the two clauses are not the same one.** `C_m` multiplies the
 bending term in **section 3.3.2's amplified interaction** — `u_axial + C_m·u_bending /
-(1 − f_a/F_e')`, the **compression** branch — so a larger `C_m` *raises* compression
-utilisations and leaves every row whose `governing_clause` reads `3.3.1 interaction`
-(tension + bending) **untouched**. The *value* `0.85` is a different matter: it is tabulated
+(1 − f_a/F_e')`, the **compression** branch — so a larger `C_m` **never lowers** a
+compression utilisation, raises it wherever the amplified form governs with a bending term
+to multiply, and leaves every row whose `governing_clause` reads `3.3.1 interaction`
+(tension + bending) **untouched**. *Never lowers* rather than *raises*, because the clause
+also requires the simpler form and `u_combined` is the larger of the two: below the `C_m` at
+which the amplified form overtakes the simple one, the column is flat in `C_m` (R1162). The *value* `0.85` is a different matter: it is tabulated
 in **section 3.3.1 case (a)**, members in frames subject to joint translation. Value from
 3.3.1, term in 3.3.2.
 
@@ -276,6 +279,13 @@ rows moved. At `Cm: 1.2` instead of `0.85`, nothing else touched, the governing 
 The two `3.3.2` rows that did not move are TIP stations whose bending term is
 `u_bending = 1.6e-10` and `1.7e-09`: there is nothing there for `C_m` to multiply. Compare
 `platform:hub2_arm` ROOT at `u_bending = 1.71139`, which moves.
+
+**And the ten that DO move are the overtake, which is a second mechanism and not the same
+one.** Read `interaction_form` beside them: all ten are `simple` at the shipped
+`C_m = 0.85` and move because at `C_m = 1.0` the amplified form overtakes the simple one,
+while both unmoved rows are already `amplified` and have nothing to multiply. So a row can
+be flat in `C_m` for either reason — below the overtake, or with a vanishing bending term —
+and that is why the caveat says *never lowers* rather than *raises*.
 
 The caveat is corrected, and
 `tests/regression/test_r1_published_artifacts.py::test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES`

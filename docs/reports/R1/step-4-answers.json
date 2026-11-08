@@ -3,22 +3,50 @@
     "POINTERS ONLY (CH4). No prose here -- every row points at the section",
     "that discusses it, and the guard checks that the section MENTIONS the id.",
     "",
-    "R1 STEP 4, THE STEP-OPENING COMMIT. It answers verdict 47 at 779e79a,",
-    "which ruled 6fb64c6 PASS and CLOSED step 3 carrying one blocking item.",
+    "R1 STEP 4, REVISION 2. It answers the verdict at 2158500 -- the ADDENDUM to",
+    "the ES0 interim check at a596fa7, which renumbered that check's nine ledger",
+    "rows from L1-L9 to R1157-R1165 so that this file and the carry guard could",
+    "see them. Both of those verdicts are ES0 INTERIM CHECKS and count against no",
+    "round; step 4 stands at 0 of 3 before this revision and 1 of 3 after it.",
     "",
-    "THIS IS NOT A REVIEWED REVISION UNDER ES0. It changes a gate, so EQ0",
-    "makes it reviewed and EB4 charges it to no step's rounds. All three of",
-    "step 4's ES0 revisions remain available after it.",
+    "THE AUTHORITY FOR THE FIRST COMMIT'S 'NO STEP'S COST' IS GB2, NOT EQ0 (R1150).",
+    "The previous `_` block of this file said 'It changes a gate, so EQ0 makes it",
+    "reviewed and EB4 charges it to no step's rounds.' That was the third of R1150's",
+    "three sites and this is the correction: `docs/directives/GB.md:26` -- 'It",
+    "returns for review at no step's cost' -- is a directive about that commit. EQ0",
+    "governs a CLOSURE commit and is cited by analogy only; reading it as covering a",
+    "step's first commit would free every such commit from ES0's cap, which is DK0's",
+    "concern verbatim.",
     "",
-    "2 ITEMS ARE ANSWERED HERE -- the count on this line is DERIVED",
+    "20 ITEMS ARE ANSWERED HERE -- the count on this line is DERIVED",
     "from the list below rather than typed (R1133):",
     "",
-    "  R1139  BLOCKING, carried by name from verdict 47. A stemless dotfile could not enter SITES at all.          -> §2",
-    "  R1141  R1135's weakening sentence was recorded as reduced and never edited.                                 -> §3",
+    "  R1139  BLOCKING at verdict 47, answered in the step's first commit.                   -> §1",
+    "  R1141  R1135's weakening sentence, routed here by GB3.                                -> §1",
+    "  R1148  carried_table.SITE missing two pieces of _SITE; ablated by the reviewer.        -> §1",
+    "  R1156  the published C_m caveat named the WRONG CLAUSE; found by the FL3 witness.      -> §1",
+    "  R1147  the repair's delta is SIX rows over THREE paths, not four over one.            -> §2",
+    "  R1153  section 4's bold line was wider than section 4's scope. Same cause as R1147.   -> §2",
+    "  R1150  EQ0/EB4 cited as the authority where GB2 is; three sites, this file one.        -> §3",
+    "  R1157  the guide cited a committed wall clock its own commit had moved.               -> §4",
+    "  R1158  section 8.7's reference diff showed the same stale pair.                       -> §4",
+    "  R1159  '10 of 32' is the Cm_sens column alone, for a sentence about both.             -> §4",
+    "  R1160  '1e-10' where the figure is 9.513095e-10, printed correctly two lines up.      -> §4",
+    "  R1161  lambda is the Froude scale in 4.1/4.7 and the WAVELENGTH in 7.3/8.3.           -> §4",
+    "  R1151  a stray `#` at the end of tests/test_report_carried.py:280.                    -> §5",
+    "  R1152  docs/directives/README.md listed GB.md twice.                                  -> §5",
+    "  R1154  EG3 (i) asks for the sentence naming the state, by name.                       -> §5",
+    "  R1162  the caveat's direction is NON-DECREASING, not increasing.                      -> §5",
+    "  R1163  the new gate's blind band in C_m, measured and recorded rather than re-aimed.  -> §5",
+    "  R1164  the provenance roll did not mention GD.                                        -> §5",
+    "  R1166  MINE, found writing this revision: the answers-file needle matched a BARE id.    -> §5",
+    "  R1167  MINE: my own justification for R1162 cited a file that did not say it.   -> §5",
     "",
-    "The other 297 rows are ledger rows and point at §7,",
-    "which names every one of them. Nothing is claimed as answered here that",
-    "this commit did not touch."
+    "The other 299 rows are ledger rows and point at §7, which names every",
+    "one of them. R1155 (the ValueError traceback at exit 1) and R1165 (the guide",
+    "is an EZ0 deliverable no guard reads) are new there; R1165 goes on",
+    "docs/milestones/F2a.md, because no new apparatus is built through F6.",
+    "Nothing is claimed as answered here that this revision did not touch."
   ],
   "answered": {
     "R1": {
@@ -1187,7 +1215,7 @@
     },
     "R1139": {
       "state": "answered",
-      "where": "§2"
+      "where": "§1"
     },
     "R1140": {
       "state": "later",
@@ -1195,7 +1223,7 @@
     },
     "R1141": {
       "state": "answered",
-      "where": "§3"
+      "where": "§1"
     },
     "R1142": {
       "state": "later",
@@ -1216,6 +1244,86 @@
     "R1146": {
       "state": "later",
       "where": "§7"
+    },
+    "R1148": {
+      "state": "answered",
+      "where": "§1"
+    },
+    "R1156": {
+      "state": "answered",
+      "where": "§1"
+    },
+    "R1147": {
+      "state": "answered",
+      "where": "§2"
+    },
+    "R1153": {
+      "state": "answered",
+      "where": "§2"
+    },
+    "R1150": {
+      "state": "answered",
+      "where": "§3"
+    },
+    "R1157": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R1158": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R1159": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R1160": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R1161": {
+      "state": "answered",
+      "where": "§4"
+    },
+    "R1151": {
+      "state": "answered",
+      "where": "§5"
+    },
+    "R1152": {
+      "state": "answered",
+      "where": "§5"
+    },
+    "R1154": {
+      "state": "answered",
+      "where": "§5"
+    },
+    "R1162": {
+      "state": "answered",
+      "where": "§5"
+    },
+    "R1163": {
+      "state": "answered",
+      "where": "§5"
+    },
+    "R1164": {
+      "state": "answered",
+      "where": "§5"
+    },
+    "R1155": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1165": {
+      "state": "later",
+      "where": "§7"
+    },
+    "R1166": {
+      "state": "answered",
+      "where": "§5"
+    },
+    "R1167": {
+      "state": "answered",
+      "where": "§5"
     }
   }
 }

@@ -391,11 +391,14 @@ and for the wavelength with no note). Every one was found by a human-shaped read
 the commands the document prints. None could be found by `pytest`.
 
 ```
-claim  the size of the surface, at this commit
+claim  the size of the surface. THE FIGURE IS NOT QUOTED HERE
 cmd    wc -l < docs/USER_GUIDE.md
-out    1008
-rule   BI3 -- the figure carries the command that produces it, because this one
-       moves every time the guide is edited
+out    (deliberately not quoted -- see the rule)
+rule   BI3, and R1157's own lesson applied to this line. It first read `1008`,
+       and the next edit to the guide in the same round made it `1018`. A count
+       quoted in a frozen list goes stale the next time anyone touches the file
+       it describes, and nothing here re-takes it -- so the command is the
+       figure and whoever picks this item up runs it
 ```
 
 **What it would assert**, and the reason it is not a simple extension of `ROOTS`: the guide is

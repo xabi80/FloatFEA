@@ -867,14 +867,24 @@ what may be repaired.
 *Why:* the caveat published in `report.md` and both CSVs said a larger `C_m` "RAISES the
 compression utilisation", unconditionally. `check_member` forms
 `u_combined = max(amplified, simple)`, so the response is **non-decreasing and flat below the
-`C_m` at which the amplified form overtakes the simple one** -- and `docs/USER_GUIDE.md`
-section 4.6 already said so. **Two published deliverables disagreeing about the same
-monotonicity is the state worth one string edit**, and the sentence it corrects is the
-sentence R1156 had just corrected on its other axis, so leaving it invited a third round on
-one line. The repair is held by the existing R1156 row rather than a new one, and it reddens
+`C_m` at which the amplified form overtakes the simple one**. **Two published deliverables
+disagreeing about the same monotonicity is the state worth one string edit**, and the
+sentence it corrects is the one R1156 had just corrected on its other axis, so leaving it
+invited a third round on one line. The repair is held by the existing R1156 row rather than a new one, and it reddens
 on a revert of the source alone, on a revert of the artifacts alone, and on removal of the
 `max()`. **NOT an FZ (c) escalation:** no clause changed, no computed value moved, `U` is
 `1.71167` on both sides.
+
+*Corrected in place, 2026-11-07 (R1167).* This entry first said `docs/USER_GUIDE.md`
+section 4.6 "already said so", and it did not. The guide explains the two unmoved
+`3.3.2 interaction` rows by their vanishing bending term at a TIP station, which is a
+DIFFERENT mechanism from the `max()` overtake -- measured: both unmoved rows are already
+`amplified` at the shipped `C_m = 0.85` with `u_bending` of `1.59e-10` and `1.72e-09`, while
+all ten that move are `simple` at `0.85` and cross the overtake by `1.0`. So the guide was
+imprecise in exactly the way the caveat was, both say *never lowers* now, and the
+justification for the repair is the flat band at the test's own member rather than a
+disagreement between two deliverables. The repair itself is unaffected; the causal sentence
+attached to it was not measured, which is BG0 happening inside my own ruling.
 
 **SR-46: R1163's blind band is ANSWERED BY MEASUREMENT and the gate is NOT re-aimed.**
 *Ruling applied:* EH4 (a boundary is solved in both directions) with EK2 (a guard that fails
@@ -915,3 +925,24 @@ the report rather than hidden:** the `66c7331` figure is cited as the reviewer's
 measurement, at its verdict line, and the figure I measured myself is at my own commit --
 `+11 rows over 7 paths, 0 lost`. One ledger line, no hook change; `.claude/hooks/` is not
 editable inside a step commit in any case.
+
+**SR-49: a heading anchor that exists in BOTH revisions duplicated 3610 lines of the report,
+and nothing in the suite would have told me.**
+*Ruling applied:* FZ rule 5 (a self-found defect is fixed) with FZ rule 7 on form -- and the
+repair is the anchor's SCOPE, not the one edit that tripped over it.
+*Why:* the script that regenerated revision 2's section 6 did
+`start = text.index("## 6. The findings this revision answers")` and
+`end = text.index("## 7. The ledger rows still open")`. **Both revisions carry a section 7
+with that heading**, so `end` resolved inside REVISION 1, came out BEFORE `start`, and
+`text[:start] + new + text[end:]` appended revision 1's section 7 onward -- including the
+whole of revision 2 -- a second time. The file went to 8146 lines with two
+`# Revision 2` headers. **What caught it was the NEXT edit refusing**: a title replacement
+asserting `count == 1` found two. No guard in this repository compares revision count or
+would have reddened on it -- `_newest_revision()` takes the LAST `^# Revision \d+` mark, so
+the duplicate was the one being measured and every report guard was green on it.
+*The repair:* the block was excised by offset between the two `^# Revision 2 ` marks, the
+surviving block's fourteen headings were listed to confirm it is the intact one, and section
+6 was regenerated **inside the newest revision's slice only**. Every editing script in this
+turn asserts `count(old) == 1` before replacing, which is what made the failure loud one edit
+later rather than silent at the commit; the one script that used `index()` instead is the one
+that did the damage.
