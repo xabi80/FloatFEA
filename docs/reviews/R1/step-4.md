@@ -1,3 +1,186 @@
+# Review — R1 step 4 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: a596fa76b969b6bbf680df9029b94aabd45112a4
+**Reviewed commit: `a596fa76b969b6bbf680df9029b94aabd45112a4`.**
+Verdict: PASS
+Tests: **4477 passed, 42 failed, 0 skipped** of 4519 collected -- MY OWN RUN at the judged commit, in clean worktrees of my own (FV2), in EI0's two halves: the main half `3957 passed, 2 warnings in 2991.22s (0:49:51)`, **0 failed and 0 skipped**, and the three report-parametrised files `42 failed, 520 passed in 205.08s`. **Every red is inside those three files and nowhere else**; all 42 are EG3 state (2), and the trace is finding 3.
+CI (FP1): run **42446638701** at `a596fa7`, `completed/failure`. **The verification ladder is SUCCESS, all six rungs.** `lint, unit and guards` failed only at `guards and meta-tests`, with `actionlint`, `ruff`, `black --check`, `mypy` and `unit tests` all SUCCESS above it, so nothing hid behind an earlier red (CZ1 (iii)). That step reports **42 failed, 1435 passed** and its FAILED list is **id for id identical to mine** -- a machine I do not control, a different OS, reaching the same 42. **CA2's HOLD is not reached because every one of the 42 satisfies the FS1/FT1 predicate or the measured cause in finding 3**, not because my local run was green.
+Scope: **ES0 INTERIM CHECK.** `git log --oneline 66c7331..HEAD -- docs/reports/R1/step-4.md` is empty, so there is no new report revision and this counts against **none** of step 4's three. **Step 4 stands at 0 of 3; nothing is closed** -- no `Closes:` line (FK1). Light scope held: suite, CI, and a CZ0 (a)-(d) / FR1 scan of the diff. **No corpus batch and no closure list**, per ES0 -- not because EG4(e)'s pause holds, which it does not: it expired 28 October, which is R1149, mine, still Xabier's.
+Ruled under **FR1 with EZ0. NOTHING BLOCKS**, and for each ledger row I give the sentence FR1 asks for rather than a classification.
+
+**WHERE I WORKED (FV2).** Three worktrees of my own outside the repository, detached at `a596fa7`. Every arm reverted with `git checkout --` inside my own worktree, `git status --porcelain` empty afterwards each time. The implementer's tree: `git status --porcelain` empty and HEAD `a596fa7`, checked before I wrote.
+
+**STEP 1b DOES NOT BITE, AND MY INSTRUCTIONS DISAGREE WITH CLAUDE.md ON IT.** `docs/SUPERVISOR.md` 1b says HOLD if the report's `Answers:` header names an earlier verdict than the newest. It names 47 @ `779e79a`; the newest is 48 @ `6370e99`. **I ruled under CLAUDE.md -- ES0 and EG3 state (2) -- not under 1b**, because ES0 defines an interim check as a verdict on a tree with no new revision and EG3 state (2) names this exact state as designed and self-clearing. Read literally, 1b makes every interim check after a verdict an automatic HOLD and state (2) unreachable. For Xabier, once; not a round.
+
+**THE MANDATED SEPARATE DIFFS, `66c7331..HEAD`, four commits.**
+
+```
+cmd  git diff 66c7331..HEAD -- floatfea/tolerances.py | wc -l        ->  0 (not in the diff)
+cmd  git diff 66c7331..HEAD -- tests/conftest.py 'tests/**/conftest.py' | wc -l  ->  0
+cmd  git ls-files -- tests/conftest.py 'tests/**/conftest.py'  ->  tests/conftest.py
+     -- the pathspec RESOLVES; not an empty result, so no CH2/CI0 channel is opened
+cmd  git diff --stat 66c7331..HEAD -- .claude docs/SUPERVISOR.md CLAUDE.md  ->  (empty)
+     -- no STOP-class finding
+cmd  git diff --stat 66c7331..HEAD -- tests/corpus docs/reviews
+out  site_pattern_path_forms.txt 78+ / docs/reviews/R1/step-4.md 459+ -- both MINE
+     (`829942d`, `6370e99`); the implementer wrote neither
+cmd  git diff 66c7331..HEAD -- floatfea | grep -c "^[+-][^+-]"
+out  10 -- ALL TEN inside cli.py's TABLE_CAVEATS C_m string
+cmd  the shipped example configuration, PARSED on both sides
+out  yaml.safe_load(66c7331:examples/platform12_placeholder.yaml) == yaml.safe_load(HEAD:..)
+     True -- the 11/4 diff there is comment-only; no declared input moved
+cmd  ruff / black --check / mypy, over floatfea tests scripts
+out  All checks passed! / 162 files would be left unchanged. / Success: 45 source files
+cmd  FV1's four root guards  ->  222 passed in 39.62s
+     (221 at 66c7331; the +1 is the new regression file being collected, which is
+      test_collected_set_golden doing its job rather than a count drifting)
+```
+
+## Carried
+
+| item | status | measured by me |
+|---|---|---|
+| **R1148** (`carried_table.SITE` missing two pieces of `_SITE`) | **ANSWERED in `6ec0425`, and THE SECOND TOKEN IS IN SCOPE -- I ablated it rather than accept the account.** | One variable at a time, both patterns over all 18 verdict files: **HEAD 0 files disagreeing; lookbehind ONLY 6 files (33 tokens gained, 3 LOST); prefix ONLY 18 (3004 gained); neither 18 (3037 gained, 3 lost).** So `(?:R\d+-)*` is what makes the two copies agree on the DECISION, which is R1148's own first closing branch. The three tokens the lookbehind-only form LOSES are `frames.txt`, `g22_model_configurations.txt`, `tree_prose_claims.txt` -- the `check_sites` false-failure direction, measured rather than asserted. |
+| **R1139** | answered at verdict 48; carries nothing | not reopened |
+| **R1147, R1150, R1151, R1152, R1153, R1154** | **still open, correctly deferred to revision 2 under GC4** | R1147's seven sites are untouched and all still RESOLVE: `docs/directives/FZ.md:576` is byte-identical **and still at line 576** (the 130 FZ insertions begin at 687), so the closing condition did not go stale under this diff. R1151's site still ends `...stays out.#`. **R1152: the roll lists `GB.md` once and `GB.md` still has its own bullet below it -- the roll-plus-bullet shape R1152 described -- but the condition as written, "the roll lists it once", is met.** Closure item; not re-reviewed item by item (CZ0). |
+| **R1149** (EG4(e)'s pause expired 28 October) | **MINE and still Xabier's** | it is 7 November. ES0 runs no batch at an interim check anyway, so the pause did not decide this round. |
+| **R835 / R861** (EG3's enumeration; the baseline is a function of what the reviewer writes) | **still open, still Xabier's -- measured this round from a NEW direction, the COLLECTION side** | the three report files collect **3039 cases at `66c7331` and 562 at `a596fa7`**, down 2477, because `SITES` and the carried-row set are parametrised over the NEWEST VERDICT and verdict 48 is 459 lines where 47 was far longer. `test_every_named_site_is_touched_or_declared` goes **2261 -> 43**. Nothing vanished: the denominator is my own prose. **A whole-suite count compared across a verdict boundary is not a comparison** -- worth knowing before the next revision publishes one. |
+| **verdict 47 item 10(a)** (`docs/closure/R1.md` must carry the `cz1-closure-outputs` block the moment it exists) | **STILL LIVE** | `ls docs/closure/` has no `R1.md` |
+| **CZ1 (ii)/(iii)'s four outputs** | **owed at the closure commit, which still does not exist** | unchanged |
+
+## Findings
+
+**NOTHING BLOCKS.** No tolerance moved, no declared input moved, the lint gate and the four root guards are green, CI's whole ladder is green, and every red traces to EG3 state (2) by measurement. The three things you asked for first, then the ledger.
+
+### 1. R1156's repair and its gate -- VERIFIED by my own arms; the repair is right
+
+```
+cmd   baseline, tests/regression/test_r1_published_artifacts.py   ->  47 passed
+cell  `git checkout 66c7331 -- floatfea/cli.py` ALONE, artifacts untouched, restored after
+out   4 failed, 43 passed -- test_R1156_... plus caveat8 on all three artifacts
+cell  `git checkout 66c7331 -- results/R1/example` ALONE, source untouched, restored after
+out   4 failed, 43 passed -- the same four
+cell  `cm` injected into the 3.3.1 TENSION branch of check_member, one line, restored
+out   1 failed -- test_R1156_..., firing on its OWN branch guard ("the tension case does
+      not reach a 3.3.1 clause -- it governs on '3.2.3 bending'"), because cm * u_bending
+      at cm = 0.85 drops u_combined to 0.6956 under u_bending 0.7931 and the governing
+      clause flips. It reddens, and the assertion that fires is the one saying the control
+      has stopped measuring its own branch. That is the right failure, not a lucky one.
+rule  FZ rule 5 -- a named test row that fails on a revert of the repair ALONE. It does
+      now; SR-43 records honestly that the first version did not.
+```
+
+**The repaired sentence is a property of the CODE, not of this example.** `api_wsd.py:588-590` forms `u_combined` with no `cm` in the `in_tension` branch; `:600` is `amplified = u_axial + cm * u_bending / (1.0 - f_a / f_e)` in the compression branch alone, and `"3.3.1 interaction"` is emitted only when `in_tension`. So "leaves every row whose `governing_clause` reads `3.3.1 interaction` untouched" holds universally, not merely over the shipped 32 rows.
+
+**The ablation behind it reproduces exactly, on my own run at the configuration the commit describes and prints no command for** -- `Cm: 1.2`, everything else held:
+
+```
+out   governing U = 2.05621 at platform:hub4_arm ROOT (T = 12.5 s, 3.3.2 interaction)
+      3.3.1 interaction   6 rows    6 same,  0 moved
+      3.3.2 interaction  12 rows   10 ROSE,  0 fell,  2 same
+      3.2.4 beam shear   14 rows   14 same
+      -- the guide's section 4.6 table, figure for figure, measured rather than read
+```
+
+**FZ (c): I agree it is NOT an escalation, for a stronger reason than the one given.** The code-check basis did not move and no computed value moved -- **and `CM_JOINT_TRANSLATION`'s docstring already read "3.3.1 case (a)" for the VALUE and "3.3.2" for the TERM before this commit** (`api_wsd.py:110`, `:117-119`). The repair aligned a published caveat with an attribution the source of truth already carried, which is narrower than deciding one.
+
+### 2. docs/USER_GUIDE.md -- I ran every command it prints. Four figures are wrong; none blocks
+
+**Reproduced exactly in my own clean worktree:** `--help` verbatim; 6.1's eleven sections in that order and its admissibility table verbatim; 6.2's and 6.3's column lists against the real headers, with `source` and `heading_deg` empty on all 48 `static` rows; 6.6 (`168 rows`, box/False 84, triangle/True 84); 8.1 (`platform:hub2_arm ROOT 12.5 1.71167 3.3.2 interaction`, deliberate `max()` tie-break and all); 8.2 (`32 rows`, `[('12.5',26),('15',4),('16.2',2)]`, `over unity: 4`); 8.4 (`1248 rows`, all six basis counts); 8.5 (all four arms byte-identical); **8.7 -- I ran `floatfea run` and the filtered diff printed NOTHING, both CSVs byte-identical**; 9 (`470 passed`); the whole section 8 console block including `707/884/990/1061/1146/1415` steps, `1248`, `32` and the governing line; **all six refusal messages in 7.1, 7.6, 7.7, 7.8, 7.9 and 7.12 verbatim, with exit 2 and 7.12's exit 1 exactly as stated**; every bound and default in 4.1/4.3/4.4/4.6/4.7 against `config.py:187-201` and `CodeCheck`; 7.3's band arithmetic; 4.3's `z_r(f)` against `platform.py:839`; 4.7's `100/50 = 2 m`; 6.2's `4%` against caveat 2's own `4.0%`; and **every citation resolves** -- 20 of 20 internal section references against 43 headings, 11 of 12 cited paths present, the twelfth the absent root `README.md` that SR-44 already routes to R2.
+
+That is a good document, and the commands say so better than an adjective would. The four wrong figures are L1-L4.
+
+### 3. The 42 reds, each id against the FS1/FT1 predicate -- and a CONTROL for the three you flagged
+
+```
+out   42 failed, 520 passed (562 collected), and CI's guards step gives the same 42:
+       9  test_the_report_carries_the_finding[R518, R1147..R1154]      NAME a finding
+      23  test_every_named_site_is_touched_or_declared[...]            NAME a site
+       3  test_the_Carried_table_is_what_the_generator_produces
+          test_the_generator_would_catch_a_row_under_the_wrong_number
+          test_the_CI_section_is_about_the_REVIEWED_commit
+       7  test_the_guard_survives_the_state[7 states] -- INNER list read from its own
+          output rather than inferred from the name (EG3 (i)): `baseline` gives
+          `34 failed, 475 passed`, every id of the 35 above and no other id anywhere
+```
+
+**Your reading of the three is wrong, and the right ground is a measurement.** Routing them through "the site `docs/reports/R1/step-4.md`, which R1154 names" would waive any red that merely TOUCHES a file named anywhere in a verdict -- a hole wide enough to drive CZ1 (iv) through, worth refusing even where the outcome is the same. Instead:
+
+```
+cell  the SAME three ids at `66c7331`, where the newest report ANSWERS the newest verdict.
+      ONE variable moved between the trees: verdict 48 landed. The report did not change.
+out   66c7331  8 failed, 3031 passed -- none of the three is in the list
+      a596fa7  all three RED
+judge verdict-dependent BY MEASUREMENT, not by family.
+      `..._Carried_table_is_what_the_generator_produces` names R518, R849 and 32 more of
+      verdict 48's own rows IN ITS FAILURE LINE, so it reaches FS1 limb one outright.
+      `..._would_catch_a_row_under_the_wrong_number` and
+      `..._CI_section_is_about_the_REVIEWED_commit` reach NEITHER limb as worded -- one
+      reports an empty candidate list, the other two shas -- and I rule them boundary reds
+      on the measured cause, because a predicate that excluded them would make EG3 state
+      (2) UNREACHABLE and every verdict in this repository would redden the tree it lands
+      in. **R835/R861's fourth measured shortfall. Relayed, not re-litigated.**
+```
+
+## Ledger (FR1: none can cause a silently wrong result; one line each)
+
+**L1.** `docs/USER_GUIDE.md:102` says the committed `results/R1/example/report.md` records `solve | 190.07`. It records **63.96** -- and **`a596fa7` is the commit that moved it**, having edited the guide and regenerated the report in the same commit without re-taking the figure: **CP3 inside one commit, where an edit after the paste voids the paste.** Not blocking: a wall clock the guide itself calls not-a-specification, so no gate, CSV, input or design number is wrong by it. *Closed when* `:102` cites the committed value or withdraws the figure.
+
+**L2.** `docs/USER_GUIDE.md:951-957` -- 8.7's reference diff shows `-| solve | 190.07 |` and `-| total | 190.20 |` as the COMMITTED side; it is `63.96` and `64.08`, and my own regeneration gave `-| solve | 63.96 |` / `+| solve | 86.68 |`. Same cause and same edit as L1.
+
+**L3.** `docs/USER_GUIDE.md:251` says "those columns differ from `utilisation` on 10 of 32 rows" of a sentence about BOTH sensitivity columns. Measured: `utilisation_Cm_sens` differs on **10**, `utilisation_K_sens` on **2**, the pair on **12**. The argument survives either figure; the number was swept on one of the two axes it is attributed to.
+
+**L4.** `docs/USER_GUIDE.md:893` says "the largest is `1e-10 N.m`". The largest is **9.513095e-10**, which the same paragraph prints correctly as `-9.5e-10` two sentences earlier. One order of magnitude, self-contradicting on the page.
+
+**L5.** The guide defines lambda as the FROUDE SCALE in 4.1/4.7 and uses it as the WAVELENGTH in 7.3/8.3 (`H/lambda <= 1/7`, `H/lambda = 0.1550`) with no note; a reader taking 4.1's definition computes `24.2/50 = 0.484` against a stated limit of `0.1429`. Inherited from the artifact's own column name, which is why it is a ledger row and not a defect in the guide alone.
+
+**L6.** The published C_m caveat says a larger C_m "RAISES the compression utilisation", unconditionally. It is **non-decreasing, not increasing**: `u_combined = max(amplified, simple)` flattens C_m below the overtake, and 2 of the 12 `3.3.2 interaction` rows in the shipped example do not move. The guide's 4.6 says so; the caveat does not. The direction is never wrong in SIGN, so no number is wrong. Pre-existing (R743), not created here.
+
+**L7.** **I solved the new gate's boundary in the WEAKENING direction (EH4), which the commit did not.** `test_R1156_...`'s compression control is **blind to any C_m defect in `[0.85, 0.9758)`** at its chosen member: that member sits on the `simple` form at `cm = 0.85` and `amplified` only overtakes at **`cm = 0.9757685`** (bisected, 80 iterations). The row passes because it steps C_m by `0.35`, which is `2.8x` the detection boundary. The tension half is sharp -- exact equality, and my injection arm reddened it. Not blocking: the row's job is the clause attribution, it reddens on a revert and on a branch swap, and C_m's magnitude is held elsewhere. On the record so nobody re-derives it.
+
+**L8.** `docs/directives/README.md`'s provenance roll does not mention **GD**. Its text IS recorded verbatim inside `GC.md:109-144` by GD's own `Record:` line, which `GC.md` states -- so C25 does not reproduce and no rule is lost. The index is the only place it is absent.
+
+**L9.** `docs/USER_GUIDE.md` is a published deliverable (EZ0) that **no guard reads**: `tests/test_tree_prose_consistent.py:99`'s ROOTS is `("floatfea", "tests", "scripts", "docs/milestones", "docs/verification")`. 996 lines of figures whose only bound is a reader -- CJ0 applied to a deliverable. **No new apparatus through F6**, so it goes on `docs/milestones/F2a.md`; L1-L4 are what the absence cost in the file's first week.
+
+## Tolerances touched
+
+**None, and EU1 does not attach.**
+
+```
+cmd   git diff 66c7331..HEAD -- floatfea/tolerances.py | wc -l   ->  0
+cmd   git diff 66c7331..HEAD -- floatfea tests scripts | grep "^+" |
+        grep -nE "isclose|abs_tol|rel_tol|approx|atol|rtol|_COUNTER|tolerance"  ->  (no match)
+rule  CLAUDE.md section Tolerances, including anything functioning as a tolerance under
+      another name -- a convergence threshold, a comparison epsilon, a tier cutoff
+judge no tolerance VALUE and no DECLARED COUNTER moved, so EU1's adversarial-case
+      requirement is not triggered. **I ran the adversarial configurations anyway**,
+      because R694's lesson is that a value which does not move is the worst case and not
+      the safest: the Cm = 1.2 run in finding 1 and L7's boundary solve are both
+      configurations the diff did not choose, and L7 is what the second one found. The two
+      exact-equality assertions the new file adds both carry `# not-a-tolerance:`, and
+      tests/test_no_tolerance_literals.py is green on them (222 passed).
+```
+
+## Next step opens when
+
+**NOTHING IS OPENED AND NOTHING IS CLOSED BY THIS VERDICT.** It is an ES0 interim check: step 4 stays open at **0 of 3 reviewed revisions**, and the findings above join the step's list to be answered in revision 2 under GC4.
+
+1. **L1 and L2 first, together: one edit, and the only findings here a user trips over in one command.** `a596fa7` created them by regenerating `report.md` in the same commit that wrote the sentence citing it. L3 and L4 go with them.
+2. **R1147, R1150, R1151, R1152, R1153, R1154 are unchanged and remain revision 2's**, with R1147's seven sites verified still valid and still correctly numbered at this commit.
+3. **R1148 is answered and its second token IS in scope.** Ablated at 6 files of 18; nothing further owed.
+4. **L9 is the structural one.** A 996-line published deliverable no guard reads, in a milestone that forbids building one. `docs/milestones/F2a.md` is where it goes; the reviewer's reading is the bound until then, which is why I ran all six of section 7's refusals and every command in section 8 rather than reading them.
+5. **R1149 and R835/R861 are MINE and go to Xabier, not into a round.** The corpus pause's own date passed ten days ago; EG3's fourth measured predicate shortfall is finding 3, and the collection-count figure in `Carried` is the tenth measurement of R861's point.
+6. **A CORRECTION TO MY PREDECESSOR, because it would otherwise cost the next reviewer an hour.** Verdict 48 killed its combined run after "824 s of CPU and then frozen ... zero CPU movement over 20 s" and attributed it to a `.git` on OneDrive. **This `.git` is on local disk, the same thing happened to me, and it was not a freeze.** My main half sat at **exactly 854.75 s of CPU across three samples 6 s apart, at 9% complete** -- and once my other worktrees went idle it **resumed and finished: 1839 s and climbing, then `3957 passed in 2991.22s`**. It was BLOCKED on contention between my own concurrent worktrees over one shared object store, not dead. **Do not kill it; serialise it.** I could not kill it even when I tried, which is the only reason this measurement exists.
+7. **The schedule.** FW0's date is 10 November and it is 7 November: **three days**, against step 4 estimated at one and a half to two days plus half a day of closures (`docs/milestones/R1.md:52`), with GD2 putting revision 2 at end of 9 November. The guide exists and is good; FT2.7 does not. **I do not escalate under FZ (e) -- I am not forecasting a slip past 10 November -- but the margin is now under a day, and the next revision is the last one that can report a slip the day it is known rather than after.**
+8. **What this diff got right, and it is much the larger part.** The one real defect was found by the FL3 witness, traced from a guide sentence back through three published artifacts to the source string, and fixed AT THE SOURCE rather than in the artifacts. The gate was then written, measured against a revert, found NOT to fail, and rebuilt to read `TABLE_CAVEATS` -- and that failure was recorded as SR-43 rather than quietly repaired, which is the most useful paragraph in the diff. The repair KEPT the true half of the sentence it corrected, the value's own clause, instead of swapping one error for another. The stale `truss_sizing` comment in the shipped example was found and fixed with both end-to-end tests named, and both exist at the paths given. R1148 went beyond its stated condition for a reason that measures out. SR-44 reported a missing root `README.md` as a real new-user condition found by an accident, rather than writing into the guide something that could not document its own absence. And each of the three commits carries a `LOCAL SELECTION (FV1)` block, so the complement is a measurement rather than an omission.
+
+*Length: this runs past GA3's 150-line target by a little. The overrun is finding 2's measurement list and finding 3's control, and I would rather hand you the commands than the adjective.*
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
 # Review — R1 step 4
 Reviewed commit: 66c7331402512e674d0f65bc4059c8b4aa415cde
 **Reviewed commit: `66c7331402512e674d0f65bc4059c8b4aa415cde`.**
