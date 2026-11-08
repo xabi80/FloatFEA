@@ -1204,7 +1204,27 @@ def test_no_status_claims_more_than_the_verdict_allows() -> None:
 # was read as a path and this guard opened `R632-docs/reports/...`. A directory
 # segment in this repository never contains a hyphen before `step-`, and an item
 # prefix always does.
-_ANSWERS_PATH = re.compile(r"[\w./]*step-[\w.-]*answers\.json")
+#
+# AND IT MUST CARRY A DIRECTORY (R1166). The narrowing above stops the regex
+# swallowing an item prefix; it does not stop it matching the BARE basename
+# that the same parametrisation id ENDS with. Verdict 48's R1148 block names
+# `step-4-answers.json` without a directory -- it is quoting a table of four
+# such files -- so the generated CI section's FAILED list carries
+# `...test_every_named_site_is_touched_or_declared[R1148-step-4-answers.json]`,
+# and `findall` returns that bare name FIRST, before the qualified mention
+# further down the revision. `_answers_path()` then resolved to a file at the
+# repository root which does not exist, and the two checks that read the
+# answers file failed with "step-4-answers.json is not committed" at a commit
+# where it was committed.
+#
+# A REPORT WRITES THE PATH WITH ITS DIRECTORY WHEN IT MEANS THE FILE, and a
+# bare basename inside `[...]` is an id. So the match requires at least one
+# directory segment. This is EK2's repair-not-extend: the needle is corrected,
+# no fallback is added, and nothing asks whether the file happens to exist.
+# The measurement is in the step report (BI3) -- 20 reports, the old and new
+# needles agree on 19, and the one they differ on is the one where the old
+# needle resolved to a file that is not there.
+_ANSWERS_PATH = re.compile(r"(?:[\w.]+/)+step-[\w.-]*answers\.json")
 
 
 def _answers_path() -> Path:
