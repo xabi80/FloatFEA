@@ -103,3 +103,50 @@ Recorded as pointers, not as a reading — GA4 is one screen and GA1 retires the
 * **GC4** — the disposition of verdict 48's eight items, under GA1 rather than item by item.
 * **GC6** — revision 2 to the reviewer by **end of 8 November**, two rounds before FR0's
   10 November date.
+
+---
+
+# DIRECTIVE GD — restart in the new clone; close SR-35
+
+Received 7 November 2026, in the fresh clone at `C:\dev\floatfea`. Recorded verbatim as
+the first commit of the turn, under FP0. **GD's own `Record:` line sends it here rather
+than to a new file**, so it is appended to GC.md and not to `GD.md`. The text below is the
+directive exactly as given; nothing in it is paraphrased, reordered or summarised.
+
+```
+GD0 — This is a fresh clone at C:\dev\floatfea, on branch F3 at 8c55bc7.
+Set up the Python environment here first, the same way as in the old copy
+(venv + editable install with dev extras), and state the command you used
+in one line.
+
+DIRECTIVE GD — restart in the new clone; close SR-35
+Record: append to docs/directives/GC.md (no new file).
+
+GD1 — SR-35, both gaps closed from the supervisor's own record:
+  - GA6's original text, verbatim: "GA6 — Environment. Xabier will move
+    the repo off OneDrive. When suite_count.py finishes, apply the append
+    patch, commit, push (GA2), and state in the digest that everything is
+    pushed and no worktree holds unpushed work. Then stop for the move.
+    Do not clean up the 33 stale worktrees; the move makes that moot."
+    It is superseded by GC5 and recorded for completeness only.
+  - GA5 as originally issued had two sentences: an order ("finish
+    step 3, then step 4, then FL3") and the R2 rule. GB1 superseded the
+    order sentence (the plan's renumbering governs). GC0 reissued only
+    the surviving R2 rule. One text, two dates. Nothing to reconcile.
+  Append both to GA.md under a dated note, then close SR-35.
+
+GD2 — Restart checks, in the new clone, as GC5 says:
+  - clone HEAD == origin tip (state the sha)
+  - unit tier once, result in one line
+  - then GC6: docs/USER_GUIDE.md first, then the witness.
+  Revision 2 to the reviewer by end of 9 Nov.
+```
+
+## What GD changes
+
+* **GD1 closes SR-35.** GA6 and GA5's missing sentence now have text, from Xabier's own
+  record rather than from a reconstruction. Both are appended to `GA.md`; SR-35 is closed
+  in `FZ.md`.
+* **GD2 moves revision 2's date from end of 8 November to end of 9 November**, superseding
+  GC6's date. The 10 November date FR0 set is unchanged, so revision 2 now leaves **one**
+  round before it rather than two.

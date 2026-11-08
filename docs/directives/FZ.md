@@ -742,6 +742,14 @@ the GA message, or whether the numbering slipped — **GC0 is what Xabier reissu
 GA5 is what the file records**, and the discrepancy is noted rather than reconciled by
 guess. Not an escalation: no published number depends on it, so FZ (f) is not reached.
 
+*CLOSED, 7 November 2026 (directive GD1).* **Both gaps have text now, and neither came
+from me.** GA6 is recorded verbatim in `GA.md` and is superseded by GC5. And GA5 was never
+two texts: it was **one clause that lost a sentence** — GB1 quoted the order sentence it
+was withdrawing, GC0 reissued the R2 rule that survived. None of the three readings I
+offered was right, and the one I did not offer is the simple one. **The ruling itself
+held**: inventing nothing left a gap the author could close in two lines, and inventing
+something would have left a wrong record nobody could have checked against.
+
 **SR-36: this commit is PUSHED, which GA2 would otherwise forbid.**
 *Ruling applied:* FZ rule 7 — GC5 is the later and more specific instruction.
 *Why:* GA2 is "push only immediately before invoking the reviewer (FP1) or at end of day",
