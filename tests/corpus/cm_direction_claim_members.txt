@@ -1,0 +1,85 @@
+# CORPUS: MEMBER CONFIGURATIONS for the published C_m DIRECTION CLAIM.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the fifty-first verdict on R1, step 4 revision 2
+# (judged commit 6876854). EG4(e)'s pause expired on 28 October (R1149) and GC3
+# leaves it expired, so this is a batch at the reviewer's own discretion under
+# GA3's limit.
+#
+# WHY THIS FILE EXISTS (BE3). One sentence in `floatfea/cli.py`'s TABLE_CAVEATS,
+# published verbatim in `results/R1/example/report.md` and in the headers of both
+# published CSVs, has now been corrected THREE TIMES on three different axes:
+#
+#   R743   -- which utilisation C_m acts on at all
+#   R1156  -- which CLAUSE the term it multiplies sits in (3.3.2, not 3.3.1)
+#   R1162  -- the DIRECTION: `u_combined = max(amplified, simple)`, so the
+#             response is non-decreasing rather than increasing
+#
+# Each repair was verified against configurations its own author chose: one
+# member, one axial sign, one pair of C_m values, and the twelve
+# `3.3.2 interaction` rows of one shipped example. The axis this file sweeps is
+# the one none of the three repairs swept -- WHICH MEMBERS MAKE THE SENTENCE
+# FALSE -- over the two readings the phrase "the compression utilisation" has in
+# the artifact the sentence is printed in:
+#
+#   u_combined   the 3.3.2 interaction value, column `u_combined`
+#   utilisation  the GOVERNING maximum over all five clauses, column
+#                `utilisation`, which is the column a reader sizes steel against
+#
+# WHAT A PASSING SCAN MEANS. For each entry, build the member, evaluate
+# `check_member` at `cm=cm_lo` and at `cm=cm_hi` with every other input held, and
+# ask three questions:
+#
+#   (1) are BOTH readings non-decreasing?   `never_lowers` says what to expect
+#   (2) does `u_combined` STRICTLY rise?    `u_comb` says RISES or FLAT
+#   (3) does `utilisation` STRICTLY rise?   `util` says RISES or FLAT
+#
+# A scan passes when every entry rules as its own row states. The caveat's FIRST
+# clause -- "a LARGER C_m NEVER LOWERS the compression utilisation" -- is TRUE on
+# every entry here, on both readings, and that is the half worth keeping. The
+# caveat's SECOND clause -- "and RAISES it wherever the amplified form governs" --
+# is stated unconditionally and is FALSE on the entries marked
+# `breaks_second_clause=yes`. `docs/USER_GUIDE.md` section 4.6 carries the
+# qualifier the caveat does not ("with a bending term to multiply"), so the two
+# published deliverables SR-45 was written to reconcile still disagree, on the
+# clause R1167 is about.
+#
+# FIELDS. Loads are SI and tension-positive (R739). The section is the one the
+# shipped R1156 control uses: area_m2=1.3119290921390976,
+# section_modulus_m3=0.7103833648114783, torsional_modulus_m3=1.4207667296229567,
+# d_outer_m=2.5, wall_m=0.18, k_l_over_r=60.8, fy=FY_S355, e=E_STEEL. Shear and
+# torsion are zero unless the row names them, and moment_z_nm is always zero.
+# `form` is `interaction_form` at `cm_lo`; `clause` is `governing_clause` at
+# `cm_lo`. Every value in every row was measured at the judged commit, after the
+# last edit to the row it supports (CP3).
+#
+# C_m's declared domain is `MOMENT_REDUCTION_CM = ("-", 0.1, 2.0)`
+# (`floatfea/run/config.py:198`), so every `cm_lo`/`cm_hi` pair below is a pair a
+# configuration can actually carry. No entry needs a value outside it.
+#
+# COVERAGE AT THE JUDGED COMMIT, measured rather than asserted. Twelve entries,
+# all new. THREE of the twelve shapes are evaluated by a shipped row: the flat
+# band below the overtake (`compression_flat_band_below_overtake`, which is
+# exactly the control revision 2 adds), the tension case
+# (`tension_bending_any_cm`), and the strict rise under compression with a
+# substantial bending moment. NINE are evaluated by nothing, and the two that
+# refute the published sentence are both in the nine: no shipped row varies C_m
+# at ZERO bending moment, and no shipped row asserts anything about the
+# `utilisation` column under C_m at all. Measured: `cm=` appears in four rows of
+# `tests/verification/rung5/test_g61_api_wsd_hand_calculations.py` and seven of
+# `tests/regression/test_r1_published_artifacts.py`; in all eleven the bending
+# moment is non-zero, and the quantity asserted is `u_combined`.
+
+id=pure_axial_compression_zero_moment axial_n=-6.0e6 moment_y_nm=0.0 cm_lo=0.85 cm_hi=1.20 form=amplified clause=3.2.2_compression never_lowers=yes u_comb=FLAT util=FLAT breaks_second_clause=yes why=the_amplified_form_governs_and_there_is_no_bending_term_so_C_m_cannot_raise_anything__a_zero-moment_brace_is_an_ordinary_member_not_a_degenerate_one
+id=compression_bending_1e-2_Nm axial_n=-6.0e6 moment_y_nm=1.0e-2 cm_lo=0.85 cm_hi=1.20 form=amplified clause=3.3.2_interaction never_lowers=yes u_comb=RISES util=RISES breaks_second_clause=no why=the_entry_above_approached_from_the_other_side__strictly_rising_in_exact_arithmetic_and_invisible_at_the_six_significant_figures_the_CSV_prints__which_is_why_the_two_unmoved_shipped_rows_look_flat
+id=compression_flat_band_below_overtake axial_n=-6.0e6 moment_y_nm=1.5e8 cm_lo=0.85 cm_hi=0.90 form=simple clause=3.3.2_interaction never_lowers=yes u_comb=FLAT util=FLAT breaks_second_clause=no why=R1162s_own_mechanism__the_simple_form_governs_at_both_values_so_C_m_is_flat__this_is_the_band_revision_2s_new_control_measures_and_the_overtake_is_at_cm_0.9757684714917533
+id=compression_above_overtake axial_n=-6.0e6 moment_y_nm=1.5e8 cm_lo=0.98 cm_hi=1.20 form=amplified clause=3.3.2_interaction never_lowers=yes u_comb=RISES util=RISES breaks_second_clause=no why=both_values_sit_above_the_overtake_so_the_amplified_form_governs_at_both_and_the_response_is_strict__the_half_of_the_caveat_that_is_right
+id=compression_straddling_the_overtake axial_n=-6.0e6 moment_y_nm=1.5e8 cm_lo=0.95 cm_hi=1.00 form=simple clause=3.3.2_interaction never_lowers=yes u_comb=RISES util=RISES breaks_second_clause=no why=the_shipped_sensitivity_columns_own_configuration__simple_at_0.85_and_amplified_by_1.0__which_is_what_moves_ten_of_the_twelve_published_3.3.2_rows
+id=tension_bending_any_cm axial_n=6.0e6 moment_y_nm=1.5e8 cm_lo=0.85 cm_hi=1.20 form=tension clause=3.3.1_interaction never_lowers=yes u_comb=FLAT util=FLAT breaks_second_clause=no why=section_3.3.1_carries_no_C_m__the_caveats_third_clause_and_the_half_the_R1156_control_already_holds_at_exact_equality
+id=compression_cm_at_domain_floor axial_n=-6.0e6 moment_y_nm=1.5e8 cm_lo=0.10 cm_hi=0.85 form=simple clause=3.3.2_interaction never_lowers=yes u_comb=FLAT util=FLAT breaks_second_clause=no why=the_bottom_of_C_ms_declared_domain_is_still_inside_the_flat_band_at_this_member__so_the_whole_admissible_range_below_the_overtake_collapses_to_one_value
+id=compression_cm_at_domain_ceiling axial_n=-6.0e6 moment_y_nm=1.5e8 cm_lo=1.00 cm_hi=2.00 form=amplified clause=3.3.2_interaction never_lowers=yes u_comb=RISES util=RISES breaks_second_clause=no why=the_top_of_the_declared_domain_runs_the_utilisation_past_unity_and_must_not_be_refused_or_clamped__the_ceiling_is_a_declared_validation_bound_and_not_a_tolerance
+id=compression_near_euler_stress axial_n=-1.6e8 moment_y_nm=1.5e8 cm_lo=0.85 cm_hi=1.20 form=amplified clause=3.3.2_interaction never_lowers=yes u_comb=RISES util=RISES breaks_second_clause=no why=the_amplification_1_over_1_minus_f_a_over_F_e_is_large_but_finite__the_direction_must_survive_it_and_f_a_reaching_F_e_must_RAISE_rather_than_return_a_number
+id=negative_zero_axial axial_n=-0.0 moment_y_nm=1.5e8 cm_lo=0.85 cm_hi=1.20 form=tension clause=3.2.3_bending never_lowers=yes u_comb=FLAT util=FLAT breaks_second_clause=no why=minus_zero_is_classified_as_TENSION_so_the_member_takes_the_3.3.1_form_with_f_a_zero__a_sign-convention_boundary_no_shipped_row_names
+id=compression_torsional_shear_governs axial_n=-6.0e6 moment_y_nm=1.5e8 torsion_nm=5.0e8 cm_lo=0.85 cm_hi=1.20 form=simple clause=3.2.4_torsional_shear never_lowers=yes u_comb=RISES util=FLAT breaks_second_clause=yes why=u_combined_rises_0.814537_to_0.995191_while_the_PUBLISHED_utilisation_column_is_EXACTLY_flat_because_torsional_shear_governs__the_caveat_is_printed_in_the_file_carrying_both_columns_and_never_says_which_one_it_means
+id=compression_beam_shear_governs axial_n=-6.0e6 moment_y_nm=1.5e8 shear_z_n=9.0e7 cm_lo=0.85 cm_hi=1.20 form=simple clause=3.2.4_beam_shear never_lowers=yes u_comb=RISES util=RISES breaks_second_clause=no why=the_control_for_the_entry_above__beam_shear_governs_at_cm_lo_and_the_interaction_overtakes_it_by_cm_hi_so_the_utilisation_column_DOES_move__which_is_how_entry_11_is_shown_to_be_about_the_margin_rather_than_about_shear
