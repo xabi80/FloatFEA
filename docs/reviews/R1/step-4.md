@@ -2,6 +2,69 @@
 Reviewed commit: a596fa76b969b6bbf680df9029b94aabd45112a4
 **Reviewed commit: `a596fa76b969b6bbf680df9029b94aabd45112a4`.**
 Verdict: PASS
+Tests: **45 failed, 517 passed in 211.61s** in the three report-parametrised files, measured by me AT MY OWN VERDICT COMMIT `954e69d` -- which is EG3 (ii), the half no verdict in this milestone had measured until recently. The whole-suite figure is unchanged from the entry below: **4477 passed, 42 failed, 0 skipped** of 4519 at `a596fa7`, with CI run `42446638701` red only at `guards and meta-tests` and the whole verification ladder green.
+Scope: **ADDENDUM to the ES0 interim check below, on the same commit. It counts against no round either, and closes nothing** -- no `Closes:` line (FK1). It adds no new finding: it **RENUMBERS the nine ledger rows of that entry from `L1`-`L9` to `R1157`-`R1165`** so that the gating mechanism can see them. Everything else in that entry stands unaltered, and its measurements are where the evidence is.
+
+**WHY THIS ADDENDUM EXISTS, AND IT IS A DEFECT OF MINE.** I wrote my nine ledger rows as `**L1.` ... `**L9.`, following GA3's "one ledger line each". `tests/test_report_carried.py:237` extracts a verdict's findings with
+
+```
+_FINDING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)(?:[.\s]|,(?!\s*R\d))", re.MULTILINE)
+```
+
+so **an `L`-labelled row is not a finding to the guard at all.** Measured at `954e69d`: `test_the_report_carries_the_finding` is parametrised over **R518 and R1147-R1154 -- verdict 48's findings -- and not one of mine**, and `_FINDING.findall(VERDICT_TEXT)` is non-empty only because verdict 48's preserved entry is still in the file. So the mechanism would have gone green on a report that answered the previous round and ignored this one, and nothing would have said so.
+
+**That is this project's recurring species, committed from my side of the loop: a check whose collection cannot contain the thing it is looking for.** It is also why the renumbering is the repair and a sentence asking the implementer to remember is not -- ES0 says an interim check's findings join the step's list, and the list is read by a machine.
+
+## Carried
+
+Everything in the entry below, unchanged -- R1148 answered and ablated, R1139 answered, R1147/R1150/R1151/R1152/R1153/R1154 deferred to revision 2 under GC4, R1149 and R835/R861 mine and Xabier's, verdict 47 item 10(a) still live, CZ1's four outputs owed at a closure commit that does not exist. **Nothing is added and nothing is withdrawn.**
+
+## Findings
+
+**NOTHING BLOCKS.** The nine below are the SAME nine rows as `L1`-`L9` in the entry beneath this one, renumbered. Each is a ledger row under FR1, each with the sentence FR1 asks for, and the measurement for each is in that entry at the matching `L` number.
+
+**R1157.** (was L1) `docs/USER_GUIDE.md:102` says the committed `results/R1/example/report.md` records `solve | 190.07`; it records `63.96`, and `a596fa7` is the commit that moved it while editing the guide -- CP3 inside one commit. No gate, CSV, input or design number is wrong by a wall clock the guide itself calls not-a-specification. *Closed when* `:102` cites the committed value or withdraws the figure.
+
+**R1158.** (was L2) `docs/USER_GUIDE.md:951-957` publishes `-| solve | 190.07 |` / `-| total | 190.20 |` as the committed side; it is `63.96` / `64.08`. Same cause and same edit as R1157.
+
+**R1159.** (was L3) `docs/USER_GUIDE.md:251` -- "10 of 32 rows" for a sentence about BOTH sensitivity columns; `Cm_sens` differs on 10, `K_sens` on 2, the pair on 12.
+
+**R1160.** (was L4) `docs/USER_GUIDE.md:893` -- "the largest is `1e-10 N.m`"; it is `9.513095e-10`, printed correctly as `-9.5e-10` two sentences earlier.
+
+**R1161.** (was L5) the guide defines lambda as the Froude scale in 4.1/4.7 and uses it as the wavelength in 7.3/8.3, with no note.
+
+**R1162.** (was L6) the published C_m caveat's "RAISES" is non-strict: `max(amplified, simple)` flattens C_m below the overtake and 2 of 12 rows do not move. Never wrong in sign, so no number is wrong. Pre-existing (R743).
+
+**R1163.** (was L7) `test_R1156_...`'s compression control is blind to any C_m defect in `[0.85, 0.9758)` at its chosen member; `amplified` overtakes `simple` at `cm = 0.9757685`, and the row steps C_m by 0.35. EH4's weakening direction, solved.
+
+**R1164.** (was L8) `docs/directives/README.md`'s provenance roll does not mention GD; its text is recorded verbatim in `GC.md:109-144` by GD's own `Record:` line, so no rule is lost.
+
+**R1165.** (was L9) `docs/USER_GUIDE.md` is a published deliverable (EZ0) that no guard reads -- `tests/test_tree_prose_consistent.py:99`'s `ROOTS` excludes `docs/` at large. **No new apparatus through F6**, so it goes on `docs/milestones/F2a.md`; R1157-R1160 are what the absence cost in the file's first week.
+
+## Tolerances touched
+
+**None, and EU1 does not attach.** Unchanged from the entry below, where the commands are: `git diff 66c7331..HEAD -- floatfea/tolerances.py | wc -l` is `0`, no declared counter moved, and I ran the adversarial configurations anyway -- the `Cm = 1.2` run and R1163's boundary solve, which is what found R1163.
+
+## Next step opens when
+
+**NOTHING IS OPENED AND NOTHING IS CLOSED.** Step 4 stays open at **0 of 3 reviewed revisions**.
+
+1. **R1157 and R1158 first, together: one edit.** Then R1159 and R1160.
+2. **R1157-R1165 must appear in revision 2's `Carried` section**, which is now something the guard will ask for rather than something you have to remember -- that is the whole content of this addendum.
+3. **R1147, R1150, R1151, R1152, R1153 and R1154 are unchanged and still revision 2's.**
+4. **EG3 (ii), paid from my side:** `45 failed, 517 passed` at `954e69d`, in the same five classes as the 42 at `a596fa7` -- 26 site cases, 9 finding cases, 3 that reach neither FS1 limb and are ruled on the measured cause, and the 7-state cascade. The count rose because my own verdict is now the newest; **it is a function of what I write, which is R861 again.** They clear when revision 2 answers them, not by time.
+5. **R1149, R835/R861 remain MINE and go to Xabier.** So does one more, and it is about my own instructions: **`docs/SUPERVISOR.md` says `scripts/write_verdict.py` "commits to the branch" and it does not commit at all** -- the reviewer must commit, and the only tree where that reaches branch `F3` is the implementer's checkout, which FV2 tells the reviewer never to write in. I resolved it by using the one sanctioned door and nothing else, left the tree clean, and am recording the contradiction rather than letting the next reviewer discover it.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 4 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: a596fa76b969b6bbf680df9029b94aabd45112a4
+**Reviewed commit: `a596fa76b969b6bbf680df9029b94aabd45112a4`.**
+Verdict: PASS
 Tests: **4477 passed, 42 failed, 0 skipped** of 4519 collected -- MY OWN RUN at the judged commit, in clean worktrees of my own (FV2), in EI0's two halves: the main half `3957 passed, 2 warnings in 2991.22s (0:49:51)`, **0 failed and 0 skipped**, and the three report-parametrised files `42 failed, 520 passed in 205.08s`. **Every red is inside those three files and nowhere else**; all 42 are EG3 state (2), and the trace is finding 3.
 CI (FP1): run **42446638701** at `a596fa7`, `completed/failure`. **The verification ladder is SUCCESS, all six rungs.** `lint, unit and guards` failed only at `guards and meta-tests`, with `actionlint`, `ruff`, `black --check`, `mypy` and `unit tests` all SUCCESS above it, so nothing hid behind an earlier red (CZ1 (iii)). That step reports **42 failed, 1435 passed** and its FAILED list is **id for id identical to mine** -- a machine I do not control, a different OS, reaching the same 42. **CA2's HOLD is not reached because every one of the 42 satisfies the FS1/FT1 predicate or the measured cause in finding 3**, not because my local run was green.
 Scope: **ES0 INTERIM CHECK.** `git log --oneline 66c7331..HEAD -- docs/reports/R1/step-4.md` is empty, so there is no new report revision and this counts against **none** of step 4's three. **Step 4 stands at 0 of 3; nothing is closed** -- no `Closes:` line (FK1). Light scope held: suite, CI, and a CZ0 (a)-(d) / FR1 scan of the diff. **No corpus batch and no closure list**, per ES0 -- not because EG4(e)'s pause holds, which it does not: it expired 28 October, which is R1149, mine, still Xabier's.
