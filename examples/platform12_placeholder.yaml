@@ -179,9 +179,16 @@ outputs:
   # FL2(b): both OFF by default. Under FM0 they propose from fixed forces and then
   # RE-SOLVE at the selected sections.
   #
-  # `required_section` is wired (FT2.4) and needs a `sections.candidates` grid -- see the
-  # commented block under `sections` above. It writes `required_section.md` beside the
-  # three artifacts and is left off here because step 1's gate pins this run's outputs.
-  # `truss_sizing` is FT2.5 and still refuses by name.
+  # `required_section` (FT2.4) needs a `sections.candidates` grid -- see the commented
+  # block under `sections` above -- and writes `required_section.md` beside the three
+  # artifacts. `truss_sizing` (FT2.5) needs that grid AND the `truss` block, and writes
+  # `truss_sizing.md`. Both are left off here because step 1's gate pins this run's
+  # outputs. Setting both at once is refused: they walk the same grid.
+  #
+  # The sentence that stood here said `truss_sizing` "still refuses by name", which was
+  # true before FT2.5 shipped and false afterwards. Both end-to-end paths are held by
+  # tests rather than by this comment --
+  # tests/regression/test_ft24_required_section.py::test_END_TO_END_the_CLI_writes_required_section_md_with_both_max_U_values
+  # and tests/regression/test_ft25_truss_sizing.py::test_END_TO_END_truss_sizing_writes_its_artifact_and_DISCLAIMS_the_U.
   required_section: false
   truss_sizing: false

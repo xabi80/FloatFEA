@@ -765,3 +765,49 @@ line in a file **this commit edits anyway** for GA and GC, and leaving a record 
 rewriting the paragraph around it is not a saving. No census of sibling entries was run,
 which is the part of GA1 that governs. The remaining verdict-48 items (R1147, R1148,
 R1150, R1151, R1153, R1154) stay for revision 2 under GC4.
+
+**SR-38: `docs/USER_GUIDE.md` is a published deliverable that NO guard reads, so every claim
+in it is a runnable command or a pointer to the test that holds it.**
+*Ruling applied:* FZ rule 7, resolved toward BF0's existing convention, under GA1's freeze.
+*Why:* `tests/test_tree_prose_consistent.py`'s `ROOTS` is
+`("floatfea", "tests", "scripts", "docs/milestones", "docs/verification")` -- `docs/` at
+large is not in it, so nothing mechanically checks a sentence in the guide, and it is
+read by someone with no other source (FR4's witness reads ONLY this file). Adding a root
+would be new apparatus and GA1 forbids it. So the discipline is in the document's form
+instead: a figure is pasted from a run made in this clone with the command beside it, and
+a behaviour nothing printed points at the test id asserting it. **Four of my own draft's
+claims failed that form and were caught by applying it**, listed in the digest.
+
+**SR-39: GC6's "superseded-row flag" is read as `superseded_FY3`, and the OTHER `SUPERSEDED`
+marker is documented beside it.**
+*Ruling applied:* FZ rule 7 (ambiguous wording resolved toward existing conventions).
+*Why:* the phrase matches one thing in the repository literally -- `results/F6b/truss_sizing.csv`
+carries a per-row `superseded_FY3` column and its own header calls it "the per-row
+superseded_FY3 column". A reader of a `section=triangle` row there is reading a figure FY3
+ruled unconservative. But a second, unrelated `SUPERSEDED` appears in the header of every
+CURRENT artifact (FA1's generic `0.6*Fy` reference), and a guide that explained one and not
+the other would leave a reader sure they had met the flag when they had met the other one.
+Both are in § 6.6, distinguished. Not an escalation: no published number depends on which
+reading GC6 meant, so FZ (f) is not reached.
+
+**SR-40: the shipped example's `truss_sizing` comment was false and is fixed here.**
+*Ruling applied:* FZ rule 5 (a self-found defect is fixed), with CW0 deciding the form.
+*Why:* `examples/platform12_placeholder.yaml` said "`truss_sizing` is FT2.5 and still
+refuses by name". It was true before FT2.5 shipped in step 3 and false after; measured by
+running it, `truss_sizing: true` writes `truss_sizing.md` with 120 truss cells at exit 0.
+CW0 is that prose in the source tree is a test, a triple, or deleted, so the replacement
+names the two end-to-end test ids rather than making the claim again --
+`test_END_TO_END_the_CLI_writes_required_section_md_with_both_max_U_values` and
+`test_END_TO_END_truss_sizing_writes_its_artifact_and_DISCLAIMS_the_U`, both verified
+present at this commit.
+
+**SR-41: `floatfea export`'s "not implemented in R1 step 1" message is LEDGERED, not fixed.**
+*Ruling applied:* FR1 -- a refusal whose message is unclear but whose outcome is right does
+not block -- read with GC4's instruction to apply GA1.
+*Why:* the message names step 1 as its scope and we are in step 4; FL2(c)'s naming half has
+since shipped. The OUTCOME is unchanged and correct: the configuration is validated and the
+command refuses rather than inventing dynamic inputs. Editing a user-visible refusal string
+is a change to published behaviour with tests asserting on it, for no change in what any
+user can do. **The guide says the step reference is stale rather than quoting it as
+current**, which is the part that could otherwise mislead a reader.
+
