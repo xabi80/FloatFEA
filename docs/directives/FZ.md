@@ -811,3 +811,45 @@ is a change to published behaviour with tests asserting on it, for no change in 
 user can do. **The guide says the step reference is stale rather than quoting it as
 current**, which is the part that could otherwise mislead a reader.
 
+**SR-42: R1156 -- the `C_m` clause attribution in a PUBLISHED caveat was wrong and is FIXED,
+not ledgered.**
+*Ruling applied:* FR1's second head -- "an input accepted and used other than as declared"
+-- read with FZ rule 5 (a self-found defect is fixed with a named test row).
+*Why:* `floatfea/cli.py`'s `TABLE_CAVEATS` said `C_m` multiplies the bending term in
+"section 3.3.1's interaction", and that sentence is published in the header of `report.md`
+and BOTH CSVs. `C_m` is in § 3.3.2's amplified form only -- `api_wsd.py` says so in its own
+words at the `CM_JOINT_TRANSLATION` docstring, and `check_member` evaluates
+`u_axial + cm * u_bending / (1 - f_a/F_e')` in the compression branch alone. So a
+configuration's declared `code_check.Cm` was published as acting on the tension+bending
+clause while acting on the compression one, which is FR1's second head exactly. **The two
+clauses the old sentence ran together are both real**: the VALUE `0.85` is tabulated in
+§ 3.3.1 case (a), the TERM it multiplies is in § 3.3.2, and the repair keeps both rather
+than swapping one error for another. **NOT an FZ (c) escalation**: the code-check basis is
+unchanged -- which clause applies to what did not move, no computed value moved, and the
+regenerated artifacts differ only in that sentence and the wall clocks.
+
+**SR-43: my own R1156 gate could not go red on a revert, and that was measured rather than
+assumed.**
+*Ruling applied:* FZ rule 5's "with a named test row", read with EQ0's reason for existing.
+*Why:* the first version of the gate asserted the corrected sentence in the three
+ARTIFACTS. Reverting `cli.py` left it PASSING, because the artifacts on disk had already
+been regenerated and lag the source until someone runs the example. A gate that cannot go
+red on a revert of the repair it guards is not holding the repair. It now reads
+`floatfea.cli.TABLE_CAVEATS` as well, and the cycle is green / red on revert / green on
+restore. **This is the EQ0 lesson arriving from the other side**: a green suite could not
+see it, and only running the revert could.
+
+**SR-44: the witness could not find the guide, and the guide is NOT where that gets fixed.**
+*Ruling applied:* GA5 -- documentation beyond `USER_GUIDE.md` goes to R2 -- with FZ rule 7
+on where a fix belongs.
+*Why:* two causes, and the first is mine. **(i)** The witness's worktree was created from
+`master` rather than from my `HEAD`, which is my setup error;
+`git rev-parse worktree-agent-...` was `83f88be`, F1's closure commit. **(ii)** And that
+accident produced the REAL new-user condition, which is the finding: `master` carries no
+`docs/USER_GUIDE.md`, no `README.md`, and nothing pointing at either, so a reader handed
+this repository at its default branch has no entry point at all. The witness recovered only
+by `git log --all --name-only -- '*USER_GUIDE*'`, which is not a user action.
+**A missing file cannot document its own absence**, so there is nothing to add to the guide;
+the fix is a `README.md` on the default branch and GA5 routes it to R2. Recorded for Xabier
+rather than written, and it is the second time this gap has been raised -- the first was my
+own ledger note before the witness ran, and the witness is what measured it.

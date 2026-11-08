@@ -354,3 +354,121 @@ def test_R819_FQ0_the_artifacts_state_the_FLAT_D_over_t_ceiling() -> None:
     for fy in (235e6, 355e6, 460e6, 690e6):
         with pytest.raises(ValueError, match="the flat upper limit"):
             allowable_bending(d_outer=2.5, wall=2.5 / 300.01, fy=fy)
+
+
+def test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES() -> None:
+    """R1156: the published caveat attributed `C_m`'s term to the wrong clause.
+
+    **FOUND BY THE FL3 WITNESS, WHICH IS WHAT THE WITNESS IS FOR.** A fresh-context
+    agent following only `docs/USER_GUIDE.md` changed `code_check.Cm` from `0.85` to
+    `1.2`, found `U` rising `1.71167 -> 2.05621`, and then found that every row that
+    moved reads `3.3.2 interaction` while all six rows reading `3.3.1 interaction` were
+    bit-identical -- against a caveat, published in all three artifacts, saying `C_m`
+    multiplies the bending term in "section 3.3.1's interaction".
+
+    The two facts the old sentence ran together, and both are true:
+
+    * the VALUE `0.85` is tabulated in § 3.3.1 case (a), members in frames subject to
+      joint translation -- which is what `CM_JOINT_TRANSLATION`'s docstring is about;
+    * the TERM it multiplies is in § 3.3.2's amplified interaction, `u_axial + cm *
+      u_bending / (1 - f_a/F_e')`, which `check_member` evaluates in the compression
+      branch ONLY.
+
+    So this gate checks the published sentence AND the code's own behaviour, which is
+    `test_R819_FQ0_the_artifacts_state_the_FLAT_D_over_t_ceiling`'s shape and for its
+    reason: a caveat and a clause must not be able to
+    drift apart again. R743 already corrected this sentence's DIRECTION once, in
+    `api_wsd.py`, and left the clause number wrong in `cli.py`.
+    """
+    # ---- the SOURCE, which is what a revert of the repair moves ------------------
+    #
+    # **THE FIRST VERSION OF THIS GATE CHECKED ONLY THE ARTIFACTS AND SO COULD NOT GO
+    # RED ON A REVERT.** Reverting `cli.py`'s caveat and re-running left it PASSING,
+    # because the regenerated files on disk still carried the corrected sentence -- the
+    # artifacts lag the source until someone runs the example. FZ rule 5 asks for a row
+    # that fails when the repair ALONE is reverted, and that row has to read
+    # `TABLE_CAVEATS`. Measured: with this block present a revert of `cli.py` reddens
+    # here; without it, the revert was green.
+    cm_caveats = [c for c in TABLE_CAVEATS if "C_m" in c]
+    assert len(cm_caveats) == 1, (  # not-a-tolerance: FO2's nine caveats, one about C_m
+        f"expected exactly one caveat about C_m in `floatfea.cli.TABLE_CAVEATS`, found "
+        f"{len(cm_caveats)}. If a second was added, this gate no longer knows which one "
+        f"carries the clause attribution."
+    )
+    source = cm_caveats[0]
+    assert "section 3.3.2's AMPLIFIED interaction" in source, (
+        "`floatfea.cli.TABLE_CAVEATS` does not attribute C_m's term to section 3.3.2. "
+        "This is the source of the sentence published in all three artifacts, so it is "
+        "what a revert of R1156 moves."
+    )
+    assert "section 3.3.1's interaction" not in source, (
+        "`floatfea.cli.TABLE_CAVEATS` still says C_m multiplies the bending term in "
+        "section 3.3.1's interaction. 3.3.1 is tension + bending and carries no C_m."
+    )
+
+    # ---- the published sentence, in every artifact -------------------------------
+    for path in ARTIFACTS:
+        text = _normalised(path.read_text(encoding="utf-8", errors="replace"))
+        assert "section 3.3.2's AMPLIFIED interaction" in text, (
+            f"{path.name} does not attribute C_m's term to section 3.3.2. R1156 is that "
+            f"it said 3.3.1, which is the clause the VALUE comes from and not the clause "
+            f"the TERM is in."
+        )
+        assert "section 3.3.1's interaction" not in text, (
+            f"{path.name} still says C_m multiplies the bending term in section 3.3.1's "
+            f"interaction. It does not: 3.3.1 is tension + bending and carries no C_m."
+        )
+        assert "section 3.3.1 case" in text, (
+            f"{path.name} dropped where the VALUE 0.85 comes from. Correcting the clause "
+            f"of the term must not delete the true fact the old sentence contained."
+        )
+
+    # ---- and the code, one variable moved ----------------------------------------
+    from floatfea.checks.api_wsd import E_STEEL, FY_S355, check_member
+
+    common: dict[str, float] = dict(
+        shear_y_n=0.0,
+        shear_z_n=0.0,
+        torsion_nm=0.0,
+        moment_y_nm=1.5e8,
+        moment_z_nm=0.0,
+        area_m2=1.3119290921390976,
+        section_modulus_m3=0.7103833648114783,
+        torsional_modulus_m3=1.4207667296229567,
+        d_outer_m=2.5,
+        wall_m=0.18,
+        k_l_over_r=60.8,
+        fy=FY_S355,
+        e=E_STEEL,
+    )
+
+    # TENSION-POSITIVE (R739), so a positive axial is the 3.3.1 branch.
+    tension_lo = check_member(axial_n=+6.0e6, cm=0.85, **common)  # type: ignore[arg-type]
+    tension_hi = check_member(axial_n=+6.0e6, cm=1.20, **common)  # type: ignore[arg-type]
+    compress_lo = check_member(axial_n=-6.0e6, cm=0.85, **common)  # type: ignore[arg-type]
+    compress_hi = check_member(axial_n=-6.0e6, cm=1.20, **common)  # type: ignore[arg-type]
+
+    assert "3.3.1" in tension_lo.governing, (
+        f"the tension case does not reach a 3.3.1 clause -- it governs on "
+        f"{tension_lo.governing!r}, so this control is not measuring the branch "
+        f"it claims to."
+    )
+    assert "3.3.2" in compress_lo.governing, (
+        f"the compression case does not reach a 3.3.2 clause -- it governs on "
+        f"{compress_lo.governing!r}, so this control is not measuring the branch "
+        f"it claims to."
+    )
+    # not-a-tolerance: EXACT equality. C_m does not enter 3.3.1's form at all, so the
+    # tension utilisation is the same float, not a nearby one.
+    assert tension_lo.utilisation == tension_hi.utilisation, (
+        f"moving C_m from 0.85 to 1.20 moved the TENSION utilisation "
+        f"{tension_lo.utilisation!r} -> {tension_hi.utilisation!r}. Section 3.3.1 carries "
+        f"no C_m, so this would mean the caveat's clause attribution is wrong in the "
+        f"other direction."
+    )
+    assert compress_hi.utilisation > compress_lo.utilisation, (
+        f"moving C_m from 0.85 to 1.20 did not RAISE the compression utilisation "
+        f"({compress_lo.utilisation!r} -> {compress_hi.utilisation!r}). R743's correction "
+        f"was that a larger C_m gives a larger utilisation; if this fires, either the "
+        f"direction or the branch has moved."
+    )

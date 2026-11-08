@@ -37,6 +37,10 @@ If you are looking for a certified design check, this is not it. If you are look
 
 You need **Python 3.13** (the project pins `>=3.13,<3.14`) and `git`.
 
+**Run both commands from the repository root** — the directory holding `pyproject.toml`.
+`-e ".[dev]"` and `-c constraints-dev.txt` are both relative to it, and § 4 will shortly
+ask you to think carefully about which directory other paths resolve against.
+
 ```bash
 py -3.13 -m venv .venv
 ```
@@ -92,8 +96,12 @@ verified under.
 ```
 
 That is the whole interface for an analysis: **one command, one configuration file.** It
-takes about a minute on a current laptop and prints its progress as it goes. § 8 walks
-through the output line by line.
+prints its progress as it goes, and § 8 walks through the output line by line.
+
+**Budget a minute to five.** It was 64–70 s on the machine this guide was written on, and
+the committed `results/R1/example/report.md` records `solve | 190.07` from a slower one, so
+do not read either figure as a specification. The solve is the whole of it; nothing else in
+the run takes measurable time.
 
 ---
 
@@ -234,9 +242,41 @@ Give **exactly one** of `npz` or `cases`. Both, or neither, is refused (§ 7.7).
 | `K_sensitivity` | – | `1.0` | `0.5 .. 3.0`, or `null` for none |
 | `Cm_sensitivity` | – | `1.0` | `0.1 .. 2.0`, or `null` for none |
 
-The two sensitivities are one-variable reruns of the screen, reported beside the main
-result as extra columns in `utilisation.csv`. `C_m` **multiplies** the bending term in
-section 3.3.1's interaction, so a larger `C_m` *raises* the compression utilisation.
+**The two sensitivities are ABSOLUTE VALUES, not factors.** `Cm_sensitivity: 1.0` re-runs
+the screen at `C_m = 1.0` whatever `Cm` is, and `K_sensitivity: 1.0` at `K = 1.0`. They are
+one-variable reruns reported beside the main result as the extra columns
+`utilisation_K_sens` and `utilisation_Cm_sens` in `utilisation.csv`. The identical unit and
+bounds invite the other reading — under which `1.0` would mean "no change" and the shipped
+example would publish two dead columns — so it is worth being explicit: in the shipped
+example those columns differ from `utilisation` on 10 of 32 rows.
+
+**Where `C_m` acts, and the two clauses are not the same one.** `C_m` multiplies the
+bending term in **section 3.3.2's amplified interaction** — `u_axial + C_m·u_bending /
+(1 − f_a/F_e')`, the **compression** branch — so a larger `C_m` *raises* compression
+utilisations and leaves every row whose `governing_clause` reads `3.3.1 interaction`
+(tension + bending) **untouched**. The *value* `0.85` is a different matter: it is tabulated
+in **section 3.3.1 case (a)**, members in frames subject to joint translation. Value from
+3.3.1, term in 3.3.2.
+
+This guide said "section 3.3.1's interaction" in its first draft, inheriting the error from
+a caveat published in all three artifacts. It was caught by changing `Cm` and seeing which
+rows moved. At `Cm: 1.2` instead of `0.85`, nothing else touched, the governing `U` rises
+`1.71167 → 2.05621` at the same member, station, period and clause, and:
+
+| rows | what happened |
+|---|---|
+| 6 governed by `3.3.1 interaction` | **none moved** — the clause carries no `C_m` |
+| 12 governed by `3.3.2 interaction` | **10 rose, 0 fell** |
+| 14 governed by `3.2.4 beam shear` | none moved — not an interaction clause |
+
+The two `3.3.2` rows that did not move are TIP stations whose bending term is
+`u_bending = 1.6e-10` and `1.7e-09`: there is nothing there for `C_m` to multiply. Compare
+`platform:hub2_arm` ROOT at `u_bending = 1.71139`, which moves.
+
+The caveat is corrected, and
+`tests/regression/test_r1_published_artifacts.py::test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES`
+now holds both halves — the published sentence and the code's own behaviour on a tension
+and a compression case.
 
 ### 4.7 Model scale, full scale, and λ
 
@@ -855,9 +895,20 @@ is an easy mistake to make, and it is how this guide's first draft published the
 
 ### 8.6 Finding a section that passes
 
-The declared tube fails at `U = 1.71167`. Uncomment the `candidates` block in
-`examples/platform12_placeholder.yaml` (it is there, commented, under `sections`), set
-`outputs.required_section: true`, and run again. On the shipped grid:
+**Copy the example first.** The shipped configuration writes into `results/R1/example/`,
+which holds the pinned artifacts you have just verified. A `required_section` run is a
+*different* configuration, so it replaces those CSVs with genuinely different numbers and
+adds a `required_section.md` that `git checkout --` will not remove. § 8.7's restore
+covers the benign case — same configuration, byte-identical CSVs — and does **not** cover
+this one.
+
+```bash
+cp examples/platform12_placeholder.yaml examples/my_sizing_test.yaml
+```
+
+Then in the copy: point `outputs.directory` somewhere of your own, uncomment the
+`candidates` block (it is there, commented, under `sections`), and set
+`outputs.required_section: true`. On the shipped grid:
 
 ```
   required_section: platform proposed candidate 3 of 3 at fixed-force max U = 0.995702
@@ -920,7 +971,9 @@ that is a real finding and worth reporting.
 470 passed in 305.57s (0:05:05)
 ```
 
-The full suite is large and slow; `tests/unit` in about five minutes is the sanity check.
+**The count is the pinned part; the time is not.** `470 passed` is what you should see;
+the same clone has run this in 137 s and in 305 s. The full suite is large and slow, and
+`tests/unit` is the sanity check.
 The numbers in § 8 are pinned by `tests/regression/test_r1_example_golden.py`, and the two
 sizing analyses by `test_ft24_required_section.py` and `test_ft25_truss_sizing.py`. If you
 want to know whether a figure in this guide is still true, those files are where it is
