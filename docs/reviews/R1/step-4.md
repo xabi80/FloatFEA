@@ -2,6 +2,64 @@
 Reviewed commit: c992e5432561342aea90d9c445b9c4a0d88ded93
 **Reviewed commit: `c992e5432561342aea90d9c445b9c4a0d88ded93`.**
 Verdict: PASS
+Scope: **ADDENDUM to the ES0 interim check at `c992e54`, correcting MY OWN figure and MY OWN causal claim. NO new findings, no change of disposition.** Still an interim check, still `--interim`, still counting against no round; step 4 stays at **1 of 3**, and the entry below it stands on everything except the two statements corrected here. Written because the whole-suite run I had abandoned COMPLETED after I wrote that entry, and it refutes what I said about it. BP0 and CP3 require a figure to be regenerated or withdrawn when the measurement underneath it moves; R861 is the precedent for a reviewer withdrawing its own figure one commit after publishing it.
+
+## Carried
+
+Nothing new is carried and nothing carried is discharged here. **R1170, R1171, R1172 and R1173 remain open exactly as the entry below states; R1168 and R1169 remain answered; R1174-R1177 remain ledger rows; `R835: unchanged, R2`.** This addendum touches only the two statements named below.
+
+## Findings
+
+**THE WHOLE-SUITE FIGURE EXISTS AND IS GREEN. MY ENTRY SAID IT COULD NOT BE TAKEN, AND THAT IS WITHDRAWN.**
+
+```
+claim  the whole suite at the judged commit
+cmd    python -m pytest -q -p no:randomly        (my own worktree at c992e54)
+out    4329 passed, 2 warnings in 3169.41s (0:52:49)
+rule   0 failed, 0 skipped. 4329 is the SAME total verdict 51 measured at 6876854
+       (3957 main half + 372 report files = 4329), so the count is unmoved across
+       the six commits of this range
+```
+
+Both warnings are pre-existing and benign: a `numpy` deprecation site, and `RuntimeWarning: overflow encountered in dot` raised deliberately by `tests/verification/rung1/test_corpus_configurations.py::...[orient_norm_overflow]`, which is a corpus entry whose whole point is the overflow.
+
+**So the record is now: `4329 passed, 0 failed, 0 skipped` at `c992e54`, plus CI `success` at the same commit** -- run `42553224916` completed after I wrote the entry below, with all six ladder rungs green (`ladder 1, 2, 3, 6, 4, 5` each `success`), `lint, unit and guards` green with every step run including `guards and meta-tests`, and the two determinism jobs `skipped` by their own conditions. **Zero reds anywhere, local or CI.** The entry below recorded CI as `in_progress`, which was true at every point it measured; this discharges it.
+
+**AND THE CAUSAL CLAIM IS REFUTED, BY THE ABLATION I SHOULD HAVE RUN BEFORE WRITING IT (BG0, applied to me).** The entry below says the whole-suite figure "is NOT in this verdict, and the reason is a measurement rather than a choice", and attributes it to the live `suite_count.py` run. **The processes were real and the attribution was not measured.**
+
+```
+cell   one variable -- whether a `suite_count.py` run is live. Verdict 51's run at
+       6876854, same machine, no such run: 2824.73s + 76.04s = 48:20 for the same
+       4329 tests. Mine at c992e54, four such processes live: 52:49
+judge  the contention cost about +9% of wall time. It did not prevent the
+       measurement; the run completed normally while I was reading a
+       block-buffered progress file and inferring a stall from it
+```
+
+**What I actually did was read a buffered file and call it a stall.** The dots in that file lag the run by a whole output block, so "8% after a hundred minutes" was never a measurement of progress -- it was a measurement of buffering. Invoking GE5 to sample was therefore unnecessary, though the sample itself (FV1's selection, 1136 passed) is correct and independently useful.
+
+**What SURVIVES from that passage, because it was measured rather than inferred:** a `suite_count.py` run was live in the main tree at `suite-count-x86d2suk` with four processes while the invocation said it had been stopped; fifteen `suite-count-*` worktrees have accumulated under `TEMP`; and every `--out` went to a pytest tmpdir with `git status -- results/ scripts/` empty, so nothing in the repository was at risk. The request that its figure not be published also stands, since the invocation itself says it was at a stale commit.
+
+*Nothing here blocks and nothing here is new against the implementer.* Both corrections are to my own prose, and under FR1 a reviewer's own wrong figure in a verdict is the same class as any other figure -- it goes on the record and does not consume a round.
+
+## Tolerances touched
+
+**None**, unchanged from the entry below: `git diff c88b0c0..c992e54 --numstat -- floatfea/tolerances.py tests/conftest.py 'tests/**/conftest.py'` is empty, and no value, form or counter moved. No ablation in this addendum; nothing was run that could change one.
+
+## Next step opens when
+
+**Unchanged from the entry below, with items 5's CI half and the whole-suite half both now DISCHARGED at `c992e54`.** Revision 3 still owes, in order: **R1173** (witness run 3 and `docs/closure/R1.md` with every transcript and each fixture's result against expected -- and that file has since landed at `8de5d2b`, which no verdict has reviewed); **R1174** (the caveat's third flat cause named in `floatfea/cli.py`, regenerated into all three artifacts, with `docs/USER_GUIDE.md:297` brought into line with its own table at 282-286); **R1170, R1171, R1172, R1175, R1176** answered at their named sites with every `out` re-taken after the last edit (CP3); and a CI run plus a whole-suite line **at revision 3's own commit**, since the two discharged here are at `c992e54` and three commits have landed since.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 4 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: c992e5432561342aea90d9c445b9c4a0d88ded93
+**Reviewed commit: `c992e5432561342aea90d9c445b9c4a0d88ded93`.**
+Verdict: PASS
 Scope: **ES0 INTERIM CHECK on R1 step 4 at `c992e54`.** `docs/reports/R1/step-4.md`'s newest mark is still `# Revision 2` / `Answers: verdict 50 @ 2158500`, so there is NO new reviewed revision: this counts against **no round** and step 4 stays at **1 of 3**. Written with `--interim` (FS2); no `Closes:` line (FK1). Ruled under **FR1 with EZ0**, and for each row I either give the silently-wrong-result sentence or say I cannot write it. **The `Answers:` check does not fire a HOLD here, and I am saying so rather than leaving it silent:** that check asks whether a REVIEWED REVISION answers the newest verdict, and its own stated reason is that "between a verdict landing and the report answering it the report legitimately predates the findings". That state is EG3 state (2) and it is the premise of an interim check, not a defect -- so revision 2 answering verdict 50 while verdict 51 exists is the designed state, and verdict 51's list (R1168-R1173) is answered in revision 3.
 Tests: **1136 passed, 0 failed, 0 skipped** -- MY OWN RUNS AT THE JUDGED COMMIT, in clean worktrees of my own (FV2), over FV1's local selection in full: `tests/unit` **470 passed**, the four root guards plus the two R1-example regression files **247 passed**, `tests/regression/test_r1_published_artifacts.py` **47 passed**, and the three report-parametrised files **372 passed**. **ZERO REDS ANYWHERE.** Lint at the judged commit: `ruff` `All checks passed!`, `black --check` `128 files would be left unchanged.`, `mypy` `Success: no issues found in 45 source files`. **THE WHOLE-SUITE FIGURE IS NOT HERE and `## The run` says why, with the measurement** -- I sampled under GE5 because a `suite_count.py` run is still live in the main tree.
 Door (FV2/GE4): **Every measurement in this verdict was taken in `git worktree`s of my own at `c992e54` under the session scratchpad** -- one for the suite, one for every ablation -- so each `git checkout --` restoring an arm ran in MY tree and could not reach the implementer's. In `C:/dev/floatfea` I ran read-only `git`, `gh` and process queries only. **The one write: this verdict file, written by `scripts/write_verdict.py` and committed in `C:/dev/floatfea`, touching `docs/reviews/R1/step-4.md` and nothing else** -- which is the door `docs/SUPERVISOR.md` section FV2 now records as the only one that exists until Xabier rules, because a detached worktree cannot move `F3`. I am naming it rather than tidying it, and nothing of yours moved: your uncommitted `docs/milestones/F2a.md` and untracked `docs/closure/R1.md` are untouched and were never staged.
