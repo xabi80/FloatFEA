@@ -7063,6 +7063,36 @@ the tool already closes.
 
 ---
 
+## 10. CI at THIS revision's own commit, which cannot be inside it
+
+**Verdict 54's item 3 asks for CI at revision 4's own commit, completed and green, with the
+job table — and the same verdict says what that item is.** It calls it *"a carry-forward of
+the standing requirement and not an open item against revision 3"*, because no run exists for
+a commit before it is pushed: **FT1's limb two, in the directive's own words, and
+`test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` is the second of the two ids that limb exists
+for.** So the sequence is the one CZ1 (iii) prescribes and the one verdict 54 itself followed
+at `c2bf7d7`: the report commit is pushed before the reviewer is invoked (FP1), and the run at
+its own sha is read **at the judged commit, by the reviewer**, not transcribed here.
+
+```
+claim  what a reader runs to see the run at this revision's own commit
+cmd    gh run list --commit $(git rev-parse HEAD) --json databaseId,conclusion,status
+rule   FT1 limb two -- a check whose SUBJECT is its own commit. Every run id in this
+       report is inside a generated CI section, which is R444's rule and the reason this
+       section names none
+```
+
+**It is pushed and the run was started by the push**, which is the part FP1 exists to
+guarantee: revision 3 ran three revisions with no CI run at any reviewed commit because the
+branch was pushed after the fact, and the first push bought a finding within minutes.
+
+**§ 0 above is the generated section FP1 asks for**, anchored on the commit this revision
+ANSWERS, and it is green on every job that ran — the whole verification ladder, and the
+`guards and meta-tests` step that CZ1 (iii) exists to see reach the runner rather than be
+skipped behind an earlier red. **§ 0a is the generated list of runs since that commit.**
+
+---
+
 ## 11. The whole suite (R309, EI0's two halves)
 
 **Both halves at ONE commit this time, and the tree is green on both.** Revision 3 had to
@@ -7096,10 +7126,15 @@ claim  the three report-parametrised files at THIS revision's own state, after t
        edit to it
 cmd    python -m pytest -q -p no:randomly tests/test_report_carried.py
          tests/test_report_numbers_are_sourced.py tests/test_report_guard_states.py
-out    430 passed in 85.97s (0:01:25)
+out    432 passed in 86.40s (0:01:26)
 rule   the set is parametrised over this report's sections and over the newest verdict's
        own findings and sites, so the figure at the report's own state is a different
        claim from the clean-worktree one. Both are above
+cell   **the figure moved while this revision was being written and that is the
+       parametrisation, not a flake.** It read `430` before section 10 existed and `432`
+       after, with no test file touched -- section 10 adds two cases to the set because
+       the set is parametrised over this report's own sections. Re-taken after the LAST
+       edit (CP3), which is this paste
 ```
 
 **And the guards half MOVED without a test being written, which is R835.**
