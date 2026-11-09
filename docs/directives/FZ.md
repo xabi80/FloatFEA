@@ -1080,3 +1080,83 @@ the output landed in `examples/results/` and I looked under `results/`, which
 own directory. *The reusable part:* when the expected outcome of a change is "nothing moves",
 a run that did not apply the change is indistinguishable from a successful one by its OUTPUT,
 so the check has to be on the INPUT.
+
+**SR-57: the repair of a count was itself a count, and the rule I am taking from it is to
+state the CONDITION.**
+*Ruling applied:* FZ rule 5, on a defect in a published deliverable found by the reviewer one
+commit after I shipped it (R1174).
+*Why:* R1168's repair replaced "RAISES it wherever the amplified form governs" with "FLAT in
+two places". **There is a third place and it is the dominant one on the shipped table:** the
+published `utilisation` is the MAXIMUM over clauses and C_m enters only `3.3.2 interaction`,
+so a row governed by `3.2.4 shear` is flat in C_m however large its bending term. My own
+census: 7 of 32 rows `amplified`, all 7 flat, 5 of them shear-governed with `u_bending` up to
+`3.84e-3`. **Two of this sentence's five corrections were counts or universals over an axis I
+had not swept**, which is what they had in common; and verdict 51 had offered "or names which
+column it means" for exactly this case, so the disjunct I did not take was the one that was
+about it. *The repair:* the caveat states three conditions and says explicitly that no count
+is given, because how many rows are flat is a property of the table and not of the clause.
+The test pins the condition's words AND asserts the old wording is gone, so the caveat cannot
+carry both forms at once.
+
+**SR-58: four line citations went stale inside one turn, and the remedy is to cite by name.**
+*Ruling applied:* BP0, with FW0's own parenthetical about what a line citation in a living
+document is worth.
+*Why:* one assertion in `tests/regression/test_r1_published_artifacts.py` is `:471` in the
+verdict, `:488` where I measured it at `af9c6aa`, and `:514` at the revision commit -- three
+numbers, one assertion, one round. `docs/USER_GUIDE.md`'s C_m qualifier moved from `:260` to
+`:298` under four edits; at the end `:260` read "`candidates`, and it is tubes." And the
+reviewer's own citation of the density gate at `platform.py:879` is the `findings.append(` on
+the line after `:878`. **None of these was wrong when written and all four were wrong when
+read.** *The rule:* cite the expression or the assertion BY NAME, and give a line number only
+with the commit it was taken at.
+
+**SR-59: the clause LABEL and the published NUMBER are two independent expressions, and I
+ledgered it rather than building against it.**
+*Ruling applied:* GA1 -- an apparatus or latent-fragility finding is fixed only if it could
+hide a blocking finding or make a wrong engineering result look green -- with FR1.
+*Why:* my first revert arm for R1174's new row injected a C_m factor into `check_member`'s
+`candidates` dict and **the row passed**. `candidates` decides `governing` only;
+`utilisation` is a property over `u_axial, u_bending, u_shear, u_torsion, u_combined`. So a
+change to one list and not the other would publish a clause label that does not match the
+published number, in both CSVs and the report. **No defect today** -- the two are built from
+the same five quantities -- and no guard is added, because that is new apparatus and the
+freeze holds until R1 is tagged. Aimed at the FIELD instead, the row fires:
+`2.106579274469036 -> 4.956657116397731`.
+
+**SR-60: the hook refused a commit message and this time I knew the rule instead of inferring
+it.**
+*Ruling applied:* FM1's own remedy -- "use the editing tool or stop and ask" -- with R1169's
+correction to SR-48.
+*Why:* my R1174 message named the reviewer's corpus directory and contained a backtick
+immediately after an arrow. R1107's `UNRESOLVED` clause reads a target it cannot resolve as a
+write it cannot clear, so the hook denied it, **correctly**. SR-48 met the same refusal and
+inferred a general rule from it; this time I could name the clause, so the response was
+FM1's prescribed one -- write the message to a file and commit with `-F`. **No rephrasing to
+slip the match**, and the cause is stated in the message rather than guessed at. This is what
+R1169 bought.
+
+**SR-61: I withdrew a finding of my own rather than publish it, because the reviewer refuted
+it by measurement.**
+*Ruling applied:* BP0 -- a figure whose rule moved is regenerated or withdrawn -- applied to a
+claim rather than a figure.
+*Why:* I had found the flat band's equality assertion shadowed under every one-line ablation I
+could construct -- four tried, each caught by an earlier assertion in the same test -- and had
+drafted it as a fact about the gate's structure. The reviewer's fifth arm,
+`simple = cm * f_a / (ALLOWABLE_TENSION_FACTOR * fy) + u_bending`, keeps the form guard true
+and reddens the band. **My four arms were not the right four.** Recorded as a withdrawal in
+revision 3 § 4 rather than dropped, because **a published claim that a gate is weak costs as
+much as a published claim that it is strong**, and a reader who found the withdrawn sentence
+later would have no way to know it had been refuted.
+
+**SR-62: revision 3's guards went green only after four rounds of repair in the working tree,
+and all four were real.**
+*Ruling applied:* FZ rule 5 on each, and CP3 on the order -- generate, edit, re-run, paste.
+*Why:* before the commit, the three report-parametrised files reported 132 failures. Not one
+was a boundary red: 7 numbers in prose with no command in their own section; **97 named sites
+with no `no change` declaration**, which is the "half of an item is not the item" rule;
+**20 carried pointers aimed at REVISION 2's section numbers**, where the guard's own message
+says "a rotation of pointers between rows looks exactly like this"; a missing `## 0a` rounds
+table; and a run id whose conclusion I had written as "is `success`" where R444 requires the
+WORD. Fixed to `407 passed, 0 failed` **at the report's own state**, which neither of the two
+previous revisions achieved -- so for the first time in this step neither EG3 boundary state
+arises and the FS1/FT1 predicate is not reached.
