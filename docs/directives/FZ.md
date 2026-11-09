@@ -1081,6 +1081,20 @@ own directory. *The reusable part:* when the expected outcome of a change is "no
 a run that did not apply the change is indistinguishable from a successful one by its OUTPUT,
 so the check has to be on the INPUT.
 
+**SR-57 -- CORRECTED IN PLACE, 9 November, after verdict 54's R1178.** The sentence this
+entry gives as its mechanism -- *"so a row governed by `3.2.4 shear` is flat in C_m however
+large its bending term"* -- **is FALSE**, and it is false for the reason the entry itself is
+about: it is a universal over an axis I had not swept. A member governed by `3.2.4 torsional
+shear` at `C_m = 0.85` with `U = 0.818471` is governed by `3.3.2 interaction` at
+`U = 1.639720` by `C_m = 2.00`, bending term unmoved, inside `MOMENT_REDUCTION_CM`'s own
+declared bounds `("-", 0.1, 2.0)`. **The census in this entry is correct and unchanged** --
+7 of 32 rows amplified, all 7 flat, 5 shear-governed; what was wrong is the mechanism
+attached to it. The repair this entry describes, three conditions and no count, is itself
+retired by R1178 and replaced by the closed form `max(B, a + C_m*s)`, where the published
+column's flatness is a question about where the kink `(B - a)/s` falls and not about either
+published column. Corrected in place rather than rewritten, per the SR-48 precedent (R1169).
+The original entry stands below.
+
 **SR-57: the repair of a count was itself a count, and the rule I am taking from it is to
 state the CONDITION.**
 *Ruling applied:* FZ rule 5, on a defect in a published deliverable found by the reviewer one
@@ -1160,3 +1174,58 @@ table; and a run id whose conclusion I had written as "is `success`" where R444 
 WORD. Fixed to `407 passed, 0 failed` **at the report's own state**, which neither of the two
 previous revisions achieved -- so for the first time in this step neither EG3 boundary state
 arises and the FS1/FT1 predicate is not reached.
+
+
+**SR-63: SR-57's own stated mechanism is corrected IN PLACE with a dated block rather than
+rewritten.**
+*Ruling applied:* FZ rule 7, toward the convention this log already has.
+*Why:* R1169 established that an SR entry whose reason was wrong is corrected in place and
+dated. The log records what was ruled AND why; replacing the why silently destroys the only
+evidence that a ruling rested on a bad reason, which is the thing a later reader most needs.
+
+**SR-64: the first draft of R1178's repair carried a universal of its own, and it is reported
+as a self-found defect rather than quietly fixed.**
+*Ruling applied:* FZ rule 5 -- a self-found defect is fixed with a named test row and
+reported.
+*Why:* I wrote "THE ONLY ROWS FLAT AT EVERY C_m ARE THOSE WITH s = 0", then ran the
+reviewer's batch 52 against it rather than against my own fixtures. **Entry 9 is the shipped
+gate's own shear fixture: `s > 0`, and flat across the whole declared domain, because its
+kink is at `3.04` and the domain stops at `2.0`.** True over the reals; false under the
+reading a reader of the declared bounds has. That is R1178's shape inside the repair of
+R1178, and the fourth consecutive correction of this sentence to be true only at the
+configuration its author chose. Nothing had shipped, so it could have been fixed silently --
+and the measurement is the whole value of it, so it is in the commit and in the revision.
+The caveat now states the kink and no universal except the one the kink gives.
+
+**SR-65: L7's withdrawal corrects every place that carried the false premise EXCEPT revision
+3's own text.**
+*Ruling applied:* FZ rule 7, and EK3.
+*Why:* I ruled the two-reference density finding a ledger row on the premise that neither
+sentence in `report.md` names its reference. Re-running the tool at `rho: 7000` shows both
+do -- "ABOVE steel at 7850" and "ABOVE the declared nominal". The premise is withdrawn in
+`docs/closure/R1.md` and in the 8 November digest, and in revision 4's prose for the third
+place, because EK3 forbids touching a step report's earlier revision after its verdict and
+the mechanical reason EK3 records is that any such commit reddens the guard whatever it
+writes.
+
+**SR-66: L5's phantom citation is NOT guessed into an `HSP:` prefix.**
+*Ruling applied:* CLAUDE.md section "When you are stuck" -- say so rather than produce a
+plausible value.
+*Why:* `docs/closure/F0.md:122` cites `docs/m11-platform-plan.md:637`, which has never
+existed on any branch of this repository -- `git log --all --` for the path returns nothing.
+Line 98 of the same file uses the `HSP:` prefix for a cross-repository citation, so a missing
+prefix is the probable cause, and no HSP checkout exists on this machine, so "probable" is
+all it is. The artifact is F0's and EK3 puts it out of this step's reach in any case.
+Recorded as an R2 item with the measurement rather than corrected on an inference.
+
+**SR-67: the closed form is checked with EXACT comparisons, so no new tolerance is introduced
+in the last revision ES0 allows.**
+*Ruling applied:* FZ rule 3 -- a named tolerance with a counter for every new comparison.
+*Why:* the natural check of `utilisation(C_m) = max(B, a + C_m*s)` is a relative-error
+threshold, which under rule 3 means a value in `floatfea/tolerances.py` with a counter beside
+it, derived and justified, in the one revision this step has left. What ships instead is
+exact: monotonicity over 191 samples by `<=` on floats, exact equality at the declared ends,
+and the caveat's two published digits re-derived and compared as strings. The closed form's
+`3.39e-15` agreement is published as a MEASUREMENT in the report, where a figure needs no
+counter, rather than as a gate threshold. Rule 3 is satisfied by having no new comparison to
+name.
