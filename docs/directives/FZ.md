@@ -1229,3 +1229,46 @@ and the caveat's two published digits re-derived and compared as strings. The cl
 `3.39e-15` agreement is published as a MEASUREMENT in the report, where a figure needs no
 counter, rather than as a gate threshold. Rule 3 is satisfied by having no new comparison to
 name.
+
+
+**SR-68: R1184 is repaired in the closure commit rather than reopened as a round.**
+*Ruling applied:* CZ0 -- the implementer fixes the whole closure list once, in the step's
+closure commit -- with FR1 deciding what blocked.
+*Why:* verdict 55 said in terms that R1184 is the one finding it would have blocked on under
+CZ0 outside R1, and ruled it a ledger item because FR1's head does not cover it: the table's
+nine figures are all correct and the defect is the REASON in one row. **Under FR1 a wrong
+reason beside right numbers cannot produce a silently wrong result**, and the reviewer naming
+which way it would have gone instead of smuggling it in is what FR1's last sentence is for.
+Step 4 was at the ES0 cap in any case, so a round was not available to spend on it. Fixed at
+its site, in `docs/USER_GUIDE.md`'s `Cm: 1.2` table, with the reason the corrected item 1
+gives.
+
+**SR-69: R1181's prose half is corrected in the CLOSURE ARTIFACT, not in the report that
+carries the sentence.**
+*Ruling applied:* EK3.
+*Why:* § 10 of revision 4 says "the run was started by the push", which its own command
+refutes for a report-only tip commit. The report's final verdict exists, and EK3's mechanical
+reason is that ANY commit touching a closed report before a newer verdict exists reddens the
+guard whatever it writes -- reverting content cannot help. EK3 already routes post-closure
+prose to "the next report or `docs/closure/**`"; this took the second.
+
+**SR-70: the FP1/CK0 collision is ESCALATED rather than patched.**
+*Ruling applied:* FZ (d) -- anything needing a standing constraint broken.
+*Why:* **FP1's guarantee that the judged commit always has a CI run cannot hold for a
+report-only tip commit**, because CK0's `paths-ignore` excludes `docs/reports/**`, which is
+the only path such a commit touches. Measured: `gh run list` at `dc49552` is empty, while
+`4750f07` -- code-identical outside `docs/reports` -- has a run whose `lint, unit and guards`
+job is `success`. Satisfying FP1 would mean removing a `paths-ignore` entry CO3 and R361
+argued for, or pushing a no-op code change to manufacture a run. **Both break a standing
+constraint, so neither is mine to choose.** Recorded in `docs/closure/R1.md` § 0b and left
+for Xabier; `scripts/ci_section.py` already carries `report_only()` for the reporting half.
+
+**SR-71: the gate is NOT extended to read `docs/USER_GUIDE.md` (R1180).**
+*Ruling applied:* FK2's apparatus freeze, and EK2.
+*Why:* `ARTIFACTS` in `tests/regression/test_r1_published_artifacts.py` excludes the guide, so
+the five figures the guide now carries -- `0.818471`, `1.639720`, `2.0034`, `3.04`, `0.98` --
+are re-derived nowhere for it. All five are correct today and the reviewer checked all five.
+Adding the guide to that set is a new surface for an existing guard, which is the shape FK2
+freezes until R1 is tagged, and EK2 says a guard is repaired or deleted rather than extended.
+**It is an instance of R1165 -- no guard reads the guide -- and not a new item**, so it goes to
+R2 with R1165 rather than being built in a closure commit that no round reviews.

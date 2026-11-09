@@ -316,7 +316,7 @@ rows moved. At `Cm: 1.2` instead of `0.85`, nothing else touched, the governing 
 |---|---|
 | 6 governed by `3.3.1 interaction` | **none moved** — the clause carries no `C_m` |
 | 12 governed by `3.3.2 interaction` | **10 rose, 0 fell** |
-| 14 governed by `3.2.4 beam shear` | none moved — not an interaction clause |
+| 14 governed by `3.2.4 beam shear` | **none moved** — another clause is the larger here, which is reason 1 below; whether such a row moves at some *other* `C_m` is where its kink falls (R1184) |
 
 The two `3.3.2` rows that did not move are TIP stations whose bending term is
 `u_bending = 1.6e-10` and `1.7e-09`: there is nothing there for `C_m` to multiply. Compare
