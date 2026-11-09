@@ -985,3 +985,98 @@ surviving block's fourteen headings were listed to confirm it is the intact one,
 turn asserts `count(old) == 1` before replacing, which is what made the failure loud one edit
 later rather than silent at the commit; the one script that used `index()` instead is the one
 that did the damage.
+
+**SR-50: GE says "revision 2" where revision 2 is already reviewed, and I read it as REVISION
+3 without asking.**
+*Ruling applied:* FZ rule 7 -- ambiguous wording resolves toward existing conventions -- and
+explicitly NOT FZ (f).
+*Why:* GE1, GE4 and GE's target line all name revision 2. Revision 2 was pushed at `6876854`
+and passed at `c88b0c0`; step 4 stands at 1 of 3 under ES0. GE was written against GD2's
+state, where revision 2 was still owed. **FZ (f) is for two readings that give different
+PUBLISHED NUMBERS**; here one section heading differs and no number does, so rule 7 governs
+and the cost of asking would have been a round. Recorded in `docs/directives/GE.md` and in
+`6ffaaac`'s message so the reading is checkable rather than silent.
+
+**SR-51: GE4 asked me to record three statements about how a verdict reaches the branch, and
+the second is false of this repository, so I escalated instead of writing it.**
+*Ruling applied:* GE4's own instruction -- "if that is not what happens today, describe what
+does happen and escalate rather than inventing a procedure" -- with FZ (d).
+*Why:* GE4's second bullet is "the reviewer commits it in ITS OWN worktree". Measured:
+`git reflog show HEAD` records the verdict and corpus commits as `commit:`, not as a
+fast-forward, and `git worktree list` has all three reviewer worktrees detached with only
+`C:/dev/floatfea` holding `[F3]`. **The reviewer runs `git commit` in the implementer's
+tree**, because a detached worktree cannot move `F<n>` and `git branch -f` is refused while
+the branch is checked out elsewhere. The candidate fix -- reviewer commits detached, the
+implementer fast-forwards -- would put the implementer's hands on the commit that gates it,
+which is what the separation exists to prevent. So `docs/SUPERVISOR.md` § FV2 carries the
+MEASUREMENT and the escalation, and no procedure is written. The reviewer has now raised this
+in two consecutive verdicts; it is Xabier's.
+
+**SR-52: an ablation whose restore is `git checkout --` can only be run against COMMITTED
+work, and mine was not.**
+*Ruling applied:* FZ rule 5, on a defect in my own verification rather than in the code.
+*Why:* to show R1168's repair was held by a row, I ablated the caveat by editing the
+already-modified working file and restored with `git checkout -- floatfea/cli.py`. **The
+repair was uncommitted, so the restore reverted THE REPAIR.** Two further arms were then
+measured on a tree with no repair in it, and both reported the source assertion firing for a
+reason that had nothing to do with the ablation. Caught by `git status` not listing
+`floatfea/cli.py` where it should have. *The repair is the ORDERING, which is the reusable
+part:* commit the repair, then ablate against the commit, where restore and repair are
+different operations. All three arms re-run at `af9c6aa` and the figures are in revision 3 § 2.
+
+**SR-53: revision 2 published that FT2.7 is NOT BUILT, twice, and it is built -- and I was
+drafting an FZ (e) escalation on it.**
+*Ruling applied:* FZ rule 5 with EK3 on the container -- revision 2 has a final verdict, so
+the correction goes in revision 3 and not in place.
+*Why:* `pytest -q tests/regression/test_ft27_topology_solve.py` is **9 passed in 410.34s**,
+and step 3's interim-check verdict had already ruled R867-R870 "WORKED ... no longer blocking
+by name", with the eight topologies closing as 3 run + 3 refused + 1 refused at build + 1
+unchanged. **The triple under my sentence read `claim: what is NOT built` /
+`cmd: grep -c 'FT2.7' docs/milestones/R1.md` / `out: 14`** -- a command that counts how often
+a PLAN mentions an id and cannot refute a claim about what the TREE holds, whatever the tree
+does. CW0's own words: a triple whose command cannot fail is not a triple. **FT2.7 is tool
+function, so GA5 does not route it to R2 and FW0 refused to move it**, which is why the
+sentence pointed straight at an escalation: R1 due 10 November with a gate unbuilt. What
+stopped it was reading the verdict that ruled the item. No guard would have.
+
+**SR-54: three witness runs, and I stopped there although the defect count had not
+converged.**
+*Ruling applied:* GE1's own termination condition -- "until a run completes with no help" --
+with FR1 on what a round may be spent on.
+*Why:* runs 1, 2 and 3 each reproduced all five fixtures exactly and each finished with no
+help, so the condition was met three times over. The defect count was **5, then 2, then 4**:
+not converging. A fourth run would almost certainly find more, and every one of the nine was
+in FR1's explicitly non-blocking class -- prose and figure wording -- and not one changed a
+computed number. **The non-convergence is recorded as a measurement in `docs/closure/R1.md`
+§ 1d rather than treated as a reason to keep going**, because it is R1165 seen from the other
+side: a prose deliverable that no guard reads has no bound except a reader, and each reader
+finds a different handful.
+
+**SR-55: run 3's two-reference finding is repaired in the GUIDE and ledgered for the TOOL,
+and I did not repair the tool.**
+*Ruling applied:* GE1's "nothing else of substance" with FR1's blocking test.
+*Why:* `floatfea/model/platform.py:879` gates the per-body density finding on
+`density > basis.RHO_STEEL` -- a constant that does not follow a declared `rho` -- while
+*Declared, and what became of it* compares against the declared nominal. At `rho: 7000` that
+is **four bodies flagged against five**, with `platform` at `7146.0` between the thresholds,
+and **every published row is md5-identical at either `rho`**. So no number is wrong and no
+input is used other than as declared: it does not block under FR1. The guide claimed one
+reference and now names both, with that measurement. **Changing a published deliverable's
+prose is outside what GE1 authorised for this revision**, so the tool half -- that neither
+sentence in `report.md` says which reference it used -- is a ledger row for the reviewer to
+rule rather than a repair I make on my own judgement.
+
+**SR-56: two figures of mine nearly came from runs that had not moved the variable they were
+about.**
+*Ruling applied:* FZ rule 5, and CP3 -- the paste is the last edit, which is useless if the
+run underneath it did not do what the sentence says.
+*Why:* my first `rho` run substituted `^  rho: 7850` against a file whose line is
+`    rho: 7850.0` with a trailing comment, so it changed **nothing**, and the governing `U`
+came back unchanged -- **which is exactly what a successful run looks like here**, since the
+whole point of the finding is that `rho` moves no published row. The control that caught it
+was grepping the temporary config for the value I believed I had set, not the result. Then
+the output landed in `examples/results/` and I looked under `results/`, which
+`docs/USER_GUIDE.md:128` documents -- relative paths resolve against the configuration file's
+own directory. *The reusable part:* when the expected outcome of a change is "nothing moves",
+a run that did not apply the change is indistinguishable from a successful one by its OUTPUT,
+so the check has to be on the INPUT.
