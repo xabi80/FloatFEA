@@ -5959,3 +5959,1172 @@ out    reviewer: 4329 passed, 0 failed, 0 skipped at `c992e54`
 rule   the difference is exactly the four cases traced above
 judge  two machines, two forms of the run, no disagreement left unaccounted for
 ```
+
+
+---
+
+# Revision 4 — R1178, and the four stale figures in the file that goes to Xabier
+
+Answers: verdict 54 @ 5f02798
+
+**One blocking finding and four ledger rows, which is what verdict 54 asked revision 4 to
+carry, and nothing else of substance (GE1 still governs).** Step 4 stood at 2 of 3 reviewed
+revisions and stands at **3 of 3** after this: under ES0 this is the last revision the cap
+allows. **Measured against FW0's 10 November, which this holds** — the work is one sentence
+in `floatfea/cli.py`, the three artifacts it is regenerated into, two paragraphs of
+`docs/USER_GUIDE.md`, four figures in `docs/closure/R1.md` and one block of new assertions
+in the gate that already covers that sentence; no gate threshold, no tolerance and no new
+apparatus moved. **No count of the new rows is given in this paragraph**, which is the
+lesson of the finding it answers.
+
+## 0. CI at `c2bf7d7`, the commit verdict 54 judged — conclusion **SUCCESS**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 54 at `c2bf7d7` through the report's own `Answers:` line. Run `42564673979`, event `push`, conclusion **success**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| lint, unit and guards | 1322 | 0 | 0 |
+| the verification ladder | 2576 | 0 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 0 not green.**
+
+**2 job(s) SKIPPED, so unavailable rather than passing:** `CI determinism -- leg`, `CI determinism -- ten legs agree`. A skipped job measured nothing; its zeros are an absence of evidence and not a pass.
+
+**Failing tests named in the log: 0.**
+
+## 0a. Runs since the commit verdict 54 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 54 at `c2bf7d7` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that reached no conclusion ABOUT THE CODE -- cancelled, or still running -- has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it. A cancelled run IS `completed`, which is why the test is the conclusion and not the status (CX0, R449, R1130).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `42564673979` | push | `c2bf7d7` | conclusion **success** |
+
+## 1. R1178 — the condition set is gone and the CLOSED FORM replaces it
+
+**The finding, restated as what it was.** The R1174 repair asserted three conditions as
+NECESSARY over a row's own published columns and then gave the contrapositive outright:
+*"Anywhere else the published column is FLAT in C_m."* Verdict 54 refuted each half under a
+different reading of condition (iii) and measured the set against the deliverable's own
+table. I re-measured that census rather than carrying it (BF0):
+
+```
+claim  the retired condition set, evaluated at each row's own state, against the column
+       the sentence is about
+cmd    python -c "import csv; rows=list(csv.DictReader([l for l in
+         open('results/R1/example/utilisation.csv',encoding='utf-8').read().splitlines()
+         if not l.startswith('#')])); h=lambda r: '3.3.2' in r['governing_clause'] and
+         float(r['u_bending'])>0 and r['interaction_form']=='amplified';
+         rise=[r for r in rows if float(r['utilisation_Cm_sens'])!=float(r['utilisation'])];
+         print(len(rows), len(rise), sum(map(h,rise)),
+         sorted({r['interaction_form'] for r in rise}), sum(map(h,rows)))"
+out    32 10 0 ['simple'] 2
+rule   the retired sentence, which says a row not meeting all three is FLAT in C_m
+judge  32 rows; 10 move; ZERO of those 10 meet all three conditions and all ten read
+       `simple`; 2 rows meet all three and both are flat. **0 for 12 as a predictor on
+       the deliverable's own table**, which is verdict 54's figure reproduced from the
+       shipped file rather than taken from the verdict
+```
+
+The headline row is one of the ten, and it is the row the retired sentence told a reader
+was flat:
+
+```
+claim  the headline row's own state and its sensitivity column
+cmd    python -c "import csv; print([ (r['member'], r['station'], r['interaction_form'],
+         r['governing_clause'], r['utilisation'], r['utilisation_Cm_sens']) for r in
+         csv.DictReader([l for l in
+         open('results/R1/example/utilisation.csv',encoding='utf-8').read().splitlines()
+         if not l.startswith('#')]) if 'hub4_arm' in r['member'] and r['station']=='ROOT'])"
+out    [('platform:hub4_arm', 'ROOT', 'simple', '3.3.2 interaction', '1.71167', '1.71365')]
+rule   conditions (i) and (ii) hold on this row and (iii) does not, so the retired
+       sentence puts it in the FLAT class. It moves
+```
+
+**What replaces it is the closed form the quantity actually has**, which is R694's shape
+rather than a sixth rewording. `utilisation` is `max()` over five clause fields, `u_combined`
+is `max(amplified, simple)`, and `amplified` is `u_axial + cm * u_bending / (1 - f_a/f_e)` —
+affine and increasing in `C_m`. So
+
+    utilisation(C_m) = max(B, a + C_m*s),    with B, a and s free of C_m
+
+where `B` is the largest C_m-free channel, `a = u_axial` and `s = u_bending/(1 - f_a/F_e')`.
+**A kink at `C_m = (B - a)/s`, not a condition set over two columns.**
+
+```
+claim  the three lines the closed form is read off, at this revision's own commit
+cmd    grep -n "return max(self.u_axial\|amplified = u_axial\|u_combined = max("
+         floatfea/checks/api_wsd.py
+out    531:        return max(self.u_axial, self.u_bending, self.u_shear, self.u_torsion,
+         self.u_combined)
+       600:        amplified = u_axial + cm * u_bending / (1.0 - f_a / f_e)
+       602:        u_combined = max(amplified, simple)
+rule   the line numbers are stamped to `566ef94` and the three are cited BY NAME above,
+       which is SR-58's remedy for a citation that moves under itself
+```
+
+```
+claim  the closed form is EXACT, not approximate, over C_m's whole declared domain
+cmd    fit B, a and s from TWO points at the top of the domain; compare the prediction
+         against 191 samples across 0.1 .. 2.0 on each of the ten members of
+         the reviewer's batch 52
+out    worst relative error 3.39e-15
+       N1 non-decreasing over 0.1 .. 2.0        10 of 10
+       N2 closed form holds (rel < 1e-12)       10 of 10
+       N3 kink rule predicts flat-over-domain   10 of 10
+rule   exact agreement to round-off. The fit uses two points and is checked at 189
+       others, so it cannot absorb the shape
+cell   one variable -- C_m. Every other input held per member
+```
+
+### 1a. The five sites, each with its hunk or the reason it was left
+
+**(1) `floatfea/cli.py` — the caveat itself.** The condition set and its contrapositive are
+gone; the entry now states the closed form, the kink, the retraction of the prediction, and
+one verified counter-example with its digits.
+
+**(2) The three regenerated artifacts.** `results/R1/example/report.md` and the commented
+headers of both CSVs. The governing utilisation is unchanged, which is the point of the
+finding: no number in any artifact was ever wrong.
+
+```
+claim  the regenerated example's headline, after the caveat was rewritten
+cmd    python -m floatfea.cli run examples/platform12_placeholder.yaml
+out    governing U = 1.71167 at platform:hub4_arm ROOT (T = 12.5 s, 3.3.2 interaction)
+rule   step 1 pinned this figure and six corrections of this sentence have not moved it
+```
+
+**(3) `docs/USER_GUIDE.md`'s three-reason list, in the `code_check` section** — the same
+false universal, item 1,
+*"a shear-governed row cannot move however large its bending term"*. Item 1 now says *while
+another clause is the larger of the two the published column does not move*, and the
+paragraph beneath it states the kink.
+
+**(4) `docs/USER_GUIDE.md`'s `C_m` paragraph, in the same section** — R1168's wording,
+*"raises it wherever
+the amplified form governs with a bending term to multiply"*, which the deliverables
+dropped as incomplete and which was left standing here. Verdict 54's Carried entry is that
+the two deliverables disagreed again in reverse. It now carries the same closed form the
+caveat does.
+
+**(5) `tests/regression/test_r1_published_artifacts.py`** — the needles and the new rows.
+The three needles over the retired condition set are **replaced, not extended** (EK2): a
+needle can only test that a sentence is PRESENT, which is the reviewer's own measurement of
+why the check evaluated 2 of batch 52's 10 entries and 0 of the 8 that refute. What is
+pinned now is the closed form's words, the retraction, **and the two digits the caveat
+publishes, re-derived from the model in the same test** so a formulation change cannot leave
+the published sentence describing a member this code no longer produces.
+
+### 1b. The row that reddens when the universal is restored
+
+```
+claim  a row governed by a shear clause at the published C_m, and by 3.3.2 at a larger
+       one, with its bending term unmoved
+cmd    check_member(axial_n=-6.0e6, moment_y_nm=1.5e8, torsion_nm=1.65125628e8) at
+         cm = 0.85 and cm = 2.00, every other input held
+out    cm=0.85  gov='3.2.4 torsional shear'  form=simple     U=0.8184711191258446
+       cm=2.00  gov='3.3.2 interaction'      form=amplified  U=1.6397199836312206
+       u_bending = 0.7930651386236371 at BOTH
+rule   the retired sentence, which says this row cannot move. A factor of 2.0034, from
+       under unity to 64% over, inside MOMENT_REDUCTION_CM's own bounds 0.1 .. 2.0
+cell   one variable -- C_m
+judge  the verdict's construction reproduced to the last digit, from the verdict rather
+       than taken on its word
+```
+
+The assertion is `cross_hi.utilisation > cross_lo.utilisation`, so the universal cannot
+return without it firing. **And the gate's own shear fixture is flat for a reason that is
+now stated rather than assumed**: its kink is above the domain ceiling.
+
+```
+claim  which members are flat across the WHOLE declared domain, and why
+cmd    fit (B - a)/s on three members: the crossover, the reviewer's bisected
+         threshold, and the shipped fixture
+out    torsion 1.651256e+08   kink 0.9806520825015851   rises
+       torsion 3.308117e+08   kink 1.9999999999566784   the verdict's bisection
+       torsion 5.000000e+08   kink 3.0408950819027245   flat across 0.1 .. 2.0
+rule   the published rule: flat across the declared domain when (B - a)/s exceeds 2.0
+judge  the verdict's `330811663.0070415` lands the kink on the ceiling to 4.3e-11, so
+       the 1.51x margin it measured is confirmed and is now explained rather than
+       merely reported. The fixture gains the DECLARED FLOOR as an assertion -- flat at
+       0.10 as well as 0.85 and 2.00 -- which is what bounds the published kink claim
+       without introducing a tolerance
+```
+
+### 1c. And the NON-DECREASING sentence is now measured rather than needled
+
+```
+claim  the published column cannot fall anywhere in C_m's declared domain
+cmd    191 samples across 0.1 .. 2.0 on the crossover member, consecutive pairs
+         compared with `<=`
+out    all 191 non-decreasing; swept[0] < swept[-1]
+rule   max(B, a + C_m*s) with s >= 0. No tolerance: exact ordering on floats
+```
+
+### 1d. The arms, and the three that say what the NEW rows catch
+
+**Five arms fired and three of them say nothing about the new rows, which is worth writing
+down rather than counting as five.** A1 (drop `u_combined` from the `utilisation` property),
+A2 (remove `cm` from `amplified`) and A3 (make `amplified` decreasing in `cm`) each reddened
+the test at `compress_hi.utilisation > compress_lo.utilisation` — **R743's row, a hundred
+lines above the new ones.** `pytest` stops at the first failing assert, so an injection
+caught by an earlier row attributes nothing to a later one. That is the shape I recorded
+earlier in this step when I withdrew a claim that one of these assertions was shadowed,
+applied now to my own arms.
+
+So three more, chosen to be invisible to the rows above:
+
+```
+claim  what the new assertions catch that the old ones do not
+cmd    B1  the universal restored in the caveat AND the artifacts regenerated, so the
+             verbatim guard is satisfied and only a needle can fire
+       B2  the clause LABEL computed at a FIXED C_m while the returned number keeps cm
+       B3  cm clamped at 1.0 inside the check
+out    B1  1 failed, 46 passed  -- the closed-form needle, test:449
+       B2  1 failed, 46 passed  -- the shear row's form crossing, test:636
+       B3  1 failed, 46 passed  -- the published digit, test:718
+rule   each arm must redden the gate, and the assertion that fires must be one of the
+       new ones rather than a row that predates them
+```
+
+**And because B2 and B3 both fired above the crossover row, I evaluated that row's own
+assertions directly under each injection** — the only way to attribute detection to a row
+that never ran:
+
+```
+claim  which of the crossover row's assertions each injection moves
+cmd    evaluate the row's six conditions directly, with the injection in the tree
+out    baseline      gov '3.2.4 torsional shear' -> '3.3.2 interaction'  0.818471 -> 1.639720
+       B2            gov '3.2.4 torsional shear' -> '3.2.4 torsional shear'
+                     FIRES  3.3.2 in cross_hi.governing
+                     pass   both published digits, pass the rise
+       B3            U 0.818471 -> 0.834059
+                     FIRES  published digit 1.639720 still the model's
+                     pass   the label, pass the rise
+cell   one variable per arm, every other input and every other line held
+judge  TWO DEFECT SHAPES, EACH CAUGHT BY A DIFFERENT NEW ASSERTION AND NEITHER BY THE
+       OTHER. B2 leaves every published NUMBER correct and makes the LABEL wrong --
+       which is verdict 54's ruling 1 as a detectable defect rather than as a
+       possibility I had ledgered. B3 leaves the label right and moves the published
+       FIGURE, which is the BP0 shape nothing in this repository used to catch
+```
+
+**And B2 escapes everything else that reads these files, which is why the row is worth its
+lines.** Verdict 54's ruling 1 measured that the clause the LABEL names and the published
+`utilisation` cannot disagree in VALUE -- 0 of the random tubulars its sweep measured, and
+the figure is the verdict's. They can disagree in
+IDENTITY, and the artifacts do not change when they do:
+
+```
+claim  how much of the R1 surface the B2 injection escapes
+cmd    with B2 in the tree, the three tests that read or regenerate the published files
+out    test_r1_published_artifacts.py   1 failed, 46 passed in 0.58s
+       test_r1_example_regenerates.py  11 passed in 67.19s
+       test_r1_example_golden.py       14 passed in 70.19s
+rule   a defect in a published deliverable must be caught by something
+cell   one variable -- the B2 injection. Same commit, same artifacts, nothing else moved
+judge  the regeneration gate and the golden gate are BOTH GREEN under it, because no
+       published NUMBER moves: the label is computed at 0.85 and the shipped run IS at
+       0.85, so `governing_clause` is unchanged in every file. **The crossover row is
+       the only thing in the tree that fires**, and it fires on the label rather than
+       on a number
+```
+
+---
+
+## 2. THE FIRST DRAFT OF THIS REPAIR CARRIED A UNIVERSAL OF ITS OWN
+
+**Caught before it shipped, and caught by the thing that would have caught the last three:
+running the model at a configuration the diff did not choose (EU1).** I wrote
+
+> THE ONLY ROWS FLAT AT EVERY C_m ARE THOSE WITH s = 0
+
+and ran the reviewer's newest corpus batch against it rather than my own fixtures.
+
+```
+claim  the entry that refutes my own first draft, and why
+cmd    grep -n "Batch 52\." tests/corpus/cm_condition_set_necessity.txt ; then fit
+         (B - a)/s on that entry's member
+out    6:# (judged commit c2bf7d7). Batch 52. EG4(e)'s pause expired on 28 October (R1149)
+       entry 9  torsion_nm = 5.0e8  s > 0  kink (B - a)/s = 3.0408950819027245
+       so: 3.04, and the declared domain stops at 2.0
+rule   my own sentence, "THE ONLY ROWS FLAT AT EVERY C_m ARE THOSE WITH s = 0"
+judge  entry 9 is the SHIPPED GATE'S OWN FIXTURE: it has a bending term, so `s > 0`, and
+       it is flat across the whole declared domain anyway
+```
+
+**True over the reals; false under the reading a reader of the declared bounds has.** Entry
+9 has a bending term, so `s > 0`, and my sentence therefore says it must move somewhere in
+`C_m`. **It moves nowhere a configuration can reach**: its kink is at `3.04` and the declared
+domain stops at `2.0`. **That is R1178's shape inside my own repair of
+R1178** — the fourth consecutive correction of this sentence to be true only at the
+configuration its author chose.
+
+The sentence now states the kink and no universal except the one the kink gives, in both
+deliverables, and the measurement that settles it is the batch rather than my own fixtures:
+
+```
+claim  the retired condition set and the sentence that replaces it, on the reviewer's ten
+       entries, each evaluated at the row's own state
+cmd    for each line of tests/corpus/cm_condition_set_necessity.txt, build the member
+         with check_member at cm_lo and cm_hi; reproduce the row's own `util` field;
+         then ask whether the OLD three-condition set predicts the rise, and whether
+         the kink (B - a)/s predicts flatness across 0.1 .. 2.0
+out    the batch's own util field reproduced   10 of 10
+       OLD three-condition set predicts         2 of 10
+       NEW kink rule predicts                  10 of 10
+       non-decreasing over 0.1 .. 2.0          10 of 10
+       closed form worst relative error         3.39e-15
+rule   verdict 54's census, which measured the old set at 0 of 12 on the shipped table.
+       The two populations differ and both refute it
+judge  the batch is CHECKED rather than taken -- all ten `util` fields reproduce -- and
+       the two it predicts correctly are its two FLAT controls, where the set and the
+       outcome agree by coincidence rather than by mechanism
+```
+
+**What I take from it, in one line, because the lesson is not new and the repeat is the
+finding:** a sentence about a quantity is checked against the quantity's whole domain or it
+is not checked, and a universal is the form that makes the unchecked part invisible.
+
+---
+
+## 3. L1 to L4 — the four stale figures in the file that goes to Xabier
+
+All four have the same cause and verdict 54 names it: `docs/closure/R1.md` was written at
+`8de5d2b` and two code commits landed after it, so four figures taken correctly described a
+tree that had moved. Each is now **re-measured at the commit that publishes it**, and each
+carries its command at its own site in the artifact (BP0, CP3). The hunks are in the
+`docs:` commit of this revision.
+
+**L1 — the caveat's correction count.** The sentence said *four* and named four; the shipped
+caveat named five. It now says **six** and the count is **read from the caveat** rather than
+written beside it, which is the only form that cannot go stale against it.
+
+**L2 — how many exact-equality assertions step 4 added.** The sentence said *two* and gave
+two reasons; `git log -S` puts four inside step 4 and R1178 adds two more.
+
+```
+claim  the count, and that every one declares itself at its site
+cmd    grep -c "not-a-tolerance: EXACT equality" tests/regression/test_r1_published_artifacts.py
+out    6
+rule   L2. Four at `a596fa7`, `092334a`, `af9c6aa`, `e526a9e`; two in this revision --
+       the crossover member's bending term and the shear fixture's declared floor
+```
+
+**L3 — two different commits named for one suite figure.** § 0's generated block said the
+whole suite was measured at one commit and the paragraph beneath it named another. The
+paragraph now names the same commit as the label, and the label is this revision's own
+measurement commit. § 11 of this report and that paragraph are now one figure at one
+commit, which is what the verdict asked.
+
+**L4 — the fifth stale line citation, and it is in the deliverable rather than the report.**
+The artifact cited a line one past the gate.
+
+```
+claim  where the per-body density gate actually is
+cmd    grep -n "if density > basis.RHO_STEEL" floatfea/model/platform.py
+out    878:    if density > basis.RHO_STEEL:
+rule   L4 of verdict 54: the artifact said `:879`. Revision 3 corrected the REPORT's copy
+       of exactly this citation at `:878` and left the artifact's, which is the whole
+       content of the finding -- a line number corrected in one place is not corrected
+```
+
+The artifact now cites the gate **by its own source line**, with the line number stamped to
+a commit, which is the remedy the self-ruling on stale citations named and is being applied
+where that ruling was written.
+
+---
+
+## 4. L5 to L9 — the ledger rows, with the two I re-measured and the one that corrects me
+
+**L5 — the closure-evidence guard cannot see a citation that carries a line number.**
+Verdict 54 measured the citations its regex cannot see across the closure artifacts, and
+one live phantom: `docs/closure/F0.md` cites a plan file that does not exist. The counts are
+the verdict's and are not re-measured here, because the verdict ruled explicitly that they
+should not be. **Not acted on, and the verdict
+is why**: it ruled one line under GA1, said explicitly not to census it and not to extend
+the guard, and the apparatus freeze (FK2) stands until R1 is tagged. The phantom is in F0's
+closure artifact, which EK3 puts outside anything this revision may touch. **It leaves R1
+as an item for R2**, listed in § 8 — and the one thing I did measure is why I will not guess
+at the repair:
+
+```
+claim  the cited file, in this repository, on any branch
+cmd    ls docs/m11-platform-plan.md ; git log --all --oneline -- docs/m11-platform-plan.md
+out    ls: cannot access 'docs/m11-platform-plan.md': No such file or directory
+       (no output)
+rule   the citation at `docs/closure/F0.md` names it with no prefix. Line 98 of the same
+       file uses `HSP:` for a cross-repository citation, so a missing prefix is the
+       PROBABLE cause
+judge  probable is all it is: no HSP checkout exists on this machine, so the line and the
+       value it cites cannot be confirmed from here. A plausible prefix written in would
+       make the citation RESOLVE without making it TRUE, which is the one thing worse
+       than a phantom
+```
+
+**L6 — § 8a condition 4 attributes `docs/milestones/F2a.md` to the wrong commit.** It landed
+in `8de5d2b`, not `43f8bb0`. Corrected here rather than in revision 3's text, because EK3
+forbids touching a step report's earlier revision after its verdict, and the mechanical
+reason is the one EK3 records: any commit touching a closed report before a newer verdict
+exists reddens the guard, and reverting content cannot help. **The condition itself is
+closed; only its provenance line was wrong.**
+
+**L7 — and this one corrects me rather than the tree.** I ruled the two-reference density
+finding a ledger row on the premise that *neither sentence in `report.md` says which
+reference it used*. **That premise is false, and the verdict refuted it with the tool's own
+output.** I re-ran it rather than taking the correction:
+
+```
+claim  what the published report says about the equivalent density at a non-default rho
+cmd    a copy of examples/platform12_placeholder.yaml with `rho: 7000`, run to a
+         temporary output directory, then grep the generated report.md for the two
+         sentences
+out    `hub1` -- hub1: the equivalent density is 11433.5 kg/m^3, ABOVE steel at 7850.
+       DZ5 / ER1(e): hub1, hub2, hub3, hub4, platform carry an equivalent density ABOVE
+         the declared nominal, so the deck's mass does not fit inside the declared
+         section at this fraction.
+rule   L7 of verdict 54: "the item is already closed by the tool, not deferred"
+judge  **each sentence names its own reference** -- "steel at 7850" in the per-body
+       finding, "the declared nominal" in the DZ5 sentence -- which is exactly what my
+       ledger row said neither did. The item is WITHDRAWN from R1's open list rather
+       than carried to R2. The substitution was checked on the INPUT as well as the
+       output (SR-56): one `rho:` line found and rewritten, because at the default
+       `7850` a run that did not apply the change is indistinguishable from one that
+       did. Two of the three places that carried the false premise are corrected --
+       `docs/closure/R1.md` and the 8 November digest -- and the third is revision 3's
+       own text, which EK3 puts out of reach, so it is corrected here
+```
+
+**L8 — the gate under review is green under a C_m leak into `u_shear`, and coverage exists
+elsewhere.** Re-measured rather than carried:
+
+```
+claim  the injection the verdict names, on both halves of its own measurement
+cmd    u_shear = cm * f_v / allow_shear, one line, then the gate and rung 5
+out    the gate under review      47 passed in 0.42s
+       rung5 hand calculations    1 failed, 86 passed in 0.61s
+       FAILED tests/verification/rung5/test_g61_api_wsd_hand_calculations.py::
+         test_each_check_REDDENS_under_the_load_the_plan_asks_for[beam shear]
+rule   L8. All of the gate's C_m controls carry shear_y_n = shear_z_n = 0, so the leak
+       is invisible to it; rung 5's hand calculations are not
+judge  one line, no action, as the verdict ruled. A control with shear would be new
+       apparatus-shaped work in the last revision ES0 allows, and the coverage is
+       already there
+```
+
+**L9 — the reviewer's own withdrawn figure.** `scripts/run_rung.sh` joins `PYTHONPATH` with
+a POSIX colon, which breaks on Windows. **Nothing is owed by this revision**: the
+reviewer measured the cause in its own harness with a one-variable cell, ruled it fail-loud
+under GA1, and asked for no fix. It is in § 8 as an R2 item because the file is still
+wrong, not because anything here depends on it.
+
+---
+
+## 6. The findings this revision answers
+
+*Generated: `python scripts/answered_table.py docs/reviews/R1/step-4.md docs/reports/R1/step-4-answers.json`.*
+
+<!-- generated: scripts/answered_table.py -->
+
+| item | class | state | where | site | the verdict's own subject |
+|---|---|---|---|---|---|
+| R1 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R835 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R836 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R838 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R843 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R845 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R846 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R847 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R848 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R849 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R850 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R851 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R852 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R853 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R854 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R855 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R856 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R857 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R858 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R859 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R860 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R861 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R862 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R863 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R864 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R865 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R866 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R867 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R868 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R869 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R870 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R871 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R872 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R873 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R874 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R875 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R876 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R877 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R878 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R879 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R880 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R881 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R882 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R883 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R884 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R885 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R886 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R887 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R888 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R889 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R890 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R891 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R892 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R893 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R894 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R895 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R896 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R897 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R898 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R899 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R900 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R901 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R902 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R903 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R904 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R905 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R906 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R907 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R908 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R909 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R910 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R911 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R912 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R913 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R914 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R915 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R916 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R917 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R918 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R919 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R920 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R921 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R922 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R923 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R924 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R925 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R926 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R927 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R928 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R929 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R930 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R931 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R932 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R933 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R934 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R935 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R936 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R937 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R938 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R939 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R940 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R941 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R942 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R943 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R944 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R945 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R946 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R947 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R948 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R949 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R950 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R951 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R952 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R953 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R954 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R955 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R956 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R957 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R958 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R959 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R960 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R961 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R962 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R963 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R964 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R965 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R966 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R967 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R968 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R969 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R970 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R971 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R972 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R973 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R974 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R975 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R976 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R977 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R978 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R979 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R980 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R981 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R982 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R983 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R984 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R985 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R986 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R987 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R988 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R989 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R990 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R991 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R992 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R993 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R994 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R995 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R996 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R999 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1000 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1001 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1002 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1003 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1005 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1006 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1007 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1008 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1009 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1010 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1011 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1012 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1013 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1014 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1015 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1016 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1017 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1018 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1021 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1022 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1023 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1024 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1025 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1026 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1027 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1028 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1029 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1030 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1031 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1032 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1033 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1034 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1035 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1036 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1037 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1038 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1039 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1040 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1042 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1043 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1044 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1045 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1046 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1047 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1048 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1049 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1050 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1051 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1052 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1053 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1054 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1055 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1056 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1057 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1058 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1059 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1060 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1061 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1062 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1063 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1064 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1065 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1066 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1067 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1068 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1069 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1070 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1071 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1072 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1073 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1074 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1075 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1076 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1077 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1078 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1079 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1080 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1081 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1082 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1083 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1084 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1085 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1086 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1087 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1088 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1089 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1090 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1091 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1092 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1093 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1094 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1095 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1096 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1097 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1098 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1099 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1100 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1101 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1102 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1103 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1104 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1105 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1106 | carried | **carried** | §7 | `` | carried from an earlier verdict |
+| R1107 | carried | **carried** | §7 | `` | carried from an earlier verdict |
+| R1108 | carried | **carried** | §7 | `` | carried from an earlier verdict |
+| R1109 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1110 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1111 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1112 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1113 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1114 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1115 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1116 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1117 | carried | **carried** | §7 | `` | carried from an earlier verdict |
+| R1119 | carried | **carried** | §7 | `` | carried from an earlier verdict |
+| R1120 | carried | **carried** | §7 | `` | carried from an earlier verdict |
+| R1121 | carried | **carried** | §7 | `` | carried from an earlier verdict |
+| R1122 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1123 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1124 | carried | **carried** | §7 | `` | carried from an earlier verdict |
+| R1125 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1126 | carried | **carried** | §7 | `` | carried from an earlier verdict |
+| R1127 | carried | **carried** | §7 | `` | carried from an earlier verdict |
+| R1128 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1129 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1130 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1131 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1132 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1133 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1134 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1135 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1136 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1137 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1139 | carried | **answered** | sec 7c | `` | carried from an earlier verdict |
+| R1140 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1141 | carried | **answered** | sec 7c | `` | carried from an earlier verdict |
+| R1142 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1143 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1144 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1145 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1146 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1147 | recorded | **answered** | sec 7c | `` | The repair's published delta is **SIX rows over THREE paths**, not the four rows over one path t |
+| R1148 | recorded | **answered** | sec 7c | `` | The SECOND copy of the pattern is the configuration nobody ran, and the new branch widened it by |
+| R1149 | recorded | **later** | §7 | `` | The corpus pause EG4(e) names expired on 28 October, and three consecutive verdicts including my |
+| R1150 | recorded | **answered** | sec 7c | `` | section 1 and section 5 cite EQ0 and EB4 as the authority for "no step's cost". EQ0 governs a CL |
+| R1151 | recorded | **answered** | sec 7c | `` | `tests/test_report_carried.py:280` ends `...and stays out.#` -- a stray `#` appended where the n |
+| R1152 | recorded | **answered** | sec 7c | `` | `docs/directives/README.md` lists `GB.md` TWICE -- appended to the verbatim roll and again as it |
+| R1153 | recorded | **answered** | sec 7c | `` | section 4's bold line says "The repair makes four new parametrised cases exist". The section is  |
+| R1154 | recorded | **answered** | sec 7c | `` | EG3 (i) asks for the `FAILED` list pasted **and the sentence saying which of the two states it i |
+| R1155 | carried | **later** | §7 | `` | carried from an earlier verdict |
+| R1156 | carried | **answered** | sec 7c | `` | carried from an earlier verdict |
+| R1157 | recorded | **answered** | sec 7c | `` | (was L1) `docs/USER_GUIDE.md:102` says the committed `results/R1/example/report.md` records `sol |
+| R1158 | recorded | **answered** | sec 7c | `` | (was L2) `docs/USER_GUIDE.md:951-957` publishes `-| solve | 190.07 |` / `-| total | 190.20 |` as |
+| R1159 | recorded | **answered** | sec 7c | `` | (was L3) `docs/USER_GUIDE.md:251` -- "10 of 32 rows" for a sentence about BOTH sensitivity colum |
+| R1160 | recorded | **answered** | sec 7c | `` | (was L4) `docs/USER_GUIDE.md:893` -- "the largest is `1e-10 N.m`"; it is `9.513095e-10`, printed |
+| R1161 | recorded | **answered** | sec 7c | `` | (was L5) the guide defines lambda as the Froude scale in 4.1/4.7 and uses it as the wavelength i |
+| R1162 | recorded | **answered** | sec 7c | `` | (was L6) the published C_m caveat's "RAISES" is non-strict: `max(amplified, simple)` flattens C_ |
+| R1163 | recorded | **answered** | sec 7c | `` | (was L7) `test_R1156_...`'s compression control is blind to any C_m defect in `[0.85, 0.9758)` a |
+| R1164 | recorded | **answered** | sec 7c | `` | (was L8) `docs/directives/README.md`'s provenance roll does not mention GD; its text is recorded |
+| R1165 | recorded | **later** | §7 | `` | (was L9) `docs/USER_GUIDE.md` is a published deliverable (EZ0) that no guard reads -- `tests/tes |
+| R1166 | carried | **answered** | sec 7c | `` | carried from an earlier verdict |
+| R1167 | carried | **answered** | sec 7c | `` | carried from an earlier verdict |
+| R1168 | carried | **answered** | sec 7c | `` | carried from an earlier verdict |
+| R1169 | recorded | **answered** | sec 7c | `` | `docs/directives/FZ.md` SR-48 and revision 2 section 2 both state that `git show 66c7331:docs/re |
+| R1170 | recorded | **answered** | sec 7c | `` | Revision 2 section 5's cell for the `max()` ablation reports "**1 failed** -- at the flat-band a |
+| R1171 | recorded | **answered** | sec 7c | `` | Three published `out` lines in revision 2 are false AT THE COMMIT, all by one mechanism -- a nee |
+| R1172 | recorded | **answered** | sec 7c | `` | Section 11's whole-suite line names **`092334a`**, two commits before the judged one, and its `n |
+| R1173 | recorded | **answered** | sec 7c | `` | STEP 4's GATE IS HALF-UNEVIDENCED, AND NO ITEM CARRIED IT UNTIL NOW.** `docs/milestones/R1.md` s |
+| R1174 | recorded | **answered** | sec 7c | `` | THE REPAIR'S OWN NEW SENTENCE IS FALSE ON THE SHIPPED TABLE, AND MY CORPUS NAMED THE CASE ONE CO |
+| R1175 | recorded | **answered** | sec 7c | `` | THE POWERSHELL PARAGRAPH IS WRONG ABOUT THE COMMANDS IT WARNS ABOUT, IN A FILE WHOSE ONLY APPARA |
+| R1176 | recorded | **answered** | sec 7c | `` | R1172's SPECIES, ONE SECTION EARLIER, WITH A COMMAND THAT CANNOT REFUTE ITS OWN CLAIM.** Revisio |
+| R1177 | recorded | **answered** | sec 7c | `` | GE2's CAP.** GE2 said "one line each. No essays." R1168 and R1170 were held to it; R1169's corre |
+| R1178 | recorded | **answered** | sec 1 | `` | THE REPAIR OF R1174 REPLACED A WRONG COUNT WITH A FALSE UNIVERSAL, AND THE DELIVERABLE'S OWN COL |
+
+---
+
+## 7. The ledger rows still open, and the Carried set
+
+*Generated: `python scripts/carried_table.py docs/reviews/R1/step-4.md docs/reports/R1/step-4-answers.json`.*
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R1 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R518 | **not classified in this verdict** — carried in from an earlier one | 's forbidden direction, and GB2 accepts it as documented.... |
+| R835 | **later** — §7 | (EG3's enumeration) \| still open, still Xabier's, and this is its NINTH measurement -- from a... |
+| R836 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R838 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R843 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R845 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R847 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R848 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R849 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R856 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R857 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R861 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R959 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R967 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R975 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R1109 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R1116 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R1122 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R1123 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R1135 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R1137 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R1139 | **answered** — sec 7c | (the site pattern cannot match a stemless dotfile at all; section 8b published 2167 rows under... |
+| R1140 | **later** — §7 | (five planted heading forms invisible to all six anchors; 14 live heading-shaped lines outside... |
+| R1141 | **answered** — sec 7c | (R1135 recorded CLOSED in three places and never closed) -- closure item, GB3 routed it here \|... |
+| R1142 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R1143 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R1144 | **later** — §7 | (the declaration lookup is keyed on the PATH, not on the finding) -- R1 ledger \| carried, and I... |
+| R1145 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R1146 | **later** — §7 | no clause this generator can cut -- see the verdict's Carried section |
+| R1147 | **answered** — sec 7c | . The repair's published delta is SIX rows over THREE paths, not the four rows over one path... |
+| R1148 | **answered** — sec 7c | . The SECOND copy of the pattern is the configuration nobody ran, and the new branch widened it... |
+| R1149 | **later** — §7 | . The corpus pause EG4(e) names expired on 28 October, and three consecutive verdicts including... |
+| R1150 | **answered** — sec 7c | . section 1 and section 5 cite EQ0 and EB4 as the authority for "no step's cost". EQ0 governs a... |
+| R1151 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1152 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1153 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1154 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1157 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1158 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1159 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1160 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1161 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1162 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1163 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1164 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1165 | **later** — §7 | carried, and the verdict says nothing further about it here |
+| R1168 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1169 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1170 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1171 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1172 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1173 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1174 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1175 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1176 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1177 | **answered** — sec 7c | carried, and the verdict says nothing further about it here |
+| R1178 | **answered** — sec 1 | . THE REPAIR OF R1174 REPLACED A WRONG COUNT WITH A FALSE UNIVERSAL, AND THE DELIVERABLE'S OWN... |
+
+---
+
+## 7b. Every site the newest verdict names that this diff does not touch
+
+*Generated: `python scripts/untouched_sites.py`.*
+
+<!-- generated: scripts/untouched_sites.py -->
+
+| item | site | what the diff says | why it was left |
+|---|---|---|---|
+| R1147 | `.empty-by-design` | the file is untouched | **no change.** These are the paths the stemless-dotfile branch GAINS -- they appear in the verdict as MEASURED OUTPUT and not as repair targets (DD3/R511). The finding's seven real sites were answered in revision 2 and section 7c records it. |
+| R1147 | `.gitattributes` | the file is untouched | **no change.** These are the paths the stemless-dotfile branch GAINS -- they appear in the verdict as MEASURED OUTPUT and not as repair targets (DD3/R511). The finding's seven real sites were answered in revision 2 and section 7c records it. |
+| R1147 | `.gitignore` | the file is untouched | **no change.** These are the paths the stemless-dotfile branch GAINS -- they appear in the verdict as MEASURED OUTPUT and not as repair targets (DD3/R511). The finding's seven real sites were answered in revision 2 and section 7c records it. |
+| R1147 | `.gitkeep` | the file is untouched | **no change.** These are the paths the stemless-dotfile branch GAINS -- they appear in the verdict as MEASURED OUTPUT and not as repair targets (DD3/R511). The finding's seven real sites were answered in revision 2 and section 7c records it. |
+| R1147 | `CLAUDE.md` | the file is untouched | **no change.** These are the paths the stemless-dotfile branch GAINS -- they appear in the verdict as MEASURED OUTPUT and not as repair targets (DD3/R511). The finding's seven real sites were answered in revision 2 and section 7c records it. |
+| R1147 | `artifacts/.gitignore` | the file is untouched | **no change.** These are the paths the stemless-dotfile branch GAINS -- they appear in the verdict as MEASURED OUTPUT and not as repair targets (DD3/R511). The finding's seven real sites were answered in revision 2 and section 7c records it. |
+| R1147 | `docs/closure/.gitkeep` | the file is untouched | **no change.** These are the paths the stemless-dotfile branch GAINS -- they appear in the verdict as MEASURED OUTPUT and not as repair targets (DD3/R511). The finding's seven real sites were answered in revision 2 and section 7c records it. |
+| R1147 | `docs/digests/2026-11-03.md:287` | the file is untouched | **no change.** These are the paths the stemless-dotfile branch GAINS -- they appear in the verdict as MEASURED OUTPUT and not as repair targets (DD3/R511). The finding's seven real sites were answered in revision 2 and section 7c records it. |
+| R1147 | `docs/directives/FZ.md:576` | the file is touched and this line number is the old one | **no change.** These are the paths the stemless-dotfile branch GAINS -- they appear in the verdict as MEASURED OUTPUT and not as repair targets (DD3/R511). The finding's seven real sites were answered in revision 2 and section 7c records it. |
+| R1147 | `docs/reports/R1/step-4.md:121` | the file is touched and this line number is the old one | **no change.** These are the paths the stemless-dotfile branch GAINS -- they appear in the verdict as MEASURED OUTPUT and not as repair targets (DD3/R511). The finding's seven real sites were answered in revision 2 and section 7c records it. |
+| R1147 | `docs/reviews/R1/step-3.md:325` | the file is untouched | **no change.** These are the paths the stemless-dotfile branch GAINS -- they appear in the verdict as MEASURED OUTPUT and not as repair targets (DD3/R511). The finding's seven real sites were answered in revision 2 and section 7c records it. |
+| R1147 | `docs/reviews/R1/step-3.md:328` | the file is untouched | **no change.** These are the paths the stemless-dotfile branch GAINS -- they appear in the verdict as MEASURED OUTPUT and not as repair targets (DD3/R511). The finding's seven real sites were answered in revision 2 and section 7c records it. |
+| R1147 | `scripts/carried_table.py` | the file is untouched | **no change.** These are the paths the stemless-dotfile branch GAINS -- they appear in the verdict as MEASURED OUTPUT and not as repair targets (DD3/R511). The finding's seven real sites were answered in revision 2 and section 7c records it. |
+| R1147 | `tests/corpus/site_pattern_path_forms.txt` | the file is untouched | **no change.** These are the paths the stemless-dotfile branch GAINS -- they appear in the verdict as MEASURED OUTPUT and not as repair targets (DD3/R511). The finding's seven real sites were answered in revision 2 and section 7c records it. |
+| R1147 | `tests/verification/rung6/.empty-by-design` | the file is untouched | **no change.** These are the paths the stemless-dotfile branch GAINS -- they appear in the verdict as MEASURED OUTPUT and not as repair targets (DD3/R511). The finding's seven real sites were answered in revision 2 and section 7c records it. |
+| R1148 | `.gitattributes` | the file is untouched | **no change.** Ablated at verdict 49 and not reopened by verdict 54; these sites are the ablation's own output rather than repair targets. Section 7c records it. |
+| R1148 | `.gitignore` | the file is untouched | **no change.** Ablated at verdict 49 and not reopened by verdict 54; these sites are the ablation's own output rather than repair targets. Section 7c records it. |
+| R1148 | `.gitkeep` | the file is untouched | **no change.** Ablated at verdict 49 and not reopened by verdict 54; these sites are the ablation's own output rather than repair targets. Section 7c records it. |
+| R1148 | `CLAUDE.md` | the file is untouched | **no change.** Ablated at verdict 49 and not reopened by verdict 54; these sites are the ablation's own output rather than repair targets. Section 7c records it. |
+| R1148 | `docs/milestones/F2a.md` | the file is untouched | **no change.** Ablated at verdict 49 and not reopened by verdict 54; these sites are the ablation's own output rather than repair targets. Section 7c records it. |
+| R1148 | `scripts/carried_table.py` | the file is untouched | **no change.** Ablated at verdict 49 and not reopened by verdict 54; these sites are the ablation's own output rather than repair targets. Section 7c records it. |
+| R1148 | `scripts/carried_table.py:119` | the file is untouched | **no change.** Ablated at verdict 49 and not reopened by verdict 54; these sites are the ablation's own output rather than repair targets. Section 7c records it. |
+| R1148 | `scripts/carried_table.py:120` | the file is untouched | **no change.** Ablated at verdict 49 and not reopened by verdict 54; these sites are the ablation's own output rather than repair targets. Section 7c records it. |
+| R1148 | `scripts/carried_table.py:121` | the file is untouched | **no change.** Ablated at verdict 49 and not reopened by verdict 54; these sites are the ablation's own output rather than repair targets. Section 7c records it. |
+| R1148 | `scripts/carried_table.py:343` | the file is untouched | **no change.** Ablated at verdict 49 and not reopened by verdict 54; these sites are the ablation's own output rather than repair targets. Section 7c records it. |
+| R1148 | `step-1-answers.json` | the file is untouched | **no change.** Ablated at verdict 49 and not reopened by verdict 54; these sites are the ablation's own output rather than repair targets. Section 7c records it. |
+| R1148 | `step-2-answers.json` | the file is untouched | **no change.** Ablated at verdict 49 and not reopened by verdict 54; these sites are the ablation's own output rather than repair targets. Section 7c records it. |
+| R1148 | `step-3-answers.json` | the file is untouched | **no change.** Ablated at verdict 49 and not reopened by verdict 54; these sites are the ablation's own output rather than repair targets. Section 7c records it. |
+| R1149 | `CLAUDE.md` | the file is untouched | **no change.** R1149 is the reviewer's own item -- `CLAUDE.md`'s corpus pause expired on 28 October and still reads as live. It is Xabier's to move, not mine: a change to `CLAUDE.md`'s gating text from inside a step is exactly what the standing rule on the reviewer's own instructions forbids. Section 8 carries it. |
+| R1149 | `docs/directives/FR.md:52` | the file is untouched | **no change.** R1149 is the reviewer's own item -- `CLAUDE.md`'s corpus pause expired on 28 October and still reads as live. It is Xabier's to move, not mine: a change to `CLAUDE.md`'s gating text from inside a step is exactly what the standing rule on the reviewer's own instructions forbids. Section 8 carries it. |
+| R1149 | `tests/corpus/site_pattern_path_forms.txt` | the file is untouched | **no change.** R1149 is the reviewer's own item -- `CLAUDE.md`'s corpus pause expired on 28 October and still reads as live. It is Xabier's to move, not mine: a change to `CLAUDE.md`'s gating text from inside a step is exactly what the standing rule on the reviewer's own instructions forbids. Section 8 carries it. |
+| R1150 | `CLAUDE.md` | the file is untouched | **no change.** Answered in revision 2 -- the authority is GB2, cited in all three places. These sites are the directive text the verdict quoted. Section 7c records it. |
+| R1150 | `docs/directives/GB.md:23` | the file is untouched | **no change.** Answered in revision 2 -- the authority is GB2, cited in all three places. These sites are the directive text the verdict quoted. Section 7c records it. |
+| R1150 | `docs/directives/GB.md:24` | the file is untouched | **no change.** Answered in revision 2 -- the authority is GB2, cited in all three places. These sites are the directive text the verdict quoted. Section 7c records it. |
+| R1150 | `docs/directives/GB.md:25` | the file is untouched | **no change.** Answered in revision 2 -- the authority is GB2, cited in all three places. These sites are the directive text the verdict quoted. Section 7c records it. |
+| R1150 | `docs/directives/GB.md:26` | the file is untouched | **no change.** Answered in revision 2 -- the authority is GB2, cited in all three places. These sites are the directive text the verdict quoted. Section 7c records it. |
+| R1151 | `tests/test_report_carried.py:280` | the file is untouched | **no change.** Answered in revision 2; the stray `#` is on its own line. Section 7c. |
+| R1152 | `GB.md` | the file is untouched | **no change.** Answered in revision 2; the provenance roll lists `GB.md` once. Section 7c. |
+| R1152 | `docs/directives/README.md` | the file is untouched | **no change.** Answered in revision 2; the provenance roll lists `GB.md` once. Section 7c. |
+| R1153 | `.gitattributes` | the file is untouched | **no change.** Answered in revision 2; the bold line is scoped to `.gitattributes`. Section 7c. |
+| R1157 | `docs/USER_GUIDE.md:102` | the file is touched and this line number is the old one | **no change.** Answered in revision 2 -- every committed wall clock withdrawn. Section 7c. |
+| R1158 | `docs/USER_GUIDE.md:951` | the file is touched and this line number is the old one | **no change.** Answered in revision 2 -- the timing rows were withdrawn and replaced by labels. Section 7c. |
+| R1158 | `docs/USER_GUIDE.md:952` | the file is touched and this line number is the old one | **no change.** Answered in revision 2 -- the timing rows were withdrawn and replaced by labels. Section 7c. |
+| R1158 | `docs/USER_GUIDE.md:953` | the file is touched and this line number is the old one | **no change.** Answered in revision 2 -- the timing rows were withdrawn and replaced by labels. Section 7c. |
+| R1158 | `docs/USER_GUIDE.md:954` | the file is touched and this line number is the old one | **no change.** Answered in revision 2 -- the timing rows were withdrawn and replaced by labels. Section 7c. |
+| R1158 | `docs/USER_GUIDE.md:955` | the file is touched and this line number is the old one | **no change.** Answered in revision 2 -- the timing rows were withdrawn and replaced by labels. Section 7c. |
+| R1158 | `docs/USER_GUIDE.md:956` | the file is touched and this line number is the old one | **no change.** Answered in revision 2 -- the timing rows were withdrawn and replaced by labels. Section 7c. |
+| R1158 | `docs/USER_GUIDE.md:957` | the file is touched and this line number is the old one | **no change.** Answered in revision 2 -- the timing rows were withdrawn and replaced by labels. Section 7c. |
+| R1159 | `docs/USER_GUIDE.md:251` | the file is touched and this line number is the old one | **no change.** Answered in revision 2 -- all three sensitivity counts. Section 7c. |
+| R1160 | `docs/USER_GUIDE.md:893` | the file is touched and this line number is the old one | **no change.** Answered in revision 2 -- the torsion printed in full. Section 7c. |
+| R1164 | `GC.md:109` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:110` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:111` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:112` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:113` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:114` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:115` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:116` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:117` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:118` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:119` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:120` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:121` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:122` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:123` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:124` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:125` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:126` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:127` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:128` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:129` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:130` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:131` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:132` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:133` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:134` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:135` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:136` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:137` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:138` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:139` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:140` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:141` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:142` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:143` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `GC.md:144` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1164 | `docs/directives/README.md` | the file is untouched | **no change.** Answered in revision 2 -- the provenance roll mentions GD. These sites are the directive's own lines as the verdict quoted them. Section 7c. |
+| R1165 | `docs/milestones/F2a.md` | the file is untouched | **no change.** R1165 is that no guard reads the user guide, and it is routed to R2: a guard is new apparatus, which FK2 freezes until R1 is tagged. Section 8 carries it. |
+| R1165 | `tests/test_tree_prose_consistent.py:99` | the file is untouched | **no change.** R1165 is that no guard reads the user guide, and it is routed to R2: a guard is new apparatus, which FK2 freezes until R1 is tagged. Section 8 carries it. |
+| R1169 | `.claude/hooks/protect-reviews.sh` | the file is untouched | **no change.** Answered in revision 3 -- SR-48 corrected in place. The hook and the settings file are the reviewer's own instruments and are not edited from inside a step; the verdict quoted them as the mechanism it re-read. Section 7c. |
+| R1169 | `.claude/settings.json` | the file is untouched | **no change.** Answered in revision 3 -- SR-48 corrected in place. The hook and the settings file are the reviewer's own instruments and are not edited from inside a step; the verdict quoted them as the mechanism it re-read. Section 7c. |
+| R1169 | `docs/reviews/R1/step-3.md` | the file is untouched | **no change.** Answered in revision 3 -- SR-48 corrected in place. The hook and the settings file are the reviewer's own instruments and are not edited from inside a step; the verdict quoted them as the mechanism it re-read. Section 7c. |
+| R1170 | `tests/regression/test_r1_published_artifacts.py:471` | the file is touched and this line number is the old one | **no change.** Answered in revision 3, and the reviewer reproduced the ablation itself. The line number is revision 3's; the assertion is at a different line in this revision because the C_m block grew, which is why section 1 cites it by name. Section 7c. |
+| R1172 | `docs/milestones/F2a.md` | the file is untouched | **no change.** Answered in revision 3 by collection rather than by reading. `suite_count.py` and `test_tree_prose_consistent.py` are the instruments the figure came from, not repair targets. Section 7c. |
+| R1172 | `suite_count.py` | the file is untouched | **no change.** Answered in revision 3 by collection rather than by reading. `suite_count.py` and `test_tree_prose_consistent.py` are the instruments the figure came from, not repair targets. Section 7c. |
+| R1172 | `test_tree_prose_consistent.py` | the file is untouched | **no change.** Answered in revision 3 by collection rather than by reading. `suite_count.py` and `test_tree_prose_consistent.py` are the instruments the figure came from, not repair targets. Section 7c. |
+| R1173 | `docs/milestones/R1.md` | the file is untouched | **no change.** Answered in revision 3 -- `docs/closure/R1.md` with three witness transcripts. `docs/milestones/R1.md` is the locked plan and a closed step's plan row is not rewritten to match the work. Section 7c. |
+| R1174 | `tests/corpus/cm_direction_claim_members.txt` | the file is untouched | **no change to the corpus file, which is the reviewer's (BE3).** R1174 itself is answered in revision 3 and its repair is what R1178 retires. The corpus entry the verdict names is live counter-evidence and section 1 reproduces its member rather than editing the file. |
+| R1175 | `docs/USER_GUIDE.md:65` | the file is touched and this line number is the old one | **no change.** Answered in revision 3 -- the PowerShell paragraph was rewritten and the line number is revision 3's. Section 7c. |
+| R1176 | `docs/milestones/R1.md` | the file is untouched | **no change.** Answered in revision 3 -- FT2.7 is built, `9 passed`. `docs/milestones/R1.md` is the locked plan; the test file is the evidence, not a repair target. Section 7c. |
+| R1176 | `tests/regression/test_ft27_topology_solve.py` | the file is untouched | **no change.** Answered in revision 3 -- FT2.7 is built, `9 passed`. `docs/milestones/R1.md` is the locked plan; the test file is the evidence, not a repair target. Section 7c. |
+| R1178 | `docs/USER_GUIDE.md:295` | the file is touched and this line number is the old one | **no change AT THIS LINE NUMBER: the file is touched and the lines moved.** `docs/USER_GUIDE.md` section 4.6 is rewritten at both of the sites verdict 54 names -- the three-reason list's item 1 and the `C_m` paragraph -- and the rewrite is longer than what it replaced, so the verdict's line numbers point into the new text rather than at it. Section 1a names both sites by their content. `tests/corpus/cm_direction_claim_members.txt` is the reviewer's (BE3) and its entry 12 is live counter-evidence, reproduced in section 1b rather than edited. |
+| R1178 | `docs/USER_GUIDE.md:296` | the file is touched and this line number is the old one | **no change AT THIS LINE NUMBER: the file is touched and the lines moved.** `docs/USER_GUIDE.md` section 4.6 is rewritten at both of the sites verdict 54 names -- the three-reason list's item 1 and the `C_m` paragraph -- and the rewrite is longer than what it replaced, so the verdict's line numbers point into the new text rather than at it. Section 1a names both sites by their content. `tests/corpus/cm_direction_claim_members.txt` is the reviewer's (BE3) and its entry 12 is live counter-evidence, reproduced in section 1b rather than edited. |
+| R1178 | `docs/USER_GUIDE.md:337` | the file is touched and this line number is the old one | **no change AT THIS LINE NUMBER: the file is touched and the lines moved.** `docs/USER_GUIDE.md` section 4.6 is rewritten at both of the sites verdict 54 names -- the three-reason list's item 1 and the `C_m` paragraph -- and the rewrite is longer than what it replaced, so the verdict's line numbers point into the new text rather than at it. Section 1a names both sites by their content. `tests/corpus/cm_direction_claim_members.txt` is the reviewer's (BE3) and its entry 12 is live counter-evidence, reproduced in section 1b rather than edited. |
+| R1178 | `docs/USER_GUIDE.md:338` | the file is touched and this line number is the old one | **no change AT THIS LINE NUMBER: the file is touched and the lines moved.** `docs/USER_GUIDE.md` section 4.6 is rewritten at both of the sites verdict 54 names -- the three-reason list's item 1 and the `C_m` paragraph -- and the rewrite is longer than what it replaced, so the verdict's line numbers point into the new text rather than at it. Section 1a names both sites by their content. `tests/corpus/cm_direction_claim_members.txt` is the reviewer's (BE3) and its entry 12 is live counter-evidence, reproduced in section 1b rather than edited. |
+| R1178 | `docs/USER_GUIDE.md:339` | the file is touched and this line number is the old one | **no change AT THIS LINE NUMBER: the file is touched and the lines moved.** `docs/USER_GUIDE.md` section 4.6 is rewritten at both of the sites verdict 54 names -- the three-reason list's item 1 and the `C_m` paragraph -- and the rewrite is longer than what it replaced, so the verdict's line numbers point into the new text rather than at it. Section 1a names both sites by their content. `tests/corpus/cm_direction_claim_members.txt` is the reviewer's (BE3) and its entry 12 is live counter-evidence, reproduced in section 1b rather than edited. |
+| R1178 | `tests/corpus/cm_direction_claim_members.txt` | the file is untouched | **no change AT THIS LINE NUMBER: the file is touched and the lines moved.** `docs/USER_GUIDE.md` section 4.6 is rewritten at both of the sites verdict 54 names -- the three-reason list's item 1 and the `C_m` paragraph -- and the rewrite is longer than what it replaced, so the verdict's line numbers point into the new text rather than at it. Section 1a names both sites by their content. `tests/corpus/cm_direction_claim_members.txt` is the reviewer's (BE3) and its entry 12 is live counter-evidence, reproduced in section 1b rather than edited. |
+
+---
+
+## 7c. Items answered in EARLIER revisions of this step, and where
+
+**Same reason as revision 3's section of this name, one revision on.** A pointer resolves
+against the NEWEST revision's sections, and revision 3's `sec 2`, `2a`, `3`, `4`, `5`, `5a`,
+`5b` and `8` are not in revision 4's layout — so the ten rows revision 3 answered are
+repointed here, beside the twenty it had repointed for the same reason. **The table is not
+generated**: which revision answered an item is not derivable from the tree.
+
+| item | answered in | what the answer was |
+|---|---|---|
+| R1139 | revision 1 | the held repair that opened the step |
+| R1141 | revision 1 | the four declaration rows |
+| R1147 | revision 2 | six rows over three paths, all seven sites |
+| R1148 | verdict 49 | ablated there and not reopened |
+| R1150 | revision 2 | EQ0 cited by analogy; GB2 is the authority |
+| R1151 | revision 2 | the stray `#` moved to its own line |
+| R1152 | revision 2 | the provenance roll lists `GB.md` once |
+| R1153 | revision 2 | the bold line scoped to `.gitattributes` |
+| R1154 | revision 2 | `EG3 STATE (1)` named in revision 1's section 11 |
+| R1156 | revision 1 | the caveat's clause attribution, found by the witness |
+| R1157 | revision 2 | every committed wall clock withdrawn |
+| R1158 | revision 2 | the timing rows withdrawn; labels instead of values |
+| R1159 | revision 2 | all three sensitivity counts |
+| R1160 | revision 2 | the torsion printed in full |
+| R1161 | revision 2 | the lambda-collision note in section 7.3 |
+| R1162 | revision 2 | the caveat's direction made non-strict |
+| R1163 | revision 2 | the blind band reproduced, the gate not re-aimed |
+| R1164 | revision 2 | the provenance roll now mentions GD |
+| R1166 | revision 2 | the answers-file needle, fixed in `ec93df6` |
+| R1167 | revision 2 | my own justification for R1162, corrected |
+| R1168 | revision 3 | the caveat's second clause, with the zero-moment row — **and its repair is what R1178 retires** |
+| R1169 | revision 3 | SR-48 corrected in place; `git show` is ALLOW, `cp` is DENY |
+| R1170 | revision 3 | the ablation reddens at the branch guard, reproduced by the reviewer |
+| R1171 | revision 3 | the three report-parametrised files green at the report's own state |
+| R1172 | revision 3 | the whole-suite line's provenance, checked by collection |
+| R1173 | revision 3 | the witness gate evidenced — three runs, fifteen fixtures, `docs/closure/R1.md` |
+| R1174 | revision 3 | the caveat's third flat cause — **and that repair is R1178** |
+| R1175 | revision 3 | the PowerShell paragraph, wrong in both halves |
+| R1176 | revision 3 | FT2.7 is built; `9 passed` |
+| R1177 | revision 3 | GE2's cap, agreed |
+
+**Two of these rows are the chain this revision ends.** R1168's repair produced R1174 and
+R1174's produced R1178, each found by the reviewer one commit after it shipped. Section 2
+says what the three had in common and why the sixth correction is a different kind of
+sentence rather than a better-worded one.
+
+---
+
+## 8. The schedule, and what leaves R1 open
+
+**FW0's date is 10 November and this revision holds it.** Verdict 54 called the work a
+half-day and it was: one sentence, five sites, four figures and one block of assertions in
+the gate that already covered that sentence. **Step 4 is
+at 3 of 3 under ES0**, so there is no revision after this one — what this verdict finds goes
+into the closure artifact as a list or into R2, and the step closes.
+
+**On the sixth correction, since verdict 54 said it would say so at a seventh.** It is right
+that the count is the finding. What I would put beside it is the shape, because the six were
+not six attempts at the same thing: R743 was a direction, R1156 a clause attribution, R1162
+a bound, R1168 a missing case, R1174 a count, R1178 a universal — and **every one of the
+first five was a claim ABOUT configurations, checked only at the configurations its author
+had in hand.** Each was then refuted by someone running one the author had not. The sixth
+replaces the claim with the closed
+form the quantity has, which has no configurations to choose: `max(B, a + C_m*s)` is checked
+over the whole declared domain on every member of the reviewer's batch, at the sample
+section 1 names, and the two figures it publishes are re-derived by the gate.
+
+If a seventh is needed, the verdict's remedy — a pointer to the guide and no sentence of its
+own — is the right one, and I would not argue against it.
+
+**What leaves R1 open, for the closure artifact and R2.** Nothing here is blocking and
+nothing here is new:
+
+| item | what it is | why it leaves R1 |
+|---|---|---|
+| L5 | the closure-evidence guard's regex, and one live phantom citation in `docs/closure/F0.md` | apparatus, frozen under FK2; F0's artifact is out of reach under EK3; the verdict ruled one line and no census |
+| L9 | `scripts/run_rung.sh`'s POSIX `PYTHONPATH` join on Windows | fail-loud, the reviewer's own harness, no fix asked |
+| R1149 | `CLAUDE.md` still reads "pause until 28 October" | the reviewer's own item and Xabier's to move; gating text is not edited from inside a step |
+| R1155 | a refusal that arrives as a traceback | unchanged |
+| R1165 | no guard reads the user guide | a guard is new apparatus, frozen under FK2 |
+| SR-41 | the export message's stale reference | unchanged |
+| SR-44 | `master` has no `README.md` and nothing points at `docs/USER_GUIDE.md` | unchanged |
+| **the FV2 commit door** | how a verdict reaches the branch | **the one item that cannot be closed from inside the loop.** Raised under FZ (d) in revision 3 and recorded again in verdict 54's own Door paragraph, where the reviewer reports the same two writes in my tree for the third round running. It needs a decision rather than another round |
+
+```
+claim  every row above names an item that is open in the record, rather than one I
+       remember being open
+cmd    grep -c "R1155\|R1165\|R1149" docs/reviews/R1/step-4.md ;
+         grep -c "SR-41\|SR-44" docs/directives/FZ.md ;
+         grep -n "^..L5\.\|^..L9," docs/reviews/R1/step-4.md | cut -d: -f1
+out    18
+       2
+       76
+       183
+       850
+rule   the newest verdict and the SR log are where these items live. The third count is
+       three lines because the verdict file holds every earlier round too, and `L5` is a
+       label the reviewer reuses per round -- line 76 is this round's
+judge  the FV2 door is the only row with no id, because it is an escalation and not a
+       finding: it is in `docs/SUPERVISOR.md` section FV2 and in verdict 54's Door
+       paragraph
+```
+
+**Withdrawn from that list by this revision:** the two-reference density item (L7), which
+the tool already closes.
+
+---
+
+## 11. The whole suite (R309, EI0's two halves)
+
+**Both halves at ONE commit this time, and the tree is green on both.** Revision 3 had to
+name two different commits because its two halves were taken at different trees; this
+revision's are both at `566ef94`, the commit that carries R1178's repair.
+
+```
+claim  the whole suite at this revision's measurement commit, both halves
+cmd    python scripts/suite_count.py --half main ; python scripts/suite_count.py --half guards
+out    **Whole suite at `566ef94`: 3961 passed, 0 failed, 0 skipped.** ... It excludes 407
+         tests in 3 files parametrised over this report (tests/test_report_carried.py,
+         tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py)
+       **The report-guard set at `566ef94`: 407 passed, 0 failed, 0 skipped.**
+rule   R339 and R497: the count of what is excluded is part of the line, and so is its
+       result. 3961 + 407 = 4368, which is the total CI measured at `c2bf7d7` and the
+       total verdict 54 measured in its own worktrees
+judge  **0 failed on BOTH halves in a clean worktree, so neither EG3 boundary state
+       arises and the FS1/FT1 predicate is not reached.** There is no `FAILED` list to
+       paste because there is none
+```
+
+**EG3 (ii), which no revision of this step had measured from this side.** The condition asks
+for the report-guard files to be run AT the verdict commit, because state (2) — verdict
+written, answering report not yet — is the half the reviewer cannot measure, since it runs
+before writing. `566ef94` is such a tree: verdict 54 exists in it and the report ends at
+revision 3. **The guards are green there**, which is the measurement rather than the
+expectation, and it is why the `FAILED` list above is empty rather than waived.
+
+```
+claim  the three report-parametrised files at THIS revision's own state, after the last
+       edit to it
+cmd    python -m pytest -q -p no:randomly tests/test_report_carried.py
+         tests/test_report_numbers_are_sourced.py tests/test_report_guard_states.py
+out    430 passed in 85.97s (0:01:25)
+rule   the set is parametrised over this report's sections and over the newest verdict's
+       own findings and sites, so the figure at the report's own state is a different
+       claim from the clean-worktree one. Both are above
+```
+
+**And the guards half MOVED without a test being written, which is R835.**
+
+```
+claim  what revision 3 published for this half, read from revision 3's own commit
+cmd    git show c2bf7d7:docs/reports/R1/step-4.md | grep -o
+         "report-guard set at .b0ff398.: 372 passed, 0 failed, 0 skipped"
+out    report-guard set at `b0ff398`: 372 passed, 0 failed, 0 skipped
+rule   the figure is not retyped from memory; it is read out of the revision that
+       published it
+```
+
+The same command at `566ef94` gives `407`. Nothing
+in `tests/` changed between them that touches these files — **two of the three are
+parametrised over the newest verdict's own findings and sites, and verdict 54 names more
+sites than verdict 53 did.** The denominator is a function of what the reviewer writes.
+**GE3 routes that item to R2 and it is not re-measured here**; this line exists so that the
+two figures are not read as a regression.
+
+```
+claim  the 35-case difference is parametrisation and not new tests
+cmd    git diff --numstat b0ff398..566ef94 -- tests/test_report_carried.py
+         tests/test_report_numbers_are_sourced.py tests/test_report_guard_states.py
+out    (empty)
+rule   R835/R861. A file that did not change cannot have gained a test; the ids come
+       from the verdict the guard reads
+```

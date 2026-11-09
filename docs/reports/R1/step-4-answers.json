@@ -3,40 +3,35 @@
     "POINTERS ONLY (CH4). No prose here -- every row points at the section",
     "that discusses it, and the guard checks that the section MENTIONS the id.",
     "",
-    "R1 STEP 4, REVISION 3. It answers the ES0 INTERIM CHECK at dc9996f, which",
-    "judged c992e54 -- PASS, nothing blocks, four ledger rows -- and it also",
-    "answers verdict 51 at c88b0c0, whose R1170 to R1173 were still open at that",
-    "check. The interim check counts against NO round (ES0), so step 4 stood at",
-    "1 of 3 before this revision and stands at 2 of 3 after it.",
+    "R1 STEP 4, REVISION 4. It answers verdict 54 at 5f02798, which judged",
+    "revision 3 at c2bf7d7 -- HOLD, ONE blocking finding and nine ledger rows.",
+    "Revision 3 was a REVIEWED revision, so step 4 stood at 2 of 3 before this",
+    "one and stands at 3 of 3 after it: under ES0 this is the LAST revision the",
+    "cap allows, and whatever verdict 55 finds goes to the closure artifact or",
+    "to R2 rather than to a revision 5.",
     "",
-    "30 ITEMS ARE ANSWERED HERE -- the count on this line is DERIVED",
+    "31 ITEMS ARE ANSWERED HERE -- the count on this line is DERIVED",
     "from this file rather than typed, which is R1133.",
     "",
-    "THE TEN NEW ONES, and nine of the eleven findings across the two verdicts",
-    "and the three witness runs were defects in work produced in the SAME turn:",
-    "  R1168  the caveat's second clause was unconditional            -> sec 2",
-    "  R1174  and its REPAIR was a count, and also wrong              -> sec 2a",
-    "  R1169  SR-48's reason for not reproducing a figure was wrong    -> sec 3",
-    "  R1170  which assertion the max() ablation reddens               -> sec 4",
-    "  R1171  three out lines whose needles matched their own prose    -> sec 7",
-    "  R1172  the whole-suite line's provenance                       -> sec 7",
-    "  R1173  step 4's witness gate was unevidenced                   -> sec 5",
-    "  R1175  the guide's PowerShell sentence, wrong in both halves    -> sec 5a",
-    "  R1176  revision 2 said FT2.7 is not built; it is built          -> sec 8",
-    "  R1177  GE2 said one line and the SR-48 correction is 39        -> sec 5b",
+    "THE ONE NEW ONE, and it is the only blocking finding of the round:",
+    "  R1178  the R1174 repair replaced a wrong COUNT with a FALSE",
+    "         UNIVERSAL, and the deliverable's own columns refute it",
+    "         on 10 of 32 rows including the headline                 -> sec 1",
     "",
-    "NOTHING BLOCKED IN EITHER VERDICT. Ten ledger rows between them and no",
-    "blocking finding, so no row here is the repair of a blocking item.",
+    "VERDICT 54's OTHER NINE FINDINGS ARE LEDGER ROWS L1 to L9 AND CARRY NO",
+    "R-NUMBER, so none of them is a row in this file. L1 to L4 are the four",
+    "stale figures in docs/closure/R1.md and are answered in sec 3; L5 to L9",
+    "are in sec 4, including the two I re-measured rather than carried and the",
+    "one -- L7 -- that corrects a ledger ruling of mine rather than the tree.",
     "",
     "10 rows are CARRIED from earlier steps and point at section 7.",
-    "The other 289 rows are ledger rows and point at section 7, which names",
+    "The other 290 rows are ledger rows and point at section 7, which names",
     "every one of them by id with its disposition.",
     "",
-    "TWO ROWS ARE ANSWERED BY A LEDGER LINE RATHER THAN A REPAIR, deliberately,",
-    "and each says so at its site: witness run 3's two-reference density finding",
-    "(sec 5) and the label-versus-number split in check_member (sec 2a). Neither",
-    "can produce a wrong number, so neither blocks under FR1, and changing a",
-    "published deliverable's prose is outside what GE1 authorised here."
+    "THE TEN ROWS ANSWERED IN REVISION 3 ARE REPOINTED AT sec 7c, because a",
+    "pointer resolves against the NEWEST revision's sections and revision 3's",
+    "sec 2, 2a, 3, 4, 5, 5a, 5b and 8 are not in it. The twenty rows revision 3",
+    "repointed for the same reason stay where they are."
   ],
   "answered": {
     "R1": {
@@ -1317,43 +1312,51 @@
     },
     "R1168": {
       "state": "answered",
-      "where": "sec 2"
+      "where": "sec 7c"
     },
     "R1169": {
       "state": "answered",
-      "where": "sec 3"
+      "where": "sec 7c"
     },
     "R1170": {
       "state": "answered",
-      "where": "sec 4"
+      "where": "sec 7c"
     },
     "R1171": {
       "state": "answered",
-      "where": "sec 7"
+      "where": "sec 7c"
     },
     "R1172": {
       "state": "answered",
-      "where": "sec 7"
+      "where": "sec 7c"
     },
     "R1173": {
       "state": "answered",
-      "where": "sec 5"
+      "where": "sec 7c"
     },
     "R1174": {
       "state": "answered",
-      "where": "sec 2a"
+      "where": "sec 7c"
     },
     "R1175": {
       "state": "answered",
-      "where": "sec 5a"
+      "where": "sec 7c"
     },
     "R1176": {
       "state": "answered",
-      "where": "sec 8"
+      "where": "sec 7c"
     },
     "R1177": {
       "state": "answered",
-      "where": "sec 5b"
+      "where": "sec 7c"
+    },
+    "R1178": {
+      "state": "answered",
+      "where": "sec 1"
+    },
+    "R1149": {
+      "state": "later",
+      "where": "§7"
     }
   }
 }
