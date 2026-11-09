@@ -407,3 +407,42 @@ nothing but prose. What fits is the shape `tests/regression/test_r1_published_ar
 already has for `report.md`: the commands the document prints are RUN, and their output is
 compared with what the document says they print. That is a doctest over a deliverable, and it
 is the only form in which a guide this size stays true as the tree moves under it.
+
+---
+
+## R835 / R861 — a boundary-red count is a function of the newest verdict's own text
+
+*Routed here by **directive GE3**, which rules it R2's under GA1 and stops the reviewer
+re-measuring it each round: "it has not hidden a blocking finding since R1117 was fixed.
+From now on the reviewer records it as `R835: unchanged, R2` in one line."*
+
+Two of the three report-parametrised guard files are parametrised over **the newest
+verdict's own findings and sites**, so how many of their cases exist — and therefore how
+many can be red at a step boundary — is a function of what the reviewer last wrote rather
+than of the tree.
+
+```
+claim  the collected case count and the red count both move across a verdict
+       boundary with NO test changed
+cmd    the three report-parametrised files, at the two commits either side of
+       verdict 51's own commit
+out    at `ec93df6`: 622 cases, 87 failed
+       at `6876854`: 372 cases,  0 failed
+rule   FS1/FT1's predicate, which replaced EG3's enumerated lists precisely
+       because a fixed list of names cannot track a count that the reviewer's
+       own prose sets
+cell   one variable -- whether a verdict exists that the report answers. No test
+       file differs between the two commits
+```
+
+**Eleven measurements, no gate moved, and that is why it is here rather than in a round.**
+The enumeration it replaced was adopted five times and was short in both directions every
+time (EH1, FN2/R813, EJ2/R644, FC1, R835), and the reviewer withdrew its own baseline figure
+one commit after writing it — nine, then 78, then 89, then 110. The PREDICATE handles the
+reds correctly today; what is unresolved is that **the denominator is not a property of the
+code**, so no count taken across a verdict boundary is a comparison.
+
+**What R2 would decide**, stated as the question and not as a design: whether the
+report-carry guards should be parametrised over the verdict at all, or should take one case
+per guard and assert over the set inside it. The second form makes the collected count
+constant and the failure message longer. That trade is the decision, and it is not a bug fix.
