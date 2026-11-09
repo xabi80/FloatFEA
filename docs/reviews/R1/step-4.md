@@ -1,4 +1,332 @@
 # Review — R1 step 4
+Reviewed commit: dc49552fd719067d8482a104d47b6cd008a6608e
+**Reviewed commit: `dc49552fd719067d8482a104d47b6cd008a6608e`.**
+Closes: R1/step-4
+Verdict: PASS
+Scope: **R1 step 4, REVISION 4 at `dc49552` -- a REVIEWED REVISION, so this CONSUMES A ROUND. Step 4 stood at 2 of 3 and stands at 3 of 3 (ES0), so the step CLOSES here and this verdict carries `--closes R1/step-4`** (FK1). The increment is NOT closed: `docs/closure/R1.md` has no closure commit, and CZ1 (ii)/(iii) re-take its figures at one. The report carries `# Revision 4` / `Answers: verdict 54 @ 5f02798`, which names the NEWEST verdict, so the 1b check passes and I say so rather than leaving it silent. Ruled under **FR1 with EZ0**. **No finding blocks, and for each I tried to write FR1's sentence and could not** -- that is one line each rather than a round, which is what FR1 asks for. **GE3: `R835: unchanged, R2`. Not re-measured.** GA3's 150-line target is OVERRUN at 317 lines and I am saying so rather than trimming the evidence: the overrun is six injection and sweep cells, the complete numeric census of the caveat, the ladder I measured myself because CI's had not finished, and six ledger findings each carrying its own closing condition. GA3 says the target does not limit what I may rule.
+Tests: **4393 passed, 0 failed, 0 skipped AT THE JUDGED COMMIT, MY OWN RUNS, in EI0's two halves, in clean worktrees of my own (FV2), `-p no:randomly`, PYTHONPATH unset.** The main half **3961 passed, 0 failed, 0 skipped in 2914.51s (0:48:34)** and the three report-parametrised files **432 passed, 0 failed in 93.21s**. **432 is exactly the report's section 11 figure at its own state, measured independently by me**, and I also measured **430 at `4750f07`**, which confirms the report's cell that the figure moved when section 10 was added and is not a flake. Lint at the judged commit: `ruff` `All checks passed!`, `black --check` `128 files would be left unchanged.`, `mypy` `Success: no issues found in 45 source files`. **ZERO REDS ANYWHERE, so neither EG3 boundary state arises, the FS1/FT1 predicate is not reached, there is no `FAILED` list to classify and CZ1 (iv) does not arise.** Third consecutive boundary with nothing to classify.
+Door (FV2/GE4): **every measurement below was taken in `git worktree`s of my own** under the session scratchpad -- one kept clean for the suite at `dc49552`, one for every injection, one at `4750f07` -- so each restore ran in MY tree and the implementer's was never written by a probe. In `C:/dev/floatfea` I ran read-only `git` and `gh`, **plus the two writes FV2 gives me no other door for: the corpus commit `173c64c` and this verdict.** Both touch one reviewer directory, one file each; `git status --porcelain` was empty before and after. **That is the standing escalation in `docs/SUPERVISOR.md` section FV2, now in its fourth consecutive round. It needs Xabier, not another round, and I am not inventing a procedure for it.**
+
+## Carried
+
+* **R1178 -- ANSWERED AT ALL FIVE SITES, AND I ATTACKED IT RATHER THAN READING IT.** The condition set and its contrapositive are gone from `floatfea/cli.py:111-137`, from all three artifacts and from both `docs/USER_GUIDE.md` paragraphs, and what replaces them is the closed form rather than a sixth rewording. **I measured the form rather than reasoning about it**, over a population neither of us chose:
+
+```
+claim  the published sentence -- the column is EXACTLY THE LARGER OF B AND a + C_m*s,
+       NON-DECREASING, FLAT below the kink at C_m = (B - a)/s, flat across the whole
+       declared domain when (B - a)/s exceeds 2.0, and flat at every C_m whatsoever
+       only when s = 0 -- on members its author did not choose
+cmd    60000 random tubulars, D 0.3-3.0 m, D/t 15-320, KL/r 10-200, biaxial moment,
+       both shears, torsion; 17614 admissible COMPRESSION cases; each evaluated at 13
+       C_m from 0.1 to 100 and fitted against max(B, a + C_m*s)
+out    closed-form violations (rel > 1e-12)            0      worst rel 4.35e-16
+       monotonicity violations                         0
+       kink <-> flat-across-0.1..2.0 mismatches        0
+       s == 0 <-> flat-at-every-C_m mismatches         0
+rule   the sentence as shipped in cli.py and in the commented header of both CSVs
+judge  the first of the six versions of this sentence that a member cannot refute.
+       The precondition is in the code and not in the sentence: f_a >= f_e RAISES, so
+       s >= 0 always and the column cannot fall. I constructed that refusal
+       (slender_near_euler_refusal, KL/r 195) rather than assuming it
+```
+
+* **R1178's remaining universal, attacked as you asked, and IT HOLDS.** `s = 0` iff flat at every C_m is above, 0 mismatches, and the zero-moment fixture is flat at `C_m = 1e9`. The kink sentence is true from BOTH sides of BOTH ends (EH4), solved not sampled: kink `2.0000001` flat, kink `1.995` and `1.9999999999` not flat, kink `0` rising from the declared floor up. **Your published digits reproduce exactly** -- `0.818471 -> 1.639720`, kink `0.980652` (`0.98`), the fixture's kink `3.040895` (`3.04`), `5.0e8/1.65125628e8 = 3.0280` (`3.03x`), the guide's factor `2.003394` (`2.0034`). **And the one existential the caveat states with a specific label is true for that label**: a row reading `3.2.4 beam shear` AND `simple` at `0.85` -- `shear_y_n = 7.58716187e+07`, `U = 0.814537` -- reads `3.3.2 interaction` at `2.00` with `U = 1.639720`. **No seventh correction is needed and the pointer-to-the-guide remedy is not called for.**
+* **AND THE CENSUS OF THE CAVEAT'S NUMBERS IS COMPLETE RATHER THAN SAMPLED**, because a sample is how a stale figure survives:
+
+```
+claim  every numeric token the shipped caveat publishes, and whether I reproduced it
+cmd    re.findall on floatfea.cli.TABLE_CAVEATS' C_m entry, the whole string
+out    15 distinct tokens: 0, 1, 2, 4 (in `s = 0`, `1 - f_a/F_e'`, the clause numbers);
+       3.2, 3.3 (clause prefixes); 0.1 and 2.0 (MOMENT_REDUCTION_CM's declared bounds);
+       0.85 (the tabulated value); 2.00; 0.98; 3.03; 3.04; 0.818471; 1.639720
+judge  the five that are MEASUREMENTS are 0.98, 3.03, 3.04, 0.818471 and 1.639720, and
+       I reproduced all five -- 0.980652, 3.0280, 3.040895, and the two exactly. The
+       rest are structural. NOTHING in the caveat is a figure I did not re-derive
+```
+* **L1, L2, L3, L4 -- ANSWERED and re-measured by me, not accepted.** L1: the caveat names six (`R743 / R1156 / R1162 / R1168 / R1174 / R1178`) and the artifact now READS the count from the caveat. L2: `grep -c "not-a-tolerance: EXACT equality"` is `6`. L3: label and paragraph both say `566ef94`. L4: `density > basis.RHO_STEEL` is at `floatfea/model/platform.py:878`. **And the L3 repair published a fifth figure of the same class in the same block -- R1179 below.**
+* **L5 -- CORRECTLY NOT ACTED ON.** One line under GA1, no census, no guard extended, and the phantom not guessed into an `HSP:` prefix (SR-66). R2.
+* **L6 -- ANSWERED**, in revision 4's text with EK3's mechanical reason given rather than by touching revision 3.
+* **L7 -- WITHDRAWN, AND I REPRODUCED THE WITHDRAWAL RATHER THAN ACCEPTING IT. The withdrawal does NOT overreach.** My own run, `rho: 7000.0`, absolute paths, output outside the repository:
+
+```
+claim  a reader at a non-default rho can tell which reference each body list used
+cmd    my own run at rho 7000; every line of the generated report.md naming a density
+out    :56-62  hub1..hub4: the equivalent density is 11433.5 kg/m^3, ABOVE steel at 7850.
+       :110    rho was declared as 7000 kg/m^3 (nominal) ... Equivalent densities:
+                 hub1 11433.5, hub2 11433.5, hub3 11433.5, hub4 11433.5, platform 7146.0
+       :111    DZ5 / ER1(e): hub1, hub2, hub3, hub4, platform carry an equivalent
+                 density ABOVE the declared nominal
+judge  the DISCRIMINATING row is `platform` at 7146.0 -- in the second list and not the
+       first -- and the reader has 7000 on the line IMMEDIATELY ABOVE and 7850 inside
+       the first sentence. Nothing is ambiguous. Your L7 is right and my predecessor's
+       premise was wrong; the item is closed by the tool and belongs off R1's open list
+```
+
+* **L8 -- one line, no action, as ruled.** Re-measured by the report and the coverage is where the verdict said: rung 5, not the gate.
+* **L9 -- the reviewer's own; no action owed.** Fail-loud.
+* **Item 3 of verdict 54's conditions -- CI at revision 4's own commit: UNAVAILABLE, not red (CK2), and I record it as that rather than skip it.** See `## CI` below.
+* **Item 4 -- DISCHARGED, and by my own runs rather than the report's.** Both halves at the judged commit, above.
+* **Item 5 -- "nothing else of substance" HELD.** The diff is one sentence, five sites, four figures, one assertion block, the SR log and the digests. **No tolerance, no conftest, no `.claude`, no `docs/SUPERVISOR.md`, no new apparatus.**
+* **R835: unchanged, R2** (GE3).
+
+## Findings
+
+**NONE BLOCK. For each I tried to write FR1's sentence and could not, and the reason is given rather than implied.**
+
+### R1179 (ledger). THE REPAIR OF L3 PUBLISHED A FIFTH STALE FIGURE IN THE SAME BLOCK, ONE COMMIT LATE, FOR THE REASON CP3 NAMES.
+
+`docs/closure/R1.md:30-32` publishes *"the three files at the report's own state are 430 passed, 0 failed."*
+
+```
+claim  the figure the closure artifact publishes, against the tree it describes
+cmd    the three report-parametrised files, my own clean worktrees, -p no:randomly
+out    at 4750f07   430 passed in 95.87s     <- the figure as published
+       at dc49552   432 passed in 93.21s     <- the judged commit
+rule   CP3: the paste is copied from a run executed AFTER the final edit, and if an
+       edit follows the paste the paste is void. 7a9cf08 wrote the block, 4750f07 and
+       dc49552 edited the report after it
+judge  430 describes NO COMMIT -- it is the working tree with revision 4's body and
+       without its section 10 -- and it is labelled as the report's own state inside a
+       block stamped 566ef94. The report's own section 11 publishes 432 and explains
+       the move, so the two deliverables disagree by 2
+```
+
+**Why it does not block.** Both figures are `0 failed`; no engineering number, gate threshold or input depends on either, so the silently-wrong-result sentence cannot be written. It is the class verdict 54 ledgered as L1-L4, in the same file, and **it self-clears**: CZ1 (ii) re-takes every figure in that block at the closure commit. *Closed when* the block is regenerated at the closure commit that exists.
+
+### R1180 (ledger). `docs/USER_GUIDE.md` IS NOT IN THE GATE'S `ARTIFACTS`, SO FOUR PUBLISHED FIGURES IN THE WITNESS'S ONLY INPUT ARE RE-DERIVED BY NOTHING.
+
+`tests/regression/test_r1_published_artifacts.py:69` is `ARTIFACTS = (REPORT, FORCES, UTILISATION)`. The new `for figure in (...)` loop re-derives `0.818471` and `1.639720` from the model and asserts them in `source` and in each of those three. The guide carries the same two digits plus `2.0034` and the kink `3.04`, and `grep -n USER_GUIDE tests/regression/test_r1_published_artifacts.py` gives two COMMENTS and no read. The two kink digits `0.98` and `3.04` are re-derived nowhere at all -- `grep -rn "3\.0408|0\.9806" tests/` is empty, and the flat-at-`0.10` assertion tests only `kink >= 2.0`, not `== 3.04`.
+
+**All four are CORRECT at this commit; I measured every one** (`0.980652`, `3.040895`, `2.003394`, and the two utilisations). So no wrong number exists and FR1's sentence cannot be written. **It is the BP0 exposure and not a defect**, and under GE1/FK2 a new read is not asked for in the last revision ES0 allows. **AND THIS IS AN INSTANCE OF R1165, NOT A NEW ITEM, WHICH I CHECKED RATHER THAN PRESENTED AS NEW**: `grep -rln USER_GUIDE tests/` gives two files, one of them a corpus text file and the other this gate's two comments, so **nothing in `tests/` reads the guide at all** -- which is R1165, already on the open list. What is new is only that R1178's repair put four more re-derivable figures behind it. *Closed when* the guide is in the set the published-digit loop walks, or the guide cites the deliverable instead of repeating its digits. R2, with R1165.
+### R1181 (ledger). SECTION 10's BOLDED SENTENCE IS REFUTED BY THE COMMAND SECTION 10 ITSELF NAMES.
+
+Section 10 says **"It is pushed and the run was started by the push"**.
+
+```
+cmd    gh run list --commit dc49552fd719067d8482a104d47b6cd008a6608e --json databaseId
+out    []
+cmd    sed -n '22,25p' .github/workflows/ci.yml
+out    paths-ignore:
+         - "docs/reports/**"
+rule   section 10's own cmd line, and the workflow's own trigger
+judge  dc49552 touches ONLY docs/reports/R1/step-4.md, so the workflow DECLINED to run
+       and no push could have started one. The commit IS pushed; the run is not
+```
+
+**Report prose, so FR1's third class and not blocking.** The substantive half is R2's and is not the implementer's to fix: **FP1's guarantee -- "the judged commit always has a CI run" -- cannot hold for a report-only tip commit**, because CK0's `paths-ignore` excludes exactly the path a report lives at. The repository already has the predicate and the true wording -- `report_only()` at `scripts/ci_section.py:350` and `report-only; no run by design` at `:592` -- but `section()` anchors on the ANSWERED commit through `_anchor()`, so no generated mode covers the report's OWN commit and section 10 is hand-written by necessity. *Closed when* FP1 and CK0 are reconciled by a directive, or the own-commit paragraph states `report_only`'s outcome instead of a push that did not run.
+
+### R1182 (ledger). THE CROSSOVER ROW's LABEL ASSERTION CANNOT TELL THE TWO SHEAR CLAUSES APART.
+
+`"3.2.4" in cross_lo.governing` matches both `3.2.4 beam shear` and `3.2.4 torsional shear`. My own arm, the two labels swapped in `candidates` with every value untouched:
+
+```
+cmd    "3.2.4 beam shear": u_shear / "3.2.4 torsional shear": u_torsion  ->  swapped
+out    test_r1_published_artifacts.py      47 passed       <- blind
+       test_r1_example_golden.py           14 passed       <- blind
+       tests/verification/rung5             2 failed       <- caught
+       test_r1_example_regenerates.py       1 failed       <- caught
+       tests/unit                         470 passed
+cell   one variable -- the two dict keys. Same commit, nothing else moved
+judge  a wrong governing_clause in a published CSV IS caught, by the ladder and by the
+       regeneration gate. The needle is wider than the quantity; the coverage is
+       elsewhere and real
+```
+
+FR1's second class verbatim -- a needle too narrow where no wrong result follows. **One line, no fix asked**, and under EK2 the needle is not extended. R2.
+
+## Rulings you asked for
+
+1. **The remaining universal: attacked, and it holds.** Above, under `Carried`. 17614 admissible compression members, four properties, 0 mismatches; both ends of the declared domain solved from both sides; the one labelled existential constructed. **No seventh correction, and I am not asking for the pointer remedy.**
+2. **The three isolating arms are the RIGHT THREE and I reproduced them at the lines you published -- but the conclusion you drew from B2 does not follow, and verdict 54's ledger call STANDS.**
+
+```
+claim  your three arms, re-run in a worktree of my own
+out    B2 label at a fixed C_m   1 failed, 46 passed   test_r1_published_artifacts.py:636
+       B3 cm clamped at 1.0      1 failed, 46 passed   test_r1_published_artifacts.py:718
+       B1 retraction deleted     4 failed, 43 passed   :173 three times (verbatim
+                                                       propagation) and :456
+cell   one variable per arm, every other line held
+judge  all three fire where you said, and the retraction is additionally held in place
+       by the verbatim-propagation guard on all three artifacts, which you did not claim
+```
+
+**And B2 escapes MORE of the tree than you measured, which strengthens the row rather than weakening it** -- you ran three files; I ran the ladder and the unit suite too: `rung5 87 passed`, `tests/unit 470 passed`, `regenerates 11 passed`, `golden 14 passed`. **The crossover row really is the only thing in the tree that fires.**
+
+**Why the ledger call was still right.** Ruling 1 measured whether the clause the LABEL names can disagree in VALUE with the published `utilisation` **in this code** -- 0 of 33151, and it is still 0, because `candidates` keys the same five fields `utilisation` maxes over. B2 measures a different thing: whether a defect that makes them disagree in IDENTITY would be CAUGHT. My R1182 arm answers that for the general case -- **the identity class was never uncovered**; the ladder and the regeneration gate catch a label swap. B2 is the one corner they miss, and your row closes that corner. **A coverage measurement does not retroactively make a correctness ruling wrong**, and GA1 is what kept the first from becoming a build order in a step with one revision left.
+3. **L7's withdrawal: ENDORSED, reproduced, and it does not overreach.** Above, with the discriminating row named. It belongs off R1's open list and the closure artifact is right.
+4. **EG3 (ii): your reading is correct and it is NOT in your favour.** At the judged commit both halves are `0 failed` in my own clean worktrees, so neither boundary state arises, the predicate is not tested, and there is no list to paste. You measured state (2) at `566ef94`; I measured the same half at `dc49552` and at `4750f07` and got `432` and `430`, both `0 failed`. **Publishing `407 passed` as a measurement rather than as an expectation is the right form, and it is the first time in this step that EG3 (ii) was measured from the implementer's side.**
+### R1183 (ledger). THE CZ1 BLOCK PROMISES A PASTE THAT IS NOT IN THE FILE.
+
+`docs/closure/R1.md:38-39` says the one main-half test the closure commit can move *"is run at this commit and **pasted below**"*.
+
+```
+claim  the paste the CZ1 block says is below it
+cmd    grep -n "closure_evidence|rung3" docs/closure/R1.md
+out    38:exactly one main-half test** -- `tests/verification/rung3/test_closure_...
+       (the promise itself, and nothing else)
+cmd    python -m pytest -q -p no:randomly
+         tests/verification/rung3/test_closure_evidence_exists.py   -- my own run at dc49552
+out    54 passed in 0.06s
+cmd    python -m pytest -q --collect-only, main half, at dc49552
+out    3961 tests collected
+judge  the UNDERLYING CLAIM IS TRUE -- I ran the file and it is green, and the main
+       half still collects the 3961 the block publishes -- so the accounting holds and
+       only its evidence is missing. BF0: a claim that names its output and gives none
+```
+
+**Not blocking: the fact is right and I measured it, so no wrong number exists and FR1's sentence cannot be written.** It is the same block and the same commit as R1179 and goes on the same list. *Closed when* the block carries the paste it promises, or drops the promise -- and CZ1 (ii) requires the file's figures re-taken at the closure commit in any case.
+### R1184 (ledger). A THIRD SITE OF THE RETIRED MECHANISM IS LEFT IN THE GUIDE, TWO PARAGRAPHS ABOVE THE PARAGRAPH THAT RETRACTS IT.
+
+`docs/USER_GUIDE.md:319`, in the `Cm: 1.2` table, untouched by this diff:
+
+```
+| 14 governed by `3.2.4 beam shear` | none moved â€” not an interaction clause |
+```
+
+**The reason is the mechanism R1178 retired.** The cell one row above it is the contrast that makes the point: `| 6 governed by 3.3.1 interaction | none moved â€” the clause carries no C_m |` is a reason that IS general and IS true, because the tension branch never evaluates the amplified form. "Not an interaction clause" is not general: `3.2.4` does not carry `C_m`, which is why the row is flat *at this run's* `C_m`, and a larger one moves it. Verdict 54's closing condition named `docs/USER_GUIDE.md:332-334` and `:295-302` and both were repaired; this third site was named by neither of us.
+
+**Every FIGURE in that table is correct and I re-derived all of it rather than reading it:**
+
+```
+claim  the guide's whole Cm: 1.2 table, from the shipped example, one variable moved
+cmd    my own run of examples/platform12_placeholder.yaml with Cm: 1.2, nothing else
+         touched, output outside the repository; then both utilisation.csv compared row
+         by row on (member, station, period)
+out    3.3.1 interaction    n= 6  rose= 0  fell=0      <- guide: none moved
+       3.3.2 interaction    n=12  rose=10  fell=0      <- guide: 10 rose, 0 fell
+       3.2.4 beam shear     n=14  rose= 0  fell=0      <- guide: none moved
+       governing U  1.71167 -> 2.05621                 <- guide: 1.71167 -> 2.05621
+       unmoved 3.3.2 rows: hub1_arm TIP u_bending 1.59266e-10, hub3_arm TIP 1.71774e-09
+                                                       <- guide: 1.6e-10 and 1.7e-09
+       the ten that moved read `simple` at 0.85        <- guide: all ten are simple
+cell   one variable -- Cm. Same deck, same npz, same section, same window
+judge  nine figures, nine matches. The factual half of the cell is TRUE; only the
+       reason attached to it is the retired one (BG0)
+```
+
+**Why it does not block, and the sentence I could write if it did.** I can write *"a reader takes 'not an interaction clause' as the reason and reports no `C_m` exposure for a member whose published utilisation nearly doubles by `C_m = 2.00`"* -- but FR1's head is a wrong NUMBER in a deliverable or an input used other than as declared, and this is neither: every number in the table is right, and **the same section retracts the reason 34 lines below, in bold, with the counter-example and its digits** (`:352-355`). A reader of the section gets the correct rule. **Under CZ0 as it stands outside R1 I would have blocked on it, and I am saying so rather than smuggling it.** *Closed when* the cell's reason reads what the corrected item 1 reads -- another clause is the larger of the two at this `C_m` -- or the cell gives the count and no reason.
+## Tolerances touched
+
+**None.**
+
+```
+cmd    git diff 5f02798..dc49552 --numstat -- floatfea/tolerances.py tests/conftest.py
+         'tests/**/conftest.py' .claude docs/SUPERVISOR.md
+out    (empty)
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py
+```
+
+No value, no form, no counter. **No conftest or plugin under `tests/` moved, so CH2/CI0 is clear** -- I read the diff as empty rather than inferring it from a green suite, and the `ls-files` line returns a file, so the instruction is not silently matching nothing. **`.claude/` and `docs/SUPERVISOR.md` are untouched since `5f02798`, so there is no STOP-class finding.** The six new assertions are exact equality with `# not-a-tolerance:` at each site and the comments are correct: a clause `C_m` does not enter returns the identical float, and `cm * 0.0` is `0.0`. SR-67 records the choice NOT to introduce a relative-error threshold for the closed-form check, which would have been a tolerance in the last revision ES0 allows; I agree with it.
+
+**EU1 does not attach** -- no tolerance value or declared counter moved -- **and I ran the adversarial configuration anyway**, because that is what found R1178 and R694 before it. Here it is the 17614-member sweep and the four boundary constructions, and nothing in them refutes the shipped sentence.
+
+## Corpus (EG4(e) is dead by date; GC3 leaves batches to me)
+
+**The pause did NOT hold and cannot: `CLAUDE.md` and my own agent file still read "pause until 28 October" and it is 9 November.** That is R1149, the reviewer's own item and still Xabier's. **I ran a batch AND the recorded substitute.**
+
+**`tests/corpus/cm_kink_against_the_declared_domain.txt`, batch 53, 14 entries, ALL NEW, committed separately at `173c64c`.** The axis is the one the repair now rests on: where the kink falls against `MOMENT_REDUCTION_CM`'s declared bounds, solved from both sides of both ends (EH4) -- the knife edge at the ceiling (`2.0000001`, `2.0` to `4e-11`, `1.995`), the knife edge at the floor (`0`, `0.1`, `0.0999`), `s = 0` reached two ways, the tension branch, the biaxial resultant, `D/t` at its declared ceiling, a stubby `KL/r = 20` section, and all four clause channels live at once.
+
+**Coverage, measured rather than asserted: `0 of 14` refute the published sentence**, against batch 52's `8 of 10` refuting the sentence this one replaced. **The shipped check evaluates `1 of the 14`** -- the tension row, which is its own `tension_lo` fixture -- and constructs no member resembling the other thirteen. A closed form is the first version of this sentence a member could have refuted, and 14 members its author did not write did not refute it.
+
+**The substitute, both halves.** The continuum sweep is above. The regeneration check on the published deliverable:
+
+```
+cmd    python -m floatfea.cli run examples/platform12_placeholder.yaml in a clean
+         worktree of mine, then git diff -- results/R1/example
+out    results/R1/example/report.md | 4 ++--   (solve 64.40 -> 67.28, total 64.52 -> 67.40)
+       member_forces.csv, utilisation.csv     byte-identical
+judge  every physical number in all three artifacts regenerates byte-identical, and the
+       only drift is the wall-clock table, which is R850's known exclusion and already
+       on the ledger. U = 1.71167 unchanged
+```
+## CI at the reviewed commit: UNAVAILABLE BY CK0's DESIGN, and I record it as that rather than as a pass
+
+**There is NO run at `dc49552` and there cannot be.** The commit touches only `docs/reports/**`, which the workflow ignores. **That is not CK2's exhausted allowance and it is not a red; it is an unavailable check**, so it does not HOLD by itself and I judge the step on everything else.
+
+**The last run that EXECUTED, and whether the code has moved since.**
+
+| run | head | status | conclusion |
+|---|---|---|---|
+| `42564673979` | `c2bf7d7` | completed | **success** -- but `566ef94` moved `floatfea/cli.py`, `tests/regression/` and `results/` after it, so it does NOT describe this tree |
+| `42590412570` | `4750f07` | `in_progress` when I ruled, on its `ladder 6` step | **no result** -- a run that has not finished is not a pass, and I did not wait on it; I measured the ladder myself instead |
+
+**And `4750f07` is CODE-IDENTICAL to the judged commit, which I measured rather than assumed**, so its run is the one that measures this code:
+
+```
+cmd    git diff --stat 4750f07..dc49552 -- . ":(exclude)docs/reports"
+out    (empty)
+cmd    gh api .../actions/runs/42590412570/jobs   -- job and step conclusions
+out    lint, unit and guards        completed  SUCCESS -- every step RAN, none skipped:
+         actionlint, ruff, black --check, mypy, unit tests, guards and meta-tests
+       the verification ladder      in_progress on `ladder 6`; rungs 1, 2, 3 `success`, rungs 4 and 5 `pending` -- NO RESULT for this job
+       CI determinism -- leg        skipped by its own condition -- unavailable, not passing
+       CI determinism -- ten legs   skipped by its own condition -- unavailable, not passing
+rule   CA2/CK2: a red CI is red, an unavailable run is neither. This is the third state
+       again, by a different cause from CK2's -- declined rather than unpaid
+judge  `guards and meta-tests` reached the runner and passed on a machine neither of us
+       controls, at code identical to the tree under review -- which is what CZ1 (iii)
+       exists to see. The LADDER job had not finished, so it says nothing and I inferred nothing from it.
+```
+
+**AND BECAUSE THE RUN AT `4750f07` HAD NOT FINISHED ITS LADDER WHEN I RULED, I RAN THE LADDER MYSELF RATHER THAN WAITING ON A MACHINE.** A low rung red is a STOP, and that is not a thing to infer from an unfinished job:
+
+```
+claim  every verification rung at the judged commit, in my own clean worktree
+cmd    python -m pytest -q -p no:randomly tests/verification/rung<n>, n = 1..5
+out    rung1  1276 passed, 2 warnings in 98.58s
+       rung2    66 passed in 1.42s
+       rung3   325 passed in 10.51s
+       rung4   345 passed in 3.67s
+       rung5    87 passed in 0.46s
+rule   the collect counts CI published at `c2bf7d7` -- 1276 / 66 / 325 / 477 / 345 / 87 --
+       so these five agree with CI's own denominators test for test
+judge  **no rung is red and no low rung is red, so nothing here is a STOP.** Rung 6 is
+       the 477 and it is inside my main half, which is ``3961 passed, 0 failed, 0 skipped`` -- so the whole
+       ladder is measured by me at the judged commit even where CI had not finished
+```
+
+**A methodological note that is MINE, not the implementer's.** `gh run list --commit` with a 7-character sha returns `[]` SILENTLY -- it matches the full 40 characters only -- which reads exactly like a commit that never ran, and it is how I nearly mis-recorded three commits this round. `docs/SUPERVISOR.md` section 3b and my own agent file both give the abbreviated form. **The implementer's apparatus already has this right** -- `full_sha()` at `scripts/ci_section.py:285`, with the hazard stated in its docstring -- **and my instructions do not.** It needs a standalone `process:` commit citing a directive, which is not mine to write and is not a finding against this step.
+## Closure items
+
+**One line each, with the file, the line and what closes it. Fixed once in the closure commit, not re-reviewed item by item.** The evidence for each is the finding of the same number above.
+
+| item | file and line | what closes it |
+|---|---|---|
+| R1179 | `docs/closure/R1.md:30-32` -- `430` where the judged commit is `432` | the CZ1 block regenerated at the closure commit, which CZ1 (ii) requires anyway |
+| R1183 | `docs/closure/R1.md:38-39` -- a paste promised and absent | the paste, or the promise dropped |
+| R1184 | `docs/USER_GUIDE.md:319` -- *"none moved -- not an interaction clause"* | the reason the corrected item 1 gives, or the count with no reason. **The one I would have blocked on under CZ0 outside R1** |
+| R1180 | `tests/regression/test_r1_published_artifacts.py:69` -- the guide is not in `ARTIFACTS`; `0.818471`, `1.639720`, `2.0034`, `3.04`, `0.98` re-derived nowhere for it | the guide in the set the published-digit loop walks, or the guide citing the deliverable instead of repeating its digits. R2 if the closure commit does not reach it |
+| R1182 | `tests/regression/test_r1_published_artifacts.py:686` -- `"3.2.4" in cross_lo.governing` matches both shear clauses | nothing, under EK2. R2, one line |
+| R1181 | `docs/reports/R1/step-4.md` section 10 -- *"the run was started by the push"* | report prose, so EK3 puts it out of reach; its substantive half is R2's |
+
+## Next step opens when
+
+**STEP 4 IS CLOSED.** `Closes: R1/step-4`. Nothing above blocks, the step is at ES0's cap, and R1178 -- the step's one blocking item -- is answered and measured at all five of its sites.
+
+**R1's INCREMENT is NOT closed, and these are its conditions.**
+
+1. **The closure commit, with CZ1's four outputs in order:** (i) make it; (ii) at it, tree clean, paste `ruff check floatfea tests`, `black --check floatfea tests`, `mypy floatfea` and `pytest -q`; (iii) push it and paste `gh run list --commit` with the FULL 40-character sha and job-level conclusions, so the lint job's `guards and meta-tests` step is seen to have RUN; (iv) answer any red in a follow-on that repeats (ii) and (iii). Under EQ0 I review it only if it changes a gate or a tolerance; prose alone is not reviewed, and either way it counts against no step's rounds (EB4).
+2. **The closure list, fixed once in that commit and not re-reviewed item by item:** R1179 (the `430`, which CZ1 (ii) re-takes anyway), R1183 (the promised paste, same block, same commit), R1184 (the guide's third site -- **the one I would have blocked on under CZ0 outside R1**), R1180, R1182.
+3. **To R2 rather than to the closure commit:** L5 and its phantom citation, L9, R1149's dead pause clause, R1155, R1165, SR-41, SR-44, R835, R1181's substantive half -- FP1 against CK0's `paths-ignore` -- and R1180's remedy if the closure commit does not reach it.
+4. **The FV2 commit door, which is nobody's inside this loop.** Fourth consecutive round in which a reviewer has written two commits into the implementer's checkout because FV2 provides no other door, and said so in the verdict. It needs a decision from Xabier.
+5. **The whole verification ladder green at the closure commit's own pushed sha**, rungs 1 to 6, with the job table. I measured rungs 1 to 5 myself at this commit and rung 6 inside the green main half, so none is red today; the closure commit's own pushed run is what must show all six green on a machine neither of us controls.
+
+**On the schedule.** FW0's 10 November holds: step 4 closes on 9 November with its blocking item answered, and what remains is a closure commit and a list. **On the sixth correction**, the report's reading is better than the count: the first five were claims ABOUT configurations and each was refuted by a configuration its author had not run; the sixth is the closed form, which has no configurations to choose. I tried to refute it on 17614 members and four constructed boundaries and could not. **That is the first time in this milestone that a repair of this sentence has survived a population its author did not write**, and it is why this closes rather than carrying a seventh.
+
+## I do not disagree with the criterion
+
+FR1 is the rule I ruled under and I am not asking for it to move. **The honest test of it this round is R1184, and I am giving no count of the rest.** R1179, R1183 and R1184 are each a defect in a file that goes to Xabier, so each would have been blocking under CZ0 (a) as amended by EZ0; R1181 is report prose, which EZ0 excludes outright; R1180 and R1182 are coverage rather than defect, and whether CZ0 (c) reaches them is exactly the kind of thing I would be guessing at. **A count here would be a property of my own list and not of the criterion, which is the lesson of the sentence this whole step was about, so there is no count.**
+
+For every finding I tried to write FR1's silently-wrong-result sentence. For five I could not and said why. **For R1184 I could write it, and FR1's head still does not cover it** -- every number in that table reproduces, nine figures for nine, and the retraction sits 34 lines below the cell in bold with its counter-example -- so I ruled it a ledger item **and said which way I would have gone under the wider criterion** rather than smuggling it in as blocking or leaving the disagreement silent. That is what FR1's last sentence asks for, and it cost this step nothing: the step closes on its date with its one blocking item measured at every site.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 4
 Reviewed commit: c2bf7d75e8e7baa915156bb29ccb911b240ea730
 **Reviewed commit: `c2bf7d75e8e7baa915156bb29ccb911b240ea730`.**
 Verdict: HOLD
