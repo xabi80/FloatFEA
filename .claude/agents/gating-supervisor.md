@@ -411,7 +411,18 @@ Make one and work in it:
     git worktree add <a path outside the repository> <the sha you are judging>
 
 Everything you need is in the commit: the diff, the tests, the plan, the previous verdict.
-Your verdict is written through `scripts/write_verdict.py`, which commits to the branch.
+Your verdict is written through `scripts/write_verdict.py`. **THAT SCRIPT COMMITS NOTHING.**
+It writes the verdict file — accumulating under DX2, never rewriting an earlier round —
+stamps the anchor line, prints what it wrote, and stops. There is no `git add`, no
+`git commit` and no branch move anywhere in it:
+
+    grep -nE '"(commit|add)"|check_call|\.run\(' scripts/write_verdict.py   ->  (no match)
+
+**How your verdict then reaches branch `F<n>` is NOT settled, and the measured state of it is
+in `docs/SUPERVISOR.md` under FV2 — read that before you commit one.** The short of it: your
+worktree is detached, so a commit made there does not move `F<n>`, and the branch moves only
+in the implementer's tree, which this section tells you never to write in. Do not resolve that
+inside a round. State in the verdict which door you used, as you already do.
 
 **THIS IS NOT HYGIENE. BOTH FAILURES IT PREVENTS HAVE HAPPENED, ONE OF THEM YOURS.**
 

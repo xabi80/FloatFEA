@@ -51,6 +51,46 @@ occurred — a reviewer's `git checkout --` reverting work in flight, and a revi
 a claim about a commit by reading the working file, which is R1050 from the reviewer's side.
 In its own worktree at the judged sha, a working-file read IS a read of the commit.
 
+### How a verdict REACHES the branch is unsettled, and this is the measured state (GE4)
+
+**`scripts/write_verdict.py` writes the verdict file and commits nothing.** The sentence in
+`.claude/agents/gating-supervisor.md` saying it "commits to the branch" was false; it is
+corrected there, and the open half is recorded here.
+
+Directive GE4 asked for three statements — the script writes the file, the reviewer commits it
+**in its own worktree**, and the implementer fast-forwards it in — with the instruction to
+describe what actually happens and escalate instead if that is not it. **It is not it.**
+
+```
+claim  the last verdict and corpus commits were CREATED IN THE IMPLEMENTER'S TREE, with
+       `F3` checked out, and were never fast-forwarded in from a reviewer worktree
+cmd    git reflog show HEAD --format='%gd | %gs' | head -3
+out    HEAD@{0} | commit: plan: record DIRECTIVE GE verbatim (FP0)
+       HEAD@{1} | commit: review: R1 step 4 revision 2 at 6876854 -- PASS, ...
+       HEAD@{2} | commit: corpus: batch 51 -- the member configurations ...
+cmd    git worktree list
+out    the three reviewer worktrees are all `(detached HEAD)`; only `C:/dev/floatfea`
+       holds `[F3]`
+rule   a fast-forward records `merge <sha>: Fast-forward` or `reset: moving to`, never
+       `commit:`. All three are `commit:`, in the MAIN tree's own HEAD reflog
+judge  the reviewer ran `git commit` in the implementer's working tree. Both of its
+       commits touch ONLY a reviewer directory — one file each — so nothing of the
+       implementer's was altered and the tree was left clean. The rule above says "any
+       write", and a commit is a write
+```
+
+**So FV2's "no write in the implementer's tree" is broken by the one act FV2 gives the
+reviewer no door for, and the reviewer has now recorded that in two consecutive verdicts.** A
+detached worktree cannot move `F<n>`; `git branch -f F<n>` is refused by git while the branch
+is checked out elsewhere; so the branch moves in the implementer's tree or not at all.
+
+**ESCALATED, NOT SOLVED HERE — FZ (d), and GE4's own instruction.** The obvious fix, reviewer
+commits detached and the implementer runs `git merge --ff-only <sha>`, puts the implementer's
+hands on the commit that gates it, which is what the separation exists to prevent. **No
+procedure is invented in this file.** Until Xabier rules: the reviewer commits the verdict in
+the implementer's tree, touching nothing outside its own two directories, and says in the
+verdict which door it used.
+
 Both read this file. The witness applies exactly the guards in
 `.claude/agents/gating-supervisor.md` — the list lives there, once — and
 **both rule under the same blocking criterion — FR1 for the rest of R1, narrowing CZ0 (FV4)**, in that file's
