@@ -271,6 +271,11 @@ The clauses you need, by name, all in `CLAUDE.md` § "Step gating":
   the reviewer's own baseline figure one commit after writing it because two of
   the guards are parametrised over *what you yourself wrote*. **Check the
   predicate; do not check a list.** Both limbs are reasons, not names.
+  **AND R835/R861 ITSELF IS CLOSED TO R2 (GE3).** The underlying item — that a red
+  count is a function of the newest verdict's own text — has been measured eleven
+  times and has not hidden a blocking finding since R1117 was fixed. Under GA1 it is
+  R2's. **Record it as one line, `R835: unchanged, R2`, and do not re-measure it each
+  round.** The predicate above is unaffected; what stops is the measurement.
 * **EH4** — every boundary is solved in BOTH directions, including the two that
   weaken a gate.
 * **EE1 / EG4(e)** — corpus batches are **paused** until 28 October, except mutation
