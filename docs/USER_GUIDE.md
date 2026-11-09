@@ -515,6 +515,12 @@ before writing anything.** A refusal prints one message to stderr with **no trac
 exits `2`. Nothing partial is left on disk — a refusal that arrives after the outputs is a
 warning with a non-zero exit code, which is not the same thing at all.
 
+**"Before writing anything" is not the same as "immediately", and two of these are slow.**
+Most are raised during validation and come back in under a second. The ones raised later run
+the solve first and make you wait for it: § 7.5's *second* message (no `candidates` grid)
+and § 7.9 (`one_third_increase`). Each says so at its own entry. Neither writes anything, so
+the rule above holds in both — what varies is how long you wait to hear it.
+
 Each message below is the real one. The `# fix` line is what to do.
 
 ### 7.1 A heading outside `0 .. 360`
@@ -643,6 +649,13 @@ answers.
 `# fix` — declare `sections.candidates` for at least one group. See § 4.4 and the commented
 block in the worked example.
 
+**This second one is raised AFTER the solve**, at the sizing stage, so you will wait the
+full minute or more and see the whole run print before the refusal — even though everything
+it says is knowable from the configuration file. Measured: `1248 member-force rows in
+67.0 s`, then `32 checked stations`, then the message; exit `2`, nothing written. **The first
+message in this section is the one that says "Refused before any output is written", and it
+does come back immediately; do not read that sentence as covering both.**
+
 ### 7.6 An unknown key
 
 ```
@@ -689,7 +702,9 @@ lower than the configuration asked for. Set it false, or reopen EZ4 Q2.
 off, not scaled.
 
 **This one is raised after the solve**, inside the code check, so you will wait for the
-solve before seeing it. No artifact is written.
+solve before seeing it. No artifact is written. **It is not the only slow one** — § 7.5's
+second message is the other, and § 7's opening paragraph lists both, because this entry
+singling itself out read as if it were the exception.
 
 ### 7.10 A mass distribution that is not a structure
 
@@ -968,8 +983,15 @@ cp examples/platform12_placeholder.yaml examples/my_sizing_test.yaml
 ```
 
 Then in the copy: point `outputs.directory` somewhere of your own, uncomment the
-`candidates` block (it is there, commented, under `sections`), and set
-`outputs.required_section: true`. On the shipped grid:
+`candidates` block (it is there, commented, under `sections`), and **change
+`outputs.required_section` from `false` to `true` — the key is already in the file**, inside
+the `outputs:` block, below a dozen or so lines of comment. **Do not add a second one.** YAML
+takes the last of two duplicate keys and this tool refuses the file rather than letting it
+(§ 7.11), so "set `outputs.required_section: true`" by adding a line gets you a
+duplicate-key refusal whose message is about last-wins semantics and says nothing about the
+key already sitting further down the block.
+
+On the shipped grid:
 
 ```
   required_section: platform proposed candidate 3 of 3 at fixed-force max U = 0.995702
