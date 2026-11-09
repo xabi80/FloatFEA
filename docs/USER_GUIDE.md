@@ -57,6 +57,15 @@ right interpreter when you have several; plain `python -m venv .venv` does the s
 is already your default. On Linux or macOS the interpreter inside the venv is
 `.venv/bin/python`, and every `.venv/Scripts/python.exe` below becomes that.
 
+**Which shell.** Every command in this guide is written for a POSIX shell — Git Bash on
+Windows — with forward slashes and the `.exe` suffix, which is load-bearing there. **In
+PowerShell the same path needs `.\` or `&` in front of it**, because PowerShell will not run
+an executable named by a bare relative path: `.\.venv\Scripts\python.exe -m floatfea.cli
+run examples\platform12_placeholder.yaml`, or `& "./.venv/Scripts/python.exe" ...`. The
+single-quoted `python -c "..."` one-liners in §§ 6 and 8 are also quoted for a POSIX shell
+and need their quotes reworked in PowerShell; the simplest thing is to run this guide in
+Git Bash, which is what it was written in.
+
 Check it:
 
 ```bash
@@ -282,10 +291,18 @@ The two `3.3.2` rows that did not move are TIP stations whose bending term is
 
 **And the ten that DO move are the overtake, which is a second mechanism and not the same
 one.** Read `interaction_form` beside them: all ten are `simple` at the shipped
-`C_m = 0.85` and move because at `C_m = 1.0` the amplified form overtakes the simple one,
-while both unmoved rows are already `amplified` and have nothing to multiply. So a row can
-be flat in `C_m` for either reason — below the overtake, or with a vanishing bending term —
-and that is why the caveat says *never lowers* rather than *raises*.
+`C_m = 0.85`, and by the time `C_m` reaches `1.0` the amplified form has overtaken the
+simple one, so all ten read `amplified` at `1.0` and at `1.2`. Both unmoved rows are
+already `amplified` at `0.85` and have nothing to multiply. So a row can be flat in `C_m`
+for either reason — below the overtake, or with a vanishing bending term — and that is why
+the caveat says *never lowers* rather than *raises*.
+
+**The same ten rows, at two different `C_m` values, and the table above is the `1.2` one.**
+`utilisation_Cm_sens` is computed at `C_m = 1.0` and the table is a run at `1.2`, so a
+reader can reasonably wonder which of the two the sentence is about. It is about both: the
+overtake for these ten members happens between `0.85` and `1.0`, so the same ten move in
+the sensitivity column and in a `1.2` run, and the two unmoved rows are the same two in
+each. Nothing here depends on which of the two you look at.
 
 The caveat is corrected, and
 `tests/regression/test_r1_published_artifacts.py::test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES`
@@ -831,10 +848,20 @@ floatfea run platform12_placeholder.yaml
   total wall time 66.21 s
 ```
 
-**The three wall clocks in that output are the only lines that will differ in your clone.**
-`0.12 s`, `66.1 s` and `66.21 s` are one machine on one run; the same clone gave `0.13`,
-`70.5` and `70.61` on the next. Everything else — the step counts per period, the `1248`
-and `32` row counts, and the whole governing line — is pinned and must match exactly.
+**Six lines in that output will differ in your clone, and the rest is pinned.** Three are
+the wall clocks — `0.12 s`, `66.1 s` and `66.21 s` are one machine on one run; the same
+clone gave `0.13`, `70.5` and `70.61` on the next. The other three are the `wrote ...`
+lines, which print an **absolute** path: the block above was taken in a clone at
+`C:\dev\floatfea`, so yours will read your own directory. The **row counts inside those
+lines** — `(1248 rows)`, `(32 rows)` — are pinned like everything else.
+
+Everything else must match exactly: the step counts per period, the `1248` and `32` row
+counts, and the whole governing line.
+
+*This paragraph said "the three wall clocks … are the only lines that will differ" until a
+reader in a clone somewhere else spent thirty seconds deciding whether a path mismatch was
+a defect. Every absolute path quoted anywhere in this guide — § 7.12's traceback included —
+is the author's clone and not a value you should expect to see.*
 
 **`U = 1.71167` is the number this example is pinned against.** Over unity, on the declared
 section — which is the point: the declared tube fails the screen, and
@@ -857,6 +884,15 @@ print `1.71167` at six significant figures; at full precision `hub4_arm` is
 `1.7116716105567911` and `hub2_arm` is `1.711671608463575`. A `max()` over the rounded CSV
 column therefore picks whichever the tie-break reaches first. Do not "fix" the tool to
 agree with the CSV.
+
+**Those two full-precision values are NOT in any file this tool writes, and you cannot
+check them from the outputs.** `utilisation.csv` publishes six significant figures and the
+run's own line prints six; the ninth-figure difference exists only inside the solve. So
+what you can verify here is the **symptom** — the CSV read says `hub2_arm`, the run's own
+line says `hub4_arm`, and both arms read `1.71167` — and that is what the fixture pins. The
+two long numbers are quoted from the run that measured them and are offered as the
+explanation, not as something to reproduce. If you want them, they are a `float()` away in
+a Python session, which is outside this guide.
 
 ### 8.2 The 32-row screen, each row at its own period
 
@@ -966,7 +1002,13 @@ git diff -U0 results/R1/example/ | grep -E '^[+-][^+-]' | grep -vE '^[+-]\| (bui
 (no output)
 ```
 
-No output is the pass. To see *which* rows moved — and **no figure is quoted here, for
+No output is the pass. **It also exits 1 on the pass**, because the last stage is a `grep`
+that matched nothing — so `set -e`, or a script switching on the exit code the way § 7.12
+tells you to for refusals, will read a clean tree as a failure. Here, and only here, the
+exit status is the opposite of the verdict: **read the output, not the status.** If you are
+scripting it, test for empty output instead.
+
+To see *which* rows moved — and **no figure is quoted here, for
 the reason in § 3 (R1158)**: both sides of that diff are wall clocks, yours and whichever
 machine last regenerated the file:
 
