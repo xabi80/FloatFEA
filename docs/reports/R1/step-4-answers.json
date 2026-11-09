@@ -3,50 +3,40 @@
     "POINTERS ONLY (CH4). No prose here -- every row points at the section",
     "that discusses it, and the guard checks that the section MENTIONS the id.",
     "",
-    "R1 STEP 4, REVISION 2. It answers the verdict at 2158500 -- the ADDENDUM to",
-    "the ES0 interim check at a596fa7, which renumbered that check's nine ledger",
-    "rows from L1-L9 to R1157-R1165 so that this file and the carry guard could",
-    "see them. Both of those verdicts are ES0 INTERIM CHECKS and count against no",
-    "round; step 4 stands at 0 of 3 before this revision and 1 of 3 after it.",
+    "R1 STEP 4, REVISION 3. It answers the ES0 INTERIM CHECK at dc9996f, which",
+    "judged c992e54 -- PASS, nothing blocks, four ledger rows -- and it also",
+    "answers verdict 51 at c88b0c0, whose R1170 to R1173 were still open at that",
+    "check. The interim check counts against NO round (ES0), so step 4 stood at",
+    "1 of 3 before this revision and stands at 2 of 3 after it.",
     "",
-    "THE AUTHORITY FOR THE FIRST COMMIT'S 'NO STEP'S COST' IS GB2, NOT EQ0 (R1150).",
-    "The previous `_` block of this file said 'It changes a gate, so EQ0 makes it",
-    "reviewed and EB4 charges it to no step's rounds.' That was the third of R1150's",
-    "three sites and this is the correction: `docs/directives/GB.md:26` -- 'It",
-    "returns for review at no step's cost' -- is a directive about that commit. EQ0",
-    "governs a CLOSURE commit and is cited by analogy only; reading it as covering a",
-    "step's first commit would free every such commit from ES0's cap, which is DK0's",
-    "concern verbatim.",
+    "30 ITEMS ARE ANSWERED HERE -- the count on this line is DERIVED",
+    "from this file rather than typed, which is R1133.",
     "",
-    "20 ITEMS ARE ANSWERED HERE -- the count on this line is DERIVED",
-    "from the list below rather than typed (R1133):",
+    "THE TEN NEW ONES, and nine of the eleven findings across the two verdicts",
+    "and the three witness runs were defects in work produced in the SAME turn:",
+    "  R1168  the caveat's second clause was unconditional            -> sec 2",
+    "  R1174  and its REPAIR was a count, and also wrong              -> sec 2a",
+    "  R1169  SR-48's reason for not reproducing a figure was wrong    -> sec 3",
+    "  R1170  which assertion the max() ablation reddens               -> sec 4",
+    "  R1171  three out lines whose needles matched their own prose    -> sec 7",
+    "  R1172  the whole-suite line's provenance                       -> sec 7",
+    "  R1173  step 4's witness gate was unevidenced                   -> sec 5",
+    "  R1175  the guide's PowerShell sentence, wrong in both halves    -> sec 5a",
+    "  R1176  revision 2 said FT2.7 is not built; it is built          -> sec 8",
+    "  R1177  GE2 said one line and the SR-48 correction is 39        -> sec 5b",
     "",
-    "  R1139  BLOCKING at verdict 47, answered in the step's first commit.                   -> §1",
-    "  R1141  R1135's weakening sentence, routed here by GB3.                                -> §1",
-    "  R1148  carried_table.SITE missing two pieces of _SITE; ablated by the reviewer.        -> §1",
-    "  R1156  the published C_m caveat named the WRONG CLAUSE; found by the FL3 witness.      -> §1",
-    "  R1147  the repair's delta is SIX rows over THREE paths, not four over one.            -> §2",
-    "  R1153  section 4's bold line was wider than section 4's scope. Same cause as R1147.   -> §2",
-    "  R1150  EQ0/EB4 cited as the authority where GB2 is; three sites, this file one.        -> §3",
-    "  R1157  the guide cited a committed wall clock its own commit had moved.               -> §4",
-    "  R1158  section 8.7's reference diff showed the same stale pair.                       -> §4",
-    "  R1159  '10 of 32' is the Cm_sens column alone, for a sentence about both.             -> §4",
-    "  R1160  '1e-10' where the figure is 9.513095e-10, printed correctly two lines up.      -> §4",
-    "  R1161  lambda is the Froude scale in 4.1/4.7 and the WAVELENGTH in 7.3/8.3.           -> §4",
-    "  R1151  a stray `#` at the end of tests/test_report_carried.py:280.                    -> §5",
-    "  R1152  docs/directives/README.md listed GB.md twice.                                  -> §5",
-    "  R1154  EG3 (i) asks for the sentence naming the state, by name.                       -> §5",
-    "  R1162  the caveat's direction is NON-DECREASING, not increasing.                      -> §5",
-    "  R1163  the new gate's blind band in C_m, measured and recorded rather than re-aimed.  -> §5",
-    "  R1164  the provenance roll did not mention GD.                                        -> §5",
-    "  R1166  MINE, found writing this revision: the answers-file needle matched a BARE id.    -> §5",
-    "  R1167  MINE: my own justification for R1162 cited a file that did not say it.   -> §5",
+    "NOTHING BLOCKED IN EITHER VERDICT. Ten ledger rows between them and no",
+    "blocking finding, so no row here is the repair of a blocking item.",
     "",
-    "The other 299 rows are ledger rows and point at §7, which names every",
-    "one of them. R1155 (the ValueError traceback at exit 1) and R1165 (the guide",
-    "is an EZ0 deliverable no guard reads) are new there; R1165 goes on",
-    "docs/milestones/F2a.md, because no new apparatus is built through F6.",
-    "Nothing is claimed as answered here that this revision did not touch."
+    "10 rows are CARRIED from earlier steps and point at section 7.",
+    "The other 289 rows are ledger rows and point at section 7, which names",
+    "every one of them by id with its disposition.",
+    "",
+    "TWO ROWS ARE ANSWERED BY A LEDGER LINE RATHER THAN A REPAIR, deliberately,",
+    "and each says so at its site: witness run 3's two-reference density finding",
+    "(sec 5) and the label-versus-number split in check_member (sec 2a). Neither",
+    "can produce a wrong number, so neither blocks under FR1, and changing a",
+    "published deliverable's prose is outside what GE1 authorised here."
   ],
   "answered": {
     "R1": {
@@ -1215,7 +1205,7 @@
     },
     "R1139": {
       "state": "answered",
-      "where": "§1"
+      "where": "sec 7c"
     },
     "R1140": {
       "state": "later",
@@ -1223,7 +1213,7 @@
     },
     "R1141": {
       "state": "answered",
-      "where": "§1"
+      "where": "sec 7c"
     },
     "R1142": {
       "state": "later",
@@ -1247,67 +1237,67 @@
     },
     "R1148": {
       "state": "answered",
-      "where": "§1"
+      "where": "sec 7c"
     },
     "R1156": {
       "state": "answered",
-      "where": "§1"
+      "where": "sec 7c"
     },
     "R1147": {
       "state": "answered",
-      "where": "§2"
+      "where": "sec 7c"
     },
     "R1153": {
       "state": "answered",
-      "where": "§2"
+      "where": "sec 7c"
     },
     "R1150": {
       "state": "answered",
-      "where": "§3"
+      "where": "sec 7c"
     },
     "R1157": {
       "state": "answered",
-      "where": "§4"
+      "where": "sec 7c"
     },
     "R1158": {
       "state": "answered",
-      "where": "§4"
+      "where": "sec 7c"
     },
     "R1159": {
       "state": "answered",
-      "where": "§4"
+      "where": "sec 7c"
     },
     "R1160": {
       "state": "answered",
-      "where": "§4"
+      "where": "sec 7c"
     },
     "R1161": {
       "state": "answered",
-      "where": "§4"
+      "where": "sec 7c"
     },
     "R1151": {
       "state": "answered",
-      "where": "§5"
+      "where": "sec 7c"
     },
     "R1152": {
       "state": "answered",
-      "where": "§5"
+      "where": "sec 7c"
     },
     "R1154": {
       "state": "answered",
-      "where": "§5"
+      "where": "sec 7c"
     },
     "R1162": {
       "state": "answered",
-      "where": "§5"
+      "where": "sec 7c"
     },
     "R1163": {
       "state": "answered",
-      "where": "§5"
+      "where": "sec 7c"
     },
     "R1164": {
       "state": "answered",
-      "where": "§5"
+      "where": "sec 7c"
     },
     "R1155": {
       "state": "later",
@@ -1319,11 +1309,51 @@
     },
     "R1166": {
       "state": "answered",
-      "where": "§5"
+      "where": "sec 7c"
     },
     "R1167": {
       "state": "answered",
-      "where": "§5"
+      "where": "sec 7c"
+    },
+    "R1168": {
+      "state": "answered",
+      "where": "sec 2"
+    },
+    "R1169": {
+      "state": "answered",
+      "where": "sec 3"
+    },
+    "R1170": {
+      "state": "answered",
+      "where": "sec 4"
+    },
+    "R1171": {
+      "state": "answered",
+      "where": "sec 7"
+    },
+    "R1172": {
+      "state": "answered",
+      "where": "sec 7"
+    },
+    "R1173": {
+      "state": "answered",
+      "where": "sec 5"
+    },
+    "R1174": {
+      "state": "answered",
+      "where": "sec 2a"
+    },
+    "R1175": {
+      "state": "answered",
+      "where": "sec 5a"
+    },
+    "R1176": {
+      "state": "answered",
+      "where": "sec 8"
+    },
+    "R1177": {
+      "state": "answered",
+      "where": "sec 5b"
     }
   }
 }
