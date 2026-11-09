@@ -294,12 +294,16 @@ draft gave the `Cm_sens` figure alone for a sentence about both columns).
 
 **Where `C_m` acts, and the two clauses are not the same one.** `C_m` multiplies the
 bending term in **section 3.3.2's amplified interaction** — `u_axial + C_m·u_bending /
-(1 − f_a/F_e')`, the **compression** branch — so a larger `C_m` **never lowers** a
-compression utilisation, raises it wherever the amplified form governs with a bending term
-to multiply, and leaves every row whose `governing_clause` reads `3.3.1 interaction`
-(tension + bending) **untouched**. *Never lowers* rather than *raises*, because the clause
-also requires the simpler form and `u_combined` is the larger of the two: below the `C_m` at
-which the amplified form overtakes the simple one, the column is flat in `C_m` (R1162). The *value* `0.85` is a different matter: it is tabulated
+(1 − f_a/F_e')`, the **compression** branch — and it enters no other clause. Because
+`utilisation` is the **maximum over clauses** and `u_combined` is `max(amplified, simple)`,
+the published column as a function of `C_m` is **exactly `max(B, a + C_m·s)`**, in which
+`B`, `a` and `s` carry no `C_m`: `B` is the largest channel that does not — axial, bending,
+shear, torsion, and the interaction's own `C_m`-free form — while `a` is `u_axial` and `s`
+is `u_bending/(1 − f_a/F_e')`. So a larger `C_m` **never lowers** a compression
+utilisation; the response is **non-decreasing**, and where `s > 0` it is **flat below the
+kink at `C_m = (B − a)/s` and rising above it**; and every row whose `governing_clause`
+reads `3.3.1 interaction` (tension + bending) is **untouched**, because the amplified form
+is not evaluated in the tension branch at all, which puts `s` at `0` (R1162, R1178). The *value* `0.85` is a different matter: it is tabulated
 in **section 3.3.1 case (a)**, members in frames subject to joint translation. Value from
 3.3.1, term in 3.3.2.
 
@@ -327,21 +331,37 @@ already `amplified` at `0.85` and have nothing to multiply.
 **A row is flat in `C_m` for any of THREE reasons, and the table above already shows the
 one this paragraph used to omit.** Its third line — *14 governed by `3.2.4 beam shear` |
 none moved* — is the dominant cause in the shipped example and has nothing to do with the
-bending term or the interaction form:
+bending term or the interaction form. Each reason is a statement about the row **at the
+`C_m` this run used**, and not a property of the row:
 
-1. **Another clause governs the row.** `utilisation` is the **maximum over clauses** and
-   `C_m` enters only `3.3.2 interaction`, so a shear-governed row cannot move however large
-   its bending term. **`u_combined` can rise while `utilisation` does not** — on the shipped
-   table 7 of 32 rows are `amplified` and all 7 are flat, **5 of them governed by
-   `3.2.4 beam shear` with `u_bending` up to `3.84e-3`**.
+1. **Another clause governs the row at this `C_m`.** `utilisation` is the **maximum over
+   clauses** and `C_m` enters only `3.3.2 interaction`, so while another clause is the
+   larger of the two the published column does not move. **`u_combined` can rise while
+   `utilisation` does not** — on the shipped table 7 of 32 rows are `amplified` and all 7
+   are flat, **5 of them governed by `3.2.4 beam shear` with `u_bending` up to `3.84e-3`**.
 2. **`C_m` is below the overtake**, where `max(amplified, simple)` returns the `C_m`-free
    simple form.
 3. **The bending term vanishes** — a station with no moment has nothing to multiply.
 
+**Reasons 1 and 2 are both overtakes, and a larger `C_m` undoes either — though not
+necessarily one inside the declared bounds `0.1 .. 2.0`** (R1178). All three say where the
+kink `C_m = (B − a)/s` of the paragraph above falls relative to the value you asked about:
+above `2.0` and the row is flat across the whole declared domain, and out of reach entirely
+only when `s = 0`, which is reason 3. **A row can therefore be flat for reason 1 or 2 and
+stay flat** — the gate's own shear fixture is, with `(B − a)/s = 3.04` — **and that is a
+fact about its kink, not about its clause.** So **`governing_clause` and `interaction_form`
+describe the row at the `C_m` this run used and predict nothing about any other `C_m`**:
+a verified member governed by `3.2.4 torsional shear` at `0.818471` is governed by
+`3.3.2 interaction` at `1.639720` by `C_m = 2.00`, with its bending term unmoved — a factor of `2.0034` on a row the previous
+wording of this list said could not move at all. For any other `C_m`, change it in the
+config and re-run: `utilisation_Cm_sens` is a measurement at the one alternative value the
+run names, not a rule for the rest of the range.
+
 That is why the caveat says *never lowers* rather than *raises*, and why it states the
-condition instead of counting the flat cases: **the count is a property of your table, not
-of the clause.** This paragraph enumerated two reasons for one revision (R1174) while the
-table beside it showed the third.
+closed form instead of counting the flat cases: **the count is a property of your table,
+not of the clause.** This paragraph enumerated two reasons for one revision (R1174) while
+the table beside it showed the third, and then published the third as a universal (R1178)
+while a member inside `Cm`'s own declared bounds `0.1 .. 2.0` refuted it.
 
 **The same ten rows, at two different `C_m` values, and the table above is the `1.2` one.**
 `utilisation_Cm_sens` is computed at `C_m = 1.0` and the table is a run at `1.2`, so a

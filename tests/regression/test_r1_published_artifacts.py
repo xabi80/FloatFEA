@@ -424,29 +424,45 @@ def test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES
     # the response is "FLAT in two places" and named the overtake and the vanishing
     # bending term. There is a third and on the shipped table it is the DOMINANT one:
     # `utilisation` is the MAXIMUM over clauses and C_m enters only `3.3.2 interaction`,
-    # so a row governed by `3.2.4 shear` is flat in C_m however large its bending term
-    # and whichever interaction form applies. Measured on the shipped artifact: of 32
-    # rows, 7 are `amplified` and all 7 are flat -- 5 governed by `3.2.4 beam shear`
-    # with `u_bending` up to 3.84e-3, and 2 with a vanishing bending term.
+    # so where shear governs AT THE PUBLISHED C_m the column does not move. Measured on
+    # the shipped artifact: of 32 rows, 7 are `amplified` and all 7 are flat -- 5
+    # governed by `3.2.4 beam shear` with `u_bending` up to 3.84e-3, and 2 with a
+    # vanishing bending term.
     #
-    # The repair is to state the CONDITION and give no count. Two of this sentence's five
-    # corrections were counts or universals over an axis the author had not swept, so the
-    # string pinned here is the condition's own words.
-    assert "GOVERNS that row" in source and "MAXIMUM" in source, (
-        "`floatfea.cli.TABLE_CAVEATS` does not say that C_m moves the published "
-        "utilisation only where section 3.3.2 GOVERNS it. The column is the maximum over "
-        "clauses, so a shear-governed row is flat in C_m with any bending term -- the "
-        "third control at the foot of this test."
+    # R1178: AND THE THIRD REPAIR STATED THAT THIRD CAUSE AS A UNIVERSAL, WHICH IS FALSE.
+    # "a row governed by 3.2.4 shear is flat in C_m however large its bending term", with
+    # the contrapositive "Anywhere else the published column is FLAT in C_m", published in
+    # `floatfea/cli.py` and all three artifacts. Causes (i) and (iii) are BOTH overtakes
+    # -- `max()` over clauses and `max(amplified, simple)` -- and a larger C_m undoes
+    # either, though not necessarily one inside the declared bounds: the kink
+    # `(B - a)/s` decides, and the shear fixture below has it at 3.04. So neither the
+    # governing clause nor the interaction form is a property of the row. Re-measured at
+    # each row's own state on the shipped
+    # `utilisation.csv` the condition set was satisfied by 2 rows that are flat and
+    # violated by all 10 that rise, the headline row among them.
+    #
+    # So the caveat now states the CLOSED FORM instead of a condition set over the row's
+    # own columns, and what is pinned here is that form's own words, the retraction of
+    # the universal, and -- at the foot of this test -- the two digits it publishes,
+    # re-derived from the model. A needle can only test that a sentence is PRESENT; the
+    # controls at the foot are what test whether it is TRUE.
+    assert "THE LARGER OF B AND a + C_m*s" in source, (
+        "`floatfea.cli.TABLE_CAVEATS` does not state the closed form the published "
+        "column has in C_m. `utilisation` is `max()` over clauses and `u_combined` is "
+        "`max(amplified, simple)`, so the column is exactly `max(B, a + C_m*s)` with B, "
+        "a and s free of C_m -- a kink, not a condition set. R1178 is that a condition "
+        "set over `governing_clause` and `interaction_form` is false in both directions."
+    )
+    assert "PREDICT" in source and "NOTHING ABOUT ANY OTHER C_m" in source, (
+        "`floatfea.cli.TABLE_CAVEATS` has gone back to describing a row's C_m exposure "
+        "from its `governing_clause` or `interaction_form` column. Those columns are the "
+        "row AT THE C_m THIS RUN USED; the crossover control at the foot of this test is "
+        "a row governed by a shear clause at 0.85 and by 3.3.2 at 2.00."
     )
     assert "NO COUNT OF" in source, (
         "`floatfea.cli.TABLE_CAVEATS` has gone back to counting the flat cases. R1168 "
         "said two, R1174 found a third; how many rows are flat is a property of the "
-        "table, not of the clause, so the caveat states the condition instead."
-    )
-    assert "BENDING TERM TO MULTIPLY" not in source, (
-        "`floatfea.cli.TABLE_CAVEATS` still carries R1168's wording, which the R1174 "
-        "repair replaces. If both are present the caveat states the condition twice, in "
-        "two different forms, and one of them is the incomplete one."
+        "table, not of the clause, so the caveat states the closed form instead."
     )
 
     # ---- the published sentence, in every artifact -------------------------------
@@ -471,10 +487,16 @@ def test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES
             f"amplified form overtakes the simple one -- the control at the foot of this "
             f"test measures that band at its own member."
         )
-        assert "GOVERNS that row" in text and "MAXIMUM" in text, (
-            f"{path.name} does not say that C_m moves the published utilisation only "
-            f"where section 3.3.2 GOVERNS it (R1174). The column is the maximum over "
-            f"clauses, so a shear-governed row is flat in C_m with any bending term."
+        assert "THE LARGER OF B AND a + C_m*s" in text, (
+            f"{path.name} does not carry the closed form the published column has in "
+            f"C_m (R1178). It carried a condition set over `governing_clause` and "
+            f"`interaction_form` instead, and that set is false in both directions: it "
+            f"held on 2 rows of this file that are flat and failed on all 10 that rise."
+        )
+        assert "NOTHING ABOUT ANY OTHER C_m" in text, (
+            f"{path.name} does not retract the prediction (R1178). A reader of these "
+            f"columns has the row at ONE C_m, and both of the overtakes that can make a "
+            f"row flat here are undone by a large enough C_m."
         )
         assert "NO COUNT OF" in text, (
             f"{path.name} counts the flat cases. R1168 said two and R1174 found a third; "
@@ -589,13 +611,20 @@ def test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES
     #
     # This is the one the shipped table is actually full of, and the one two successive
     # repairs of this sentence missed: `utilisation` is `max()` over every clause and C_m
-    # enters only `3.3.2 interaction`, so where shear governs the published column cannot
-    # move however large the bending term and whichever interaction form applies.
+    # enters only `3.3.2 interaction`, so while another clause is the larger of the two
+    # the published column does not move, whichever interaction form applies.
     #
     # The member below has a SUBSTANTIAL bending term and crosses the overtake inside the
     # swept range -- `simple` at 0.85, `amplified` from 1.00 -- so causes (ii) and (iii)
     # are both excluded by construction and only (i) can explain the flatness. Note the
     # two columns disagreeing: `u_combined` nearly doubles while `utilisation` is bit-exact.
+    #
+    # R1178: AND THIS ROW IS FLAT BY ITS TORSION MARGIN, NOT BY ANY UNIVERSAL. Bisected
+    # at the reviewer's request: the `3.2.4` assertion below holds down to
+    # `torsion_nm = 330811663.0070415` and the shipped fixture is `5.0e8`, a margin of
+    # 1.51x. Just below it this member becomes the crossover control that follows. So
+    # this row measures that the two COLUMNS can disagree; it is not evidence that a
+    # shear-governed row cannot move, and the caveat no longer says that it is.
     shear_governed: dict[str, float] = {**common, "torsion_nm": 5.0e8}
     shear_lo = check_member(axial_n=-6.0e6, cm=0.85, **shear_governed)  # type: ignore[arg-type]
     shear_hi = check_member(axial_n=-6.0e6, cm=2.00, **shear_governed)  # type: ignore[arg-type]
@@ -622,4 +651,100 @@ def test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES
         f"by {shear_lo.governing!r}: {shear_lo.utilisation!r} -> {shear_hi.utilisation!r}. "
         f"C_m enters no clause but 3.3.2, and the column is the maximum over clauses, so "
         f"if this fires either C_m has reached another clause or the max is not taken."
+    )
+    # And flat across the DECLARED ENDS, which is what the caveat claims of this member:
+    # `(B - a)/s exceeds 2.0`, measured at 3.04. A kink above the ceiling IS the statement
+    # that the column does not move anywhere in `MOMENT_REDUCTION_CM`'s own 0.1 .. 2.0, so
+    # the two ends are where it is checked. Without this, 0.85 and 2.00 leave the claim
+    # unmeasured below 0.85 -- which is the shape R1163 recorded for the overtake band.
+    shear_floor = check_member(axial_n=-6.0e6, cm=0.10, **shear_governed)  # type: ignore[arg-type]
+    # not-a-tolerance: EXACT equality, for the reason above.
+    assert shear_floor.utilisation == shear_hi.utilisation, (
+        f"this member is NOT flat across C_m's declared domain: at cm = 0.10 it is "
+        f"{shear_floor.utilisation!r} and at 2.00 it is {shear_hi.utilisation!r}. The "
+        f"caveat publishes it as the row whose kink (B - a)/s is above the ceiling, so "
+        f"if this fires that figure is stale and the published example is wrong."
+    )
+
+    # ---- R1178: AND NEITHER COLUMN IS A PROPERTY OF THE ROW -------------------------
+    #
+    # The R1174 repair stated the three causes above as a NECESSARY condition set and
+    # then published the contrapositive: "Anywhere else the published column is FLAT in
+    # C_m". Causes (i) and (iii) are both OVERTAKES, and a large enough C_m undoes
+    # either, so a row whose `governing_clause` column reads a shear clause at the
+    # published C_m can be governed by 3.3.2 at a larger one. Only cause (ii) -- the
+    # vanishing bending term, the control above -- is flat at every C_m.
+    #
+    # THIS ROW REDDENS IF THE UNIVERSAL IS RESTORED, because it asserts that the
+    # published utilisation RISES on a row governed by a shear clause at the low end. It
+    # is the member the caveat now cites, inside `MOMENT_REDUCTION_CM`'s declared bounds
+    # `("-", 0.1, 2.0)`, and `tests/corpus/cm_condition_set_necessity.txt` carries the
+    # reviewer's ten entries on the same axis.
+    crossover: dict[str, float] = {**common, "torsion_nm": 1.65125628e8}
+    cross_lo = check_member(axial_n=-6.0e6, cm=0.85, **crossover)  # type: ignore[arg-type]
+    cross_hi = check_member(axial_n=-6.0e6, cm=2.00, **crossover)  # type: ignore[arg-type]
+    assert "3.2.4" in cross_lo.governing and cross_lo.interaction_form == "simple", (
+        f"this control needs a row that reads as C_m-free in BOTH published columns at "
+        f"the low end -- a shear clause and the simple form -- and it governs on "
+        f"{cross_lo.governing!r} with form {cross_lo.interaction_form!r}. If 3.3.2 "
+        f"already governs here the row cannot show that those columns predict nothing."
+    )
+    assert "3.3.2" in cross_hi.governing, (
+        f"at cm = 2.00 this member governs on {cross_hi.governing!r}, not a 3.3.2 "
+        f"clause. The whole point of the row is that the governing clause CHANGES "
+        f"inside C_m's declared bounds, so if this fires the crossover has moved out of "
+        f"range and the caveat's counter-example is no longer this member."
+    )
+    # not-a-tolerance: EXACT equality. The bending term carries no C_m, so these are the
+    # same float and not nearby ones -- the rise below cannot be a larger moment.
+    assert cross_lo.u_bending == cross_hi.u_bending, (
+        f"the bending term moved with C_m on this member: {cross_lo.u_bending!r} -> "
+        f"{cross_hi.u_bending!r}. C_m multiplies that term inside 3.3.2's amplified form "
+        f"and is not part of the term itself, so if this fires the rise asserted below "
+        f"is not the one this control claims to measure."
+    )
+    assert cross_hi.utilisation > cross_lo.utilisation, (
+        f"moving C_m from 0.85 to 2.00 did NOT raise the published utilisation of this "
+        f"member ({cross_lo.utilisation!r} -> {cross_hi.utilisation!r}), which governs "
+        f"on {cross_lo.governing!r} at the low end. R1178 is that a condition set over "
+        f"`governing_clause` and `interaction_form` is false in this direction: if this "
+        f"assertion is green the universal the caveat used to publish is refuted, and "
+        f"if it fires the universal is back."
+    )
+    # The caveat publishes these two digits in `floatfea/cli.py` and all three artifacts.
+    # BP0: re-derived here, so a formulation change that moves them cannot leave the
+    # published sentence describing a member this code no longer produces.
+    for figure in (f"{cross_lo.utilisation:.6f}", f"{cross_hi.utilisation:.6f}"):
+        assert figure in source, (
+            f"`floatfea.cli.TABLE_CAVEATS` does not carry {figure}, which is this "
+            f"member's published utilisation at one of the two C_m values the caveat "
+            f"names. The sentence cites a measurement; this is the measurement."
+        )
+        for path in ARTIFACTS:
+            text = _normalised(path.read_text(encoding="utf-8", errors="replace"))
+            assert figure in text, (
+                f"{path.name} does not carry {figure}. The caveat's counter-example is "
+                f"published in every artifact, so a stale copy is a published figure "
+                f"that no longer describes this code."
+            )
+    # And the direction over the WHOLE declared domain, exactly: `max(B, a + C_m*s)` with
+    # s >= 0 is non-decreasing, which is the caveat's NON-DECREASING sentence as a
+    # measurement rather than as a needle. No tolerance: `<=` on consecutive samples.
+    swept = [
+        check_member(  # type: ignore[arg-type]
+            axial_n=-6.0e6, cm=0.1 + i * (1.9 / 190.0), **crossover
+        ).utilisation
+        for i in range(191)
+    ]
+    assert all(lo <= hi for lo, hi in zip(swept, swept[1:], strict=False)), (
+        "the published utilisation FELL somewhere in C_m over the declared bounds "
+        "0.1 .. 2.0 on the crossover member. The column is the larger of a C_m-free "
+        "channel and a term affine and increasing in C_m, so it cannot fall; the first "
+        "drop is at index "
+        + str(next(i for i, (lo, hi) in enumerate(zip(swept, swept[1:], strict=False)) if lo > hi))
+    )
+    assert swept[0] < swept[-1], (
+        f"the crossover member is FLAT across the whole declared C_m domain "
+        f"({swept[0]!r} -> {swept[-1]!r}), so it is not the counter-example the caveat "
+        f"cites and this control measures nothing."
     )
