@@ -1,3 +1,211 @@
+# Review — R1 step 4
+Reviewed commit: c2bf7d75e8e7baa915156bb29ccb911b240ea730
+**Reviewed commit: `c2bf7d75e8e7baa915156bb29ccb911b240ea730`.**
+Verdict: HOLD
+Scope: **R1 step 4, REVISION 3 at `c2bf7d7` -- a REVIEWED REVISION, so this CONSUMES A ROUND. Step 4 stood at 1 of 3 and stands at 2 of 3 (ES0).** The report carries `# Revision 3` / `Answers: verdict 53 @ b0ff398`, which names the NEWEST verdict -- the addendum -- so the 1b check passes and I am saying so rather than leaving it silent. Ruled under **FR1 with EZ0**, and the one blocking finding carries its silently-wrong-result sentence. No `--interim`; ****no closing line** (FK1, no `--closes`), because the step does not close here. **GE3: `R835: unchanged, R2`. Not re-measured.** GA3's 150-line target is OVERRUN at 198 lines, and I am saying so rather than trimming the evidence: the overrun is the CI partition block, the withdrawal of a figure of my own, and the blocking finding's two census blocks. GA3 says the target does not limit what I may rule blocking, and one thing is.
+Tests: **4368 passed, 0 failed, 0 skipped AT THE JUDGED COMMIT, MY OWN RUN, in EI0's two halves, AND CI's run at the same commit agrees with it.** CI run `42564673979` at `c2bf7d7` is `completed` / **success**, and its three test steps PARTITION the suite: `470` unit + `1322` guards + `2576` ladder = **4368**, which is exactly my own `pytest --collect-only` total and exactly the report's `3961 + 407`. **MY OWN RUNS at the judged commit, in clean worktrees of my own (FV2), `-p no:randomly`: the main half **3961 passed, 0 failed, 0 skipped in 2849.16s (0:47:29)** and the three report-parametrised files **407 passed, 0 failed in 86.33s** -- 3961 + 407 = 4368, the same total CI measured and the same the report names. Also FV1's local selection IN FULL **764 passed, 0 failed, 0 skipped**; `ruff` `All checks passed!`, `black --check` `128 files would be left unchanged.`, `mypy` `Success: no issues found in 45 source files`. **My first whole-tree local run said `17 failed, 3944 passed` and I WITHDREW IT -- the cause was my own `PYTHONPATH` and `## The run` carries the one-variable cell.** Zero reds anywhere, local or CI.
+Door (FV2/GE4): **every measurement below was taken in `git worktree`s of my own at `c2bf7d7`** under the session scratchpad -- one kept clean for the suite, one for every injection, so each `git checkout`/`cp` restore ran in MY tree. In `C:/dev/floatfea` I ran read-only `git`, `gh` and process queries, **plus the two writes FV2 gives me no other door for: the corpus commit `2ff2398` and this verdict.** Both touch one reviewer directory and leave the tree clean; `git status --porcelain` was empty before and after. That is the open escalation in `docs/SUPERVISOR.md` section FV2 -- recorded, not tidied, and not resolved inside this round.
+
+## Carried
+
+* **R1168 -- ANSWERED, and the repair it produced is this round's blocking finding (R1178).** `WITH A BENDING TERM TO MULTIPLY` is now GONE from `floatfea/cli.py` by assertion, which the gate requires -- but it is still in `docs/USER_GUIDE.md:298`, so the two published deliverables disagree again, in reverse. Folded into R1178.
+* **R1169 -- ANSWERED.** `docs/directives/FZ.md:915` is the entry; the dated in-place correction block is at 929-967. Mechanism re-read, not the prose.
+* **R1170 -- ANSWERED, section 4, and I reproduced it myself rather than accepting the attribution.** `u_combined = max(amplified, simple)` -> `amplified`, one line, in my own tree: `assert '3.3.2' in '3.2.3 bending'` at `test_r1_published_artifacts.py:514`, `1 failed, 46 deselected`. The report's `:514` is right at this commit.
+* **R1171 -- ANSWERED.** The three report-parametrised files are `407 passed, 0 failed` at the report's own state, my own run.
+* **R1172 -- ANSWERED and CHECKED BY COLLECTION, not by reading.** `--collect-only` at `c2bf7d7` gives **4368**, and `4368 - 407 = 3961`, which is the main half the report names. The accounting holds.
+* **R1173 -- ANSWERED.** `docs/closure/R1.md` carries three runs, three fixture tables with expected beside got, three transcripts. I re-derived all five fixtures from the shipped artifacts myself: `32 rows`, `[('12.5', 26), ('15', 4), ('16.2', 2)]`, `over unity: 4`; `1248 rows` with `288/288/48/48/288/288`; governing `platform:hub2_arm ROOT 12.5 1.71167 3.3.2 interaction`. The transcripts are internally consistent with the tree -- run 2's install block matches `constraints-dev.txt`'s pins (`mypy 2.4.0`, `ruff 0.17.1`, `pytest 9.1.1`, `numpy 2.5.4`) and the local venv.
+* **R1174 -- the COUNT is gone and the CONDITION that replaced it is false. R1178.**
+* **R1175 -- ANSWERED.** `grep -c -- "-c '" docs/USER_GUIDE.md` is `0`; the paragraph now carries the measurement.
+* **R1176 -- ANSWERED, section 8.** `tests/regression/test_ft27_topology_solve.py` collects `9 tests`. Built.
+* **R1177 -- agreed, no action asked.**
+* **Interim check item 4 -- CLOSED, at the wrong commit.** `docs/milestones/F2a.md` landed in `8de5d2b`, not `43f8bb0` (`git log --oneline c992e54..HEAD -- docs/milestones/F2a.md` gives one line, `8de5d2b`; `43f8bb0` touches the digest and `FZ.md` only). Ledger row L6.
+* **Interim check item 5 -- the suite half is DISCHARGED at this commit, the CI half is NOT.** See `## CI` below.
+* **R835: unchanged, R2** (GE3).
+
+## Findings
+
+### R1178 (BLOCKING). THE REPAIR OF R1174 REPLACED A WRONG COUNT WITH A FALSE UNIVERSAL, AND THE DELIVERABLE'S OWN COLUMNS REFUTE IT ON 10 OF 32 ROWS INCLUDING THE HEADLINE.
+
+`floatfea/cli.py:111-124`, regenerated into `results/R1/example/report.md:75` and line `41` of both CSVs. The new caveat states three conditions as NECESSARY and then gives the contrapositive explicitly: *"A larger C_m RAISES the published utilisation of a row only where ALL THREE of these hold ... Anywhere else the published column is FLAT in C_m."* The three are (i) `3.3.2` governs the row, (ii) there is a bending term, (iii) C_m is above the overtake. **A reader evaluates (i) and (iii) by reading `governing_clause` and `interaction_form`, because those are COLUMNS of the file the sentence is printed in. At the row's own state the sentence is false on every row that moves.**
+
+```
+claim  the published condition set, evaluated at each row's own state, against the
+       column the sentence is about
+cmd    census of results/R1/example/utilisation.csv: rows where utilisation_Cm_sens
+       != utilisation, and whether (i)+(ii)+(iii) hold at that row
+out    32 rows | utilisation_Cm_sens != utilisation on 10
+       of those 10, ALL THREE conditions hold on: 0
+       their interaction_form column: {'simple': 10}   <- (iii) is FALSE on all ten
+       rows where ALL THREE hold: 2  -- and both of those are FLAT
+       headline platform:hub4_arm ROOT: form=simple  1.71167 -> 1.71365
+rule   the published sentence: "Anywhere else the published column is FLAT in C_m"
+```
+
+So the condition set is **0 for 12** as a predictor on the deliverable's own table: satisfied by two rows that are flat, violated by all ten that rise. And the subordinate clause -- *"a row governed by 3.2.4 shear is flat in C_m however large its bending term"* -- is false inside C_m's own declared bounds `0.1 .. 2.0`:
+
+```
+cmd    check_member(axial_n=-6.0e6, moment_y_nm=1.5e8, torsion_nm=1.65125628e8) at
+       cm = 0.85 and cm = 2.00, every other input held
+out    cm=0.85  governing='3.2.4 torsional shear'  form=simple     U=0.8184711191258446
+       cm=2.00  governing='3.3.2 interaction'      form=amplified  U=1.6397199836312206
+cell   one variable -- C_m. u_bending=0.7930651386236371 at both
+judge  a 3.2.4-governed row at 0.82 reaches 1.64. Under unity to 64% OVER, and the
+       caveat says this row cannot move
+```
+
+**AND THE SENTENCE CANNOT BE READ SO THAT BOTH HALVES ARE TRUE, WHICH IS WHY THIS IS NOT A MISREADING OF MINE.** There are two available readings of (iii) -- the C_m you move FROM, which is the row's own published state, or the C_m you move TO. Under the ROW-STATE reading, (iii) is false on all ten rows that rise and the census above refutes it. Under the DESTINATION reading those ten are allowed, and then the clause *"a row governed by 3.2.4 shear is flat in C_m"* is refuted by the construction below -- because "a row governed by 3.2.4 shear" can only name the row's own `governing_clause` column, and that row goes from 0.818 to 1.640. **Each reading refutes a different half.** Whichever one the repair meant, one half of the published sentence is false, and the reader has no way to know which reading to apply.
+
+**THE COUNTER-EXAMPLE WAS ALREADY IN THE REPOSITORY WHEN THE SENTENCE WAS WRITTEN, FOR THE SECOND TIME IN TWO COMMITS.** `tests/corpus/cm_direction_claim_members.txt` line 12, `id=compression_beam_shear_governs`, committed at `cb520c6` ONE COMMIT BEFORE `e526a9e`: `0.9662150503393355 -> 0.9951911821042186` over `0.85 -> 1.20`, governed by `3.2.4 beam shear` at the low end. R1174 was "the corpus named this case one commit earlier"; R1178 is the NEXT ENTRY IN THE SAME FILE, one repair later.
+
+**And the gate knows the crossover exists.** The new row's own guard asserts `'3.2.4' in governing` at BOTH C_m values. Solved in the direction that weakens it (EH4): the guard holds down to `torsion_nm = 330811663.0070415`, and the shipped fixture is `5.0e8` -- a margin of **1.51x**. Just below it the fixture becomes the configuration above. **The fixture is guarded away from the case the published sentence excludes, and nothing reads the guard back into the sentence.**
+
+**FR1's sentence, which is why this blocks rather than ledgers.** The silently wrong result is an engineer's C_m-exposure answer, taken from the decision rule the deliverable itself publishes beside the numbers: the caveat tells a reader that a row whose `interaction_form` column reads `simple`, or whose `governing_clause` reads `3.2.4`, is FLAT in C_m -- and on 10 of the 32 shipped rows, including `platform:hub4_arm ROOT` at `U = 1.71167`, it is not, while on a shear-governed member inside the declared bounds the same sentence conceals `0.818 -> 1.640`. Every number in every artifact is correct; the published rule for reading them is false, and false in the unconservative direction. **This is not report prose (FR1's third class) -- it is `floatfea/` and three published deliverables, and the sentence is a claim about the values in the same file.** It is the sixth correction of one sentence (R743, R1156, R1162, R1168, R1174, this) and the third in a row verified only against configurations its own author chose.
+
+*Closed when* the caveat states what the code does rather than a condition set over the row's own columns -- the honest form is the one the GUIDE's three-reason list at `docs/USER_GUIDE.md:330-340` nearly has: `utilisation` is the maximum over clauses, `C_m` enters only `3.3.2`, and `u_combined` can rise while `utilisation` does not **until `3.3.2` overtakes, which a larger C_m can make it do** -- with no universal about what a shear-governed row "cannot" do. Four sites: `floatfea/cli.py`, the three regenerated artifacts, `docs/USER_GUIDE.md:332-334` (the same false universal) and `docs/USER_GUIDE.md:295-302` (the R1168 wording this repair deleted from the deliverables as incomplete, left standing in the guide). And a row that reddens when the universal is restored -- the corpus entry above is one, and it needs no injected defect.
+
+### Ledger (FR1: none can cause a silently wrong result; one line each)
+
+**L1.** `docs/closure/R1.md:347` says the C_m caveat had "four" corrections, `R743, R1156, R1162 and R1168`; the shipped caveat names five (`grep -o "R743 / R1156 / R1162 / R1168 / R1174" floatfea/cli.py` matches). The artifact was written at `8de5d2b` and the repair landed at `e526a9e` after it -- BP0, one commit late.
+
+**L2.** `docs/closure/R1.md:394` says "the two new assertions added in step 4"; there are **four**, each with its own `# not-a-tolerance: EXACT equality` -- `tension_lo` (`a596fa7`), `compress_mid` (`092334a`), `flat_lo` (`af9c6aa`), `shear_lo` (`e526a9e`), all inside step 4 by `git log -S`. Its two stated reasons cover two of the four.
+
+**L3.** `docs/closure/R1.md` section 0 names TWO different commits for one figure: the generated block says "Whole suite at `e526a9e`", the paragraph at `:47` says "measured at `8de5d2b`, the commit that added this file". The report's section 11 says `e526a9e`, so `:47` is the wrong one -- and it is the sentence that tells the reader to read the label.
+
+**L4.** `docs/closure/R1.md:204` cites `floatfea/model/platform.py:879` for `density > basis.RHO_STEEL`; it is at `:878`. **This is the fifth stale citation you asked me to look for, and it is in the published deliverable rather than in the report** -- section 5 corrected the report's copy and left the artifact's.
+
+**L5.** `tests/verification/rung3/test_closure_evidence_exists.py:45` cannot see a citation that carries a line number: the regex requires a closing backtick straight after `.py`/`.md`, so `` `path.py:879` `` matches nothing. Measured across all 13 closure artifacts: 21 citations are invisible to it, and one is a live phantom -- `docs/closure/F0.md:122` cites `docs/m11-platform-plan.md:637`, which does not exist in this repository and carries no `HSP:` prefix. **GA1: one ledger line, no further census** -- I ran it once, it is above, and I am not extending the guard.
+
+**L6.** `docs/reports/R1/step-4.md` section 8a condition 4 attributes `docs/milestones/F2a.md` to `43f8bb0`; it landed in `8de5d2b`. The condition itself IS closed.
+
+**L7.** section 5's premise for leaving the density item as a ledger row is refuted by the tool's own output: *"neither sentence in `report.md` says which reference it used"*. Both do. At `rho: 7000` my own run writes `the equivalent density is 11433.5 kg/m^3, ABOVE steel at 7850` and `carry an equivalent density ABOVE the declared nominal`. **The item is already closed by the tool, not deferred** -- which is the answer to your question 4 for that half.
+
+**L8.** `tests/regression/test_r1_published_artifacts.py` is green under a C_m leak into `u_shear` -- all `47 passed` with `u_shear = cm * f_v / allow_shear`, because all four of its controls carry `shear_y_n = shear_z_n = 0`. **Coverage exists elsewhere and I measured it rather than reporting a hole:** `rung5/test_g61_api_wsd_hand_calculations.py::test_each_check_REDDENS_under_the_load_the_plan_asks_for[beam shear]` fails under the same injection (`1 failed, 556 passed`). One line, no action.
+
+## Rulings you asked for
+
+1. **The label/number split (section 2a) -- your ledger call is RIGHT, and I converted it from reasoning into a measurement.** `candidates` maps the five labels to the same five fields and `governing = max(candidates, ...)`, while `utilisation = max` of those fields, so they cannot disagree in value. Measured over 33151 admissible random tubulars (D 0.5-2.5 m, D/t 20-300, KL/r 20-160, biaxial moment, shear, torsion, C_m uniform on 0.1-2.0): the field the LABEL names differs from the published `utilisation` on **0**, and ties broken by dict insertion order occur on **0**. Correctly not built against under GA1.
+2. **The new row, checked hardest -- it carries its own failure, at the assertion and with the digits you published.** `u_torsion = cm * f_vt / allow_shear`, one line, my own tree: `AssertionError: ... '3.2.4 torsional shear': 2.106579274469036 -> 4.956657116397731`, `test_r1_published_artifacts.py:620`, `1 failed, 46 deselected`. EH4 in both directions: the detection side is 1 ULP of the field (smallest multiplicative leak detected, `eps = 9.65e-17`, relative defect `1.11e-16`), the weakening side is the `1.51x` torsion margin in R1178.
+3. **Condition 5's premise -- you are right and my predecessor was wrong, and it is checkable from the tree.** `git worktree list` in the main checkout still shows `suite-count-x86d2suk/tree` at **`8de5d2b`**, not `cbb8027`, so the live run was the authoritative one. No `suite_count` or `suite-count` process is alive now; fifteen `suite-count-*` directories remain under `TEMP`. Neither figure is published, which I confirmed rather than took.
+4. **Four stale citations -- you left a fifth, L4, and it is in the closure artifact.** The four you name resolve at this commit: `:514`/`:544`/`:620` are the three assertions, `FZ.md:915` is the SR entry, `USER_GUIDE.md:298` is the qualifier, `platform.py:878` is the gate, `platform12_placeholder.yaml:193` is `required_section: false`.
+5. **Your two "ledger rather than repair" calls:** the density half is L7 -- closed, not deferred, and the premise was wrong in your favour. The label/number half is ruling 1 -- correct, and now measured. **Neither should have been repaired here.**
+6. **GE's five clauses: all five done, in GE's order.** GE1 built rather than argued; GE2's three held to one line of substance each, with the zero-moment row as the non-prose half; GE3 routed; GE4 escalated with the measurement rather than answered, which is what GE4 asked for when its own text was false; GE5 spent.
+
+## Tolerances touched
+
+**None.**
+
+```
+cmd    git diff c992e54..HEAD --numstat -- floatfea/tolerances.py tests/conftest.py
+         'tests/**/conftest.py' .claude docs/SUPERVISOR.md
+out    (empty)
+cmd    git ls-files -- tests/conftest.py 'tests/**/conftest.py'
+out    tests/conftest.py
+```
+
+No value, no form, no counter. **No conftest or plugin under `tests/` changed, so CH2/CI0 is clear** -- nothing that writes the gate's own record moved, and I read the one conftest's diff as empty rather than inferring it from a green suite. **`.claude/` and `docs/SUPERVISOR.md` are untouched since `c992e54`**; the two `process:` commits that changed them (`b8d573f`, `5e0808e`) were reviewed at the interim check and are before this range, so there is no STOP-class finding here.
+
+**EU1 does not attach** (no tolerance value or counter moved) **and I ran the adversarial case anyway**, because EU1's lesson is that the configuration nobody chose is the one that measures -- and here it is what found R1178. The one new assertion is exact equality with `# not-a-tolerance:` and the comment is correct: a clause C_m does not enter returns the identical float.
+
+## Corpus (EG4(e)'s pause is spent by date; GC3 leaves batches to me)
+
+**The pause did NOT hold and could not: `CLAUDE.md` still reads "pause until 28 October" and it is 8 November.** That is R1149, mine, and still Xabier's; my own agent file carries the same dead clause. **I ran a batch, and I ran the recorded substitute as well.**
+
+**`tests/corpus/cm_condition_set_necessity.txt`, batch 52, 10 entries, ALL NEW, committed separately at `2ff2398`.** The axis is batch 51's one repair later: the three published conditions evaluated AT THE ROW'S OWN STATE, which is the only state a reader of `utilisation.csv` has. **Eight of the ten refute the published universal; two are controls where it is true, one of them the shipped gate's own fixture.**
+
+**Coverage, measured rather than asserted: the check under review EVALUATES 2 of the 10 -- its own two fixtures -- and 0 of the 8 that refute.** Its assertions about the condition are string needles over the caveat's own words (`"GOVERNS that row"`, `"MAXIMUM"`, `"NO COUNT OF"`, `"BENDING TERM TO MULTIPLY" not in`), which test that the sentence is PRESENT and cannot test whether it is TRUE. **Batch 51's coverage against this round's repair is 0 of 2 for the second consecutive round** -- entries 11 and 12 were both live counter-examples when the repair shipped.
+
+**The substitute, which is what produced R1178:** a census of a published deliverable against its own caveat (10 of 32 rows, 0 of 12 predicted) and a continuum sweep of C_m over the decision rule the caveat describes, bisected for the crossover rather than sampled.
+
+
+## CI at the reviewed commit: run `42564673979`, COMPLETED, conclusion **SUCCESS** -- and it is a whole-suite measurement
+
+| job | conclusion |
+|---|---|
+| `lint, unit and guards` | **success** -- every step RAN, none skipped: `actionlint`, `ruff`, `black --check`, `mypy`, `unit tests` (`470 passed`), `guards and meta-tests` (`1322 passed, 1 warning`) |
+| `the verification ladder` | **success** -- all six rungs in the workflow's own order `1, 2, 3, 6, 4, 5`, each `run_rung: OK`, `0 failed, 0 errored, 0 skipped`, collecting `1276 / 66 / 325 / 477 / 345 / 87` |
+| `CI determinism -- leg` | skipped by its own condition -- **unavailable, not passing** |
+| `CI determinism -- ten legs agree` | skipped by its own condition -- **unavailable, not passing** |
+
+**`guards and meta-tests` reaching the runner and passing is what CZ1 (iii) exists to see, and it did**, and rung 6 ran `tests/regression` in full -- the only coverage of the directory this round changed, and the one the interim check could not measure.
+
+```
+claim  CI's three test steps PARTITION the suite at this commit, so this is a
+       whole-suite figure and not a sample
+cmd    470 (unit) + 1322 (guards) + (1276+66+325+477+345+87 = 2576, ladder)
+out    4368
+rule   my own `pytest --collect-only` at `c2bf7d7` gives 4368, and the report's
+       two halves give 3961 + 407 = 4368. The same denominator three ways
+judge  4368 passed, 0 failed, 0 skipped at the judged commit, on a machine
+       neither the implementer nor I control. Nothing is red anywhere
+```
+
+**EG3 IS NOT REACHED AND THERE IS NOTHING TO CLASSIFY.** Every half is `0 failed`, so neither of EG3's two boundary states arises, the FS1/FT1 predicate is not tested, and CZ1 (iv) does not arise. No `FAILED` list is pasted because there is none. That is the second consecutive boundary with nothing to classify, and the report says so correctly.
+
+**A commit landed after the one I judge.** `5a9467c`, `docs: SR-57 to SR-62 ...`, touches `docs/directives/FZ.md` and `docs/digests/` only. Not my subject, and it moves nothing I measured.
+
+## The run, and a figure of MINE that I withdrew rather than published
+
+**My own runs at `c2bf7d7`, in worktrees of my own, `-p no:randomly`:**
+
+```
+the MAIN HALF, pristine worktree, PYTHONPATH unset
+  (the same command scripts/suite_count.py runs)  3961 passed, 0 failed, 0 skipped
+                                                       in 2849.16s (0:47:29)
+the three report-parametrised files                407 passed, 0 failed in  86.33s
+                                          TOTAL   4368 passed, 0 failed, 0 skipped
+FV1's local selection IN FULL -- tests/unit, the four root guards,
+  test_r1_published_artifacts.py, test_r1_example_regenerates.py,
+  test_r1_example_golden.py                        764 passed, 0 failed in 391.45s
+pytest --collect-only, whole suite                4368 collected
+ruff check floatfea tests                         All checks passed!
+black --check floatfea tests                      128 files would be left unchanged.
+mypy floatfea                                     Success: no issues found in 45 source files
+```
+
+**AN EARLIER WHOLE-TREE RUN OF MINE SAID `17 failed, 3944 passed`. THAT FIGURE IS WITHDRAWN, THE CAUSE IS MINE, AND I MEASURED IT RATHER THAN ATTRIBUTING IT.** All 17 were in `tests/test_ci_ladder_gating.py`; the clean re-run above has the same denominator and none of them.
+
+```
+cell   one variable -- whether PYTHONPATH is set. Same file, same commit, same
+       pristine worktree, same interpreter, nothing else moved
+out    PYTHONPATH = my worktree  ->  17 failed, 47 passed in 94.21s
+       PYTHONPATH unset          ->  64 passed,  0 failed in 117.23s
+rule   scripts/run_rung.sh:213 joins PYTHONPATH with a POSIX COLON. On Windows
+       the separator is a semicolon, so any pre-existing PYTHONPATH makes the
+       value unparseable, `-p rung_no_xpass` never loads, and pytest exits 1
+       with no junit -- which the gate reports as "produced no readable junit
+       report ... and nothing describes what it did"
+judge  I set PYTHONPATH so the imported source was MY worktree's and not the
+       main tree's, which is FV2's whole point. The implementer does not, and
+       `scripts/suite_count.py` does not. The reds were my harness. CI's
+       `guards and meta-tests` runs this exact file and is green at this commit
+```
+
+**L9, one line under GA1 rather than a finding.** That failure mode is FAIL-LOUD -- every rung reddens and `test_the_changed_requirements_are_exactly_these` goes red with it -- so it cannot make a red rung look green. What it does do is make the seven conftest-forgery entries stop disagreeing with their declarations, which reads as *those channels are now closed* when in fact no rung ran. GA1's test is whether it could hide a blocking finding; it fails closed, so: one ledger line, no census, no fix asked, and the apparatus freeze holds.
+
+**I also voided an earlier run of my own by probing in the worktree it was reading**, which is the ordering lesson this project already has written down. The second run was made in a worktree I then touched for nothing else. Recorded because a reviewer's contaminated figure is the same defect as anyone's.
+
+## Next step opens when
+
+Step 4 stays open at **2 of 3** reviewed revisions. **Revision 4 is the last one ES0 allows, so one blocking item and a short list is what it should carry.**
+
+1. **R1178**, at its four named sites -- `floatfea/cli.py`, the three regenerated artifacts, `docs/USER_GUIDE.md:332-334` and `docs/USER_GUIDE.md:295-302` -- with the universal gone rather than reworded, and a row that reddens when it is restored. **A corpus entry that needs no injected defect is in `tests/corpus/cm_condition_set_necessity.txt`; the shipped fixture is `1.51x` from being one.** Closed site by site, each with its hunk or the reason the site was left.
+2. **L1, L2, L3, L4** -- the four stale figures in `docs/closure/R1.md`, which is the file that goes to Xabier. Re-measured at the commit that publishes them, not carried over (BP0, CP3). **L5 is apparatus and is one line under GA1; do not census it and do not extend the guard.**
+3. **CI at revision 4's own commit, COMPLETED and green**, with the job table (FP1). It is green and complete at THIS commit, rung 6 included, so this is a carry-forward of the standing requirement and not an open item against revision 3.
+4. **The whole-suite line at revision 4's own commit**, both halves, with the figure re-taken after the last edit.
+5. **Nothing else.** GE1's "nothing else of substance" still governs, and nothing in this verdict asks for new apparatus, a new guard or a new scanner.
+
+**On the schedule, since the report raises it and I am the other half of that judgement.** R1's date is 10 November and this HOLD spends one of the two remaining days. One blocking item, one sentence, four sites and four stale figures is a half-day of work, so the date is reachable -- but this is the **sixth** correction of one sentence and the **third consecutive** one to ship a claim its own author's configurations could not refute. If revision 4 produces a seventh, the honest reading is that the sentence should be replaced by a pointer to the guide's three-reason list and the measurement, rather than corrected again, and I would say so then rather than in the closure.
+
+## I do not disagree with the criterion
+
+FR1 is the rule I ruled under and I am not asking for it to move. **R1178 is blocking because I can write FR1's sentence for it, and I wrote it** -- a published decision rule that contradicts the published columns it is printed beside, in the unconservative direction, on the headline row. Everything that could not be given that sentence is a ledger line above, including findings I would have liked to block on under CZ0 as it stands outside R1. The distinction I drew is the one FR1 asks for: a wrong count of corrections cannot mislead anyone about a member; a published rule saying a member has no C_m exposure when it has two-fold can.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
 # Review — R1 step 4 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: c992e5432561342aea90d9c445b9c4a0d88ded93
 **Reviewed commit: `c992e5432561342aea90d9c445b9c4a0d88ded93`.**
