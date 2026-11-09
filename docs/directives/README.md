@@ -21,6 +21,11 @@ Each file records where its text came from. **This is not uniform and the record
 * `FM.md`, `FN.md`, `FO.md`, `FP.md`, `FQ.md`, `FR.md`, `FS.md`, `FT.md`, `FU.md`,
   `FV.md`, `FW.md`, `GB.md`, `GC.md` — **verbatim** from the directive message.
   (`GB.md` was listed twice here until GC's commit — R1152.)
+* `GE.md` — **verbatim** from the directive message. Issued by Xabier, 2026-11-08.
+  Its own file, as its `Record:` line asks. The file also carries the one reading GE
+  needed and did not state: GE says "revision 2" where revision 2 is already reviewed,
+  so the work it names is done as **revision 3**, resolved under FZ rule 7 rather than
+  escalated, because no published number differs between the two readings.
 * `GD` — **verbatim, and it has no file of its own.** GD's own `Record:` line said to
   append it to `GC.md` rather than open a new file, so its text is at
   `GC.md:109-144` and `GC.md` says where it begins. R1164 was that this roll did not
