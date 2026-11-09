@@ -420,10 +420,33 @@ def test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES
     # `cm * u_bending` is `cm * 0`. `docs/USER_GUIDE.md:260` already carried the
     # qualifier and the caveat did not, so the two deliverables disagreed. The control
     # is the zero-moment member at the foot of this test.
-    assert "WITH A BENDING TERM TO MULTIPLY" in source, (
-        "`floatfea.cli.TABLE_CAVEATS` says a larger C_m RAISES the compression "
-        "utilisation wherever the amplified form governs, with no qualifier. A member "
-        "with no moment reaches the amplified form and is exactly flat in C_m."
+    # R1174: THE SECOND REPAIR WAS ALSO A COUNT, AND IT WAS ALSO WRONG. R1168's fix said
+    # the response is "FLAT in two places" and named the overtake and the vanishing
+    # bending term. There is a third and on the shipped table it is the DOMINANT one:
+    # `utilisation` is the MAXIMUM over clauses and C_m enters only `3.3.2 interaction`,
+    # so a row governed by `3.2.4 shear` is flat in C_m however large its bending term
+    # and whichever interaction form applies. Measured on the shipped artifact: of 32
+    # rows, 7 are `amplified` and all 7 are flat -- 5 governed by `3.2.4 beam shear`
+    # with `u_bending` up to 3.84e-3, and 2 with a vanishing bending term.
+    #
+    # The repair is to state the CONDITION and give no count. Two of this sentence's five
+    # corrections were counts or universals over an axis the author had not swept, so the
+    # string pinned here is the condition's own words.
+    assert "GOVERNS that row" in source and "MAXIMUM" in source, (
+        "`floatfea.cli.TABLE_CAVEATS` does not say that C_m moves the published "
+        "utilisation only where section 3.3.2 GOVERNS it. The column is the maximum over "
+        "clauses, so a shear-governed row is flat in C_m with any bending term -- the "
+        "third control at the foot of this test."
+    )
+    assert "NO COUNT OF" in source, (
+        "`floatfea.cli.TABLE_CAVEATS` has gone back to counting the flat cases. R1168 "
+        "said two, R1174 found a third; how many rows are flat is a property of the "
+        "table, not of the clause, so the caveat states the condition instead."
+    )
+    assert "BENDING TERM TO MULTIPLY" not in source, (
+        "`floatfea.cli.TABLE_CAVEATS` still carries R1168's wording, which the R1174 "
+        "repair replaces. If both are present the caveat states the condition twice, in "
+        "two different forms, and one of them is the incomplete one."
     )
 
     # ---- the published sentence, in every artifact -------------------------------
@@ -448,11 +471,14 @@ def test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES
             f"amplified form overtakes the simple one -- the control at the foot of this "
             f"test measures that band at its own member."
         )
-        assert "WITH A BENDING TERM TO MULTIPLY" in text, (
-            f"{path.name} says a larger C_m RAISES the compression utilisation wherever "
-            f"the amplified form governs, with no qualifier (R1168). The guide carries "
-            f"the qualifier; a published deliverable that does not disagrees with it, on "
-            f"a member with no moment -- the second control at the foot of this test."
+        assert "GOVERNS that row" in text and "MAXIMUM" in text, (
+            f"{path.name} does not say that C_m moves the published utilisation only "
+            f"where section 3.3.2 GOVERNS it (R1174). The column is the maximum over "
+            f"clauses, so a shear-governed row is flat in C_m with any bending term."
+        )
+        assert "NO COUNT OF" in text, (
+            f"{path.name} counts the flat cases. R1168 said two and R1174 found a third; "
+            f"a count over the author's own table is what went wrong twice here."
         )
 
     # ---- and the code, one variable moved ----------------------------------------
@@ -557,4 +583,43 @@ def test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES
         f"{flat_lo.utilisation!r} -> {flat_hi.utilisation!r}. There is no bending term "
         f"for C_m to multiply, so if this fires either the amplified form has acquired a "
         f"C_m-dependence outside the bending term or the moment is not actually zero."
+    )
+
+    # ---- R1174: FLAT BECAUSE ANOTHER CLAUSE GOVERNS, WHICH IS THE THIRD CAUSE --------
+    #
+    # This is the one the shipped table is actually full of, and the one two successive
+    # repairs of this sentence missed: `utilisation` is `max()` over every clause and C_m
+    # enters only `3.3.2 interaction`, so where shear governs the published column cannot
+    # move however large the bending term and whichever interaction form applies.
+    #
+    # The member below has a SUBSTANTIAL bending term and crosses the overtake inside the
+    # swept range -- `simple` at 0.85, `amplified` from 1.00 -- so causes (ii) and (iii)
+    # are both excluded by construction and only (i) can explain the flatness. Note the
+    # two columns disagreeing: `u_combined` nearly doubles while `utilisation` is bit-exact.
+    shear_governed: dict[str, float] = {**common, "torsion_nm": 5.0e8}
+    shear_lo = check_member(axial_n=-6.0e6, cm=0.85, **shear_governed)  # type: ignore[arg-type]
+    shear_hi = check_member(axial_n=-6.0e6, cm=2.00, **shear_governed)  # type: ignore[arg-type]
+    assert "3.2.4" in shear_lo.governing and "3.2.4" in shear_hi.governing, (
+        f"this control needs a row governed by a SHEAR clause at both ends; it governs on "
+        f"{shear_lo.governing!r} and {shear_hi.governing!r}. If 3.3.2 governs here the "
+        f"row is measuring the overtake again instead of the max-over-clauses cause."
+    )
+    assert shear_lo.u_bending > 0.0 and shear_lo.interaction_form != shear_hi.interaction_form, (
+        f"this control needs a real bending term and a crossing of the overtake, so that "
+        f"neither of the other two causes can explain the flatness: u_bending="
+        f"{shear_lo.u_bending!r}, forms {shear_lo.interaction_form!r} -> "
+        f"{shear_hi.interaction_form!r}."
+    )
+    assert shear_hi.u_combined > shear_lo.u_combined, (
+        f"C_m did not move `u_combined` on this member ({shear_lo.u_combined!r} -> "
+        f"{shear_hi.u_combined!r}), so the row cannot show the two columns disagreeing, "
+        f"which is the whole point of it."
+    )
+    # not-a-tolerance: EXACT equality. A clause C_m does not enter returns the identical
+    # float at every C_m, so these are the same float and not nearby ones.
+    assert shear_lo.utilisation == shear_hi.utilisation, (
+        f"moving C_m from 0.85 to 2.00 moved the PUBLISHED utilisation of a row governed "
+        f"by {shear_lo.governing!r}: {shear_lo.utilisation!r} -> {shear_hi.utilisation!r}. "
+        f"C_m enters no clause but 3.3.2, and the column is the maximum over clauses, so "
+        f"if this fires either C_m has reached another clause or the max is not taken."
     )

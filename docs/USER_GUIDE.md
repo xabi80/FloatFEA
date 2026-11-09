@@ -62,10 +62,21 @@ is already your default. On Linux or macOS the interpreter inside the venv is
 Windows — with forward slashes and the `.exe` suffix, which is load-bearing there. **In
 PowerShell the same path needs `.\` or `&` in front of it**, because PowerShell will not run
 an executable named by a bare relative path: `.\.venv\Scripts\python.exe -m floatfea.cli
-run examples\platform12_placeholder.yaml`, or `& "./.venv/Scripts/python.exe" ...`. The
-single-quoted `python -c "..."` one-liners in §§ 6 and 8 are also quoted for a POSIX shell
-and need their quotes reworked in PowerShell; the simplest thing is to run this guide in
-Git Bash, which is what it was written in.
+run examples\platform12_placeholder.yaml`, or `& "./.venv/Scripts/python.exe" ...`.
+
+**The `-c "..."` one-liners in §§ 6 and 8 need nothing else.** They are double-quoted on the
+outside and single-quoted within, which is the way round PowerShell copes with: prefix the
+`&` and paste them verbatim. Measured, in PowerShell, on § 8.1's:
+
+```
+& ./.venv/Scripts/python.exe -c "import csv,pathlib; ... print(g['member'], ...)"
+platform:hub2_arm ROOT 12.5 1.71167 3.3.2 interaction
+exit=0
+```
+
+*An earlier draft of this paragraph said those one-liners are "single-quoted" and "need
+their quotes reworked in PowerShell". Both halves were wrong — they are double-quoted
+outside, and running one is all it takes to see that no rework is needed (R1175).*
 
 Check it:
 
@@ -311,9 +322,26 @@ The two `3.3.2` rows that did not move are TIP stations whose bending term is
 one.** Read `interaction_form` beside them: all ten are `simple` at the shipped
 `C_m = 0.85`, and by the time `C_m` reaches `1.0` the amplified form has overtaken the
 simple one, so all ten read `amplified` at `1.0` and at `1.2`. Both unmoved rows are
-already `amplified` at `0.85` and have nothing to multiply. So a row can be flat in `C_m`
-for either reason — below the overtake, or with a vanishing bending term — and that is why
-the caveat says *never lowers* rather than *raises*.
+already `amplified` at `0.85` and have nothing to multiply.
+
+**A row is flat in `C_m` for any of THREE reasons, and the table above already shows the
+one this paragraph used to omit.** Its third line — *14 governed by `3.2.4 beam shear` |
+none moved* — is the dominant cause in the shipped example and has nothing to do with the
+bending term or the interaction form:
+
+1. **Another clause governs the row.** `utilisation` is the **maximum over clauses** and
+   `C_m` enters only `3.3.2 interaction`, so a shear-governed row cannot move however large
+   its bending term. **`u_combined` can rise while `utilisation` does not** — on the shipped
+   table 7 of 32 rows are `amplified` and all 7 are flat, **5 of them governed by
+   `3.2.4 beam shear` with `u_bending` up to `3.84e-3`**.
+2. **`C_m` is below the overtake**, where `max(amplified, simple)` returns the `C_m`-free
+   simple form.
+3. **The bending term vanishes** — a station with no moment has nothing to multiply.
+
+That is why the caveat says *never lowers* rather than *raises*, and why it states the
+condition instead of counting the flat cases: **the count is a property of your table, not
+of the clause.** This paragraph enumerated two reasons for one revision (R1174) while the
+table beside it showed the third.
 
 **The same ten rows, at two different `C_m` values, and the table above is the `1.2` one.**
 `utilisation_Cm_sens` is computed at `C_m = 1.0` and the table is a run at `1.2`, so a
