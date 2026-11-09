@@ -1,0 +1,95 @@
+# CORPUS: THE PUBLISHED C_m CONDITION SET, READ AS A NECESSARY CONDITION.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the fifty-fourth verdict on R1, step 4 revision 3
+# (judged commit c2bf7d7). Batch 52. EG4(e)'s pause expired on 28 October (R1149)
+# and GC3 leaves it expired, so this is a batch at the reviewer's own discretion.
+#
+# WHY THIS FILE EXISTS (BE3). This is batch 51's axis one repair later. Batch 51
+# swept WHICH MEMBERS MAKE THE PUBLISHED SENTENCE FALSE while the sentence was a
+# COUNT ("flat in two places"). R1174 found the count wrong; the repair at
+# e526a9e replaced it with a NECESSARY CONDITION, published verbatim in
+# results/R1/example/report.md, in the headers of both published CSVs, and in
+# floatfea/cli.py's TABLE_CAVEATS:
+#
+#   "A larger C_m RAISES the published utilisation of a row only where ALL THREE
+#    of these hold -- (i) section 3.3.2's interaction GOVERNS that row, because
+#    the utilisation column is the MAXIMUM over clauses and C_m enters no other,
+#    so a row governed by 3.2.4 shear is flat in C_m however large its bending
+#    term; (ii) there IS a bending term to multiply ...; and (iii) C_m is above
+#    the value at which the amplified form overtakes the simpler form ..."
+#
+# A COUNT was replaced by a UNIVERSAL, which is the same defect in the other
+# grammatical mood, and the axis nobody swept is the one this file sweeps: the
+# three conditions are evaluated AT THE ROW'S OWN STATE, because the row's own
+# state is all a reader of the published table has. governing_clause and
+# interaction_form are COLUMNS of utilisation.csv; a reader evaluates (i) and
+# (iii) by reading them.
+#
+# WHAT A PASSING SCAN MEANS. For each entry, build the member, evaluate
+# check_member at cm=cm_lo and at cm=cm_hi with every other input held, and ask
+# two questions:
+#
+#   (1) does the PUBLISHED utilisation column strictly rise?  util says RISES or
+#       FLAT.
+#   (2) do all three published conditions hold AT cm_lo, read off the columns a
+#       reader has -- (i) "3.3.2" in governing_clause, (ii) u_bending > 0,
+#       (iii) interaction_form == "amplified"?  cond_i, cond_ii and cond_iii say
+#       so per condition.
+#
+# A scan passes when every entry rules as its own row states. An entry with
+# refutes_necessity=yes is one where the published utilisation RISES while the
+# published condition set does NOT hold at the row's own state: the sentence says
+# that cannot happen. A scan that reports no refutation while any such entry is
+# present is reading the conditions at some state other than the row's, which is
+# not the state a reader of the CSV has.
+#
+# The caveat's FIRST clause -- "a LARGER C_m NEVER LOWERS the published
+# utilisation" -- is TRUE on every entry here, and that is the half that has
+# survived five corrections. No entry below is a counter-example to it.
+#
+# FIELDS. Loads are SI and tension-positive (R739). The section is the one the
+# shipped R1156 control uses: area_m2=1.3119290921390976,
+# section_modulus_m3=0.7103833648114783, torsional_modulus_m3=1.4207667296229567,
+# d_outer_m=2.5, wall_m=0.18, k_l_over_r=60.8, fy=FY_S355, e=E_STEEL. Shear,
+# torsion and moment_z_nm are zero unless the row names them. form and clause are
+# interaction_form and governing_clause AT cm_lo. Every value in every row was
+# measured at the judged commit, after the last edit to the row it supports (CP3).
+#
+# C_m's declared domain is MOMENT_REDUCTION_CM = ("-", 0.1, 2.0), so every
+# cm_lo/cm_hi pair below is a pair a configuration can actually carry. No entry
+# needs a value outside it, and no entry needs a defect injected: every
+# refutation below is the SHIPPED code behaving correctly while the SHIPPED
+# sentence describes it wrongly.
+#
+# COVERAGE AT THE JUDGED COMMIT, measured rather than asserted. Ten entries, all
+# new. The check under review is the test in
+# tests/regression/test_r1_published_artifacts.py whose name begins
+# test_R1156_the_Cm_caveat_names_the_CLAUSE. It EVALUATES 2 of the 10 --
+# entries 9 and 10 are its own two fixtures, restated here as controls -- and 0 of
+# the 8 that REFUTE the published universal. Its
+# assertions about the condition are STRING NEEDLES -- "GOVERNS that row" in
+# source, "MAXIMUM" in source, "NO COUNT OF" in source, "BENDING TERM TO
+# MULTIPLY" not in source -- which test that the sentence is PRESENT and cannot
+# test whether it is TRUE. Its three constructed controls hold the opposite side
+# of each entry below: the shear-governed control asserts "3.2.4" in governing at
+# BOTH C_m values, which is precisely the guard that keeps its fixture off the
+# configurations in this file. Measured: the fixture's torsion_nm = 5.0e8 is
+# 1.51x above 3.30811663e8, the value below which its own guard fires because
+# 3.3.2 overtakes shear at cm = 2.00.
+#
+# Entry 4 is the shipped table's own ten moving rows. Entry 3 is batch 51's entry
+# 12, which was committed at cb520c6, ONE COMMIT BEFORE the repair this batch
+# refutes.
+
+id=torsional_shear_at_lo_interaction_at_ceiling axial_n=-6.0e6 moment_y_nm=1.5e8 torsion_nm=1.65125628e8 cm_lo=0.85 cm_hi=2.00 form=simple clause=3.2.4_torsional_shear cond_i=no cond_ii=yes cond_iii=no util=RISES refutes_necessity=yes why=U_rises_0.8184711191258446_to_1.6397199836312206_inside_the_declared_C_m_domain__a_shear-governed_row_at_0.82_reaches_1.64__from_under_unity_to_64_percent_over__while_the_published_sentence_says_a_3.2.4-governed_row_is_flat_however_large_its_bending_term
+id=torsional_shear_at_lo_overtaken_just_below_the_fixture axial_n=-6.0e6 moment_y_nm=1.5e8 torsion_nm=3.30e8 cm_lo=0.85 cm_hi=2.00 form=simple clause=3.2.4_torsional_shear cond_i=no cond_ii=yes cond_iii=no util=RISES refutes_necessity=yes why=the_same_shape_1.51x_below_the_shipped_fixtures_own_torsion__this_is_the_configuration_the_new_gate_rows_own_guard_exists_to_exclude_so_the_gate_knows_the_crossover_exists_while_the_published_sentence_denies_it
+id=beam_shear_at_lo_overtaken_by_the_domain_ceiling axial_n=-6.0e6 moment_y_nm=1.5e8 shear_z_n=9.0e7 cm_lo=0.85 cm_hi=1.20 form=simple clause=3.2.4_beam_shear cond_i=no cond_ii=yes cond_iii=no util=RISES refutes_necessity=yes why=batch_51_entry_12_committed_at_cb520c6_ONE_COMMIT_BEFORE_the_repair__U_0.9662150503393355_to_0.9951911821042186__a_counter-example_already_in_the_repository_when_the_universal_was_written
+id=simple_at_lo_amplified_at_the_shipped_sensitivity axial_n=-6.0e6 moment_y_nm=1.5e8 cm_lo=0.85 cm_hi=1.00 form=simple clause=3.3.2_interaction cond_i=yes cond_ii=yes cond_iii=no util=RISES refutes_necessity=yes why=this_is_all_TEN_moving_rows_of_the_shipped_utilisation.csv__every_one_reads_interaction_form_simple_at_0.85_so_condition_iii_is_FALSE_on_the_deliverables_own_risers_including_the_headline_platform_hub4_arm_ROOT_1.71167_to_1.71365
+id=simple_at_the_domain_floor_rising_to_the_ceiling axial_n=-6.0e6 moment_y_nm=1.5e8 cm_lo=0.10 cm_hi=2.00 form=simple clause=3.3.2_interaction cond_i=yes cond_ii=yes cond_iii=no util=RISES refutes_necessity=yes why=the_whole_declared_domain_in_one_pair__U_0.8145365841867335_to_1.6397199836312206__condition_iii_cannot_be_read_as_a_property_of_a_ROW_when_the_row_is_below_the_overtake_at_the_value_it_was_published_at
+id=biaxial_moment_beam_shear_at_lo_interaction_at_hi axial_n=-6.0e6 moment_y_nm=1.0e8 moment_z_nm=1.0e8 shear_z_n=9.0e7 cm_lo=0.85 cm_hi=1.50 form=simple clause=3.2.4_beam_shear cond_i=no cond_ii=yes cond_iii=no util=RISES refutes_necessity=yes why=biaxial_bending_which_no_shipped_row_and_no_control_in_the_gate_carries__U_0.9662150503393355_to_1.1677746953881691_and_the_RESULTANT_moment_not_one_component_is_what_C_m_multiplies
+id=interaction_at_lo_simple_form_strong_bending axial_n=-6.0e6 moment_y_nm=2.0e8 cm_lo=0.85 cm_hi=2.00 form=simple clause=3.3.2_interaction cond_i=yes cond_ii=yes cond_iii=no util=RISES refutes_necessity=yes why=U_1.0788916303946126_to_2.1768273182370557__a_row_already_over_unity_doubling_with_condition_iii_false_at_its_own_state__the_bending_term_is_large_which_is_the_case_the_sentence_reads_as_covering
+id=near_zero_axial_pure_bending axial_n=-1.0e3 moment_y_nm=1.9e8 cm_lo=0.85 cm_hi=2.00 form=simple clause=3.3.2_interaction cond_i=yes cond_ii=yes cond_iii=no util=RISES refutes_necessity=yes why=the_amplifier_1_over_1_minus_f_a_over_F_e_is_essentially_1_so_amplified_is_cm_times_u_bending_alone__U_1.0045527541642008_to_2.00910831929692_exactly_doubling__the_degenerate-axial_boundary_no_shipped_row_names
+id=torsion_so_large_no_admissible_cm_overtakes axial_n=-6.0e6 moment_y_nm=1.5e8 torsion_nm=5.0e8 cm_lo=0.85 cm_hi=2.00 form=simple clause=3.2.4_torsional_shear cond_i=no cond_ii=yes cond_iii=no util=FLAT refutes_necessity=no why=the_CONTROL_for_entries_1_2_and_3_and_the_shipped_gates_own_fixture__torsion_dominates_the_maximum_over_the_whole_declared_domain_so_the_row_really_is_flat__the_sentence_is_true_HERE_which_is_why_one_configuration_cannot_establish_it
+id=zero_moment_amplified_nothing_to_multiply axial_n=-6.0e6 moment_y_nm=0.0 cm_lo=0.85 cm_hi=2.00 form=amplified clause=3.2.2_compression cond_i=no cond_ii=no cond_iii=yes util=FLAT refutes_necessity=no why=R1168s_own_case_restated_as_a_control__with_u_bending_exactly_zero_u_combined_equals_u_axial_and_the_candidate_dict_tie-break_returns_3.2.2_compression_so_condition_i_is_FALSE_too_and_the_row_is_flat_for_two_reasons_at_once
