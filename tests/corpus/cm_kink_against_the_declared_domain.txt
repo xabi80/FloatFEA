@@ -1,0 +1,94 @@
+# CORPUS: WHERE THE PUBLISHED C_m KINK FALLS, AGAINST THE DECLARED DOMAIN.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the fifty-fifth verdict on R1, step 4 revision 4
+# (judged commit dc49552). Batch 53. EG4(e)'s pause expired on 28 October
+# (R1149) and GC3 leaves it expired, so this is a batch at the reviewer's own
+# discretion.
+#
+# WHY THIS FILE EXISTS (BE3). Batch 52 swept the retired CONDITION SET. The
+# repair at 566ef94 replaced it with the quantity's CLOSED FORM, published
+# verbatim in floatfea/cli.py's TABLE_CAVEATS, in results/R1/example/report.md
+# and in the commented headers of both published CSVs:
+#
+#   "as a function of C_m the published column is EXACTLY THE LARGER OF B AND
+#    a + C_m*s ... THE RESPONSE IS NON-DECREASING: FLAT below the kink at
+#    C_m = (B - a)/s and rising above it ... flat across the whole declared
+#    domain 0.1 .. 2.0 when (B - a)/s exceeds 2.0 ... and flat at every C_m
+#    whatsoever only when s = 0"
+#
+# A count was replaced by a universal (R1174), and a universal by a closed form
+# (R1178). A closed form is the first of the three that can be refuted by a
+# member rather than by a reading, so the axis this file sweeps is the one the
+# form now rests on: WHERE THE KINK FALLS RELATIVE TO MOMENT_REDUCTION_CM's
+# declared bounds ("-", 0.1, 2.0), solved from BOTH sides of both ends (EH4).
+#
+# The sentence's own author swept the configuration the repair chose. These are
+# the configurations nobody chose: the knife edge at the ceiling, the knife edge
+# at the floor, s = 0 reached two different ways, the tension branch, the
+# biaxial resultant, D/t at its declared ceiling, a stubby section the gate has
+# no control for, and all four clause channels live at once.
+#
+# WHAT A PASSING SCAN MEANS. For each entry, build the member and evaluate
+# check_member over C_m, every other input held, and ask four things:
+#
+#   (1) CLOSED FORM. Fit B, a and s from the row's own fields and compare
+#       max(B, a + C_m*s) against the published utilisation at eleven C_m
+#       across 0.1 .. 2.0. closed_form=yes means it agrees to 1e-12 relative.
+#   (2) NON-DECREASING. 191 samples across the declared domain, consecutive
+#       pairs compared with <=. non_decreasing=yes means none fell.
+#   (3) FLAT ON THE DOMAIN. flat_on_domain=yes means the utilisation at 0.1 and
+#       at 2.0 are the SAME FLOAT, and the row's kink field says why.
+#   (4) THE TWO COLUMNS. clause_lo/clause_hi and form_lo/form_hi are
+#       governing_clause and interaction_form at 0.1 and at 2.0. Where they
+#       differ, the row is a live instance of the caveat's retraction -- those
+#       columns describe the row at ONE C_m.
+#
+# A scan passes when every entry rules as its own row states. An entry with
+# closed_form=no or non_decreasing=no REFUTES the published sentence and the
+# sentence is wrong, not the entry. An entry whose kink field disagrees with its
+# flat_on_domain field refutes the published boundary rule.
+#
+# MEASURED AT THE JUDGED COMMIT, after the last edit to the row each value
+# supports (CP3). Of these 14 entries the shipped check
+# tests/regression/test_r1_published_artifacts.py evaluates ONE -- the tension
+# row, which is its own tension_lo/tension_hi fixture -- and constructs no
+# member resembling the other thirteen.
+#
+# FIELDS. Loads are SI and tension-positive (R739). Unless a row names them,
+# the section is the one the shipped R1156 control uses:
+# area_m2=1.3119290921390976, section_modulus_m3=0.7103833648114783,
+# torsional_modulus_m3=1.4207667296229567, d_outer_m=2.5, wall_m=0.18,
+# k_l_over_r=60.8, fy=FY_S355, e=E_STEEL. Zero fields are omitted from a line.
+# kink is (B - a)/s, inf where s = 0 or the member is in tension. u_lo and u_hi
+# are the published utilisation at C_m = 0.1 and 2.0.
+#
+# flat across 0.1..2.0 with interaction_form crossing to amplified inside it
+id=kink_above_the_ceiling_flat_but_form_turns_amplified axial_n=-6000000.0 moment_y_nm=150000000.0 torsion_nm=330811679.26116157 kink=2.0000001 flat_on_domain=yes u_lo=1.6397200641973206 u_hi=1.6397200641973206 clause_lo=3.2.4_torsional_shear clause_hi=3.2.4_torsional_shear form_lo=simple form_hi=amplified closed_form=yes non_decreasing=yes
+# verdict 54's bisected threshold, re-measured against the gate's OWN section constants rather than against D and t
+id=kink_at_the_ceiling_to_4e-11_the_verdict_54_bisection_value axial_n=-6000000.0 moment_y_nm=150000000.0 torsion_nm=330811663.0070415 kink=2.0 flat_on_domain=yes u_lo=1.6397199836312206 u_hi=1.6397199836312206 clause_lo=3.2.4_torsional_shear clause_hi=3.2.4_torsional_shear form_lo=simple form_hi=amplified closed_form=yes non_decreasing=yes
+# kink 1.995: not flat, and the rise is in the last 0.005 of the domain
+id=kink_just_INSIDE_the_ceiling axial_n=-6000000.0 moment_y_nm=150000000.0 torsion_nm=329998957.00076616 kink=1.995 flat_on_domain=no u_lo=1.6356916786216769 u_hi=1.6397199836312206 clause_lo=3.2.4_torsional_shear clause_hi=3.3.2_interaction form_lo=simple form_hi=amplified closed_form=yes non_decreasing=yes
+# B == a, so the column rises from the declared floor up
+id=kink_ZERO_rises_across_the_whole_domain axial_n=-24000000.0 moment_y_nm=1000000.0 kink=0.0 flat_on_domain=no u_lo=0.11415589881902331 u_hi=0.1248715105380828 clause_lo=3.3.2_interaction clause_hi=3.3.2_interaction form_lo=amplified form_hi=amplified closed_form=yes non_decreasing=yes
+# kink 0.1: flat nowhere above the floor, the knife edge from the other side
+id=kink_just_ABOVE_the_declared_floor axial_n=-24000000.0 moment_y_nm=5866065.02156386 kink=0.10000000000000035 flat_on_domain=no u_lo=0.11690026004906412 u_hi=0.17975873513889878 clause_lo=3.3.2_interaction clause_hi=3.3.2_interaction form_lo=simple form_hi=amplified closed_form=yes non_decreasing=yes
+# kink 0.0999: the whole declared domain is above the kink
+id=kink_just_BELOW_the_declared_floor axial_n=-24000000.0 moment_y_nm=5865364.648749758 kink=0.09990000000000027 flat_on_domain=no u_lo=0.11689986505310966 u_hi=0.17975083521980983 clause_lo=3.3.2_interaction clause_hi=3.3.2_interaction form_lo=amplified form_hi=amplified closed_form=yes non_decreasing=yes
+# s = 0: flat at every C_m, and the form column still reads amplified
+id=s_is_zero_no_moment_at_all axial_n=-6000000.0 torsion_nm=300000000.0 kink=inf flat_on_domain=yes u_lo=1.4869971349193196 u_hi=1.4869971349193196 clause_lo=3.2.4_torsional_shear clause_hi=3.2.4_torsional_shear form_lo=amplified form_hi=amplified closed_form=yes non_decreasing=yes
+# s = 0 with both shear components non-zero; the gate's C_m controls all have zero shear
+id=s_is_zero_biaxial_shear_governs axial_n=-6000000.0 shear_y_n=4000000.0 shear_z_n=3000000.0 kink=inf flat_on_domain=yes u_lo=0.05367861390774086 u_hi=0.05367861390774086 clause_lo=3.2.4_beam_shear clause_hi=3.2.4_beam_shear form_lo=amplified form_hi=amplified closed_form=yes non_decreasing=yes
+# 3.3.1: the amplified form is never evaluated, so flat at every C_m
+id=tension_branch_large_bending_term axial_n=6000000.0 moment_y_nm=150000000.0 kink=inf flat_on_domain=yes u_lo=0.8145365841867335 u_hi=0.8145365841867335 clause_lo=3.3.1_interaction clause_hi=3.3.1_interaction form_lo=tension form_hi=tension closed_form=yes non_decreasing=yes
+# f_b is the resultant hypot; the gate's controls are uniaxial
+id=biaxial_moment_the_resultant_governs axial_n=-6000000.0 moment_y_nm=100000000.0 moment_z_nm=100000000.0 kink=0.9752469559207053 flat_on_domain=no u_lo=0.7691804288209938 u_hi=1.5475669339129872 clause_lo=3.3.2_interaction clause_hi=3.3.2_interaction form_lo=simple form_hi=amplified closed_form=yes non_decreasing=yes
+# s > 0 and tiny: the shape that refuted the first draft of R1178's repair
+id=tiny_bending_term_kink_five_decades_above_the_ceiling axial_n=-6000000.0 moment_y_nm=10000.0 shear_y_n=300000000.0 kink=59435.39864324273 flat_on_domain=yes u_lo=3.2207168344644517 u_hi=3.2207168344644517 clause_lo=3.2.4_beam_shear clause_hi=3.2.4_beam_shear form_lo=amplified form_hi=amplified closed_form=yes non_decreasing=yes
+# D/t = 300, the declared ceiling; over unity at both ends and the kink inside
+id=thin_wall_D_over_t_300_over_unity_at_the_floor axial_n=-1000000.0 moment_y_nm=20000000.0 d_outer_m=2.4 wall_m=0.008 kink=0.9820336429518932 flat_on_domain=no u_lo=0.18980655045526482 u_hi=0.3798756278810136 clause_lo=3.3.2_interaction clause_hi=3.3.2_interaction form_lo=simple form_hi=amplified closed_form=yes non_decreasing=yes
+# the stubby member; a different section from every control in the gate
+id=compact_stub_k_l_over_r_20 axial_n=-5000000.0 moment_y_nm=20000000.0 torsion_nm=10000000.0 d_outer_m=1.0 wall_m=0.05 k_l_over_r=20.0 kink=0.9834643252770741 flat_on_domain=no u_lo=2.3821953866100127 u_hi=4.672257416846972 clause_lo=3.3.2_interaction clause_hi=3.3.2_interaction form_lo=simple form_hi=amplified closed_form=yes non_decreasing=yes
+# all four channels live at once; no control in the gate has three
+id=shear_and_torsion_both_present_with_bending axial_n=-6000000.0 moment_y_nm=120000000.0 shear_y_n=5000000.0 torsion_nm=200000000.0 kink=1.4940115029529668 flat_on_domain=no u_lo=0.9913314232795463 u_hi=1.3174555828677195 clause_lo=3.2.4_torsional_shear clause_hi=3.3.2_interaction form_lo=simple form_hi=amplified closed_form=yes non_decreasing=yes
