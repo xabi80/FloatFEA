@@ -17,8 +17,9 @@ FloatFEA reads a **dynamic-inputs file** exported from FloatSim, builds a space-
 of the floating platform's superstructure, applies the loads with inertia relief, solves,
 and screens the member forces against **API RP 2A-WSD** as a working-stress check.
 
-**It is an indicative sizing screen, not a code case.** Every artifact it writes says so on
-its first line. The reasons are in each report's *Limitations this run does not escape*
+**It is an indicative sizing screen, not a code case.** Every artifact it writes says so at
+the top: **line 1** of both CSVs, and **line 3** of `report.md`, whose first line is its
+`# FloatFEA run report` title and whose second is blank. The reasons are in each report's *Limitations this run does not escape*
 section, and they are not small print:
 
 * the member section is a **stiffness stand-in** for a triangulated truss whose depth is
@@ -215,8 +216,25 @@ members are one group, so the group names are the body names.
 |---|---|---|---|
 | `E` | Pa | `1e9 .. 1e12` | Young's modulus |
 | `G` | Pa | `1e8 .. 1e12` | **derived, and checked for exact agreement.** The model computes `G = E / (2(1+ν))` with `ν = 0.3`; a declared `G` that disagrees is refused (§ 7.8), because a `G` the stiffness does not use would still appear in the report. |
-| `rho` | kg/m³ | `100 .. 25000` | **nominal only.** The builder back-computes an equivalent density per body so that `ρ·A` is the deck's own line mass whatever the section is. The run reports every equivalent density against this nominal. |
+| `rho` | kg/m³ | `100 .. 25000` | **nominal only.** The builder back-computes an equivalent density per body so that `ρ·A` is the deck's own line mass whatever the section is. The run reports every equivalent density, and **against two different references — see below.** |
 | `Fy` | Pa | `1e6 .. 2e9` | the assumed grade |
+
+**The equivalent density is reported against TWO references, and with a non-default `rho`
+they name different bodies.** This is worth knowing before you read either list as the other.
+
+* The **per-body findings** (§ 6.1's *Findings*) compare against the **steel constant**,
+  `7850 kg/m³`, which does **not** follow your declared `rho`. That comparison asks a
+  physical question — is this body's mass heavier than solid steel in F1's section? — and
+  the answer does not depend on what you declared.
+* ***Declared, and what became of it*** compares against **your declared nominal**.
+
+On the shipped example the two coincide, because the declared `rho` *is* `7850`. Declare
+anything else and they separate: at `rho: 7000` a reader gets **four** bodies flagged above
+steel and **five** flagged above the nominal, the fifth being `platform` at a back-computed
+`7146.0` — above `7000`, below `7850`. **Neither number is wrong and no result changes**; all
+1248 member-force rows and all 32 utilisation rows are byte-identical at either `rho`, which
+is what *nominal only* means. What changes is which list you are reading, so read the
+heading.
 
 `sections.candidates` is the section grid the sizing analyses walk — optional, needed only
 when `outputs.required_section` or `outputs.truss_sizing` is set. **Per group, ordered by
@@ -501,10 +519,12 @@ corrected values come from `floatfea/run/truss.py`, which is what `floatfea run`
 `truss_sizing: true` uses today. `results/F6b/truss_sizing.md` carries the same marker as a
 section heading, with what a reader of a triangle row should know.
 
-A second, different `SUPERSEDED` appears in the header of every current artifact:
+A second, different `SUPERSEDED` appears in **every current artifact**:
 `a generic 0.6·Fy reference stress is NOT the API bending allowable and is SUPERSEDED by the
 clause results in these columns`. That one is about an older *reference figure*, not about
-the rows beneath it.
+the rows beneath it. **Where to look differs by file**: it is a `#` header comment in both
+CSVs, and in `report.md` it is a bullet under *What the columns mean*, not a header — the
+same caveat text in all three, reached three different ways.
 
 ---
 
@@ -926,8 +946,19 @@ fourth admitted period, `T = 14 s`, is a candidate everywhere and peaks nowhere.
 
 ### 8.3 The four admitted periods
 
-`report.md`'s admissibility table (§ 6.1) lists all six computed cases and marks `T = 10 s`
-and `T = 20 s` `sensitivity only`. `T = 10 s` is also above the breaking limit
+**This is the one fixture that is a read rather than a command**, and here is the command
+anyway, so that "each is one command away" is true of all five:
+
+```bash
+.venv/Scripts/python.exe -c "import pathlib; lines=pathlib.Path('results/R1/example/report.md').read_text(encoding='utf-8').splitlines(); s=[n for n,l in enumerate(lines) if l.lstrip().startswith('| T_full')][0]; print(chr(10).join(lines[s:s+9]))"
+```
+
+It prints `report.md`'s admissibility table — the same seven lines quoted in § 6.1, which is
+where they are reproduced rather than here, so that one edit cannot leave two copies
+disagreeing.
+
+What the table says: all six computed cases are listed, `T = 10 s` and `T = 20 s` are marked
+`sensitivity only`, and `T = 10 s` is also above the breaking limit
 (`H/λ = 0.1550 > 0.1429`). The four that may govern are `12.5, 14, 15, 16.2 s`, and 12.5 is
 admitted by declaration.
 
