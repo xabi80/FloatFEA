@@ -414,6 +414,17 @@ def test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES
         "names. The column is `max(amplified, simple)`, so a larger C_m cannot lower it "
         "and does not always raise it."
     )
+    # R1168: and the SECOND clause of the same sentence needed the same treatment.
+    # "RAISES it wherever the amplified form governs" is false for a compression member
+    # with no bending term: the amplified form governs and the column is flat, because
+    # `cm * u_bending` is `cm * 0`. `docs/USER_GUIDE.md:260` already carried the
+    # qualifier and the caveat did not, so the two deliverables disagreed. The control
+    # is the zero-moment member at the foot of this test.
+    assert "WITH A BENDING TERM TO MULTIPLY" in source, (
+        "`floatfea.cli.TABLE_CAVEATS` says a larger C_m RAISES the compression "
+        "utilisation wherever the amplified form governs, with no qualifier. A member "
+        "with no moment reaches the amplified form and is exactly flat in C_m."
+    )
 
     # ---- the published sentence, in every artifact -------------------------------
     for path in ARTIFACTS:
@@ -436,6 +447,12 @@ def test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES
             f"`max(amplified, simple)`, so C_m is FLAT below the value at which the "
             f"amplified form overtakes the simple one -- the control at the foot of this "
             f"test measures that band at its own member."
+        )
+        assert "WITH A BENDING TERM TO MULTIPLY" in text, (
+            f"{path.name} says a larger C_m RAISES the compression utilisation wherever "
+            f"the amplified form governs, with no qualifier (R1168). The guide carries "
+            f"the qualifier; a published deliverable that does not disagrees with it, on "
+            f"a member with no moment -- the second control at the foot of this test."
         )
 
     # ---- and the code, one variable moved ----------------------------------------
@@ -512,4 +529,32 @@ def test_R1156_the_Cm_caveat_names_the_CLAUSE_THE_TERM_IS_IN_and_the_CODE_AGREES
         f"{compress_lo.utilisation!r} -> {compress_mid.utilisation!r}, inside the band "
         f"where `max(amplified, simple)` returns `simple` at both. If this fires the "
         f"caveat's NON-DECREASING sentence is wrong in the strict direction."
+    )
+
+    # ---- R1168: FLAT WITH NOTHING TO MULTIPLY, WHICH IS THE OTHER CLAUSE -----------
+    #
+    # The band above is not the only place the column is flat, and the caveat's second
+    # clause -- "RAISES it wherever the amplified form governs" -- was unconditional and
+    # therefore false. A compression member with NO bending term reaches the AMPLIFIED
+    # form, so the qualifier is not about which form governs: `cm * u_bending` is
+    # `cm * 0` whatever C_m is. The reviewer found it by running a configuration the
+    # repair had not chosen, which is R694's shape, and it is a zero-moment brace rather
+    # than a degenerate case. C_m is swept to the top of its declared domain here --
+    # `MOMENT_REDUCTION_CM = ("-", 0.1, 2.0)` -- so the row cannot pass by being narrow.
+    no_bending: dict[str, float] = {**common, "moment_y_nm": 0.0}
+    flat_lo = check_member(axial_n=-6.0e6, cm=0.85, **no_bending)  # type: ignore[arg-type]
+    flat_hi = check_member(axial_n=-6.0e6, cm=2.00, **no_bending)  # type: ignore[arg-type]
+    assert flat_lo.interaction_form == "amplified", (
+        f"the zero-moment member's interaction form is {flat_lo.interaction_form!r}, "
+        f"not 'amplified'. R1168 is that the AMPLIFIED form governs here and the column "
+        f"is still flat; if the simple form governs instead, this row duplicates the "
+        f"overtake band above and measures nothing new."
+    )
+    # not-a-tolerance: EXACT equality. `cm * 0.0` is `0.0` at every C_m, so these are
+    # the same float and not nearby ones.
+    assert flat_lo.utilisation == flat_hi.utilisation, (
+        f"moving C_m from 0.85 to 2.00 moved the utilisation of a member with NO moment: "
+        f"{flat_lo.utilisation!r} -> {flat_hi.utilisation!r}. There is no bending term "
+        f"for C_m to multiply, so if this fires either the amplified form has acquired a "
+        f"C_m-dependence outside the bending term or the moment is not actually zero."
     )

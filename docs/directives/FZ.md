@@ -926,6 +926,45 @@ measurement, at its verdict line, and the figure I measured myself is at my own 
 `+11 rows over 7 paths, 0 lost`. One ledger line, no hook change; `.claude/hooks/` is not
 editable inside a step commit in any case.
 
+**CORRECTED IN PLACE, 8 November 2026 (R1169, directive GE2).** The ruling above --
+*I did not work around the hook* -- stands and was right. **The reason I gave for it is
+wrong, and the figure was reproducible all along.**
+
+*What the hook actually does.* FX1 changed the clause to extract redirect TARGETS and test
+each one, precisely so that a read is not refused for naming the path. A `git show` of a
+verdict blob into a LITERAL scratchpad path is **ALLOW** -- measured by running it:
+
+    git show 66c7331:docs/reviews/R1/step-3.md > <literal scratchpad path>
+    ->  23626 lines written
+
+and `cp` of a verdict is **DENY**, because a mutating verb anywhere in a command naming the
+directory is write intent. So "a command mentioning the path reads as a write whichever
+direction the bytes travel" is false; it was true of the form the clause FX1 replaced.
+
+*What refused the command I actually ran, which is the part worth keeping.* My target was
+`$S/...`. R1107 added `UNRESOLVED = r"[$\x60]"`: a target the hook cannot RESOLVE is a target
+it cannot clear, because three matrix rows had written a verdict through a variable, a
+backtick and a dollar-paren substitution. **The refusal was real and the hook was right** --
+it just had nothing to do with `git show`, with reads, or with the directory being named.
+Spelling the path out is not a workaround; it is the hook telling me to say where the bytes go.
+
+*And the figure reproduces exactly, at the commit it belongs to (BP0).* Same probe, with
+`66c7331`'s own newest verdict as `VERDICT_TEXT`, one variable -- the stemless-dotfile
+alternative in `_SITE`, `_is_a_site` untouched:
+
+    NEW rows 2261   OLD rows 2255   gained 6   lost 0
+    distinct paths gained: 3
+        .gitattributes   <- R959, R967, R975, R1139
+        .gitignore       <- R1139
+        .gitkeep         <- R1139
+
+The reviewer's `+6 over 3` is confirmed and is now mine as well as its.
+
+*The lesson, which is the one line this entry is worth:* **I inferred a hook's rule from one
+refusal instead of reading the hook.** FM1 says do not rephrase past a refusal; it does not
+say do not read the file that issued it, and the hook's own source names over-refusing a READ
+as the mistake it has made four times.
+
 **SR-49: a heading anchor that exists in BOTH revisions duplicated 3610 lines of the report,
 and nothing in the suite would have told me.**
 *Ruling applied:* FZ rule 5 (a self-found defect is fixed) with FZ rule 7 on form -- and the
