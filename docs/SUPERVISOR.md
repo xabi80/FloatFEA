@@ -57,16 +57,37 @@ In its own worktree at the judged sha, a working-file read IS a read of the comm
 had escalated for four consecutive rounds.** The reviewer works on a named branch, never a
 detached HEAD:
 
-    git worktree add -b review/<step>-<n> <path outside the repository> <judged sha>
+    git worktree add -b review/<first 12 chars of the judged sha> <path outside the repository> <judged sha>
 
 It writes the verdict there through `scripts/write_verdict.py`, **commits it on that branch,
 and pushes that branch.** The implementer then runs:
 
-    git merge --ff-only origin/review/<step>-<n>
+    git merge --ff-only origin/review/<first 12 chars of the judged sha>
 
 **The implementer makes no commits on the work branch while a review is open, so the
 fast-forward always applies.** That is the condition the door rests on, and it is the
 implementer's to keep.
+
+### ONE REVIEWER PER JUDGED COMMIT, DETECTED BY GIT (GG2)
+
+**The branch name IS the detector, which is why it is derived from the judged sha and not
+from the step.** `git worktree add -b review/<sha12>` **fails if that branch exists
+locally**, and `git push origin review/<sha12>` **fails if it exists on origin**. Either
+failure means one thing: **a review of this commit already exists.** The reviewer stops
+there and reports it. It does not pick another name, and it does not write in the
+implementer's tree.
+
+**And the implementer stops every reviewer agent after its hand-back, before invoking the
+next.** That is the other half and it is the half that failed: the two sibling verdicts on
+`602bce8` happened because an agent was left alive after its hand-back and resumed on its
+own while a second was running.
+
+**Why this and not a new guard.** Two verdicts on one sha are siblings, not a chain, so a
+`--ff-only` of either makes the other unmergeable — and because `scripts/write_verdict.py`
+accumulates into one file, merging one would have discarded the other's text entirely.
+Nothing in the loop detected it; the ref graph was the only record that showed it. **No
+apparatus is added: the collision is detected by `git` refusing a name that is already
+taken**, which is a check that cannot rot because it is not code anyone maintains.
 
 **Why this answers the objection the escalation raised, which was a real one.** The worry was
 that `git merge --ff-only <sha>` puts the implementer's hands on the commit that gates it.
@@ -745,21 +766,24 @@ report-guard files are run AT that commit and the counts pasted in the next
 revision. State (2) is the half no verdict in this milestone had ever measured,
 because the reviewer runs at the judged commit before writing.
 
-### Corpus batches pause until 28 October (EG4(e))
+### The corpus pause is EXPIRED (EG4(e), GC3)
 
-Recorded here because it changes what a round may spend. Batches pause after F3
-step 3, except mutation work on **F4's load-mapping gate** and **EB6's
-label-provenance gate** -- the two surfaces where a miss would reach a member
-force. The coverage measurements that justified the spend are in the verdicts:
-4 of 11, then 8 of 13, then 5 of 10, with the last round's misses all outside the
-element.
+**Expired 28 Oct, left expired by GC3.** Batches are the reviewer's own call, under GA3's
+length target. A corpus finding that is not blocking under the criterion in force is a
+ledger item, as it always was.
+
+*Replaced by GG1 (`docs/directives/GG.md`). The clause this section used to carry was still
+written as live twelve days past its own date, and a reviewer read it as in force and ruled
+against it (R1193). `CLAUDE.md` § "The corpus pause EXPIRED on 28 October and was left
+expired" keeps the old text quoted, for verdicts from that window that cite it.*
 
 ### Every boundary is solved in BOTH directions (EH4)
 
 **A boundary is solved in both directions, including the two that WEAKEN a gate: the
 ceiling falls toward the clean value, and the injection rises until a clean case
-trips.** This applies from F4's load-mapping gates on; the corpus pause above
-otherwise stands.
+trips.** This applies from F4's load-mapping gates on. *(GG1: this sentence used to end
+"the corpus pause above otherwise stands". The pause is expired, so nothing is held back by
+it; EH4's scope is unchanged.)*
 
 Earned on one measurement. Corpus batch 31 solved every boundary from the side that
 makes a gate look strong -- how far the gate's ceiling may RISE, how far the

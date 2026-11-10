@@ -18,8 +18,10 @@ name: CI
 #                       published at all -- and FP1 and CZ1 (iii) both require a run at the
 #                       judged commit. So a superseded run now finishes: the allowance pays
 #                       for a run nobody reads, so that a run somebody is reading is never
-#                       voided. NOTE that `group` is unchanged, so this makes runs QUEUE
-#                       rather than run in parallel.
+#                       voided. GG3 then made the group PER-COMMIT, so runs on different
+#                       commits no longer queue behind each other: nothing is voided AND
+#                       nothing waits. GA2's push batching still applies -- the allowance
+#                       is finite and a run per commit is the price.
 #                       (R1189: the two cancelled runs this was measured on are named, with
 #                       the `gh` command that measured them, in `docs/closure/R1.md` -- not
 #                       here, because CW0 keeps unchecked claims about this repository out
@@ -50,8 +52,12 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ci-${{ github.ref }}
-  # GF3 (c). See the concurrency note in the CK0 block above.
+  # GG3: PER-COMMIT, not per-ref. A ref-scoped group serialises every run on the
+  # branch behind the one in front of it, which is what `cancel-in-progress:
+  # false` costs when the group is wide. Per-commit, runs on different commits
+  # run in parallel and no run is ever voided.
+  group: ${{ github.workflow }}-${{ github.sha }}
+  # GF3 (c), kept. See the concurrency note in the CK0 block above.
   cancel-in-progress: false
 
 # Determinism is part of the gate, not a nicety. Reduction order in BLAS depends

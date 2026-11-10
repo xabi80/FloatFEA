@@ -284,12 +284,13 @@ The clauses you need, by name, all in `CLAUDE.md` § "Step gating":
   round.** The predicate above is unaffected; what stops is the measurement.
 * **EH4** — every boundary is solved in BOTH directions, including the two that
   weaken a gate.
-* **EE1 / EG4(e)** — corpus batches are **paused** until 28 October, except mutation
-  work on F4's load-mapping gate and EB6's label-provenance gate. The recorded
-  substitute is a continuum grid over the parameter space a decision rule
-  guards, and a regeneration check on a published deliverable: in F6 step 2's
-  third round those two produced both blocking findings where a batch would have
-  been the spend. **Say in the verdict that the pause held and what you ran
+* **EE1 / EG4(e)** — the corpus pause is **EXPIRED**: expired 28 Oct, left expired
+  by GC3 (GG1). **Batches are yours to call**, under GA3's length target. Two
+  substitutes remain worth reaching for on their own merits, not as a stand-in:
+  a continuum grid over the parameter space a decision rule guards, and a
+  regeneration check on a published deliverable — in F6 step 2's third round
+  those two produced both blocking findings where a batch would have been the
+  spend. **Say in the verdict what you ran
   instead.** Everything else about the corpus is below, under § "The adversarial
   corpus is yours to write (BE3)", which is this file's own rule and not a copy
   of anything.
@@ -383,12 +384,17 @@ tools are blocked from, exactly like `docs/reviews/`:
 * It holds **test data, never test code** — one candidate per line, plus a
   header naming what the file is a corpus of and what a passing scan means.
   Nothing in it imports from `floatfea`.
-* **Add unseen entries at every review — EXCEPT WHILE BATCHES ARE PAUSED.**
-  Not a fixed set: entries the implementer has never read are the only ones
-  that measure anything. Keep the old ones; the corpus grows. **The pause and its
-  two exceptions are `CLAUDE.md` § "Corpus batches pause until 28 October
-  (EG4(e))"** — read them rather than a copy, and say in the verdict that the
-  pause held and what you ran instead. **THE RECORDED SUBSTITUTE IS NOT IN
+* **Add unseen entries at every review.** Not a fixed set: entries the
+  implementer has never read are the only ones that measure anything. Keep the
+  old ones; the corpus grows. **There is no pause — it expired 28 Oct and GC3
+  left it expired (GG1), so batches are your own call** under GA3's length
+  target. The expiry is recorded at `CLAUDE.md` § **"The corpus pause EXPIRED on
+  28 October and was left expired (EG4(e), GC3)"**, which also quotes the old
+  clause for verdicts that cite it — read it rather than a copy. *(GG1: this
+  bullet cited `CLAUDE.md` § "Corpus batches pause until 28 October (EG4(e))",
+  a heading that GF3 (e) had already replaced, so the citation resolved to
+  nothing — `grep -c "^### Corpus batches pause until 28 October" CLAUDE.md`
+  gives `0`.)* Say in the verdict what you ran. **THE RECORDED SUBSTITUTE IS NOT IN
   `CLAUDE.md` AND IS STATED HERE (R771)**, because a citation to a document that
   does not carry a rule deletes it — the same test that kept CA2 and CK2 above,
   applied one section later, where FE1's own check had missed it:
@@ -419,7 +425,7 @@ write of any kind in the implementer's working tree.**
 
 Make one on a NAMED REVIEW BRANCH and work in it (GF3 a):
 
-    git worktree add -b review/<step>-<n> <a path outside the repository> <the sha you are judging>
+    git worktree add -b review/<first 12 chars of the sha you are judging> <a path outside the repository> <the sha you are judging>
 
 Everything you need is in the commit: the diff, the tests, the plan, the previous verdict.
 Your verdict is written through `scripts/write_verdict.py`. **THAT SCRIPT COMMITS NOTHING.**
@@ -433,12 +439,26 @@ stamps the anchor line, prints what it wrote, and stops. There is no `git add`, 
 review branch and push that branch. You never commit in the implementer's tree.**
 
     git add docs/reviews/<milestone>/step-<k>.md        # and tests/corpus/, if you wrote there
-    git commit                                          # on review/<step>-<n>, in YOUR worktree
-    git push origin review/<step>-<n>
+    git commit                                          # on review/<sha12>, in YOUR worktree
+    git push origin review/<sha12>
 
-The implementer then runs `git merge --ff-only origin/review/<step>-<n>`, which moves a ref
+The implementer then runs `git merge --ff-only origin/review/<sha12>`, which moves a ref
 and cannot alter a byte of what you wrote. **This is why the branch must be NAMED**: a
 detached HEAD has nothing to push, which is the whole reason the old escalation existed.
+
+**IF EITHER COMMAND FAILS BECAUSE THE BRANCH ALREADY EXISTS, A REVIEW OF THIS COMMIT ALREADY
+EXISTS. STOP AND REPORT IT (GG2).** `git worktree add -b review/<sha12>` fails on a branch
+that exists locally; `git push origin review/<sha12>` fails on one that exists at origin.
+**That failure is the detector and it is the whole mechanism** -- do not pick another name,
+do not add a suffix, and do not write in the implementer's tree. Say in your hand-back that
+a review of this sha already exists and stop.
+
+**Why it is the branch name and not a guard.** Two verdicts on one sha are SIBLINGS, not a
+chain: a `--ff-only` of either makes the other unmergeable, and because
+`scripts/write_verdict.py` accumulates into one file, merging one discards the other's text
+entirely. It happened on `602bce8` -- two reviewers, both PASS, neither aware of the other,
+and the ref graph was the only record that showed it. **No new apparatus was added for this
+(FK2/EK2): `git` refusing a name that is already taken is a check nobody has to maintain.**
 
 **Still state in the verdict which door you used**, and the answer should now always be this
 one. If you ever find you cannot use it, that is a finding about the procedure and it goes to
