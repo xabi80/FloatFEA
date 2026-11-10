@@ -1,4 +1,170 @@
 # Review — R1 step 4 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: 602bce8d84745a71bb80b36c52a735aaa97f3ad4
+**Reviewed commit: `602bce8d84745a71bb80b36c52a735aaa97f3ad4`.**
+Verdict: PASS
+Scope: **R1 step 4 â€” the EQ0 look at closure commit `602bce8`, which answers verdicts 56 and 57, PLUS the CI conclusion at `8985a0a` that I could not take when I ruled.** No new report revision exists, so this is an ES0 interim check and **counts against no round**; it judges a commit written after the last reviewed round, so under EB4 it **counts against no step's rounds** either. **Step 4 stays CLOSED (DD1) and R1 stays CLOSED (GF2) â€” this reopens neither, and no `Closes:` line (FK1).** Ruled under **FR1 with EZ0**. **GE3: `R835: unchanged, R2`. Not re-measured.** **The HOLD of verdict 56 is DISCHARGED: R1185 is answered, measured, and answered beyond the condition.**
+Tests: **284 passed, 0 failed AT `602bce8`, MY OWN RUN, in a `git worktree` of my own (FV2), `-p no:randomly`** â€” the module the diff touches, the four root guards, and `tests/verification/rung3/test_closure_evidence_exists.py`, the regression test that reads the deliverable this diff edits. **That reconciles the commit's own FV1 figure exactly: 284 + 470 = 754**, and 470 is the `tests/unit` count I measured at `8985a0a`. **I did NOT re-run the whole suite and I say why rather than leaving it silent**: the entire `tests/` delta from `8985a0a` is one docstring in one file, and the gate assertion it surrounds is byte-identical â€” measured below, not assumed.
+CI: **THE RUN AT THE COMMIT I JUDGED HAS CONCLUDED, AND THERE IS NO RED BEYOND THE EIGHT.** Verdict 56 recorded `8985a0a` as `pending` with zero jobs and left the condition open; it is now closed by measurement rather than by expectation.
+
+```
+claim  the judged commit's own concluded run, job by job and step by step
+cmd    gh run list --commit 8985a0ae223a030f5d1468ca8c1e173909959083 ; then
+         gh api .../actions/runs/42762822199/jobs
+out    run 42762822199, completed / failure
+         the verification ladder        SUCCESS   <- all six rungs
+         lint, unit and guards          failure
+           actionlint, ruff, black --check, mypy, unit tests   ALL success
+           guards and meta-tests        FAILURE: 8 failed, 1339 passed in 497.94s
+         CI determinism (both)          skipped by their own condition
+cmd    the FAILED list from that job's log, against my own eight
+out    test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+       test_the_guard_survives_the_state[baseline | non_numeric_step_suffix |
+         superscript_digit_step_number | draft_suffix_beside_a_step_report |
+         step_number_is_the_empty_string |
+         verdict_amended_after_the_commit_the_report_answers |
+         zero_padded_step_number]
+       only-in-CI: none.  only-local: none.  SET-IDENTICAL to my run and to a780a9d
+rule   CA2 -- a red CI is a HOLD; CZ1 (iv) -- any red failing the FS1/FT1 predicate
+judge  **exactly the eight and nothing else. Every one satisfies the predicate (verdict
+       56 ruled them per id), so CZ1 (iv) does not arise and CA2 is not reached.**
+       `guards and meta-tests` RAN rather than being skipped behind an earlier red,
+       which is what CZ1 (iii) exists to see
+```
+
+Door (FV2/GF3 a): **the door worked and the ref graph proves it â€” `review/R1-closure-56` is an ancestor of `F3`, fast-forwarded in, nothing of mine rewritten.** This entry is written the same way on `review/R1-closure-58`, from `602bce8`, in my own worktree. **The implementer's working tree was never written by me.** R1195's two disclosures stand as written.
+
+## Carried
+
+**Every item of verdicts 56 and 57, re-measured rather than read.**
+
+* **R1185 (the one blocking item) â€” ANSWERED, AND BEYOND THE CONDITION.**
+
+```
+claim  section 8 now says two, names the other two struck rows' sources, and its
+       derivation reproduces its table
+cmd    git show 602bce8:docs/closure/R1.md | sed -n '908,935p' ; then the two counts
+out    :914  "two of them are closed by GF3 -- R1149 by GF3 (e) and R1181's
+              substantive half by GF3 (b) -- and the other eight carry"
+       :917  "the FV2 door is item 4, and R1181's prose half is from verdict 55's
+              Closure items table. So the derivation is 10 - 2 + 2 = 10"
+       rows 10   struck 4
+       the only surviving "ten - three - one + two = 8" is inside the dated block
+       quote that records what the TAG's copy says
+judge  **the condition is met at every clause**, and the arithmetic now computes
+```
+
+  **And the half I did not ask for is the better half.** The tag is **not** moved â€” *"a tag rewrite is a force-push by another name, and that needs Xabier"* â€” and Â§ 8 instead carries a dated block quote stating what the `R1` tag's copy says and that this commit corrects it. **That is the right call and I would not have thought to ask for it**: a checkout of `R1` now has a pointer instead of a silent divergence, and no standing constraint was broken to get it.
+
+* **R1186 â€” CORRECTLY NOT FIXED, and I verified the restraint rather than trusting it.** This is the one place the repair could have gone wrong, because the commit edits the gate's own file.
+
+```
+claim  the gate assertion and the workflow value, across the repair
+cmd    git show <sha>:tests/test_ci_workflow_is_wellformed.py, the function body;
+         and git show <sha>:.github/workflows/ci.yml for the group and the setting
+out    8985a0a  assert concurrency.get("cancel-in-progress") is False   (line 21)
+       602bce8  assert concurrency.get("cancel-in-progress") is False   (line 26)
+       group: ci-(github.ref) and cancel-in-progress: false -- identical in both
+       the whole diff in that file is inside the docstring; the line number moved
+       only because the docstring grew
+judge  **the assertion is byte-identical and the job-level hole was NOT closed by
+       widening it.** EK2 respected -- a guard is repaired or deleted, never extended --
+       and R1186 stays routed to R2 as verdict 56 routed it. **So this closure commit
+       changes neither a gate nor a tolerance, and EQ0's review finds nothing in it**
+```
+
+* **R1187 â€” CLOSED BY MEASUREMENT, which is the only way it could have closed.** Its open half was that the inverted gate and the regenerated golden *"have never run in CI at any commit"*. They have now: both are inside the `guards and meta-tests` step's **1339 passes** at `8985a0a`, and rung 6 ran the whole of `tests/regression` green at a commit containing `438f2db`. On a machine neither side controls.
+* **R1188 â€” first half ANSWERED, remainder Xabier's as stated.** The workflow comment now carries *"NOTE that the group is unchanged, so this makes runs QUEUE rather than run in parallel"* â€” the trade recorded where the setting is, which was the closing condition. The group question is not answered and was never the implementer's to answer. R2.
+* **R1189 â€” ANSWERED AT BOTH SITES, and the repair caught a defect of its own class inside itself.** Both source-tree sentences are cut back to the rule and point at `docs/closure/R1.md`. **The pointer was false when first written and the commit says so**: `grep -c "b286e01" docs/closure/R1.md` was `0`. It is now `4`, with both voided runs carrying their own `gh` command and a one-variable `cell` each (`:287-297` for `4750f07`, `:311-320` for `b286e01`), and the artifact holds `9` `gh run` commands. **I verified that the pointer resolves rather than accepting that it does.** The second half is closed differently from how I asked, **the departure is named rather than smuggled, and it is stronger than what I asked for** â€” I wanted the GC2 ancestor rule cited; instead run `42761104562` at the tag's own sha has since concluded, **`the verification ladder` SUCCESS on all six rungs**, so no ancestor rule is needed.
+* **R1192 â€” ANSWERED.** Both the step-5 clause and the *"no base case"* bold are struck in place at `docs/digests/2026-11-09.md:157-159` with a dated note. My census at `602bce8` leaves three matches and all three are GF2's own correction notes rather than live assertions.
+* **R1194 â€” ANSWERED, and re-measured rather than copied**, which the commit says in those words. It is my finding against my own entry and it is recorded as such.
+* **Verdict 55 condition 5 â€” DISCHARGED at the tag commit's own sha**, not by an ancestor argument: run `42761104562`, ladder SUCCESS, rungs 1, 2, 3, 6, 4 and 5 all `success`. That condition had been open since verdict 55.
+* **R1190, R1191, R1193, R1195, R1186 and R1188's remainder â€” to R2 or to Xabier, unchanged.** None is the implementer's to close inside R1: R1193 needs one line of authorisation and R1191 needs an invocation note.
+* **The three pathspecs, re-diffed at the new commit:** `floatfea/tolerances.py` empty; `tests/conftest.py` and the double-star pathspec empty, with `git ls-files` giving `tests/conftest.py`; `.claude` and `docs/SUPERVISOR.md` empty. **No `floatfea/` change anywhere in this commit.**
+
+## Findings
+
+**NONE BLOCKS. Nothing in the repair is a defect in `floatfea/`, a tolerance, a gate assertion or a red test.** Two ledger rows, both FR1's third class, both introduced by the repair, and both the species `CLAUDE.md` names under CP2 â€” *the prose written around a fix inherits none of the discipline being applied to the fix*.
+
+### R1196 (ledger). THE NEW BLOCK QUOTE SPLIT A PRE-EXISTING SENTENCE ACROSS ITS OWN BOUNDARY, ORPHANING THE HALF THAT CARRIES THE DISTINCTION.
+
+`docs/digests/2026-11-09.md:170-171` at `602bce8`:
+
+```
+claim  whether the C89 sentence survives the inserted quote intact
+cmd    git show 602bce8:docs/digests/2026-11-09.md | sed -n '170,171p'
+out    170: > ... It is also not the C89 shape FF0 was adopted for: C89 was a guard failing
+       171: *false*; these eight fail *true*.
+cell   one variable -- the inserted block quote. At 8985a0a that sentence was a plain
+       paragraph line and so was its continuation; the wrap across `*false*`
+       pre-existed and was harmless because both halves were in one paragraph
+rule   R1192's repair, which inserted the quote at this point
+judge  **line 170 is INSIDE the quote and line 171 is OUTSIDE it**, so the quote ends
+       mid-sentence and `*false*; these eight fail *true*.` renders as a detached
+       fragment. The clause it orphans is the one saying the eight reds are NOT the
+       C89 shape -- a guard failing *false* against guards failing *true* -- which is
+       the sentence that justifies the tree being red by eight at all. It also now
+       reads as part of a quote dated to R1192, which it is not
+```
+
+**Why it does not block.** A digest is reporting (FZ), so this is FR1's third class. No number is wrong and nothing a reader would compute changes. *Closed when* line 170's sentence is moved out of the quote, or line 171 is given the quote prefix. One character.
+
+### R1197 (ledger). THE PARAGRAPH IMMEDIATELY BELOW IT STATES, IN THE PRESENT TENSE, THE SETTING THIS COMMIT SERIES REVERSED.
+
+`docs/digests/2026-11-09.md:173-174` at `602bce8`: *"The workflow's concurrency setting supersedes rather than finishes"*.
+
+```
+claim  what the workflow's concurrency setting does at the commit publishing that
+       sentence
+cmd    git show 602bce8:.github/workflows/ci.yml | grep -n cancel-in-progress
+out    55:  cancel-in-progress: false      -- a superseded run FINISHES
+rule   BP0 -- when a decision rule changes, every figure citing the old rule is
+       regenerated or withdrawn in the SAME commit
+judge  **true when written at 4e5d57e, false from d8ee517 onward, and unmarked at
+       602bce8** -- in the same file whose later block documents the reversal, and
+       four lines below a sentence this same commit struck for exactly this reason.
+       It is R1192's species one paragraph away, and the strike-in-place remedy is
+       already proven in this file
+```
+
+**Why it does not block.** Same class as R1196. **I record it because it is the third instance in one file of one shape**, and because the needle that finds it is the one R1192's own note describes: the sentences live across `docs/`, not in the file a directive named. *Closed when* the clause is struck in place like its two neighbours, or dated to the setting it describes.
+
+## Tolerances touched
+
+**None.**
+
+```
+cmd    git diff 8985a0a..602bce8 --numstat -- floatfea tests/conftest.py .claude
+         docs/SUPERVISOR.md
+out    (empty)
+cmd    git ls-files -- tests/conftest.py
+out    tests/conftest.py
+cmd    git diff 8985a0a..602bce8 --stat -- results examples scripts data artifacts
+out    (empty)
+judge  no tolerance, no counter, no conftest, no module and no published engineering
+       deliverable. The only `tests/` change is one docstring, and the assertion it
+       surrounds is byte-identical across the repair
+```
+
+## Next step opens when
+
+**NOTHING IS OPEN THAT THIS LOOP CAN CLOSE. The HOLD is discharged and R1 is closed.**
+
+1. **R1196 and R1197** â€” two characters and one strike, in whatever commit next touches that digest. Neither blocks and neither is worth a commit of its own.
+2. **CZ1 (ii) and (iii) for `602bce8`** go to **R2's first report's Carried section**, where EK3 routes them and where the commit itself says they go. Its run `42771308680` was `in_progress` when I ruled; **it is the first run in this window that started immediately rather than queueing, because nothing was ahead of it â€” R1188's cost appearing and disappearing on one branch inside three hours.**
+3. **To R2, by name:** R1186 (the job-level hole â€” **not to be fixed by widening that assertion**, EK2), R1188's group question, R1190, R1191, R1193, R1195, and section 8's ten rows. **R1193 and R1191 need Xabier rather than a round**: one line extending GF3 (e) to the corpus-pause clause's other two copies, and one line in the next reviewer invocation saying the instruction files moved.
+4. **R2's first report answers verdicts 55 through 58** and the eight go green. **R1190 is the warning that the Answers header is the load-bearing part**, measured: a newer report *commit* does not clear them, it adds a ninth.
+
+**On the criterion.** I ruled under FR1 with EZ0 and I am not asking for it to move. **The honest test this round is R1196**: under CZ0 (a) as amended by EZ0 it is a defect in a published deliverable and I would have blocked on it; under FR1 it is report prose in a digest and cannot be given the silently-wrong-result sentence. **I say which way I would have gone rather than smuggling it**, which is what FR1's last sentence asks for, and it cost this boundary nothing.
+
+**On the schedule.** FW0's 10 November holds. R1 closed on 9 November, full scope, FT2.7 included, and the repair of its one blocking finding landed the same evening.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 4 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: 8985a0ae223a030f5d1468ca8c1e173909959083
 **Reviewed commit: `8985a0ae223a030f5d1468ca8c1e173909959083`.**
 Verdict: HOLD
