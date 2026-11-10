@@ -21,6 +21,16 @@ Each file records where its text came from. **This is not uniform and the record
 * `FM.md`, `FN.md`, `FO.md`, `FP.md`, `FQ.md`, `FR.md`, `FS.md`, `FT.md`, `FU.md`,
   `FV.md`, `FW.md`, `GB.md`, `GC.md` — **verbatim** from the directive message.
   (`GB.md` was listed twice here until GC's commit — R1152.)
+* `GG.md` — **verbatim** from the directive message. Issued by Xabier, 2026-11-10.
+  Its own file, as its `Record:` line asks. The R1 tidy-up, and **the last directive before
+  R2 opens**: GG1 took the dead corpus-pause clause out of both reviewer instruction files
+  and fixed the `CLAUDE.md` heading that no longer resolved (R1193), GG2 made the review
+  branch name derive from the judged sha so that `git` itself refuses a second review of one
+  commit, GG3 made the CI concurrency group per-commit, and GG4 parked the milestone.
+  **GG1–GG3 are one `process:` commit, which GG asks for and SR-72 did not permit for GF3**
+  — measured rather than assumed: no test reads the concurrency `group`, only
+  `cancel-in-progress`, which GG3 keeps, so no `tests/` change was forced into a commit
+  carrying the reviewer's instruction files.
 * `GF.md` — **verbatim** from the directive message. Issued by Xabier, 2026-11-09.
   Its own file, as its `Record:` line asks. It is the directive that **closes R1**: GF1
   measured that `docs/milestones/R1.md` lists no step 5, GF2 supplied the base case for the
