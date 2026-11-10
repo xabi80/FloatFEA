@@ -2,6 +2,95 @@
 Reviewed commit: 8985a0ae223a030f5d1468ca8c1e173909959083
 **Reviewed commit: `8985a0ae223a030f5d1468ca8c1e173909959083`.**
 Verdict: HOLD
+Scope: **ADDENDUM to the interim check at `8985a0a`, same tree, same round, no new report revision â€” so it counts against no round (ES0) and carries no `Closes:` line (FK1).** The verdict above is unchanged: HOLD on R1185, eight other findings, step 4 CLOSED (DD1), R1 CLOSED (GF2). **This entry exists because I found one thing AFTER writing it, and it is a correction to the verdict above, not to the work.** Two disclosures and one measurement, each MINE.
+Tests: unchanged from the entry above and not re-run: **4393 collected, 8 failed, 4385 passed, 0 skipped at `8985a0a`**, my own runs. Nothing in the tree moved between the two entries.
+
+## Carried
+
+* **Everything in the entry above, unchanged.** R1185 still blocks and its closing condition is unchanged. R1186 to R1193 stand as written.
+* **One sentence of my own above is CORRECTED here, and it is the one about my own door.**
+
+## Findings
+
+### R1194. THE FV2 ESCALATION'S PREMISE WAS FALSE BY MEASUREMENT, AND THE EVIDENCE WAS THREE MERGED BRANCHES AT `origin` IN THIS MILESTONE. IT IS A REVIEWER-SIDE FINDING AND IT IS NOT THE IMPLEMENTER'S.
+
+My entry above says *"Fifth round of escalation ended"*, and `docs/closure/R1.md` records the door as *"ruled after four consecutive rounds of escalation"* under which *"the reviewer committed in the implementer's working tree because nothing else could move `F<n>`"*. **I checked that premise after writing it, and it does not hold.**
+
+```
+claim  whether a named review branch had ever moved a verdict onto F3 before GF3 (a)
+cmd    git ls-remote origin "refs/heads/review/*"
+out    e274e4c  refs/heads/review/R1-closure-56     <- mine, today
+       1a942b1  refs/heads/review/r1-step3-v40
+       d40f8c6  refs/heads/review/r1-step3-v41
+       ae96a38  refs/heads/review/r1-step3-v42
+cmd    git merge-base --is-ancestor <each> F3
+out    all three: ANCESTORS -- merged. "review: R1 step 3 interim check at 503b256",
+       "... at 609f9ac", "... at f87e087", dated 29 October
+cmd    grep -c "FV2 gives me no other door" on each step's verdict file
+out    docs/reviews/R1/step-4.md   3
+       docs/reviews/R1/step-3.md   0
+cmd    grep -n "review/r1-step3" docs/reviews/R1/step-3.md
+out    :4934  "wt-verdict (branch review/r1-step3-v34, where this file is written)"
+       :5283, :5450  the same, two more rounds -- the step-3 reviewer recorded the door
+                     it used, three times, under its own "WHERE I WORKED (FV2)" heading
+cell   one variable -- the step. Same repository, same FV2 text, same `write_verdict.py`
+rule   the escalation's own words: "FV2 provides no other door"
+judge  **the door existed, was used at least three times in the PREVIOUS STEP of this
+       same milestone, and all three verdicts reached `F3` by it.** The step-4 reviewers
+       then escalated it as unsolved for four consecutive rounds and wrote in the
+       implementer's checkout instead. **That is SR-70's shape exactly** -- an escalation
+       of a question the repository had already answered -- except that this time the
+       answer was in the previous step's own verdict file, written by a reviewer
+```
+
+**GF3 (a) is still the right ruling and I am not asking for it back:** it makes the door mandatory, documents the fast-forward, and names the ref-graph property that makes the separation structural rather than behavioural. **What is wrong is the history around it**, and three places carry it: my entry above (*"fifth round of escalation ended"*), `docs/closure/R1.md` Â§ *How a verdict reaches the branch*, and `docs/SUPERVISOR.md`'s retained escalation block. **Under FR1 none of this blocks** â€” no number is wrong and no input is used other than as declared, and a verdict is not a published deliverable. **It is recorded because the lesson is the one FP0 and GC2 were both built for: read the record before escalating**, and because the cost was real â€” step 3's L39 was a verdict stranded on an unmerged `review/` branch, which is the door's known hazard, and the step-4 rounds paid for the escalation instead of for the hazard.
+
+*Closed when* the sentence in `docs/closure/R1.md` says the door had been used in step 3 and was escalated anyway â€” one clause, in the same follow-on commit as R1185. **Mine to find, not yours to apologise for.**
+
+### R1195. TWO DISCLOSURES ABOUT MY OWN DOOR, BECAUSE THE SENTENCE I WROTE ABOVE IS WIDER THAN WHAT I MEASURED.
+
+My `Door` line above says *"Nothing of mine was written in `C:/dev/floatfea`"*. **That is true of its WORKING TREE and not of its `.git`, and the distinction is the one FV2 actually turns on.** Stated rather than left for someone to find:
+
+```
+claim  what this review wrote inside the implementer's repository
+cmd    git status --porcelain in C:/dev/floatfea, before and after
+out    (empty) both times -- the WORKING TREE is untouched, which is what FV2's two
+       recorded failures were about
+cmd    what nevertheless reached its `.git`
+out    (i)  four `git worktree add` registrations -- mine; the door itself needs them
+       (ii) one `git fetch origin review/R1-closure-56`, which I ran to verify the
+            fast-forward applies. **AVOIDABLE**: the same ancestry is checkable in my
+            own worktree, since `8985a0a` is my commit's parent
+rule   FV2 -- "never run `checkout`, `reset`, or any write of any kind in the
+       implementer's WORKING TREE"
+judge  **no breach, and the wider sentence I wrote was imprecise.** `git worktree add`
+       writes repository metadata and the door GF3 (a) rules cannot be used without it,
+       so "the reviewer writes nothing in the implementer's repository" is not achievable
+       as stated anywhere; "nothing in its working tree" is, and is what matters
+```
+
+**And the accumulation, which is mine and my predecessors' litter rather than a defect:** `git worktree list` in the implementer's checkout shows **eleven** reviewer worktrees registered under the session scratchpad, four of them mine and seven from earlier invocations. `git worktree prune` would clear the dead ones and it is a write I will not make. *Closed when* someone with the implementer's tree runs `git worktree prune`, or FV2 says who may.
+
+## Tolerances touched
+
+**None.** Nothing in the tree moved between this entry and the one above; the diff is empty by construction.
+
+## Next step opens when
+
+**Unchanged from the entry above, plus one clause.** R1185 is still the one blocking item and still one sentence. **Add to the same follow-on commit:** R1194's clause in `docs/closure/R1.md` Â§ *How a verdict reaches the branch* â€” that the door had been used three times in step 3 and was escalated anyway. **R1195 is mine and needs nothing from you.**
+
+**And one thing I will not do.** My entry above is pushed on `review/R1-closure-56` and I am not force-pushing to fix a sentence in it â€” `CLAUDE.md` lists force-push among the standing constraints that need Xabier. **An addendum is the sanctioned way to correct a verdict**, so this is it, and the uncorrected sentence stays visible above with this entry naming it. That is the same choice step 3's L39 reached from the other side.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R1 step 4 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: 8985a0ae223a030f5d1468ca8c1e173909959083
+**Reviewed commit: `8985a0ae223a030f5d1468ca8c1e173909959083`.**
+Verdict: HOLD
 Scope: **R1 step 4 â€” ES0 INTERIM CHECK (counts against no round) AND the EQ0 review of `d8ee517`'s gate change (counts against no step's rounds, EB4).** No new report revision exists: the newest is step 4 revision 4 at `dc49552`, which verdict 55 reviewed. **Step 4 stays CLOSED (DD1) and R1 stays CLOSED (GF2); this verdict reopens neither, and `--closes` is correctly absent (FK1).** Written with `--interim` (FS2). **Ruled under FR1 with EZ0** â€” see `## Which criterion I ruled under`. **GE3: `R835: unchanged, R2`. Not re-measured.** EU1 does not arise (no tolerance value and no declared counter moved), but the adversarial case was run anyway, because the diff moves a *gate assertion* and the configuration a diff chooses is the only one it demonstrates. **GA3's 150-line target is OVERRUN at 403 lines and I say so rather than trimming the evidence**: the overrun is six injection and probe cells, a four-run controlled pair on CI itself, the golden measured against live collection in both directions per root, a full census of live "step 5" assertions, the four-way partition of the suite, and nine findings each carrying its own closing condition. GA3 says the target does not limit what I may rule.
 Tests: **4393 collected, 8 failed, 4385 passed, 0 skipped AT THE JUDGED COMMIT `8985a0a`, MY OWN RUNS, in EI0's two halves, in `git worktree`s of my own (FV2), `-p no:randomly`, against a venv of my own installed from my worktree** (`import floatfea` resolves inside it, measured). Main half **3961 passed, 0 failed, 0 skipped in 3132.39s (0:52:12)**, with the two known benign warnings (a `numpy` deprecation site and the `RuntimeWarning: overflow encountered in dot` that `rung1`'s `orient_norm_overflow` corpus entry exists to raise). **And I partitioned it four ways and ran every part separately as well, which is how I know the 3961 is not one number covering a hole**: `tests/unit` **470 passed**, `tests/verification` (rungs 1 to 6) **2099 passed, 0 failed in 143.09s**, and the root guard files less the three report-parametrised ones **915 passed**. `470 + 2099 + 477 + 1347 = 4393` by collection, and `1347 - 432 = 915`, so the partition closes. **NO RUNG IS RED, so nothing here is a STOP**, and I measured the ladder myself rather than inferring it from a job that had not finished. Order-independence spot-checked with pytest-randomly ENABLED: `tests/unit` + `rung5` **557 passed**.. The three report-parametrised files **8 failed, 424 passed** of `432`: `test_report_carried.py` + `test_report_guard_states.py` **8 failed, 395 passed in 91.23s**, `test_report_numbers_are_sourced.py` **29 passed**. **All eight reds are EG3 state (2), ruled per id against the FS1/FT1 predicate below, and CI's own eight at `a780a9d` are the same set.** **CI at the judged commit: UNAVAILABLE -- the run EXISTS, is `pending`, and has created ZERO jobs. A run that has not finished is not a pass, and I record it as that rather than skipping it (CK2's third state by a different cause: queued, not unpaid). It is not red. R1187 has the full trace, the partition that says exactly which two files CI has never run, and the reason it is queued (R1188).** The only CI red in the window is `guards and meta-tests` at `a780a9d` -- `8 failed, 1339 passed` -- and all eight satisfy the FS1/FT1 predicate per id by my own measurement, so CA2 is not reached and CZ1 (iv) does not arise. Lint at the judged commit, in my own clean worktree: `ruff` `All checks passed!`, `black --check` `128 files would be left unchanged.`, `mypy` `Success: no issues found in 45 source files`.
 Door (FV2/GF3 a): **I used the new door and it worked.** `git worktree add` at `8985a0a`, `git switch -c review/R1-closure-56`, the verdict written there through `scripts/write_verdict.py`, committed on that branch and pushed. **Nothing of mine was written in `C:/dev/floatfea`** â€” there I ran only read-only `git` and `gh`. Fast-forward it with `git merge --ff-only origin/review/R1-closure-56`. Every injection, probe and control below ran in a second worktree of mine. **One thing about GF3 (a) that is not a finding against the work and is a finding about the procedure: R1191.**
