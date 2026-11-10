@@ -1,0 +1,51 @@
+# CORPUS: JOB-SCOPE shapes `.github/workflows/ci.yml` must gate on, as opposed
+# to the workflow-scope keys the shipped check reads.
+#
+# Owner: the reviewer. Test DATA only -- nothing here imports from floatfea and
+# nothing here is test code. One candidate per line, whitespace-separated
+# key=value fields. Written at the fifty-eighth verdict on R1, reviewing the
+# follow-on closure commit 602bce8 (batch 54).
+#
+# WHY THIS FILE EXISTS (BE3). `tests/test_ci_workflow_is_wellformed.py` asserts
+# CK0's and GF3 (c)'s claims as properties of the PARSED document, which is the
+# right form and was earned by a real defect (two `if:` keys on one job, the
+# later silently kept). Every one of its eight assertions reads either a
+# WORKFLOW-level key -- `_doc().get("concurrency")` -- or ONE NAMED JOB. Nothing
+# in it reads the job-scope equivalents, and GitHub honours `concurrency` and
+# `needs` at job scope as well. R1186 measured one instance of this. These six
+# are mutations of the shipped document that nobody on either side of the loop
+# had written down, and five of them leave all eight assertions green.
+#
+# THE SUBSTRING MISS IS THE ONE WORTH READING TWICE.
+# `test_the_determinism_jobs_run_only_by_hand` is `"workflow_dispatch" in
+# condition`. An `if:` of `always() || github.event_name == 'workflow_dispatch'`
+# CONTAINS that substring and is TRUE on every push, so the gate passes while
+# the thing it exists to forbid -- twenty-two minutes of determinism legs on a
+# push that moved no render, no kernel pin and no environment -- is live. A
+# needle that tests for the presence of a token cannot test the token's effect.
+#
+# FORMAT
+#   id=<name> state=<the mutation, applied to the parsed document> require=<pass|fail>
+#   measured=<what the shipped file did at 602bce8>
+#
+#   require=fail  the shipped check must go red -- the mutation defeats a claim
+#                 the workflow's own comment block makes
+#   require=pass  the state is legitimate and nothing may redden
+#
+# WHAT A PASSING SCAN MEANS. For each entry, apply the mutation to the parsed
+# document, write it back, and run `tests/test_ci_workflow_is_wellformed.py`.
+# A passing scan means every entry's outcome agrees with `require`. IT DOES NOT
+# MEAN CI EXERCISES THE ENTRY: the mutations are never pushed.
+#
+# MEASURED AT 602bce8 by the reviewer, in a worktree of its own, each mutation
+# applied through `yaml.safe_load` / `yaml.safe_dump` with every other key held.
+# THE CONTROL IS THE ROUND TRIP ITSELF: the unmutated document, dumped and
+# reloaded, gives `8 passed` -- so the dump is not what moves an outcome below.
+# COVERAGE AT 602bce8: 1 of 6 caught.
+
+id=determinism_job_level_concurrency_cancel_true state=jobs.determinism.concurrency.cancel-in-progress=true, workflow-level key left false require=fail measured=8 passed -- MISSED. The shipped assertion reads `_doc().get("concurrency")` only, so GF3 (c)'s pin is defeated at job scope. R1186, confirmed independently
+id=ladder_job_level_concurrency_cancel_true state=jobs.ladder.concurrency.cancel-in-progress=true, workflow-level key left false require=fail measured=8 passed -- MISSED. R1186 named the determinism job; the ladder job is the one whose cancellation voided a published result twice, at 4750f07 and b286e01
+id=determinism_chained_behind_checks state=jobs.determinism.needs=[checks] require=fail measured=8 passed -- MISSED. `test_the_ladder_is_not_chained_behind_the_guards` reads `_doc()["jobs"]["ladder"]` and no other job, so the independence it asserts for the ladder is unasserted for every other job
+id=determinism_if_becomes_always state=jobs.determinism.if=always() require=fail measured=1 failed -- CAUGHT by test_the_determinism_jobs_run_only_by_hand. The only one of the six the shipped check sees
+id=determinism_if_keeps_the_substring_but_always_true state=jobs.determinism.if=always() || github.event_name == 'workflow_dispatch' require=fail measured=8 passed -- MISSED. The needle is a substring test and the substring is present; the condition is true on every push
+id=determinism_verdict_if_keeps_the_substring_but_always_true state=jobs.determinism_verdict.if=always() || github.event_name != 'workflow_dispatch' require=fail measured=8 passed -- MISSED. Same needle, the negated comparison, and the loop covers this job name too
