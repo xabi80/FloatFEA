@@ -1252,6 +1252,18 @@ reason is that ANY commit touching a closed report before a newer verdict exists
 guard whatever it writes -- reverting content cannot help. EK3 already routes post-closure
 prose to "the next report or `docs/closure/**`"; this took the second.
 
+**SR-70 — CLOSED by GF3 (b), 9 November 2026, AND THE ESCALATION WAS MINE TO NOT HAVE MADE.**
+GC2 had already ruled this, three days before I raised it: *"for a commit whose diff touches
+only paths-ignored files, FP1 is satisfied by the concluded CI run at its nearest ancestor
+that has a run, provided `git diff --name-only <ancestor>..<judged>` lists only paths-ignored
+paths."* **Every measurement in the entry below is correct and the conclusion drawn from them
+is wrong**: I framed the two remedies as "removing a `paths-ignore` entry" or "a no-op commit",
+both of which break a standing constraint, when the ruling in force required neither. GF3 (b)
+only has to make FP1's text cite GC2, and `CLAUDE.md` § *The judged commit always has a CI run*
+now carries GC2 verbatim. **The lesson is specific: before escalating under FZ (d), read the
+directive record for the question** -- which is what FP0 built it for, and what I did not do.
+*The entry as written:*
+
 **SR-70: the FP1/CK0 collision is ESCALATED rather than patched.**
 *Ruling applied:* FZ (d) -- anything needing a standing constraint broken.
 *Why:* **FP1's guarantee that the judged commit always has a CI run cannot hold for a
@@ -1272,3 +1284,38 @@ Adding the guide to that set is a new surface for an existing guard, which is th
 freezes until R1 is tagged, and EK2 says a guard is repaired or deleted rather than extended.
 **It is an instance of R1165 -- no guard reads the guide -- and not a new item**, so it goes to
 R2 with R1165 rather than being built in a closure commit that no round reviews.
+
+**SR-72: GF3 is written as TWO commits, not the one it asks for.**
+*Ruling applied:* FZ rule 7 -- ambiguous wording resolved toward existing conventions -- with
+`CLAUDE.md` § *The reviewer's own instructions are not edited inside a step* as the convention.
+*Why:* GF3 says "one standalone `process:` commit" for five items. Item (c) sets CI's
+`cancel-in-progress: false`, and `tests/test_ci_workflow_is_wellformed.py` asserts that value
+is `True`, so (c) needs a `tests/` change. The standing constraint is that `docs/SUPERVISOR.md`
+and `.claude/agents/` change **only** in a standalone `process:` commit, "never in a commit
+that also touches `floatfea/` or `tests/`", and a change inside such a commit is a STOP-class
+finding. **One commit cannot hold both.** So (a), (b), (d) and (e) are the `process:` commit and
+(c) is its own, which honours the clause the rule exists for. **Not escalated**, because no
+published number differs between the readings and FZ rule 7 covers exactly this; recorded here
+and stated in the closure artifact rather than resolved silently.
+
+**SR-73: the renamed CI test is renamed and inverted, not deleted, and the golden moves in its
+own commit.**
+*Ruling applied:* `CLAUDE.md` § Testing -- a golden change is regenerated in its own commit with
+the reason in the closure artifact -- and the non-negotiable against deleting a test for a green
+build.
+*Why:* GF3 (c) reverses the behaviour `test_a_superseded_run_is_cancelled` asserts, so its NAME
+becomes a false claim about the code, which is the CW0 defect. Keeping the name and inverting
+the body would ship that sentence; deleting the test would drop a gate assertion. So it is
+renamed and inverted, the assertion is kept in the direction the directive sets, and
+`tests/goldens/collected_tests.txt` is regenerated separately because a rename is a removal plus
+an addition to that guard. The reason is in `docs/closure/R1.md` § 0d as that rule requires.
+
+**SR-74: `git config user.name` is `gating-supervisor` in the implementer's checkout, and it is
+recorded rather than changed.**
+*Ruling applied:* FZ (a) -- what blocks is FR1's head -- and the apparatus freeze.
+*Why:* every commit of this milestone, implementer and reviewer alike, carries the same author
+name, so `git log --format=%an` cannot tell the two sides of the loop apart. **It is not a
+defect in the R1 record and it causes no wrong number**: the FV2 door is audited by the ref
+graph and the reflog, not by the author field, and GF3 (a) makes that the mechanism outright.
+But it does mean one obvious audit of the door does not work, so it leaves R1 as an observation
+for Xabier rather than as a repair I make to the user's git configuration unasked.

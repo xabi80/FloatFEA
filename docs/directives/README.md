@@ -21,6 +21,14 @@ Each file records where its text came from. **This is not uniform and the record
 * `FM.md`, `FN.md`, `FO.md`, `FP.md`, `FQ.md`, `FR.md`, `FS.md`, `FT.md`, `FU.md`,
   `FV.md`, `FW.md`, `GB.md`, `GC.md` — **verbatim** from the directive message.
   (`GB.md` was listed twice here until GC's commit — R1152.)
+* `GF.md` — **verbatim** from the directive message. Issued by Xabier, 2026-11-09.
+  Its own file, as its `Record:` line asks. It is the directive that **closes R1**: GF1
+  measured that `docs/milestones/R1.md` lists no step 5, GF2 supplied the base case for the
+  CZ1 recursion and tagged `R1`, GF3 authorised one `process:` commit for five items
+  (written as two, under SR-72), and GF4 asked for the final digest.
+  **`FP.md` is NOT edited for GF3 (b)**, because that file's text is verbatim and GF3 asks
+  for FP1's *rule* to cite GC2; the amendment is in `CLAUDE.md` § *The judged commit always
+  has a CI run*, where FP1's operative text lives.
 * `GE.md` — **verbatim** from the directive message. Issued by Xabier, 2026-11-08.
   Its own file, as its `Record:` line asks. The file also carries the one reading GE
   needed and did not state: GE says "revision 2" where revision 2 is already reviewed,

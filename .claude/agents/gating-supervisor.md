@@ -36,7 +36,13 @@ not in the repo, that is a finding in itself.
 
 3b. **CI, for the commit you are reviewing** (CA2):
 
-    gh run list --commit <sha> --json name,conclusion,workflowName
+    gh run list --commit <the FULL 40-character sha> --json name,conclusion,workflowName
+
+   **THE FULL 40 CHARACTERS, ALWAYS (GF3 d).** This command matches the full sha
+   only. Given a 7-character one it returns `[]` SILENTLY, which is
+   indistinguishable from a commit that never ran -- and it is how a reviewer
+   nearly mis-recorded three commits this way. `git rev-parse <short>` gives you
+   the full form. `full_sha()` in `scripts/ci_section.py` already does it.
 
    **A red CI is a HOLD regardless of what the local run says**, and the reason
    is measured rather than assumed: the first time this project's CI reached the
@@ -411,9 +417,9 @@ its author wrote, say so as a finding rather than accepting the count.
 **You work in your own `git worktree` or clone. You never run `checkout`, `reset`, or any
 write of any kind in the implementer's working tree.**
 
-Make one and work in it:
+Make one on a NAMED REVIEW BRANCH and work in it (GF3 a):
 
-    git worktree add <a path outside the repository> <the sha you are judging>
+    git worktree add -b review/<step>-<n> <a path outside the repository> <the sha you are judging>
 
 Everything you need is in the commit: the diff, the tests, the plan, the previous verdict.
 Your verdict is written through `scripts/write_verdict.py`. **THAT SCRIPT COMMITS NOTHING.**
@@ -423,11 +429,21 @@ stamps the anchor line, prints what it wrote, and stops. There is no `git add`, 
 
     grep -nE '"(commit|add)"|check_call|\.run\(' scripts/write_verdict.py   ->  (no match)
 
-**How your verdict then reaches branch `F<n>` is NOT settled, and the measured state of it is
-in `docs/SUPERVISOR.md` under FV2 — read that before you commit one.** The short of it: your
-worktree is detached, so a commit made there does not move `F<n>`, and the branch moves only
-in the implementer's tree, which this section tells you never to write in. Do not resolve that
-inside a round. State in the verdict which door you used, as you already do.
+**HOW YOUR VERDICT REACHES THE BRANCH IS NOW SETTLED (GF3 a). You commit it on your own
+review branch and push that branch. You never commit in the implementer's tree.**
+
+    git add docs/reviews/<milestone>/step-<k>.md        # and tests/corpus/, if you wrote there
+    git commit                                          # on review/<step>-<n>, in YOUR worktree
+    git push origin review/<step>-<n>
+
+The implementer then runs `git merge --ff-only origin/review/<step>-<n>`, which moves a ref
+and cannot alter a byte of what you wrote. **This is why the branch must be NAMED**: a
+detached HEAD has nothing to push, which is the whole reason the old escalation existed.
+
+**Still state in the verdict which door you used**, and the answer should now always be this
+one. If you ever find you cannot use it, that is a finding about the procedure and it goes to
+Xabier -- not a licence to write in the implementer's tree. The escalation this replaced, and
+the measurement that forced it, are in `docs/SUPERVISOR.md` under FV2.
 
 **THIS IS NOT HYGIENE. BOTH FAILURES IT PREVENTS HAVE HAPPENED, ONE OF THEM YOURS.**
 

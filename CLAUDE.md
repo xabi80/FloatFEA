@@ -548,14 +548,24 @@ report-guard files are run AT that commit and the counts pasted in the next
 revision. State (2) is the half no verdict in this milestone had ever measured,
 because the reviewer runs at the judged commit before writing.
 
-### Corpus batches pause until 28 October (EG4(e))
+### The corpus pause EXPIRED on 28 October and was left expired (EG4(e), GC3)
 
-Recorded here because it changes what a round may spend. Batches pause after F3
-step 3, except mutation work on **F4's load-mapping gate** and **EB6's
-label-provenance gate** -- the two surfaces where a miss would reach a member
-force. The coverage measurements that justified the spend are in the verdicts:
-4 of 11, then 8 of 13, then 5 of 10, with the last round's misses all outside the
-element.
+**EXPIRED. It is not in force and no directive extends it.** Directive GC3 ruled it
+explicitly: *"R1149 (EG4(e) corpus pause expired 28 Oct): leave it expired. The reviewer runs
+corpus batches at its own discretion, under GA3's length target. No extension directive."*
+**So the reviewer chooses its own batches, and a corpus finding that is not blocking under the
+criterion in force is a ledger item, as it always was.**
+
+Kept rather than deleted because it was cited for twelve days past its own date, and a reader
+of a verdict from that window needs to find the clause it names. **The clause as it stood:**
+
+> **Corpus batches pause until 28 October (EG4(e)).** Recorded here because it changes what a
+> round may spend. Batches pause after F3 step 3, except mutation work on **F4's load-mapping
+> gate** and **EB6's label-provenance gate** -- the two surfaces where a miss would reach a
+> member force. The coverage measurements that justified the spend are in the verdicts:
+> 4 of 11, then 8 of 13, then 5 of 10, with the last round's misses all outside the element.
+
+*Recorded by GF3 (e), 9 November 2026. R1149 is closed by this paragraph.*
 
 ### Every boundary is solved in BOTH directions (EH4)
 
@@ -598,7 +608,23 @@ where its text came from is worse than no record.
 the commit under judgement always has a CI run, and the report's CI section is generated
 from that run.
 
-*Adopted by directive FP1.*
+*Adopted by directive FP1, and amended by GF3 (b) to cite GC2 for the one commit shape where
+a push cannot produce a run.*
+
+**FP1 AGAINST CK0's `paths-ignore`, RULED BY GC2 (GF3 b).** A commit whose diff touches only
+paths-ignored files -- a report-only tip commit is the usual case, since `docs/reports/**` is
+ignored -- triggers no workflow, so no push can give it a run. GC2 settles what satisfies FP1
+there, and it is not a no-op commit and not a `paths-ignore` change:
+
+> GC2 — FP1 vs CK0, ruled: for a commit whose diff touches only paths-ignored files, FP1 is
+> satisfied by the concluded CI run at its nearest ancestor that has a run, provided
+> `git diff --name-only <ancestor>..<judged>` lists only paths-ignored paths. The report
+> states both shas, the diff listing and the run id. No workflow change.
+
+**So the ancestor run IS the judged commit's evidence, conditional on the diff listing**, and
+the report prints both shas, the listing and the run id. `scripts/ci_section.py` carries
+`report_only()` for exactly this. **SR-70 escalated this as an unresolved collision after GC2
+had already ruled it; GF3 (b) closes SR-70 and this paragraph is where the rule now lives.**
 
 **Why: CE1 made the CI section mandatory because CI had been red at three consecutive
 reviewed commits and no revision said so — and R1 step 1 then ran three full revisions

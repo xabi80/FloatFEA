@@ -51,7 +51,37 @@ occurred — a reviewer's `git checkout --` reverting work in flight, and a revi
 a claim about a commit by reading the working file, which is R1050 from the reviewer's side.
 In its own worktree at the judged sha, a working-file read IS a read of the commit.
 
-### How a verdict REACHES the branch is unsettled, and this is the measured state (GE4)
+### How a verdict reaches the branch: a NAMED review branch (GF3 a)
+
+**RULED. Directive GF3 (a), `docs/directives/GF.md`, authorises the procedure this section
+had escalated for four consecutive rounds.** The reviewer works on a named branch, never a
+detached HEAD:
+
+    git worktree add -b review/<step>-<n> <path outside the repository> <judged sha>
+
+It writes the verdict there through `scripts/write_verdict.py`, **commits it on that branch,
+and pushes that branch.** The implementer then runs:
+
+    git merge --ff-only origin/review/<step>-<n>
+
+**The implementer makes no commits on the work branch while a review is open, so the
+fast-forward always applies.** That is the condition the door rests on, and it is the
+implementer's to keep.
+
+**Why this answers the objection the escalation raised, which was a real one.** The worry was
+that `git merge --ff-only <sha>` puts the implementer's hands on the commit that gates it.
+A fast-forward cannot alter content -- it moves a ref -- and under this procedure the verdict
+**already exists at `origin` on a branch the reviewer pushed** before the implementer touches
+anything. So the verdict is published by the reviewer and the implementer only adopts it, and
+if the implementer tampers with it the fast-forward is refused because the published branch
+is no longer an ancestor. The separation is now a property of the ref graph rather than of
+anyone's discipline, which is what FV2 wanted and could not previously have.
+
+**What this retires:** the standing escalation below, recorded in four consecutive verdicts,
+under which the reviewer committed in the implementer's working tree because nothing else
+could move `F<n>`. It is kept as the measured record of why the rule exists.
+
+### The escalation this replaced, and the measurement that forced it (GE4)
 
 **`scripts/write_verdict.py` writes the verdict file and commits nothing.** The sentence in
 `.claude/agents/gating-supervisor.md` saying it "commits to the branch" was false; it is
@@ -84,12 +114,18 @@ reviewer no door for, and the reviewer has now recorded that in two consecutive 
 detached worktree cannot move `F<n>`; `git branch -f F<n>` is refused by git while the branch
 is checked out elsewhere; so the branch moves in the implementer's tree or not at all.
 
-**ESCALATED, NOT SOLVED HERE — FZ (d), and GE4's own instruction.** The obvious fix, reviewer
-commits detached and the implementer runs `git merge --ff-only <sha>`, puts the implementer's
-hands on the commit that gates it, which is what the separation exists to prevent. **No
-procedure is invented in this file.** Until Xabier rules: the reviewer commits the verdict in
-the implementer's tree, touching nothing outside its own two directories, and says in the
-verdict which door it used.
+**RULED BY GF3 (a), 9 November 2026 — this paragraph is the escalation it answers, kept
+verbatim as the record.**
+
+> **ESCALATED, NOT SOLVED HERE — FZ (d), and GE4's own instruction.** The obvious fix, reviewer
+> commits detached and the implementer runs `git merge --ff-only <sha>`, puts the implementer's
+> hands on the commit that gates it, which is what the separation exists to prevent. **No
+> procedure is invented in this file.** Until Xabier rules: the reviewer commits the verdict in
+> the implementer's tree, touching nothing outside its own two directories, and says in the
+> verdict which door it used.
+
+**The procedure is now at the top of this section.** The reviewer still says in the verdict
+which door it used; the answer should now always be the named branch.
 
 Both read this file. The witness applies exactly the guards in
 `.claude/agents/gating-supervisor.md` — the list lives there, once — and
@@ -136,8 +172,14 @@ Run these in order. Do not skip to the report.
 ```
 gh pr list --state open --json number,headRefName,title
 gh pr view <n> --comments --json comments,commits,headRefOid
-gh run list --commit <sha> --json name,conclusion,workflowName
+gh run list --commit <the FULL 40-character sha> --json name,conclusion,workflowName
 ```
+
+**ALWAYS THE FULL 40 CHARACTERS (GF3 d).** `gh run list --commit` matches the full sha only.
+Given an abbreviated one it returns `[]` **silently**, which reads exactly like a commit that
+never ran — and that is how a reviewer nearly mis-recorded three commits as having no run.
+`git rev-parse <short>` gives the full form. The implementer's apparatus already does this:
+`full_sha()` in `scripts/ci_section.py`, with the hazard in its docstring.
 
 **A red CI is a HOLD regardless of what a local run says** (CA2), and the reason
 is measured: the first time this project's CI reached the verification ladder it
@@ -478,8 +520,9 @@ the commit graph and therefore cannot be taken before the commit exists.
 
 So, for every closure commit, in this order: **(i)** make the commit; **(ii)** at that
 commit, tree clean, run and paste `ruff check floatfea tests`, `black --check floatfea
-tests`, `mypy floatfea` and `pytest -q`; **(iii)** push it and paste `gh run list --commit
-<sha>` with the job-level conclusions, so that the lint job's `guards and meta-tests` step
+tests`, `mypy floatfea` and `pytest -q`; **(iii)** push it and paste
+`gh run list --commit <the FULL 40-character sha>` (GF3 d -- an abbreviated one returns `[]`
+silently) with the job-level conclusions, so that the lint job's `guards and meta-tests` step
 is seen to have RUN rather than been skipped behind an earlier red step; **(iv)** any red is
 answered in a follow-on commit that repeats (ii) and (iii). A closure commit is not finished
 until a pushed CI run at its own sha, or at the follow-on's, is green.
