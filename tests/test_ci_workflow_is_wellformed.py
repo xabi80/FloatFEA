@@ -115,10 +115,29 @@ def test_a_documentation_commit_runs_no_job() -> None:
         )
 
 
-def test_a_superseded_run_is_cancelled() -> None:
+def test_a_superseded_run_is_NOT_cancelled() -> None:
+    """GF3 (c) reverses what this asserted, so the assertion is INVERTED, not dropped.
+
+    It read `is True` and the comment read "a superseded run finishes, which is
+    minutes spent on a tree nobody will read." That was the right trade until the
+    other side of it was measured: a push cancelled the run a REVIEWER WAS READING
+    twice in one milestone, at `4750f07` and again at `b286e01`, and under R449 a
+    cancelled run is `completed` with NO RESULT -- so nothing about its ladder can
+    be published and the round that was reading it has nothing.
+
+    The name moved with the value, because a test named for the behaviour it no
+    longer asserts is the CW0 defect in the one place it is hardest to see. A
+    rename is a removal plus an addition to `tests/test_collected_set_golden.py`,
+    so the golden is regenerated in its own commit with the reason in
+    `docs/closure/R1.md` -- which is what `CLAUDE.md` section Testing requires.
+
+    The gate is NOT weakened: it still pins the setting, in the direction the
+    directive sets. A silent revert to `true` reddens here.
+    """
     concurrency = _doc().get("concurrency") or {}
-    assert concurrency.get("cancel-in-progress") is True, (
-        "a superseded run finishes, which is minutes spent on a tree nobody " "will read."
+    assert concurrency.get("cancel-in-progress") is False, (
+        "cancel-in-progress is not False. A push then voids a run a reviewer may "
+        "be reading, and a cancelled run has no result (R449, GF3 c)."
     )
 
 

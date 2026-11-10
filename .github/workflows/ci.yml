@@ -12,7 +12,14 @@ name: CI
 #   paths-ignore        a report revision, a verdict and a plan edit change no
 #                       code; the guards that read them run on the next code
 #                       push and locally, every time.
-#   concurrency         a superseded run is cancelled rather than finished.
+#   concurrency         CANCEL-IN-PROGRESS IS OFF (GF3 c). It was on, for the wall-clock
+#                       reason this comment is about, and the cost of that showed up twice
+#                       in one milestone: a push of mine cancelled the run a REVIEWER WAS
+#                       READING, at `4750f07` and again at `b286e01`. Under R449 a cancelled
+#                       run is `completed` with NO RESULT, so nothing about its ladder can be
+#                       published, and the second time it took both jobs. A superseded run
+#                       now finishes. The allowance pays for a run nobody reads so that a
+#                       run somebody is reading is never voided.
 #   determinism         workflow_dispatch only. It answers "does CI agree with
 #                       itself", which moves when the render, the kernel pin or
 #                       the environment moves -- not when a test does. Run it
@@ -40,7 +47,8 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # GF3 (c). See the concurrency note in the CK0 block above.
+  cancel-in-progress: false
 
 # Determinism is part of the gate, not a nicety. Reduction order in BLAS depends
 # on thread count, so an unpinned thread count changes the last bits of a sum and
