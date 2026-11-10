@@ -120,10 +120,15 @@ def test_a_superseded_run_is_NOT_cancelled() -> None:
 
     It read `is True` and the comment read "a superseded run finishes, which is
     minutes spent on a tree nobody will read." That was the right trade until the
-    other side of it was measured: a push cancelled the run a REVIEWER WAS READING
-    twice in one milestone, at `4750f07` and again at `b286e01`, and under R449 a
-    cancelled run is `completed` with NO RESULT -- so nothing about its ladder can
-    be published and the round that was reading it has nothing.
+    other side of it was measured. Under R449 a cancelled run is `completed` with
+    NO RESULT, so a superseded run's ladder cannot be published at all, and the
+    round that was reading it has nothing.
+
+    R1189: the runs that measurement was taken on are named, with the `gh` command
+    that produced it, in `docs/closure/R1.md`. They are not named here -- CW0 puts
+    an unchecked claim about this repository out of the source tree, and the triple
+    vocabulary (`count`, `lines`, `files`, `defined`) measures this tree and cannot
+    ask GitHub what a run concluded.
 
     The name moved with the value, because a test named for the behaviour it no
     longer asserts is the CW0 defect in the one place it is hardest to see. A
