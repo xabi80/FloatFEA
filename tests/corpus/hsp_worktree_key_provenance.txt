@@ -1,0 +1,65 @@
+# CORPUS: a worktree KEY that resolves while the artifact's provenance declares
+# something else (R1226, R1208, FR1 second head).
+#
+# Owner: the reviewer. Test DATA only -- one candidate per line, nothing here
+# imports from floatfea and nothing here is test code. Written at the
+# sixty-third verdict on R2 step 0 (judged commit 4c19570).
+#
+# WHY THIS FILE EXISTS (BE3). GI3(e) replaced six hard-coded sibling-of-the-repo
+# guesses with two declared keys, `floatsim.worktree_runs` and
+# `floatsim.worktree_stable`, each with an env-var fallback. That turns a wrong
+# path from a MISSING directory into a RESOLVING one, and the question stops
+# being "does it resolve" and becomes "is the tree it resolved to the tree the
+# artifact says it read". `export_buoy_centers_ref.py` writes
+# `data/platform/buoy_centers_ref.json` -- the input to EB6's label-provenance
+# gate -- with `provenance.source` as the LITERAL "HSP-stable/<rel>" and
+# `provenance.hsp_tag` as a MODULE CONSTANT, so neither field can ever be wrong
+# about the tree it was generated from. Verdict 62 measured the consequence: with
+# the stable key pointed at HSP-RUNS, `--check` printed byte-identical output and
+# exited 0.
+#
+# The repair under review is a NAME predicate --
+# `"HSP-stable" not in HSP_STABLE.resolve().parts` -- plus taking `blob_sha` from
+# `git hash-object <working file>` rather than `git rev-parse HEAD:<rel>`. Both
+# were verified by their author against the one shape their author had been
+# given. A name predicate is defeated by a name, and the entries below are the
+# shapes a name predicate and a blob sha are each blind to.
+#
+# WHAT A PASSING SCAN MEANS. For each line: either the shipped code REFUSES by
+# name before writing or comparing, or `--check` reports the mismatch, or the
+# entry is recorded as a shape nothing catches and the snapshot is known to be
+# unable to distinguish it. A pass is NOT "the path resolved"; a pass is "the
+# tree that was read and the tree that is declared cannot differ silently".
+#
+# The entries are declarations, not paths to create. Several require a second
+# worktree state and are written here so that the next measurement of this
+# surface starts from a list its author did not choose.
+
+stable key names the runs worktree directly
+stable key names the runs worktree via a parent-relative hop through a stable-named directory
+stable key names a junction or symbolic link called HSP-stable whose target is the runs worktree
+stable key names a directory called HSP-stable-copy
+stable key names a directory called HSP-stable.bak
+stable key names a lowercase hsp-stable that exists on a case-insensitive filesystem
+stable key names a path with HSP-stable as a mid component and the source reachable below it
+stable key names a path with HSP-stable only inside a filename, not a directory component
+stable key names the stable worktree checked out at a tag other than the declared one, source bytes identical
+stable key names the stable worktree checked out at a tag other than the declared one, source bytes differing
+stable worktree dirty: the parsed source edited in a way that moves no parsed value
+stable worktree dirty: the parsed source edited in a way that moves a parsed value
+stable worktree dirty: cluster_common.py edited, which no recorded blob sha covers
+stable worktree at a detached HEAD that no tag points at
+stable key names a bare git repository with no working tree
+stable key names a directory that is not a git repository at all
+stable key names a git worktree whose gitdir has been pruned
+stable key and runs key name the same tree
+stable key set to the empty string
+stable key set with surrounding quotes or trailing whitespace
+stable key set to a relative path that escapes the repository root
+the declared config key and the environment variable name different trees
+the source path exists in the named tree but is a directory
+the source path exists and is a symlink to a file outside the named tree
+gitattributes marks the parsed source -text so the working-file hash and the HEAD blob differ on a clean tree
+the snapshot's recorded tag moved while its recorded blob sha did not
+the snapshot's recorded blob sha moved while every parsed value stayed identical
+two keys both unset on a machine with neither worktree, under require=False, at module import of six scripts
