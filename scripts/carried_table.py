@@ -166,11 +166,23 @@ def _carried_section(text: str) -> str:
     return text[start : start + nxt.start()] if nxt else text[start:]
 
 
+MILESTONE_LABELS: frozenset[str] = frozenset(
+    p.stem for p in (Path(__file__).resolve().parents[1] / "docs" / "milestones").glob("*.md")
+)
+"""R1221, the generator's copy. The guard's `_mentions()` filter has to exist here too,
+or the generated table and the gate that checks it disagree about `R2` -- and the table
+is what `test_the_Carried_table_is_what_the_generator_produces` compares against, so a
+filter in only one of the two makes the pair unsatisfiable. The first repair of R1221
+changed `tests/test_report_carried.py` alone; this is the second site, found by running
+the generator rather than by reading it."""
+
+
 def required(verdict_text: str) -> list[str]:
     """Exactly the set `tests/test_report_carried.py` requires, in its order."""
-    items = set(FINDING.findall(verdict_text)) | set(
-        MENTION.findall(_carried_section(verdict_text))
-    )
+    mentioned = {
+        m for m in MENTION.findall(_carried_section(verdict_text)) if m not in MILESTONE_LABELS
+    }
+    items = set(FINDING.findall(verdict_text)) | mentioned
     return sorted(items, key=lambda r: int(r[1:]))
 
 

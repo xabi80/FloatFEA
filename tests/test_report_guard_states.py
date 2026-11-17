@@ -114,7 +114,10 @@ def _step() -> int:
 
     **AND IT TOOK THE RAW MARKER, WHICH IS NOT HOW THE GUARD TAKES IT (R887).** R601a's
     third occurrence, in the function whose own docstring promises it cannot recur. The
-    guard resolves `max(_PLAN_STEP if _PLAN_STEP in REPORTED else 0, _PAIRED)` -- the
+    guard resolves
+    `max(_PLAN_STEP if _PLAN_STEP is not None and _PLAN_STEP in REPORTED else 0, _PAIRED)`
+    -- R1228: the `is not None` guard arrived with R1206 and this quotation did not move
+    with it, which is BP0 at the smallest scale and inside the apparatus. The
     newest step that actually HAS a report -- while this returned the marker itself. FR3
     builds a step before writing its report, so the moment the marker moved to 3 the two
     diverged:

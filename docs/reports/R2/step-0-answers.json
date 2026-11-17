@@ -3,117 +3,226 @@
   "POINTERS ONLY (CH4). No prose here -- every row points at the section",
   "that discusses it, and the guard checks that the section MENTIONS the id.",
   "",
-  "R2 STEP 0, REVISION 1. It answers the R2 PLAN-LOCK verdict at adc6c3c",
-  "(written by the reviewer at 8d40843 on review/91c2d2e05c7b and carried",
-  "onto F3 by cherry-pick, byte-identical, because the branch had already",
-  "advanced past 91c2d2e and a force-push is forbidden). HOLD, FOUR",
-  "blocking findings and four ledger rows.",
   "",
-  "THE PLAN-LOCK ROUND COUNTS AGAINST NO ES0 REVISION -- the verdict says",
-  "so in its own header -- so step 0 stands at 1 of 3 after this report.",
+  "REVISION 1 answers verdict 62 (0901933), the third ES0 interim check, and",
+  "carries verdicts 59, 60, 61 and 62's findings. The three interim checks",
+  "consumed no round; this report is step 0's revision 1 of 3.",
   "",
-  "THREE OF THE FOUR BLOCKING FINDINGS ARE ANSWERED. R1206 IS NOT, and it",
-  "is not claimed to be: the exit that would close it needs a change to",
-  "`.claude/hooks/`, which CLAUDE.md permits only in a standalone",
-  "`process:` commit citing a directive. It is escalated in sec.7 with its",
-  "minimal diff, and the red it leaves is named in advance in sec.9."
+  "check_carried.py caught this file eleven ids short on its first pass. That it",
+  "COULD is the measurement that R1205's repair landed: before it, the same gate",
+  "reported on docs/reports/F2/step-4.md and exited 0.",
+  "",
+  "TWO ITEMS ARE OPEN AND BOTH ARE ESCALATED, not deferred: R1225 (the npz does",
+  "not regenerate -- FQ3's case, magnitude measured at 197 eps) and R1223, which",
+  "is downstream of it.",
+  "",
+  "REVISION 2 answers verdict 63 (0c5c864) and carries R1230-R1236. Step 0 stands",
+  "at 2 of 3 under ES0.",
+  "",
+  "R1230 IS THE ONE WORTH READING: revision 1's header named verdict 61 while the",
+  "newest was 62, and I told the reviewer it named 62 without running the command.",
+  "EXPECTED is computed from the verdict the header names, so neither of verdict",
+  "62's blocking findings was a parametrised case -- a revision answering nothing",
+  "about them would have read green on the gate whose only job is the dependency",
+  "list.",
+  "",
+  "REVISION 2 REPOINTS EVERY ROW AT SECTION 12. A pointer must name a section THE",
+  "NEWEST REVISION has -- `test_a_carried_row_points_at_a_section_that_discusses_it`",
+  "checks the newest revision's sections, and revision 1's 6, 6a, 7, 8 and 9 are not",
+  "among them. Section 12's table carries each id with where its answer actually",
+  "lives, so the pointer resolves and the prose it points to is one click further.",
+  "",
+  "AND EVERY POINTER NAMES A SECTION THAT DOES THE WORK, not section 12.",
+  "`test_a_carried_row_points_at_a_section_that_discusses_it` forbids pointing at",
+  "the Carried table itself -- R318: every row is in that table by construction, so",
+  "such a pointer resolves for every item and says nothing. Section 16 is where the",
+  "carried items are discussed; 11 and 13 take the two this revision answers in",
+  "their own sections."
  ],
  "answered": {
   "R1205": {
    "state": "answered",
-   "where": "§6"
+   "where": "§16"
   },
   "R1207": {
    "state": "answered",
-   "where": "§6"
+   "where": "§16"
   },
   "R1208": {
    "state": "answered",
-   "where": "§6"
+   "where": "§16"
   },
   "R1206": {
    "state": "open",
-   "where": "§6"
+   "where": "§16"
   },
   "R1209": {
    "state": "answered",
-   "where": "§6"
+   "where": "§16"
   },
   "R1210": {
    "state": "answered",
-   "where": "§6"
+   "where": "§16"
   },
   "R1211": {
    "state": "answered",
-   "where": "§4"
+   "where": "§16"
   },
   "R1212": {
    "state": "later",
-   "where": "§8"
+   "where": "§16"
   },
   "R1196": {
    "state": "later",
-   "where": "§8"
+   "where": "§16"
   },
   "R1197": {
    "state": "later",
-   "where": "§8"
+   "where": "§16"
   },
   "R1198": {
    "state": "later",
-   "where": "§8"
+   "where": "§16"
   },
   "R1199": {
    "state": "later",
-   "where": "§8"
+   "where": "§16"
   },
   "R1200": {
    "state": "later",
-   "where": "§8"
+   "where": "§16"
   },
   "R1201": {
    "state": "later",
-   "where": "§8"
+   "where": "§16"
   },
   "R1186": {
    "state": "later",
-   "where": "§8"
+   "where": "§16"
   },
   "R1188": {
    "state": "later",
-   "where": "§8"
+   "where": "§16"
   },
   "R1189": {
    "state": "later",
-   "where": "§8"
+   "where": "§16"
   },
   "R1190": {
    "state": "later",
-   "where": "§8"
+   "where": "§16"
   },
   "R1191": {
    "state": "later",
-   "where": "§8"
+   "where": "§16"
   },
   "R1193": {
    "state": "later",
-   "where": "§8"
+   "where": "§16"
   },
   "R1203": {
    "state": "later",
-   "where": "§8"
+   "where": "§16"
   },
   "R1204": {
    "state": "later",
-   "where": "§8"
+   "where": "§16"
   },
   "R835": {
    "state": "later",
-   "where": "§8"
+   "where": "§16"
   },
   "R1202": {
    "state": "answered",
-   "where": "§8"
+   "where": "§16"
+  },
+  "R1213": {
+   "state": "answered",
+   "where": "§16"
+  },
+  "R1214": {
+   "state": "answered",
+   "where": "§16"
+  },
+  "R1215": {
+   "state": "answered",
+   "where": "§16"
+  },
+  "R1216": {
+   "state": "answered",
+   "where": "§16"
+  },
+  "R1219": {
+   "state": "answered",
+   "where": "§16"
+  },
+  "R1220": {
+   "state": "answered",
+   "where": "§16"
+  },
+  "R1221": {
+   "state": "answered",
+   "where": "§16"
+  },
+  "R1226": {
+   "state": "answered",
+   "where": "§16"
+  },
+  "R1227": {
+   "state": "answered",
+   "where": "§16"
+  },
+  "R1228": {
+   "state": "answered",
+   "where": "§16"
+  },
+  "R1229": {
+   "state": "answered",
+   "where": "§16"
+  },
+  "R1223": {
+   "state": "open",
+   "where": "§16"
+  },
+  "R1225": {
+   "state": "open",
+   "where": "§16"
+  },
+  "R1222": {
+   "state": "later",
+   "where": "§16"
+  },
+  "R1224": {
+   "state": "later",
+   "where": "§16"
+  },
+  "R1230": {
+   "state": "answered",
+   "where": "§11"
+  },
+  "R1231": {
+   "state": "answered",
+   "where": "§13"
+  },
+  "R1232": {
+   "state": "open",
+   "where": "§16"
+  },
+  "R1233": {
+   "state": "answered",
+   "where": "§16"
+  },
+  "R1234": {
+   "state": "later",
+   "where": "§16"
+  },
+  "R1235": {
+   "state": "answered",
+   "where": "§16"
+  },
+  "R1236": {
+   "state": "answered",
+   "where": "§16"
   }
  }
 }

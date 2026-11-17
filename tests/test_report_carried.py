@@ -258,6 +258,29 @@ REPORT = REPORTS / f"step-{STEP}.md"
 # the set of ids LOST is empty.
 _FINDING = re.compile(r"^(?:\*\*|#{2,4}\s+)(R\d+)(?:[.\s]|,(?!\s*R\d))", re.MULTILINE)
 _MENTION = re.compile(r"\bR\d+\b")
+
+# R1221. A MILESTONE LABEL IS NOT A FINDING ID, and this pattern cannot tell them apart
+# in a repository whose milestones are `R1` and `R2`. In the F-era it could not fire on a
+# label -- `F6` does not match it -- so this is a defect R1 introduced by being the first
+# milestone whose name starts with `R`.
+#
+# Measured at the commit that found it: the parametrised ids included `R2` and `R1`,
+# eleven matches in one verdict's Carried section, each either the milestone label or a
+# path (`docs/milestones/R2.md`, `('R2', 0)`, `docs/milestones/R1.md:3`) -- and the last
+# of those is R1205's OWN site, so a Carried section answering R1205 cannot avoid it.
+# No wording on the reviewer's side could, which is why this is the gate's defect.
+#
+# THE FILTER IS THE MILESTONE NAMES THEMSELVES, not a digit count. Requiring three or
+# more digits would also work today and would silently drop a real two-digit finding;
+# CLAUDE.md cites R29.
+_MILESTONE_LABELS: frozenset[str] = frozenset(q.stem for q in _MILESTONES.glob("*.md"))
+
+
+def _mentions(text: str) -> list[str]:
+    """Every `R<n>` in `text` that is not a milestone label (R1221)."""
+    return [m for m in _MENTION.findall(text) if m not in _MILESTONE_LABELS]
+
+
 # `path/to/file.py:123` or `:123-145`, as the verdicts write them.
 # The leading dot of `.claude/...` is part of the path; a word boundary before
 # it would cut it off and the file would never match the diff.
@@ -407,7 +430,7 @@ ANSWERED = _answered_verdict(REPORT_TEXT)
 VERDICT_TEXT = _verdict_text_at(ANSWERED)
 CARRIED = _section(_newest_revision(REPORT_TEXT), "Carried")
 EXPECTED = sorted(
-    set(_FINDING.findall(VERDICT_TEXT)) | set(_MENTION.findall(_section(VERDICT_TEXT, "Carried"))),
+    set(_FINDING.findall(VERDICT_TEXT)) | set(_mentions(_section(VERDICT_TEXT, "Carried"))),
     key=lambda r: int(r[1:]),
 )
 
@@ -502,7 +525,7 @@ def test_a_blocking_item_is_not_routed_to_4a() -> None:
         "heading format changed and this check passes on anything."
     )
     misrouted = [
-        i for i, st in _status_cells() if "4a" in _plain(st) and set(_MENTION.findall(i)) & blocking
+        i for i, st in _status_cells() if "4a" in _plain(st) and set(_mentions(i)) & blocking
     ]
     assert not misrouted, (
         f"{misrouted} are recorded at 4a and {VERDICT.name} marks them "
@@ -721,7 +744,7 @@ def test_the_report_carries_the_finding(finding: str) -> None:
             "unreadable, or its format changed. Every carry assertion in this "
             "file is about that list, so none of them means anything here."
         )
-    assert finding in _MENTION.findall(CARRIED), (
+    assert finding in _mentions(CARRIED), (
         f"{finding} is in the newest verdict -- as a finding or as an item it "
         "carries forward -- and the newest report revision's Carried section "
         "does not mention it. CLAUDE.md: the dependency list is part of what "

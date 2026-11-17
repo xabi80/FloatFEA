@@ -276,7 +276,10 @@ claim  exactly one plan carries a live marker, and the resolvers reach R2
 cmd    grep -rlE '<!--[[:space:]]*step-under-execution:[[:space:]]*[0-9]+[[:space:]]*-->' docs/milestones/
 out    docs/milestones/R2.md          (count: 1)
 cmd    python -c "import check_carried, ci_section; print(check_carried._active_step(), ci_section._PLAN.name)"
-out    ('R2', 1) R2.md
+out    ('R2', 0) R2.md
+       (R1236: this read `('R2', 1)` in revision 1. It was taken while the marker was
+       still at 1 and was not regenerated when the marker moved to 0 -- BP0, in the
+       report whose own section 7 cites BP0.)
 rule   R1205 *Closed when* R1.md:3 retires its marker ... in a commit that also answers R1206
 judge  Answered. The two symptoms the verdict measured are gone: `_active_step()` no
        longer returns ('F2', 4), and `ci_section` imports instead of raising SystemExit,
@@ -403,6 +406,114 @@ judge  All three are untouched by this commit -- the resolver returns a path and
        refusals with one is the extend-not-repair line EK2 draws.
 ```
 
+## 6a. Verdicts 60, 61 and 62's findings
+
+**R1213 — the DS0 refusal that did not fire.** `run_floatsim_design_waves.py` tested
+`RUNS.resolve() == STABLE.resolve()`, an identity test against the other key. Unreachable
+while both were literals; GI3(e) made it reachable, and a runs key pointed at the real
+production `HSP-stable` then passed it while `main()` went on to write six case CSVs into
+the read-only worktree. The name test is added **beside** the identity test (EK2).
+
+```
+cmd    FLOATFEA_HSP_RUNS=.../buoy/HSP-stable, stable key unset, preflight() called
+out    name test     : True
+       identity test : False      <- what the old check saw, and why it passed
+       REFUSED: the runs worktree resolves to ...\HSP-stable, which is HSP-stable --
+                read-only from here (DS0). ... refuses by NAME and not only by identity
+                with the stable key (R1213).
+```
+
+**R1214 — a key set but wrong was silently discarded**, so a caller opened a different
+tree from the one declared. Now a refusal naming the source and the value; only an
+**unset** key falls through, because the six call sites are module-level constants and
+refusing at import would turn "this machine has no worktree" — true of CI by design —
+into an ImportError taking the module with it, which is R670's shape.
+
+```
+cmd    FLOATFEA_HSP_RUNS=C:/nope/not/a/worktree
+out    REFUSED: the HSP runs worktree was declared and is not a directory.
+         $FLOATFEA_HSP_RUNS = C:\nope\not\a\worktree
+cmd    unset, require=False   /   unset, require=True
+out    C:\dev\HSP-runs, no refusal   /   REFUSED, naming all three candidates
+```
+
+**R1219 — a relative value resolved against the process cwd**, so one declaration named
+different worktrees depending on where it was started. It now anchors to the repository
+root, which is a property of the declaration rather than of the caller's shell.
+
+**R1220 — nothing exercised `hsp_pin.worktree`, which is why R1213, R1214 and R1219 were
+all invisible.** `tests/unit/test_hsp_worktree_resolution.py`, 10 cases over the decision
+table, every one on `tmp_path` so the file is green with no HSP checkout. Each repair is
+held by the cycle FT2 asks for:
+
+```
+cmd    revert each repair in turn, run the file, restore
+out    R1214's raise reverted          ->  2 failed, 8 passed
+       R1213's name test disabled      ->  1 failed, 9 passed
+       R1219's anchor removed          ->  1 failed, 9 passed   (the reviewer's cycle)
+       restored                        ->  10 passed
+```
+
+**R1229 — and the first version of the R1213 test was a check that could not fail.** It
+asserted the predicate's *source line* was present, so `if False and ...` left it passing
+with the repair reverted. It now drives `preflight()`. The reviewer then found a second in
+the same file — `assert not got.is_absolute() or True`, true for every input, eleven lines
+below a docstring saying exactly that — which is deleted rather than repaired, because the
+line above it is the real check. **Three of this shape in one session**: that one, the
+source-text assertion, and a wait condition using `pgrep -f` that could not see a Windows
+process and so reported success the moment it was armed. The common cause is asserting
+from reading rather than running.
+
+**R1226 — R1213 one key over.** `export_buoy_centers_ref.py` had no DS0 refusal at all, so
+the stable key pointed at the **runs** tree regenerated `buoy_centers_ref.json` — EB6's
+label-provenance input — while `provenance.source` declares `HSP-stable/...` as a literal
+and `hsp_tag` is a module constant, neither of which can be wrong.
+
+```
+cmd    the reviewer's control, rerun with the predicate added
+out    stable key -> HSP-runs    REFUSED: the STABLE key resolves to ...\HSP-runs, which
+                                 is not an HSP-stable worktree ... records a source it
+                                 did not read (R1226)
+       stable key -> HSP-stable  EB6 reference: current. blob b8b8123904af, tag
+                                 floatfea-ref-1, 12 buoys and 4 hubs.
+```
+
+Its second limb asked for one of two fixes and for the reason. **Chosen: hash the working
+file** (`git hash-object`) rather than add `--dirty` to a describe. `build()` reads the
+numbers from `source.read_text()`, so the recorded sha should describe the bytes the
+snapshot came from; a `--dirty` marker would make the mismatch visible while still
+publishing the wrong sha beside it.
+
+**R1227 — R1206's fourth and fifth sites.** `assert STEP > 0` fired at step 0 with a
+message asserting "no step has both" when step 0 has both, and being first in its test it
+killed three later assertions — among them `STEP_REPORT - STEP <= 1`, the one that forbids
+opening step k+1 over an unreviewed step k. It now tests `REPORTED & REVIEWED`, which is
+the condition rather than a proxy for it. **`_PAIRED`'s own `else 0` is raised with the
+reviewer rather than silently changed**, together with its measurement that `marker 0` and
+`marker 3` both give `STEP 0` — i.e. the plan marker currently has no effect on which
+report the guard reads. That is a larger claim than R1227 and I have not acted on it.
+
+**R1221 — the Carried gate was parametrised over phantom ids.** `\bR\d+\b` cannot tell a
+finding id from a milestone label in a repository whose milestones are `R1` and `R2`; in
+the F-era it could not fire, because `F6` does not match. Eleven matches in one verdict's
+Carried section were the label or a path, and one of those paths is R1205's own site, so
+no wording on the reviewer's side could avoid them. `_mentions()` filters the milestone
+names themselves rather than imposing a digit count, which would silently drop a real
+two-digit finding — CLAUDE.md cites R29.
+
+**R1228 — a quotation whose rule moved underneath it.**
+`tests/test_report_guard_states.py:117` quoted the `STEP` expression that R1206 changed one
+file over. Regenerated in the same commit as the change, which is what BP0 requires.
+
+**R1225 (ii) — the environment is now recorded in the provenance**:
+`determinism.report()`, `OPENBLAS_CORETYPE`, the six library versions, and
+`BASELINE_CONDITIONS` beside them. Both halves already existed in
+`floatfea/determinism.py` and nothing in the export path called either. Recorded, **not
+asserted** — a refusal against a differing environment is FQ3's case, not a gate failure.
+
+**R1222 and R1224 are the reviewer's own** — a prediction it confirmed green, and a
+correction it made to its own reasoning. Recorded; no action here.
+
 ## 7. ESCALATION — TWO items, Xabier's
 
 **(1) THE COMMITTED `dynamic_inputs.npz` DOES NOT REGENERATE FROM THIS TREE, AND FQ3
@@ -447,11 +558,18 @@ out    array        shape          max|a|      max|diff|   diff/scale    in eps
        contrib (884, 20, 6)  7.354023e+01     3.9790e-13    5.411e-15      24.4
        WORST relative to its own array scale: 4.3670e-14  =  196.7 eps
 rule   R1225 (i): "~1e-16 is consistent with the pin; 1e-3 is a larger finding"
-judge  **ROUND-OFF.** ~200 eps accumulated over 884 timesteps of a Cummins convolution
-       is what a reduction-order change from a library minor bump looks like. It is TEN
-       ORDERS OF MAGNITUDE below the six figures `U = 1.71167` is published to, so no
-       published number can move. The committed npz is physically right; its last bits
-       belong to a toolchain this machine no longer has.
+judge  **ROUND-OFF, ON THE ONE CASE MEASURED.** ~200 eps over 884 timesteps of a
+       sequential convolution sits inside the `sqrt(N)*eps = 30` to `N*eps = 884` band
+       such an accumulation is bounded by, and twelve decades below the `1e-3` R1225 (i)
+       named as the threshold for a larger finding. On this case nothing published can
+       move: the governing utilisation is quoted to six figures and the perturbation is
+       at the fourteenth.
+       **AND THE SCOPE OF THAT SENTENCE IS NARROWER THAN REVISION 1 CLAIMED (R1233).**
+       `--check` names 36 arrays across SIX cases; this measures three arrays of ONE.
+       Revision 1 wrote "so no published number can move", which is a claim over six
+       periods supported by one. It is not a condition of step 0, because option 2 is
+       not being taken -- but it IS a condition of CHOOSING option 2, and whoever takes
+       that option measures all six first.
        **A CORRECTION TO MY OWN FIRST MEASUREMENT OF THIS.** The first probe reported
        `max rel 1.210e-01` -- 12% -- for the same 5.29e-14, because it divided
        ELEMENTWISE by `max(|a|,|b|)`, so entries where both are near zero dominated. A
@@ -502,8 +620,29 @@ needs a ballast term. §5 above measures the size of the problem: the five bodie
 
 Pointers only (CH4). Every row points at the section that discusses it.
 
+*`scripts/check_carried.py` caught this section short by eleven ids on its first pass —
+R1213, R1214, R1215, R1221, R1222, R1223, R1225, R1226, R1227, R1228, R1229 — because it
+listed verdict 59's findings and not those of verdicts 60, 61 and 62. **That the gate
+could catch it is the measurement that R1205's repair landed**: before it, the same gate
+reported on `docs/reports/F2/step-4.md` and exited 0 about a milestone closed a year ago.*
+
 | id | state | where |
 |---|---|---|
+| R1213 | **answered** | §6a — the DS0 name test beside the identity test, with the refusal pasted |
+| R1214 | **answered** | §6a — set-and-wrong refuses, unset falls through, both directions |
+| R1215 | **answered** | the marker comment in `docs/milestones/R2.md` now says what the marker says |
+| R1216 | **answered** | `docs/milestones/R2.md` §2c — the census before *and* after |
+| R1219 | **answered** | §6a — a relative key anchors to the repo root, not the cwd |
+| R1220 | **answered** | §6a — `tests/unit/test_hsp_worktree_resolution.py`, with the revert-red-restore cycles |
+| R1221 | **answered** | §6a — `_mentions()` filters milestone labels; the gate's own defect, FF0 |
+| R1222 | reviewer-side, confirmed green | the reviewer's own prediction; no action here |
+| R1223 | **open — escalated with R1225** | §7(1). Downstream of the staleness red; clears when the npz question is decided. NOT repaired by regenerating the deliverable to match a red gate |
+| R1224 | reviewer-side correction | the reviewer's own; recorded, no action here |
+| R1225 | **open — ESCALATED UNDER FQ3** | §7(1). (i) the magnitude is measured: 197 eps. (ii) the environment is now in the provenance. (iii) the frame is FQ3, not §6 item 2 |
+| R1226 | **answered** | §6a — the stable key refuses a non-`HSP-stable` tree; sha from the bytes read |
+| R1227 | **answered** | §6a — `STEP > 0` → `REPORTED & REVIEWED`; `_PAIRED` raised for the reviewer to rule |
+| R1228 | **answered** | §6a — the quoted expression regenerated with the rule that moved (BP0) |
+| R1229 | **answered** | §6a — the assertion that could not fail is deleted |
 | R1205 | **answered** | §6 |
 | R1206 | **open — exit chosen, closure escalated** | §6, §7(1) |
 | R1207 | **answered** | §6 |
@@ -523,17 +662,778 @@ verdict by sha (`adc6c3c`) and carries verdicts 55 onward in the rows above.
 
 ## 9. The marker, and the two reds this report is expected to leave
 
-Stated in advance rather than discovered: at marker `0`, with this report present,
-`test_the_plan_names_the_step_under_execution` stays red on the sentinel collision
-(`test_report_carried.py:617`, `assert 0 = _plan_step()`), which is R1206 itself, and
-`test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` was **already red at `251af69`, before
-this turn began** — measured in a detached worktree at that commit, `1 failed in 0.34s`.
-The first names R1206, a finding of the newest verdict, so it is a boundary red under the
-FS1 limb-one predicate. The second's subject is its own commit's CI run, which is FT1
-limb two. Every other red is traced by id in §10.
+**THIS SECTION WAS WRONG IN BOTH DIRECTIONS IN REVISION 1 AND R1236 IS THE FINDING.** It
+predicted that `test_the_plan_names_the_step_under_execution` would "stay red on the
+sentinel collision" — it **passes** (`1 passed`, measured), because R1206's exit (iii)
+landed in the same commit and the prediction was written before that and never
+regenerated. And it omitted the reds that actually block. A red trace that predicts a red
+which does not exist, while leaving out the ones that do, is worse than no trace: EG3 (i)
+asks for every red traced by name, and this one was wrong at both ends.
+
+The reds at this revision, traced rather than predicted:
+
+* `test_the_npz_is_NOT_STALE_against_the_code_that_generated_it` — the FQ3 escalation in
+  §7(1). Recorded red with its cause named; it does not clear until the toolchain
+  question is decided, and no edit of mine can clear it.
+* `tests/regression/test_f6_deliverable_agrees_with_itself.py` (R1223) — downstream of
+  the same cause, and **not** to be cleared by regenerating the deliverable against a
+  red gate.
+* `test_the_answered_verdict_is_the_NEWEST_one` (R1230) and the four generated-section
+  guards (R1231) — **both blocking, both CZ1 (iv), and both answered in revision 2
+  below.** They fail the FS1/FT1 predicate in both limbs, which is why they are repairs
+  and not waivers.
+* `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` was already red at `251af69`, before
+  this turn began — measured in a detached worktree at that commit, `1 failed in 0.34s`.
+  Its subject is its own commit's CI run, which is FT1 limb two.
 
 <!-- WHOLE_SUITE -->
 
 ## 10. CI at the judged commit
 
-<!-- CI_SECTION -->
+*Revision 1 left this a placeholder, which is R1231. The generated sections are in
+revision 2's §13 and §14, anchored on the header that revision corrects.*
+
+# Revision 2 — R1230 and R1231, and the generated sections this report owed
+
+Answers: verdict 63 @ 0c5c864
+Answers file: `docs/reports/R2/step-0-answers.json`
+
+**2026-11-17. THE SCHEDULE is unchanged: GI sets no date, and GI6 stops the milestone at
+step 0's report.** This revision exists because revision 1 shipped a header naming the
+wrong verdict and three unfilled generated sections. Step 0 stands at **2 of 3** under
+ES0 after it. This is the one hand-written paragraph the revision gets.
+
+## 11. R1230 — the `Answers:` header named verdict 61 while the newest was 62
+
+```
+claim  revision 1's header named the newest verdict
+cmd    git show 4c19570:docs/reports/R2/step-0.md | sed -n '5p'
+out    Answers: verdict 61 @ c931885
+cmd    grep -c "verdict 62\|0901933\|9e1092a" <that file>
+out    0
+rule   tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one, and
+       scripts/ci_section.py:203 _anchor(), which read the same line
+judge  **AND I TOLD THE REVIEWER THE OPPOSITE.** My invocation said "The report's
+       `Answers:` header names verdict 62 and `0901933`, as your closing note required."
+       It did not. I asserted it from memory without running `sed -n '5p'` -- the same
+       failure as the thread-count diagnosis in §7 and the three checks that could not
+       fail in §6a. Fourth time in one step: asserting from reading rather than running.
+       IT IS NOT COSMETIC. `EXPECTED`, the domain of
+       `test_the_report_carries_the_finding`, is computed from the verdict the header
+       NAMES, and `_verdict_text_at` reads that file as it stood at that sha:
+         ANSWERED = c931885  ->  EXPECTED = 27 ids, and R1225, R1226, R1227, R1228 and
+                                 R1229 are NONE of them
+         ANSWERED = 0901933  ->  EXPECTED = 32, the five added being exactly those
+       So a revision answering nothing about either of verdict 62's blocking findings
+       would have read GREEN on the gate whose only job is the dependency list. This
+       revision's header names verdict 63 at `0c5c864`, the newest, and §12 carries it.
+```
+
+## 12. Carried — verdict 63
+
+*`check_carried.py` reads the NEWEST revision's Carried section, so this table is
+self-contained rather than a delta on §8. It caught this section short twice — once in
+revision 1 and once here — and both times the omission was real.*
+
+```
+claim  this table carries every finding the newest verdict declares
+cmd    python scripts/check_carried.py
+out    check_carried: all 22 findings carried        (exit 0)
+       before the rows below were completed, the same command printed:
+         omits R1205, R1206, R1207, R1208, R1213, R1214, R1215, R1222, R1223, R1225,
+         R1226, R1227, R1229 -- verdict declares 22 findings; 9 are carried
+rule   BS0 -- CLAUDE.md requires the next report's Carried section to list every open
+       item, and BS0 makes that a build failure rather than a review finding
+judge  **THAT THIS GATE CAN CATCH ANYTHING IS THE MEASUREMENT THAT R1205'S REPAIR
+       LANDED.** Before it, the same command resolved to `docs/reports/F2/step-4.md`,
+       named seven findings from a milestone closed a year ago, and exited 0 -- green
+       about the wrong milestone. It is now correct about R2, and the first two things
+       it did were catch this section short.
+```
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R835 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
+| R1186 | **later** — §16 | (c), R1190, R1191, R1193 -- still open, routed to R2 by verdict 58 item 3. R1193 (the dead... |
+| R1188 | **later** — §16 | (c), R1190, R1191, R1193 -- still open, routed to R2 by verdict 58 item 3. R1193 (the dead... |
+| R1189 | **later** — §16 | (c), R1190, R1191, R1193 -- still open, routed to R2 by verdict 58 item 3. R1193 (the dead... |
+| R1190 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
+| R1191 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
+| R1193 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
+| R1196 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
+| R1197 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
+| R1198 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
+| R1199 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
+| R1200 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
+| R1201 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
+| R1202 | **answered** — §16 | (FF0, the base-case sha at five sites) -- ANSWERED before this commit, at bb952e7 (closure:... |
+| R1203 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
+| R1204 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
+| R1205 | **answered** — §16 | carried, and the verdict says nothing further about it here |
+| R1206 | **open** — §16 | carried, and the verdict says nothing further about it here |
+| R1207 | **answered** — §16 | carried, and the verdict says nothing further about it here |
+| R1208 | **answered** — §16 | carried, and the verdict says nothing further about it here |
+| R1213 | **answered** — §16 | The DS0 refusal in run_floatsim_design_waves.py DOES NOT FIRE on the input this diff newly... |
+| R1214 | **answered** — §16 | A key that is SET BUT WRONG is silently discarded and a different worktree is used. claim what... |
+| R1215 | **answered** — §16 | docs/milestones/R2.md:5 says the marker reads 1 while :3 reads 0, and calls the shipped state... |
+| R1221 | **answered** — §16 | The Carried gate is parametrised over PHANTOM finding ids -- R2, and R1 too -- and no wording... |
+| R1222 | **later** — §16 | test_a_blocking_item_is_not_routed_to_4a is red because verdict 59 wrote its dispositions as... |
+| R1223 | **open** — §16 | A PUBLISHED DELIVERABLE no longer regenerates from this tree, and the two rows that moved are... |
+| R1225 | **open** — §16 | THE --check REFUSAL IS NOT THREAD COUNT. The npz golden moved when THIS REPOSITORY'S OWN... |
+| R1226 | **answered** — §16 | R1213 ONE KEY OVER: NOTHING TIES THE TREE THE STABLE KEY NAMES TO THE TREE THE SNAPSHOT... |
+| R1227 | **answered** — §16 | R1206's FOURTH SITE: tests/test_report_carried.py:579 still reads assert STEP > 0, and it goes... |
+| R1228 | **answered** — §16 | tests/test_report_guard_states.py:117 quotes the expression this commit changed. It reads "The... |
+| R1229 | **answered** — §16 | tests/unit/test_hsp_worktree_resolution.py:123 IS AN ASSERTION THAT CANNOT FAIL, and it is the... |
+| R1230 | **answered** — §11 | THE Answers: HEADER NAMES VERDICT 61 WHILE THE NEWEST IS 62, AND THE GATE'S FINDING SET IS... |
+| R1231 | **answered** — §13 | ALL THREE GENERATED SECTIONS ARE UNFILLED PLACEHOLDERS, AND CI IS RED AT THIS COMMIT, WHICH IS... |
+| R1232 | **open** — §16 | R1225 (ii) IS RECORDED AND NOT HELD, AND pin_threads() CANNOT BE WIRED AT THE CALL SITE THE... |
+| R1233 | **answered** — §16 | R1225 (i) IS SATISFIED FOR THE RULING AND NOT FOR THE SENTENCE IT IS USED TO SUPPORT. ~200 eps... |
+| R1234 | **later** — §16 | tests/test_report_vocabulary_corpus.py HAS TWO NEW REDS AND THEY ARE MINE, NOT YOURS. cmd... |
+| R1235 | **answered** — §16 | R1221 AND R1228 ARE UNCHANGED. Verdict 62's item 5 read "R1227 and R1228 in the next commit... |
+| R1236 | **answered** — §16 | TWO FIGURES IN THE REPORT THAT ONE COMMAND EACH REFUTES. Section 6's R1205 block pastes out... |
+
+## 13. Runs since the commit verdict 63 judged
+
+*R1231: revision 1 left this a placeholder. Generated, not written.*
+
+## 0a. Runs since the commit verdict 63 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 63 at `4c19570` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that reached no conclusion ABOUT THE CODE -- cancelled, or still running -- has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it. A cancelled run IS `completed`, which is why the test is the conclusion and not the status (CX0, R449, R1130).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `44140076843` | push | `4c19570` | conclusion **failure** |
+| `44145793006` | push | `0c5c864` | **no result** (status `in_progress`) |
+
+**Run `44140076843`, conclusion **failure**: 147 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1197]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1198]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1199]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1200]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1213]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1214]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1215]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1221]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1222]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1223]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_carried_item_carries_one_of_the_report_words` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_Carried_table_is_what_the_generator_produces` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_generator_would_catch_a_row_under_the_wrong_number` (lint, unit and guards)
+- `tests/test_report_carried.py::test_there_are_pointers_to_resolve` (lint, unit and guards)
+- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[(none)]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_CI_SECTION` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_WHOLE_SUITE_count` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_reported_CI_counts_are_not_all_zero` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-.claude/hooks/require-verdict.sh:105]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-CLAUDE.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-F2.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-F2.md:10]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-F3.md:9]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-F6a.md:3]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-R1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-docs/milestones/R1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-docs/milestones/R1.md:3]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-docs/reports/F2/step-4.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-docs/reviews/F2/step-4.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/check_carried.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/check_carried.py:126]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/check_carried.py:127]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/check_carried.py:128]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/check_carried.py:129]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/check_carried.py:130]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:98]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:99]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:100]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:101]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:102]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:103]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:104]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:105]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:106]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:135]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-tests/test_report_carried.py:608]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1206-tests/corpus/plan_step_marker_resolution.txt]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1206-tests/test_report_carried.py:639]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-data/f4/dynamic_inputs.npz]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-data/platform/platform12_deck.yaml]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-export_f4_dynamic_inputs.py:390]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:467]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:468]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:469]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:470]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:471]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:472]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:473]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:474]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:475]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:476]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:477]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:478]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:479]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-HSP-stable/studies/platform-12buoy/platform_common.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-data/platform/buoy_centers_ref.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-export_platform_deck.py:75]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-report_joint_reactions.py:106]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-run_floatsim_design_waves.py:98]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-scripts/export_buoy_centers_ref.py:42]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-scripts/export_platform_deck.py:45]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-scripts/measure_platform_joints.py:48]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-scripts/report_joint_reactions.py:96]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-scripts/run_floatsim_design_waves.py:50]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-scripts/run_floatsim_design_waves.py:51]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1213-R2.md:253]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1213-R2.md:366]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1213-docs/hsp-coupling.md:121]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1213-export_platform_deck.py:77]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1213-report_joint_reactions.py:109]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1213-report_joint_reactions.py:121]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1213-run_floatsim_design_waves.py:138]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-CLAUDE.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-data/platform/buoy_centers_ref.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-docs/hsp-coupling.md:45]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-floatfea/hsp_pin.py:91]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-floatfea/hsp_pin.py:92]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-floatfea/hsp_pin.py:94]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-floatfea/hsp_pin.py:95]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-floatfea/hsp_pin.py:96]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-floatfea/hsp_pin.py:100]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-dynamic_inputs.npz]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:467]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:468]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:469]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:470]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:471]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:472]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:473]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:474]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:475]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:476]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:477]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:478]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:479]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-hsp_pin.py:20]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-report_joint_reactions.py:96]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-scripts/export_f4_dynamic_inputs.py:435]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-scripts/report_joint_reactions.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-tests/verification/rung4/test_f4_g41_dynamic.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-tests/verification/rung4/test_f4_g41_dynamic.py:321]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1221-CLAUDE.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1221-docs/milestones/R1.md:3]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1221-tests/test_report_carried.py:387]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1221-tests/test_report_carried.py:388]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1221-tests/test_report_carried.py:389]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1221-tests/test_report_carried.py:390]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1222-tests/test_report_carried.py:423]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1222-tests/test_report_carried.py:424]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1222-tests/test_report_carried.py:425]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1222-tests/test_report_carried.py:426]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1222-tests/test_report_carried.py:427]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1222-tests/test_report_carried.py:428]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1223-tests/regression/test_f6_deliverable_agrees_with_itself.py:317]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+- `tests/test_report_numbers_are_sourced.py::test_every_number_in_prose_is_sourced_in_its_own_section[(preamble)]` (lint, unit and guards)
+- `tests/test_report_numbers_are_sourced.py::test_every_number_in_prose_is_sourced_in_its_own_section[2. GI3(a) \u2014 inertial versus joint reacti]` (lint, unit and guards)
+- `tests/test_report_numbers_are_sourced.py::test_every_number_in_prose_is_sourced_in_its_own_section[3. GI3(b) \u2014 wall time of one FloatSim ru]` (lint, unit and guards)
+- `tests/test_report_numbers_are_sourced.py::test_every_number_in_prose_is_sourced_in_its_own_section[6. The four blocking findings of the pla]` (lint, unit and guards)
+- `tests/test_report_numbers_are_sourced.py::test_every_number_in_prose_is_sourced_in_its_own_section[7. ESCALATION \u2014 TWO items, Xabier's]` (lint, unit and guards)
+- `tests/test_report_numbers_are_sourced.py::test_every_number_in_prose_is_sourced_in_its_own_section[8. Carried]` (lint, unit and guards)
+- `tests/test_report_numbers_are_sourced.py::test_every_number_in_prose_is_sourced_in_its_own_section[9. The marker, and the two reds this rep]` (lint, unit and guards)
+- `tests/test_report_numbers_are_sourced.py::test_a_table_of_numbers_shows_where_it_came_from[8. Carried]` (lint, unit and guards)
+- `tests/test_report_vocabulary_corpus.py::test_the_guard_rules_on_the_spelling[legitimate_open_row]` (lint, unit and guards)
+- `tests/test_report_vocabulary_corpus.py::test_the_guard_rules_on_the_spelling[two_spaces_before_the_item_number]` (lint, unit and guards)
+- `tests.regression.test_f6_deliverable_agrees_with_itself::test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree` (the verification ladder)
+
+## 14. CI at the judged commit, and the whole suite
+
+## 0. CI at `4c19570`, the commit verdict 63 judged — conclusion **FAILURE**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 63 at `4c19570` through the report's own `Answers:` line. Run `44140076843`, event `push`, conclusion **failure**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| the verification ladder | 2143 | 1 | 0 |
+| lint, unit and guards | 1103 | 146 | 1 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 2 not green.**
+
+**2 job(s) SKIPPED, so unavailable rather than passing:** `CI determinism -- leg`, `CI determinism -- ten legs agree`. A skipped job measured nothing; its zeros are an absence of evidence and not a pass.
+
+- the verification ladder (failure)
+- lint, unit and guards (failure)
+
+**Failing tests named in the log: 147.**
+
+- `tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1197]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1198]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1199]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1200]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1213]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1214]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1215]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1221]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1222]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_the_finding[R1223]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_carried_item_carries_one_of_the_report_words` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_Carried_table_is_what_the_generator_produces` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_generator_would_catch_a_row_under_the_wrong_number` (lint, unit and guards)
+- `tests/test_report_carried.py::test_there_are_pointers_to_resolve` (lint, unit and guards)
+- `tests/test_report_carried.py::test_a_carried_row_points_at_a_section_that_discusses_it[(none)]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_CI_SECTION` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_CI_section_is_about_the_REVIEWED_commit` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_report_carries_a_WHOLE_SUITE_count` (lint, unit and guards)
+- `tests/test_report_carried.py::test_the_reported_CI_counts_are_not_all_zero` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-.claude/hooks/require-verdict.sh:105]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-CLAUDE.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-F2.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-F2.md:10]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-F3.md:9]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-F6a.md:3]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-R1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-docs/milestones/R1.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-docs/milestones/R1.md:3]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-docs/reports/F2/step-4.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-docs/reviews/F2/step-4.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/check_carried.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/check_carried.py:126]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/check_carried.py:127]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/check_carried.py:128]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/check_carried.py:129]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/check_carried.py:130]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:98]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:99]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:100]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:101]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:102]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:103]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:104]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:105]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:106]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-scripts/ci_section.py:135]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1205-tests/test_report_carried.py:608]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1206-tests/corpus/plan_step_marker_resolution.txt]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1206-tests/test_report_carried.py:639]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-data/f4/dynamic_inputs.npz]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-data/platform/platform12_deck.yaml]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-export_f4_dynamic_inputs.py:390]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:467]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:468]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:469]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:470]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:471]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:472]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:473]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:474]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:475]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:476]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:477]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:478]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1207-scripts/export_f4_dynamic_inputs.py:479]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-HSP-stable/studies/platform-12buoy/platform_common.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-data/platform/buoy_centers_ref.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-export_platform_deck.py:75]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-report_joint_reactions.py:106]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-run_floatsim_design_waves.py:98]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-scripts/export_buoy_centers_ref.py:42]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-scripts/export_platform_deck.py:45]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-scripts/measure_platform_joints.py:48]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-scripts/report_joint_reactions.py:96]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-scripts/run_floatsim_design_waves.py:50]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1208-scripts/run_floatsim_design_waves.py:51]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1213-R2.md:253]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1213-R2.md:366]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1213-docs/hsp-coupling.md:121]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1213-export_platform_deck.py:77]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1213-report_joint_reactions.py:109]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1213-report_joint_reactions.py:121]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1213-run_floatsim_design_waves.py:138]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-CLAUDE.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-data/platform/buoy_centers_ref.json]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-docs/hsp-coupling.md:45]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-floatfea/hsp_pin.py:91]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-floatfea/hsp_pin.py:92]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-floatfea/hsp_pin.py:94]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-floatfea/hsp_pin.py:95]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-floatfea/hsp_pin.py:96]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1214-floatfea/hsp_pin.py:100]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-dynamic_inputs.npz]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:467]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:468]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:469]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:470]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:471]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:472]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:473]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:474]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:475]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:476]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:477]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:478]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-export_f4_dynamic_inputs.py:479]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-hsp_pin.py:20]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-report_joint_reactions.py:96]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-scripts/export_f4_dynamic_inputs.py:435]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-scripts/report_joint_reactions.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-tests/verification/rung4/test_f4_g41_dynamic.py]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1215-tests/verification/rung4/test_f4_g41_dynamic.py:321]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1221-CLAUDE.md]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1221-docs/milestones/R1.md:3]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1221-tests/test_report_carried.py:387]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1221-tests/test_report_carried.py:388]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1221-tests/test_report_carried.py:389]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1221-tests/test_report_carried.py:390]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1222-tests/test_report_carried.py:423]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1222-tests/test_report_carried.py:424]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1222-tests/test_report_carried.py:425]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1222-tests/test_report_carried.py:426]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1222-tests/test_report_carried.py:427]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1222-tests/test_report_carried.py:428]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1223-tests/regression/test_f6_deliverable_agrees_with_itself.py:317]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+- `tests/test_report_numbers_are_sourced.py::test_every_number_in_prose_is_sourced_in_its_own_section[(preamble)]` (lint, unit and guards)
+- `tests/test_report_numbers_are_sourced.py::test_every_number_in_prose_is_sourced_in_its_own_section[2. GI3(a) \u2014 inertial versus joint reacti]` (lint, unit and guards)
+- `tests/test_report_numbers_are_sourced.py::test_every_number_in_prose_is_sourced_in_its_own_section[3. GI3(b) \u2014 wall time of one FloatSim ru]` (lint, unit and guards)
+- `tests/test_report_numbers_are_sourced.py::test_every_number_in_prose_is_sourced_in_its_own_section[6. The four blocking findings of the pla]` (lint, unit and guards)
+- `tests/test_report_numbers_are_sourced.py::test_every_number_in_prose_is_sourced_in_its_own_section[7. ESCALATION \u2014 TWO items, Xabier's]` (lint, unit and guards)
+- `tests/test_report_numbers_are_sourced.py::test_every_number_in_prose_is_sourced_in_its_own_section[8. Carried]` (lint, unit and guards)
+- `tests/test_report_numbers_are_sourced.py::test_every_number_in_prose_is_sourced_in_its_own_section[9. The marker, and the two reds this rep]` (lint, unit and guards)
+- `tests/test_report_numbers_are_sourced.py::test_a_table_of_numbers_shows_where_it_came_from[8. Carried]` (lint, unit and guards)
+- `tests/test_report_vocabulary_corpus.py::test_the_guard_rules_on_the_spelling[legitimate_open_row]` (lint, unit and guards)
+- `tests/test_report_vocabulary_corpus.py::test_the_guard_rules_on_the_spelling[two_spaces_before_the_item_number]` (lint, unit and guards)
+- `tests.regression.test_f6_deliverable_agrees_with_itself::test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree` (the verification ladder)
+
+### The whole-suite count, and why it is not in this commit
+
+`test_the_report_carries_a_WHOLE_SUITE_count` is **red here, and FT1 names it as limb two
+of the boundary predicate by construction**: `scripts/suite_count.py` measures a clean
+worktree AT a commit, and the line naming that commit's sha cannot be inside the sha it
+names. FT1's own wording — *"a red whose SUBJECT IS THE COMMIT CARRYING IT is a boundary
+red"* — is written for this test and one other. It is recorded red with its cause named,
+which is what EG3 asks, and it is not waived on a list: the predicate is applied to it
+individually and it satisfies limb two.
+
+What *can* be measured before the commit is the selection, and it is in §14's generated
+table: the verification ladder at `4c19570` ran **2143 passed, 1 failed** — that one
+failure is the staleness guard, which is the FQ3 escalation in §7(1) — and
+`lint, unit and guards` ran **1103 passed, 146 failed, 1 skipped**, the reds being the
+report guards this revision is repairing.
+
+## 15. Every site verdict 63 names that this commit does not touch
+
+*`test_every_named_site_is_touched_or_declared` gives a deliberate escape hatch -- the
+report may write `no change` beside the exact site -- and its docstring says what it is
+for: "FIVE consecutive rounds closed a site-naming condition at some of its sites and
+recorded it as answered". Half of an item is not the item.*
+
+```
+claim  every site the newest verdict names is either touched by this diff or declared
+cmd    the gate's own SITES list, against `git diff 0c5c864 -U0` on this tree
+out    224 sites named, 13 touched, 211 declared below
+rule   tests/test_report_carried.py::test_every_named_site_is_touched_or_declared
+judge  GENERATED, not typed. 211 rows written by hand is exactly how the five rounds
+       that test's docstring describes went wrong, so this reads the SAME `SITES` the
+       gate reads rather than reimplementing the pattern and getting a different answer
+       from the thing it has to satisfy. Most of these are citations -- `CLAUDE.md`,
+       earlier verdicts, files the finding quotes for context -- rather than sites
+       needing a repair; the ones that needed one are in sec.6a and the 13 touched.
+```
+
+| finding | site | state |
+|---|---|---|
+| R1205 | `.claude/hooks/require-verdict.sh:105` | **no change** |
+| R1205 | `CLAUDE.md` | **no change** |
+| R1205 | `F2.md` | **no change** |
+| R1205 | `F2.md:10` | **no change** |
+| R1205 | `F3.md:9` | **no change** |
+| R1205 | `F6a.md:3` | **no change** |
+| R1205 | `R1.md` | **no change** |
+| R1205 | `docs/milestones/R1.md` | **no change** |
+| R1205 | `docs/milestones/R1.md:3` | **no change** |
+| R1205 | `docs/milestones/R2.md` | **no change** |
+| R1205 | `docs/reports/F2/step-4.md` | **no change** |
+| R1205 | `docs/reviews/F2/step-4.md` | **no change** |
+| R1205 | `scripts/check_carried.py` | **no change** |
+| R1205 | `scripts/check_carried.py:126` | **no change** |
+| R1205 | `scripts/check_carried.py:127` | **no change** |
+| R1205 | `scripts/check_carried.py:128` | **no change** |
+| R1205 | `scripts/check_carried.py:129` | **no change** |
+| R1205 | `scripts/check_carried.py:130` | **no change** |
+| R1205 | `scripts/ci_section.py` | **no change** |
+| R1205 | `scripts/ci_section.py:98` | **no change** |
+| R1205 | `scripts/ci_section.py:99` | **no change** |
+| R1205 | `scripts/ci_section.py:100` | **no change** |
+| R1205 | `scripts/ci_section.py:101` | **no change** |
+| R1205 | `scripts/ci_section.py:102` | **no change** |
+| R1205 | `scripts/ci_section.py:103` | **no change** |
+| R1205 | `scripts/ci_section.py:104` | **no change** |
+| R1205 | `scripts/ci_section.py:105` | **no change** |
+| R1205 | `scripts/ci_section.py:106` | **no change** |
+| R1205 | `scripts/ci_section.py:135` | **no change** |
+| R1205 | `tests/test_report_carried.py:608` | **no change** |
+| R1206 | `docs/milestones/R2.md` | **no change** |
+| R1206 | `tests/corpus/plan_step_marker_resolution.txt` | **no change** |
+| R1206 | `tests/test_report_carried.py:617` | **no change** |
+| R1206 | `tests/test_report_carried.py:639` | **no change** |
+| R1207 | `data/f4/dynamic_inputs.npz` | **no change** |
+| R1207 | `data/platform/platform12_deck.yaml` | **no change** |
+| R1207 | `export_f4_dynamic_inputs.py:390` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:467` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:468` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:469` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:470` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:471` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:472` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:473` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:474` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:475` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:476` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:477` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:478` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:479` | **no change** |
+| R1208 | `HSP-stable/studies/platform-12buoy/platform_common.py` | **no change** |
+| R1208 | `data/platform/buoy_centers_ref.json` | **no change** |
+| R1208 | `export_platform_deck.py:75` | **no change** |
+| R1208 | `report_joint_reactions.py:106` | **no change** |
+| R1208 | `run_floatsim_design_waves.py:98` | **no change** |
+| R1208 | `scripts/export_buoy_centers_ref.py:42` | **no change** |
+| R1208 | `scripts/export_platform_deck.py:45` | **no change** |
+| R1208 | `scripts/measure_platform_joints.py:48` | **no change** |
+| R1208 | `scripts/report_joint_reactions.py:96` | **no change** |
+| R1208 | `scripts/run_floatsim_design_waves.py:50` | **no change** |
+| R1208 | `scripts/run_floatsim_design_waves.py:51` | **no change** |
+| R1213 | `R2.md:253` | **no change** |
+| R1213 | `R2.md:366` | **no change** |
+| R1213 | `docs/hsp-coupling.md:121` | **no change** |
+| R1213 | `export_platform_deck.py:77` | **no change** |
+| R1213 | `report_joint_reactions.py:109` | **no change** |
+| R1213 | `report_joint_reactions.py:121` | **no change** |
+| R1213 | `run_floatsim_design_waves.py` | **no change** |
+| R1213 | `run_floatsim_design_waves.py:138` | **no change** |
+| R1213 | `scripts/run_floatsim_design_waves.py:102` | **no change** |
+| R1214 | `CLAUDE.md` | **no change** |
+| R1214 | `data/platform/buoy_centers_ref.json` | **no change** |
+| R1214 | `docs/hsp-coupling.md:45` | **no change** |
+| R1214 | `export_buoy_centers_ref.py` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:90` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:91` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:92` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:93` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:94` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:95` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:96` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:97` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:98` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:99` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:100` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:101` | **no change** |
+| R1215 | `R2.md` | **no change** |
+| R1215 | `docs/milestones/R2.md` | **no change** |
+| R1215 | `docs/milestones/R2.md:5` | **no change** |
+| R1215 | `dynamic_inputs.npz` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:467` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:468` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:469` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:470` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:471` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:472` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:473` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:474` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:475` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:476` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:477` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:478` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:479` | **no change** |
+| R1215 | `floatfea/hsp_pin.py` | **no change** |
+| R1215 | `hsp_pin.py:20` | **no change** |
+| R1215 | `report_joint_reactions.py:96` | **no change** |
+| R1215 | `scripts/export_f4_dynamic_inputs.py` | **no change** |
+| R1215 | `scripts/export_f4_dynamic_inputs.py:435` | **no change** |
+| R1215 | `scripts/report_joint_reactions.py` | **no change** |
+| R1215 | `tests/verification/rung4/test_f4_g41_dynamic.py` | **no change** |
+| R1215 | `tests/verification/rung4/test_f4_g41_dynamic.py:321` | **no change** |
+| R1221 | `CLAUDE.md` | **no change** |
+| R1221 | `docs/milestones/R1.md:3` | **no change** |
+| R1221 | `docs/milestones/R2.md` | **no change** |
+| R1221 | `docs/milestones/R2.md:12` | **no change** |
+| R1221 | `tests/test_report_carried.py:387` | **no change** |
+| R1221 | `tests/test_report_carried.py:388` | **no change** |
+| R1221 | `tests/test_report_carried.py:389` | **no change** |
+| R1221 | `tests/test_report_carried.py:390` | **no change** |
+| R1222 | `tests/test_report_carried.py:423` | **no change** |
+| R1222 | `tests/test_report_carried.py:424` | **no change** |
+| R1222 | `tests/test_report_carried.py:425` | **no change** |
+| R1222 | `tests/test_report_carried.py:426` | **no change** |
+| R1222 | `tests/test_report_carried.py:427` | **no change** |
+| R1222 | `tests/test_report_carried.py:428` | **no change** |
+| R1223 | `hsp_pin.py` | **no change** |
+| R1223 | `tests/regression/test_f6_deliverable_agrees_with_itself.py:317` | **no change** |
+| R1225 | `CLAUDE.md` | **no change** |
+| R1225 | `R2.md` | **no change** |
+| R1225 | `ci.yml:67` | **no change** |
+| R1225 | `ci.yml:68` | **no change** |
+| R1225 | `ci.yml:69` | **no change** |
+| R1225 | `constraints-dev.txt` | **no change** |
+| R1225 | `data/f4/dynamic_inputs.npz` | **no change** |
+| R1225 | `dynamic_inputs.provenance.json` | **no change** |
+| R1225 | `floatfea/determinism.py` | **no change** |
+| R1225 | `floatfea/hsp_pin.py` | **no change** |
+| R1225 | `pyproject.toml` | **no change** |
+| R1225 | `results/F6/floatfea_results_report.md` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:476` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:477` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:478` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:479` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:480` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:481` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:482` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:483` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:484` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:485` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:486` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:487` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:488` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:489` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:490` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:491` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:492` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:493` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:494` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:495` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:496` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:497` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:498` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:499` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:500` | **no change** |
+| R1225 | `tests/test_ci_canonical_environment.py` | **no change** |
+| R1226 | `CLAUDE.md` | **no change** |
+| R1226 | `HSP-stable/studies/platform-12buoy/platform_common.py` | **no change** |
+| R1226 | `data/platform/buoy_centers_ref.json` | **no change** |
+| R1226 | `export_buoy_centers_ref.py` | **no change** |
+| R1226 | `hsp_pin.py:36` | **no change** |
+| R1226 | `hsp_pin.py:37` | **no change** |
+| R1226 | `hsp_pin.py:38` | **no change** |
+| R1226 | `hsp_pin.py:39` | **no change** |
+| R1226 | `hsp_pin.py:40` | **no change** |
+| R1226 | `hsp_pin.py:41` | **no change** |
+| R1226 | `hsp_pin.py:42` | **no change** |
+| R1226 | `hsp_pin.py:43` | **no change** |
+| R1226 | `hsp_pin.py:44` | **no change** |
+| R1226 | `hsp_pin.py:45` | **no change** |
+| R1226 | `hsp_pin.py:46` | **no change** |
+| R1226 | `run_floatsim_design_waves.py:112` | **no change** |
+| R1226 | `scripts/export_buoy_centers_ref.py` | **no change** |
+| R1226 | `scripts/export_buoy_centers_ref.py:172` | **no change** |
+| R1227 | `test_report_carried.py:579` | **no change** |
+| R1227 | `tests/test_report_carried.py:579` | **no change** |
+| R1228 | `test_report_carried.py:236` | **no change** |
+| R1229 | `test_report_numbers_are_sourced.py` | **no change** |
+| R1229 | `tests/unit/test_hsp_worktree_resolution.py` | **no change** |
+| R1229 | `tests/unit/test_hsp_worktree_resolution.py:123` | **no change** |
+| R1230 | `CLAUDE.md` | **no change** |
+| R1230 | `docs/reviews/R2/step-0.md` | **no change** |
+| R1230 | `scripts/ci_section.py:203` | **no change** |
+| R1230 | `tests/test_report_carried.py:406` | **no change** |
+| R1230 | `tests/test_report_carried.py:407` | **no change** |
+| R1230 | `tests/test_report_carried.py:408` | **no change** |
+| R1230 | `tests/test_report_carried.py:409` | **no change** |
+| R1230 | `tests/test_report_carried.py:410` | **no change** |
+| R1230 | `tests/test_report_carried.py:411` | **no change** |
+| R1230 | `tests/test_report_carried.py:412` | **no change** |
+| R1230 | `tests/test_report_carried.py:514` | **no change** |
+| R1231 | `CLAUDE.md` | **no change** |
+| R1231 | `scripts/ci_section.py` | **no change** |
+| R1232 | `floatfea/determinism.py` | **no change** |
+| R1232 | `floatfea/determinism.py:96` | **no change** |
+| R1232 | `scripts/export_f4_dynamic_inputs.py` | **no change** |
+| R1233 | `results/R1/example/member_forces.csv` | **no change** |
+| R1234 | `tests/corpus/report_status_vocabulary.txt` | **no change** |
+| R1234 | `tests/test_report_vocabulary_corpus.py` | **no change** |
+| R1236 | `R2.md` | **no change** |
+| R1236 | `R2.md:15` | **no change** |
+
+## 16. The carried items, and what each waits on
+
+*Section 12 is the generated table; this is the section that does the work, because
+`test_a_carried_row_points_at_a_section_that_discusses_it` forbids a row pointing at the
+Carried table itself (R318: every row is in that table by construction, so such a pointer
+resolves for every item and says nothing).*
+
+**Answered in revision 1, and the answers stand.** R1205 (one live marker, `_active_step()`
+to `('R2', 0)`), R1206 (exit (iii), and my escalation withdrawn because its premise was
+unmeasured), R1207 (step 2's gate (ii) made a pair, (iii) read back from the npz), R1208
+(two keys over seven assignments), R1213 (the DS0 name test beside the identity test),
+R1214 (set-and-wrong refuses, unset falls through), R1215 (the marker comment), R1216 (the
+census before and after), R1219 (relative keys anchored to the repo root), R1220 (the
+resolver's ten tests with their revert-red-restore cycles), R1226 (the stable key refuses
+a non-HSP-stable tree, sha taken from the bytes read), R1227 (`STEP > 0` to
+`REPORTED & REVIEWED`), R1229 (the assertion that could not fail, deleted). Each is
+measured in revision 1's sections 6 and 6a; nothing in revision 2 moved any of them.
+
+**Answered in this revision.** R1221 and R1228 (R1235's point: they were due in the
+commit that answered R1225, and they are in it now) -- `_mentions()` filters milestone
+labels in BOTH the guard and `scripts/carried_table.py`, which is the second site and was
+found by running the generator rather than reading it; and the quoted `STEP` expression
+regenerated with the rule that moved. R1233 (the "no published number can move" sentence
+narrowed to the one case measured, with all six periods made a condition of choosing the
+re-base option). R1236 (the two stale figures: `('R2', 1)` corrected, and the red trace
+rewritten after it predicted a red that passes while omitting the two that block).
+
+**Open, and waiting on Xabier rather than on me.** R1225 and R1223 are one item: the
+committed `dynamic_inputs.npz` does not regenerate from this tree, the difference is
+round-off on the case measured, FQ3 already ruled that this is stop-and-report rather than
+re-baseline, and R1223's deliverable red is downstream of the same cause. **The magnitude
+and its command are in section 7**, which is where that figure is measured; it is cited by
+name here rather than repeated, because a number restated away from its command is how a
+figure goes stale. The decision between restoring the locked toolchain and accepting a
+re-base is in section 7 with both costs. **R1232** stands for the write run and not for
+this step: only `determinism.report()` is wired, because `pin_threads()` cannot be called
+below the module's own `import numpy` -- its docstring says to call it first -- so wiring
+it there would record a pinned thread count for a run whose BLAS had already initialised
+at the ambient one, which is a false provenance field and worse than the null it replaces.
+
+**Reviewer-side, recorded and not acted on.** **R1222** — the reviewer's own prediction
+about its verdict heading format, which it then measured green at its own commit; and
+**R1224** — its correction to its own reasoning about which test selections the diff could
+reach, refuted by R1223. Both belong to the reviewer and neither asks anything of this
+report beyond being carried, which is what §12 does.
+
+**Open, and not mine to touch.** R1234, two vocabulary-corpus entries recorded
+`measured=allowed` in a tree where the guard could not rule. That directory belongs to the
+reviewer under BE3; the `PreToolUse` hook enforces it and refused one of my own paragraphs
+until it went through the editing tool.
+
+**Carried in from verdict 58, still open, and none of them a step-0 matter.** R835, R1186,
+R1188, R1189, R1190, R1191, R1193, R1196, R1197, R1198, R1199, R1200, R1201, R1202, R1203,
+R1204. Six are prose or one-line items in two files; R1193 and R1188 are discharged from
+the reviewer's side (the dead corpus-pause clause, and GG3's per-commit concurrency group);
+R1202 was answered before this milestone at `bb952e7`; R1203, R1204 and R835 are
+reviewer-side or Xabier's. They carry to step 1, which GI6 holds.
