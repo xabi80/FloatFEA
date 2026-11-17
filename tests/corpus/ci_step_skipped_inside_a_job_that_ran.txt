@@ -1,0 +1,95 @@
+# CORPUS: a SKIPPED STEP INSIDE A JOB THAT RAN, and the gap between what a
+# job-level record can say and what a step-level ordering does (CK0, CH3, FV1,
+# FR1, EG3 (i)).
+#
+# Owner: the reviewer. Test DATA only -- one candidate per line, nothing here
+# imports from floatfea and nothing here is test code. Written at the
+# sixty-fifth verdict on R2 step 0 (judged commit 0fb8c93).
+#
+# WHY THIS FILE EXISTS (BE3). `tests/corpus/report_ci_section.txt`,
+# `tests/corpus/ci_ladder_gating.txt` and
+# `tests/corpus/ci_workflow_job_gating_shapes.txt` are corpora of JOBS: a job
+# skipped, a job cancelled, a job's conclusion respelled, a run that never
+# started. Not one entry in any of them is about a STEP INSIDE A JOB THAT RAN --
+# and that is where this round's blocking finding lives. CK0 collapsed six ladder
+# jobs into six STEPS of one job and made the step ORDER the dependency chain;
+# `scripts/ci_section.py` reads `job["conclusion"]` and parses `run_rung:` lines
+# out of the log, so a step that never executed emits no line, contributes
+# nothing, and is named NOWHERE. The job-level notice "N job(s) SKIPPED, so
+# unavailable rather than passing" does not fire for a step. The only trace a
+# skipped step leaves in a published report is that the ladder's passed count is
+# SMALLER, with the same `1 failed` beside it.
+#
+# MEASURED, at the judged commit, from the two runs themselves:
+#   44149168617 (rungs 1,2,3,6)  ladder row  2143 passed, 1 failed, 0 skipped
+#   44180156206 (rungs 1,2,3,4)  ladder row  2011 passed, 1 failed, 0 skipped
+# 477 tests -- the whole of `tests/regression` among them -- went from executing
+# to not executing, 345 started, and the published row differs by one number that
+# nothing interprets. FV1 assigns the whole of `tests/regression` to CI at the
+# pushed sha, and `tests/regression/test_f6_deliverable_agrees_with_itself.py` is
+# the only automated check that a published deliverable still regenerates.
+#
+# A PASSING SCAN MEANS: for every candidate below, something in this repository
+# goes RED -- a gate, or a figure a report guard reads. A candidate that reaches a
+# green tree is recorded as reaching one; that is the coverage measurement, not a
+# to-do list.
+#
+# `m=` MEANS MEASURED THIS ROUND, in the reviewer's own worktree, one variable at
+# a time, reverted after each, and WITH THE BASELINE SUBTRACTED. The baseline
+# matters: at this commit `test_ladder_6_is_not_gated_behind_a_rung_that_is_red_
+# under_Q8` is ALREADY red, so every workflow plant below "looks caught" if the
+# FAILED list is read without comparing it against the unplanted tree. Baseline
+# for the four CI-workflow gate files: 1 failed, 86 passed. A line with no `m=`
+# is unmeasured and says so by its absence.
+#
+# -------------------------------------------------------------------------
+# A. THE LADDER'S ORDER IS ITS DEPENDENCY CHAIN, SO EVERY WAY OF BREAKING THE
+#    CHAIN WITHOUT MOVING A STEP IS A CANDIDATE
+# -------------------------------------------------------------------------
+m=CAUGHT (+1: test_every_test_in_the_suite_is_run_by_some_ci_job) : rung 6's step keeps its position and its `run:` drops `full:tests/regression`, so the goldens run and the whole regression suite does not
+m=NOT CAUGHT (+0) : `tests/regression` split into its own step placed AFTER rung 6, so it is still NAMED by a job and still sits behind a rung that can be red
+m=NOT CAUGHT (+0) : `continue-on-error: true` on rung 4's step, so every later rung runs, the step shows failure and the JOB concludes success
+m=NOT CAUGHT (+0) : `if: ${{ !cancelled() }}` on rungs 5 and 6, so the step order is no longer a chain -- CK0's own stated premise -- while the order gate still reads the same order
+`timeout-minutes` on a rung low enough that the step is CANCELLED rather than failed, so the run is `completed` with no conclusion and the section prints `no result`
+a rung's step given `shell: bash` and `set +e`, so `run_rung.sh`'s non-zero exit never reaches the step and the rung reads success
+`scripts/run_rung.sh` given an early `exit 0` on one rung name, so the step is success, no `run_rung:` line is emitted, and the published count loses that rung silently
+two rungs merged into one step, so `len(order) >= 6` fails and the assertion message blames a missing rung rather than a merge
+the ladder job duplicated under a second name with the rungs in the other order, so one job satisfies the order gate and the other supplies the counts
+the order gate's `WORKFLOW` constant repointed at a copy of the workflow under `tests/data/`, so the gate reads a file CI never runs
+a rung's step renamed so its name no longer carries the rung number while its `run:` still does, so the report's step table and the gate disagree about which rung failed
+# -------------------------------------------------------------------------
+# B. A JOB-LEVEL RECORD CANNOT SEE A STEP (the axis no existing corpus file has
+#    an entry on)
+# -------------------------------------------------------------------------
+a run whose ladder job has half its steps skipped and whose published row carries a smaller passed count with the same `1 failed`
+a published ladder row whose passed count is the sum over fewer rungs than the previous revision's row, with no sentence anywhere naming the difference
+the job-level "N job(s) SKIPPED, so unavailable rather than passing" notice present and correct while two STEPS inside a non-skipped job were skipped
+a `run_rung:` line for a rung that collected zero tests, so `collected - failed - errored - skipped` contributes nothing and the rung reads as having run
+a report whose CI section is regenerated after a step reorder while the previous revision's ladder row is left standing at the older, larger count with no note
+the escalation's own red moving from one rung to another between two revisions, so the published red COUNT is unchanged and the test behind it is a different test
+# -------------------------------------------------------------------------
+# C. A GATE AND A GENERATOR THAT BOTH COMPUTE ONE PREDICATE -- the step's own
+#    lesson taken one step further: a COMMITTED generator already existed
+# -------------------------------------------------------------------------
+a report table produced by an uncommitted ad-hoc script while a committed generator for the same table ships in `scripts/`, with no `<!-- generated: -->` mark on the section
+a committed generator that refuses on an unavailable diff (`TOUCHED_ERROR`) bypassed by an ad-hoc script that reads the same unavailable diff as "nothing touched" and declares every site unchanged
+a site-declaration table generated from an EMPTY touched set on a shallow clone, so every site declares `no change` and the gate is green having checked nothing
+a judge paragraph claiming a table "reads the same SITES the gate reads" while a second predicate in the same script is re-derived from the diff
+m=NOT CAUGHT, on the SHIPPED artifact and not a plant : a `claim/cmd/out/rule/judge` block whose `out` line and whose `judge` line state different counts for the same quantity
+an earlier revision's judge figure left at its old count after the generator's output changed in a later revision
+# -------------------------------------------------------------------------
+# D. WHICH ROUND'S `Carried` SECTION IS READ -- R1240's other directions, every
+#    one of them reachable from the REVIEWER'S OWN WORDING
+# -------------------------------------------------------------------------
+m=NOT CAUGHT (the mention set goes empty) : the newest verdict entry carries no `## Carried` heading at all, so the mention half of EXPECTED is empty and any dropped row is legal
+m=NOT CAUGHT (the OLDER round is read) : the newest entry's heading written `#Review` without the space, so the newest-entry scoper finds the second-newest
+m=NOT CAUGHT (the mention set goes empty) : a line reading `# Review` quoted inside a fenced `out` block in the newest entry, so the entry boundary falls inside the fence and the real Carried section lies outside it
+m=NOT CAUGHT, on the SHIPPED artifact and not a plant : a report prose list of ids "brought into scope" carried from a verdict measured against a DIFFERENT newest verdict, where one of the listed ids is not in EXPECTED
+an `Answers:` header naming the newest verdict by the right NUMBER and an older SHA, so the number reads correct and the text extracted is the wrong round's
+a verdict entry whose `## Carried` heading is spelled `## Carried items`, matched by the heading regex, beside a second `## Carried` later in the same entry
+# -------------------------------------------------------------------------
+# E. THE PINNED TREE IS A NAME, NOT A TAG (hsp_pin, R1208/R1226, FR1 second head)
+# -------------------------------------------------------------------------
+m=NOT CAUGHT : `FLOATFEA_HSP_STABLE` pointed at a git tree merely NAMED `HSP-stable`, at commit 8dfdc6c with no tags, regenerates `data/platform/buoy_centers_ref.json` and the written file declares `hsp_tag: floatfea-ref-1` beside a `blob_sha` from that tree
+an `HSP-stable` directory at the right NAME and the right SHAPE (12 buoys, 4 hubs) with one constant moved, so `--check` reports STALE and invites the regeneration that overwrites the EB6 input
+a `floatsim.worktree_stable` declared as the empty string, which `hsp_pin.worktree` treats as unset and replaces with the legacy sibling without saying so
