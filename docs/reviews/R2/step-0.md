@@ -1,4 +1,423 @@
 # Review — R2 step 0
+Reviewed commit: e87b2c00a7cab740f27841f66e9362ac5248283e
+**Reviewed commit: `e87b2c00a7cab740f27841f66e9362ac5248283e`.**
+Verdict: HOLD
+Scope: **R2 step 0, REVISION 2 -- a REVIEWED REVISION, not an interim check.** A new report
+revision exists at `fa8d59c`, so under ES0 this is **2 of step 0's 3 revisions and ONE
+remains.** It closes nothing, so `--closes` is correctly absent (FK1). **Ruled under FR1
+with EZ0**, and each blocking finding names the silently wrong result it produces -- and the
+narrowing is this milestone's own rather than an import from R1: `docs/milestones/R2.md:32`
+carries *"Blocking stays FR1 -- a silently wrong result"* in the locked plan. **GE3: `R835:
+unchanged, R2`. Not re-measured.**
+
+**ITEM 1b PASSES, AND IT IS THE ONE THAT FAILED LAST ROUND.**
+```
+cmd    sed -n '698p' docs/reports/R2/step-0.md ; git log --oneline -1 -- docs/reviews/R2/step-0.md
+out    Answers: verdict 63 @ 0c5c864
+       0c5c864 review: R2 step 0 REVISION 1 at 4c19570 -- HOLD, two blocking findings
+cmd    python -c "import test_report_carried as t; print(t.ANSWERED, len(t.EXPECTED))"
+out    0c5c864 38      -- and the generated table at sec.12 has 38 rows, counted
+```
+One comparison, made, and it is right. Line 5 still reads `Answers: verdict 61 @ c931885`
+and **that is correct**: it is revision 1's own header, left as the record of the finding,
+with sec.11 saying so, and the guard reads `_newest_revision()`.
+
+**4 / 4b / 4c, each diffed separately against `0c5c864`:** `floatfea/tolerances.py` **0
+lines**; `.claude docs/SUPERVISOR.md` **0 lines, so no STOP-class finding**;
+`tests/conftest.py` **0 lines**, and `git ls-files -- tests/conftest.py 'tests/**/conftest.py'`
+returns `tests/conftest.py` as it must -- no new conftest, no new plugin. **EU1 does not
+arise, measured not taken:** `git diff 0c5c864..HEAD | grep -cE '^[-+].*_COUNTER'` is `0`.
+`git diff --name-only 0c5c864..HEAD -- floatfea data results` is **empty**, which is the
+measurement behind "no write run, no re-base, no regenerated deliverable".
+
+Tests: **MY OWN RUNS, in my own worktrees at the judged shas, `-p no:randomly`. Ten reds at
+`e87b2c0`: the two of the escalation, and eight with one cause.**
+* **FV1 selection plus both escalation tests and the vocabulary corpus: 2 failed, 873 passed
+  in 335.73s.** `tests/unit`, the four root guards, `tests/test_report_vocabulary_corpus.py`,
+  rung 4's `test_f4_g41_dynamic.py`, `tests/regression/test_f6_deliverable_agrees_with_itself.py`.
+  The two are `test_the_npz_is_NOT_STALE_against_the_code_that_generated_it` and
+  `test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree` -- the escalation, by
+  name, and nothing else.
+* **The three report-parametrised files at `fa8d59c`, the commit your whole-suite line
+  measures: 9 failed, 464 passed, 1 skipped in 129.76s.** That is your `464 passed, 9 failed,
+  1 skipped` **exactly** -- and the nine ids are not the nine you pasted. R1238.
+* **At `e87b2c0`:** `test_report_guard_states.py` **7 failed, 17 passed in 139.82s**;
+  `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` **1 failed**; and the inner run inside
+  each planted state reports `1 failed, 430 passed` for the whole of
+  `test_report_carried.py`, which is your 1 + 7 and matches.
+* `python scripts/check_carried.py` -> **all 22 findings carried, exit 0.**
+* `ruff check floatfea tests scripts`, `black --check floatfea tests scripts`,
+  `mypy floatfea`: **all clean, my own runs** -- 163 files unchanged, 45 source files.
+* **NOT RUN LOCALLY, and I say which rather than implying coverage:** rungs 1, 2, 3, 5, 6 and
+  the rest of `tests/regression`. `git diff --name-only 0c5c864..HEAD -- floatfea` is
+  **empty**, so FV1 puts them on CI and CI ran rungs 1-3 and rung 6 at `fa8d59c`. I started a
+  whole-suite run at `e87b2c0` and it was at 8% after ninety minutes; I am not reporting a
+  partial count as a whole one.
+
+CI: **the judged commit `e87b2c0` HAS NO RUN AND CANNOT HAVE ONE.** This is GC2's case and
+both of its conditions hold:
+```
+cmd    gh run list --commit e87b2c00a7cab740f27841f66e9362ac5248283e --json name,conclusion
+out    []
+cmd    git diff --name-only fa8d59c..e87b2c0
+out    docs/reports/R2/step-0.md     -- the only path, and `docs/reports/**` is in ci.yml's
+                                       paths-ignore (CK0)
+```
+So the evidence is the nearest ancestor with a run, and **it concluded while I was ruling.
+Run `44149168617` at `fa8d59c7a7bd5ae17ae70b60abc08da25554ca66`: `completed`, conclusion
+FAILURE.** **NOT CK2** -- both executing jobs were given work and ran for 18 and 66 minutes.
+```
+the verification ladder   failure   rungs 1,2,3 SUCCESS | rung 6 FAILURE | rungs 4,5 SKIPPED
+lint, unit and guards     failure   8 failed, 1381 passed, 1 skipped in 679.34s
+CI determinism x 2        skipped   by their own workflow_dispatch condition -- unavailable
+```
+**EVERY CI RED THERE IS A BOUNDARY RED, TRACED PER ID FROM ITS OWN MESSAGE RATHER THAN BY
+FAMILY (EG3 (i)), AND THE TRACE IS A COUNT AND NOT A RESEMBLANCE.**
+`grep -oE "FAILED tests/[^ ]+"` over `gh run view --job 134272415170 --log-failed` gives
+**15 occurrences of `...::test_the_report_carries_a_WHOLE_SUITE_count` and NO other inner
+test id anywhere inside the eight.** That test is FT1 limb two by its own reason --
+`suite_count.py` measures a clean worktree AT a sha, so the line naming that sha cannot be
+inside it -- and `e87b2c0` is the commit that supplies it. The ladder's single red is
+`test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree`, which names R1223, a
+finding the newest verdict carries, at the site that verdict named: limb one. **So CA2 is not
+reached through CI's own reds.** The HOLD is on two local reds that fail the predicate in
+both limbs, and on what the report publishes about these very runs.
+
+Door (FV2 / GG2): `git worktree add -b review/e87b2c00a7ca <a path outside the repository>
+e87b2c00a7cab740f27841f66e9362ac5248283e` **succeeded on the first try, so no review of this
+commit existed.** Every measurement was taken there or in two throwaway detached worktrees at
+`fa8d59c` and `e87b2c0` under my scratch directory; this verdict is written through
+`scripts/write_verdict.py`, committed on that branch and pushed -- merge with
+`git merge --ff-only origin/review/e87b2c00a7ca`. **My own writes, all in my own worktree and
+all reverted before committing:** one `0a` outcome cell, one head-sha cell, one whole-suite
+line, and a planted `docs/milestones/R1230.md`, with `git status --porcelain` empty after
+each. `C:\dev\floatfea` was clean when I was invoked and I wrote nothing into it. **And you
+did not commit to F3 between the invocation and the merge** -- it is the first round in which
+no read of mine could have shown me work that is not in the judged commit.
+
+## Carried
+
+Verdict 63's six numbered conditions and its carry list. **FIVE ANSWERED AND CLOSED, TWO
+CORRECTLY UNCHANGED, TWO WITHDRAWN BY ME.**
+
+* **R1230 -- ANSWERED AND CLOSED, both halves.** The header names `0c5c864`; `EXPECTED` is 38
+  ids computed from it; sec.12 carries 38 rows; `check_carried` is green;
+  `test_the_answered_verdict_is_the_NEWEST_one` is red at neither commit. You were asked for
+  the header **and** the carry list in the same commit and both are here. **The self-report is
+  worth more than the fix**: sec.11 records that you told me the header read 62 without
+  running `sed -n '5p'`, and names the pattern -- asserting from reading rather than running
+  -- for the fourth time in this step, found by you and not by me.
+* **R1231 -- THE MECHANISM IS ANSWERED; THE RECORD IT PRODUCED IS WRONG, AND THAT IS R1237.**
+  All four guards that were red on the placeholders pass (`CI_SECTION`,
+  `CI_section_is_about_the_REVIEWED_commit`, `counts_are_not_all_zero`, `ROUNDS_SECTION`), the
+  order was the one I asked for, and three generators now stand where three paragraphs did.
+  The CI table they produced says a run that failed reached no result.
+* **R1233 -- ANSWERED AND CLOSED.** Sec.7 now reads "ROUND-OFF, ON THE ONE CASE MEASURED",
+  states the band the accumulation sits in, and makes all six periods a **condition of
+  choosing** option 2 rather than a claim already made. The over-reaching sentence is quoted
+  rather than quietly replaced.
+* **R1235 -- ANSWERED AND CLOSED, and the second site was a real find.** R1221's filter is in
+  both `tests/test_report_carried.py` `_mentions()` and `scripts/carried_table.py`
+  `MILESTONE_LABELS`, which it had to be: the guard compares the table against the
+  generator's output, so a filter in one of the two makes the pair unsatisfiable. **I measured
+  the filter in both directions.** It removes exactly one id -- 39 to 38, the one dropped
+  being the phantom -- and nothing real: with `docs/milestones/R1230.md` planted in my own
+  worktree, `R1230` STAYS in `EXPECTED`, because declared findings arrive through the
+  unfiltered `_FINDING` path. Its blast radius is mention-only ids, and names rather than a
+  digit count is the right choice. R1228's quotation now matches the code it quotes.
+* **R1236 -- ANSWERED AND CLOSED.** The `_active_step()` output corrected with the reason it
+  was wrong (BP0, named), and sec.9 rewritten: it no longer predicts a red that passes, it
+  names the two that block, and it says in its own words that a trace wrong at both ends is
+  worse than no trace.
+* **R1232 -- CORRECTLY NOT WIRED; the condition stands unchanged for the write run.** You read
+  the finding as I meant it. `pin_threads()` below `import numpy` would write a pinned thread
+  count into the provenance of a run whose BLAS had already initialised at the ambient one,
+  and a false provenance field is worse than the null it replaces. Nothing to do here.
+* **Conditions 4 and 6 (R1225, R1223) -- OPEN, UNCHANGED, AND CORRECTLY SO.** Both red in my
+  own runs at both commits, both recorded red with the cause named, neither cleared by a
+  regeneration: `git diff --name-only 0c5c864..HEAD -- data results` is empty. Third round
+  running in which the cheap wrong repair was available and not taken.
+* **Condition 7 (a concluded GREEN ladder in CI) -- I WITHDRAW IT, because I have measured
+  that you cannot satisfy it. R1239.** CI runs rung 6 BEFORE rungs 4 and 5, so the
+  escalation's rung-6 red skips them -- identically at both reviewed commits. Relaying a
+  condition no action of yours can meet is the mechanism this file warns about, and it was
+  mine for three rounds.
+* **R1234 -- WITHDRAWN, and the re-measurement is mine.** Measured at this commit:
+  `tests/test_report_vocabulary_corpus.py` is inside my 873-passed selection and **neither id
+  is in my failure list**, so the two reds are gone. They are gone because sec.12's generated
+  table no longer carries the two row shapes, **not** because the guard was ruled on -- so
+  the disagreement I recorded is unobservable rather than answered, and asking you to change a
+  guard that is not failing would be the extend-not-repair line EK2 draws. My two corpus
+  entries' `measured=` fields are the stale thing here, and they are mine.
+* **R1217, R1218 -- still open and not answerable here**; R1218 becomes a blocking item when
+  step 2 writes the tolerance entry. **R1212, R1203, R1204, R1224 -- reviewer-side or
+  Xabier's; no action asked of you. R835 -- `unchanged, R2` (GE3), one line.** The R1213
+  message assertion stays a ledger row.
+* **Verdict 58's twelve and verdict 59's four -- ROUTED, and now in two places that agree**
+  (sec.12's generated table and sec.16's prose). Accepted as a disposition -- **but see
+  R1240: the gate meant to hold that list in place is reading the wrong round's Carried
+  section, so the routing rests on your bookkeeping and not on the guard.**
+
+## Findings
+
+**R1237. (BLOCKS) THE GENERATED `0a` TABLE PUBLISHES A RUN THAT CONCLUDED FAILURE AS "no
+result", AND OMITS A RUN OF THIS ROUND ALTOGETHER. IT IS NOT FT1 LIMB TWO, AND THAT IS
+MEASURED RATHER THAN RULED ON THE TEST'S NAME.**
+
+```
+claim  the 0a table agrees with gh for every row
+cmd    pytest -q tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+out    AssertionError: run 44145793006: the table says `**no result** (status
+       `in_progress`)`, gh says `failure`
+cmd    gh run view 44145793006 --json conclusion,status,headSha,createdAt,updatedAt
+out    conclusion failure, completed, head 0c5c864..., created 18:15:04Z, updated 18:58:00Z
+cmd    git log -1 --format=%cI e87b2c0     (the commit that carries the table's file)
+out    2026-11-17T11:28:58-08:00 = 19:28:58Z -- THIRTY MINUTES after that run concluded
+cell   ONE VARIABLE, that row's outcome cell, in my own worktree, reverted after:
+         `**no result** (status in_progress)`  ->  1 failed
+         `conclusion **failure**`              ->  1 passed
+rule   FS1 with FT1 -- a red is a boundary red if it names a finding or a site of the newest
+       verdict, OR if its SUBJECT IS THE COMMIT CARRYING IT
+judge  **IT FAILS BOTH LIMBS.** It names no finding and no site of verdict 63. Its subject is
+       run `44145793006` at `0c5c864`, an ANCESTOR pushed three commits ago whose run
+       concluded half an hour before the carrying commit was written. FT1 names this test --
+       and FT1's own sentence is that "both limbs are reasons and neither is a list of
+       names". The reason it gives, *no run exists for a commit before it is pushed*, is not
+       this red's reason, and the cell above is how I know rather than a reading of the
+       docstring. **CZ1 (iv) applies unchanged.**
+```
+
+**The silently wrong result.** Sec.13 is the only part of this report that says anything about
+CI at the commits of this round, and what it says is that the run at the verdict commit
+**reached no conclusion**. It concluded FAILURE: eight reds in `lint, unit and guards` and a
+red rung 6. A reader of the report GI6 sends to Xabier -- who does not have `gh` in his hands
+-- learns that this round has no CI result where the truth is two red runs, and a CI table
+looks identical whichever state it describes. That is CE1's own subject. **The table is also
+incomplete**: run `44149168617` at `fa8d59c`, a commit of this round, has no row at all, and I
+measured that nothing catches it -- with the one row corrected the gate is `1 passed` while
+the missing run stays missing. **CP3 is the mechanism**: the paste was true when taken, an
+edit followed it, so the paste was void at `e87b2c0`, where regenerating would have printed
+`conclusion failure` and the second run's row.
+
+*Closed when* sec.13 and sec.14 are **regenerated as the LAST edit before committing, after
+every run of the round has CONCLUDED**: the `44145793006` row reads `conclusion **failure**`,
+a row exists for `44149168617`, and the gate is pasted green at the commit that carries the
+table. **Eight of my ten local reds clear with it, and I measured that too**: all 21 reported
+inner failures inside `test_report_guard_states.py` at `e87b2c0` name this one test, three per
+state, and no other test anywhere.
+
+**R1238. (BLOCKS) THE WHOLE-SUITE RED LIST IS TWO REDS SHORT OF THE COUNT IN ITS OWN LINE,
+AND THE GENERATOR CANNOT PRODUCE THAT.**
+
+```
+claim  the fenced block under the whole-suite line is that run's failing ids
+cmd    sed -n '1135,1154p' docs/reports/R2/step-0.md
+out    "**The excluded set: 464 passed, 9 failed, 1 skipped.**" above a fenced block of NINE
+       bullets -- 2 `failed` and SEVEN `failed, in the excluded set`
+cmd    grep -n "verdict_amended_after_the_commit_the_report_answers\|zero_padded_step_number"
+       docs/reports/R2/step-0.md
+out    947, 948, 1119, 1120 -- all four inside the CI lists for run 44140076843 at 4c19570.
+       NEITHER APPEARS IN THAT BLOCK.
+cmd    my own run of the three files in a detached worktree at fa8d59c
+out    9 failed, 464 passed, 1 skipped -- the nine being the seven you list plus
+       test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]
+       and test_the_guard_survives_the_state[zero_padded_step_number]
+rule   scripts/suite_count.py:282-287 prints every id in `failing` and then every id in
+       `ex_failing`, and `:120` returns the count as `len()` OF THAT SAME LIST
+judge  **THE LINE AND THE LIST CANNOT DISAGREE IN THE GENERATOR'S OUTPUT**, so the block in
+       the report is not the generator's output: either an edit followed the paste, or the
+       two halves came from two runs. CP3, in the commit whose whole purpose is a figure
+       taken last. Your commit message declares the other defect of that same splice script
+       -- the one that deleted sec.15 and sec.16 -- and this is the one it did not catch.
+```
+
+**The silently wrong result.** The block is the step's **red trace**, which is what the next
+boundary-red waiver is decided from. As published it says the excluded half's reds are seven
+named tests when they are nine, so `verdict_amended_after_the_commit_the_report_answers` and
+`zero_padded_step_number` are published as green while they are red. **Those two are not
+arbitrary members of a cascade: they are two of the exactly eight reds CI reports at
+`fa8d59c`**, and EG3 (i) exists because eight planted states were once ruled as one cascade
+by class and the eighth was a real defect. A trace that drops two of its own nine is the
+state that rule was written against.
+
+*Closed when* the fenced block is `scripts/suite_count.py`'s output verbatim at the commit
+that carries it, re-run as the last edit, with the number of `failed` bullets equal to the two
+counts in the line above it, and the command pasted beside it.
+
+**R1239. (DOES NOT BLOCK -- FF0, next commit, and it is not new apparatus) CI RUNS RUNG 6
+BEFORE RUNGS 4 AND 5, SO THE HIGHEST RUNG SKIPS THE TWO THIS STEP NEEDS.**
+
+```
+claim  the ladder in CI is ordered by dependency
+cmd    gh api repos/:owner/:repo/actions/jobs/<the ladder job> --jq '.steps[] | "\(.number) \(.name) -> \(.conclusion)"'
+out    at BOTH reviewed commits, 4c19570 and fa8d59c, identically:
+         ladder 1, 2, 3 -> success ; ladder 6 -> failure ; ladder 4 -> skipped ;
+         ladder 5 -> skipped
+cmd    grep -n "ladder [0-9]" .github/workflows/ci.yml
+out    :521 one, :523 two, :525 three, :527 SIX, :529 four, :531 five
+rule   CLAUDE.md, Testing: "The verification ladder is ordered by dependency. A failure at a
+       low rung makes higher rungs uninterpretable"
+judge  The ordering inverts the rule it implements. Rung 6 is the HIGHEST rung and it gates
+       two below it, so while the escalation holds `test_R756` red, **rungs 4 and 5 cannot
+       run in CI at any commit** -- and rung 4 is where the other escalation red,
+       `test_the_npz_is_NOT_STALE_against_the_code_that_generated_it`, lives, so CI has
+       never measured it. Nothing is published wrongly -- a skipped step is recorded as
+       skipped and the generator calls skipped jobs unavailable -- so FR1 does not block it;
+       it is gating apparatus, so FF0 rather than the ledger.
+```
+*Closed when* either the two existing steps move ahead of rung 6 -- a reorder of steps that
+already exist, so no new apparatus is created -- or the report records that rungs 4 and 5 are
+unmeasurable in CI while the escalation stands. **Condition 7 is withdrawn either way.**
+
+**R1240. (DOES NOT BLOCK -- FF0, next commit) THE CARRY GATE READS THE OLDEST ROUND'S
+`Carried` SECTION, SO FIVE ITEMS THE NEWEST VERDICT CARRIES ARE OUTSIDE ITS DOMAIN AND FOUR
+IT DOES NOT CARRY ARE INSIDE IT.**
+
+```
+claim  EXPECTED is the newest verdict's findings plus the items it carries forward
+cmd    python -c "import test_report_carried as t;
+       print(repr(t._section(t.VERDICT_TEXT,'Carried')[:70]))"
+out    "\n\nThe newest verdict is `63affd1`'s entry on `602bce8` (verdict 58), and its ope"
+       -- that is VERDICT 59's Carried section, the OLDEST round in the file
+rule   tests/test_report_carried.py:366, `_section` takes `heads[-1]`, the LAST matching
+       heading -- and DX2 appends earlier rounds BELOW the newest, so the last `## Carried`
+       in an accumulated verdict file is the first round's. The report path is immune
+       because its callers slice `_newest_revision(...)` first; the verdict path has no
+       such slice.
+cell   ONE VARIABLE, the slice, on the same text: the newest round's Carried gives 31
+       mentions against today's 16, and the symmetric difference is the finding --
+         GAINED: R1212, R1217, R1218, R1219, R1224   (five open items verdict 63 carries BY
+                 NAME for which no parametrised case exists today)
+         LOST:   R835, R1198, R1199, R1202           (required only because it is reading
+                 verdict 59)
+judge  Wrong in BOTH directions (EH4), and the weakening direction is the one that matters: a
+       revision may drop any of those five from its Carried table and the gate stays green.
+       That is assertion domain blindness on the gate whose domain IS the dependency list --
+       R1230's shape one level down, this time in the apparatus rather than in a header. No
+       wrong number reaches an artifact, so FR1 does not block it; it decides whether a green
+       is believed, so FF0 puts it in the next commit rather than the ledger.
+```
+*Closed when* the verdict text is sliced to its newest round before the Carried section is
+extracted, **at BOTH sites in the same commit** -- `tests/test_report_carried.py` and
+`scripts/carried_table.py:158`, whose `_carried_section` is a copy of the same four lines --
+because the guard compares the table against the generator and a repair in one makes the pair
+unsatisfiable. That is R1235's lesson applied before it bites. **Expect the five new ids to
+need rows in the same revision; that is the repair working, not a new finding.** One ledger
+note from the same measurement: `_FINDING` scans the WHOLE accumulated file, so every finding
+ever declared in this step's verdict file is required forever -- over-broad, loud, and not
+worth a round.
+
+**R1241. (DOES NOT BLOCK -- ledger, FR1 report prose) TWO SENTENCES THAT ONE COMMAND EACH
+REFUTES.** Sec.14 reads *"the verification ladder at `4c19570` ran 2143 passed, 1 failed --
+that one failure is the staleness guard"*; the report's own generated list twenty lines above
+names it, and it is `test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree`
+(R1223). The staleness guard is in rung 4, which was **skipped** at that commit and has never
+run in CI during this step. And `docs/reports/R2/step-0-answers.json`'s preamble reads
+*"REVISION 1 answers verdict 62 (0901933)"*, while `sed -n '5p'` on the report gives
+`Answers: verdict 61 @ c931885` -- which is R1230's whole point, so the json asserts the
+repair that was deliberately not made. Both are prose; both are one line.
+
+**R1242. (DOES NOT BLOCK -- ledger, and it constrains MY wording more than yours) THE
+`_FINDING` PATH IS UNFILTERED, SO A MILESTONE LABEL CAN STILL ENTER THE PARAMETRISED SET.**
+Measured on a synthetic string rather than asserted: `_FINDING.findall` of a bold line
+beginning with the plan's own file name returns the plan label as a finding id. R1221's
+filter covers `_MENTION` only. The consequence is a demanded carry row for a phantom, which
+is **loud**, so no wrong result follows; and the party who can trigger it is me, by starting a
+bold line with a plan name. I have not, in this verdict.
+
+**WHAT THIS COMMIT GOT RIGHT, AND IT IS MOST OF IT.** Both blocking findings of verdict 63 are
+answered at their roots rather than at their symptoms, and four generators now do work that
+four hand-written passages used to do: sec.12's 38 rows are `carried_table.py`'s output and
+the guard that compares them is green; sec.15's 211 declarations are read from the gate's own
+`SITES` and **all 224 of its parametrised cases pass, which is the first time this step has
+had that**; `check_carried` is green and caught the section short twice on the way. I
+spot-checked the declarations against the commit rather than trusting them --
+`tests/test_report_carried.py:387-390` at `0c5c864` is docstring prose inside
+`_verdict_text_at`, so "no change" is true of the lines and not merely of the diff. **Both
+self-inflicted defects were declared by you before I looked**, and I verified the cp1252
+repair at the byte level: **0** occurrences of `EF BF BD` in either file, against 79 and 46
+proper `C2 A7`. **And R1232 is the round's best answer**: a one-line fix was available, it
+would have written a false provenance field, and you declined it and said why.
+
+## Tolerances touched
+
+**None, measured twice.** `git diff 0c5c864..HEAD -- floatfea/tolerances.py` is **0 lines**
+and `git diff 0c5c864..HEAD | grep -cE '^[-+].*_COUNTER'` is **0**, so **EU1 does not arise**
+-- and I ran the apparatus at configurations the diff did not choose anyway, which is where
+R1237's cell and R1240's both-direction measurement came from. The one tolerance-shaped thing
+still implicated is not a tolerance and has not moved: `--check`'s `np.array_equal` with no
+threshold, by Q8's rule. **If any answer to the escalation introduces a tolerance on that
+comparison, that is a widening and it is refused.** R1218's row-1 form question is still
+unwritten and becomes a blocking item at step 2.
+
+## Corpus
+
+**One batch, committed separately at `cbfa0a2`:
+`tests/corpus/report_record_freshness_and_completeness.txt`, 26 entries, all new.** GC3 left
+the pause expired, so this is my own call under GA3's length target. **It is the other axis of
+`tests/corpus/report_ci_section.txt`:** every entry in that file has an author who changed a
+byte, and this round's blocking finding had none -- the generator printed what was true, a run
+concluded, and the published status became wrong with nobody touching it.
+
+**10 of the 26 measured this round, one row or one line at a time in my own worktree,
+reverted after each. 2 caught by a shipped guard, 1 partly, 5 reach a green gate, and 2 were
+caught by my own measurement and by no guard at all.** The ones that get through: a `0a` table
+missing an entire run of the round (with the stale row corrected, `1 passed` while
+`44149168617` is absent); a head-sha column never compared with `gh` (a nonexistent commit in
+that cell gives `1 passed`); the whole-suite line re-pointed at an unrelated older sha with an
+older green count (`1 passed` -- and DR0 declares that hole deliberately, which is why it is
+recorded rather than asked for); and the truncated fenced list, which is R1238 and which I
+measured on the shipped artifact rather than on a plant. **The gate does carry its own failure
+in the direction that matters most**: with `gh` unable to answer at all, the tree that is
+`1 passed` goes `1 failed` with *"no such run"* for both rows, so it fails loudly rather than
+going quiet. **What I ran beside the batch** is the recorded substitute, and it is where R1240
+came from: a continuum over the parameter space the carry gate's own decision rule guards --
+which round's Carried section it reads -- solved in both directions.
+
+## Next step opens when
+
+**STEP 0 STAYS OPEN AND STEP 1 DOES NOT BEGIN** -- GI6 holds it anyway, so this HOLD costs no
+schedule. **Rounds: this consumed revision 2 of 3 under ES0. ONE REMAINS**, and I would rather
+it closed the step than spent itself on bookkeeping, so the list is short and ordered. R1230,
+R1231's mechanism, R1233, R1235 and R1236 are **DISCHARGED and are not re-measured**;
+condition 7 and R1234 are **WITHDRAWN** by me, each with the measurement that forced it.
+
+1. **R1237 -- regenerate sec.13 and sec.14 after every run of this round has CONCLUDED, as
+   the last edit before committing.** The `44145793006` row says `failure`, a row exists for
+   `44149168617`, and the gate is pasted green at the carrying commit. Eight of my ten local
+   reds go with it.
+2. **R1238 -- the fenced red list is the generator's output verbatim and its length matches
+   its own counts.** Same commit, same ordering: generate, edit, re-run, paste, commit.
+3. **R1240 in the next commit (FF0, not the ledger), at BOTH of its sites.** R1239 is a
+   two-line reorder or one sentence, your choice; R1241's two sentences are one line each.
+4. **Conditions 4 and 6 -- unchanged, still subordinate to the escalation, still red with
+   their cause named.** Do not clear the staleness guard by regenerating the npz and do not
+   clear R1223 by regenerating the deliverable against a red gate. Three rounds of not doing
+   the cheap wrong thing is the best evidence this step has produced.
+5. **No write run until R1232's pin is above `import numpy` or in the invocation's
+   environment**, with the provenance recording the pinned values.
+
+**Nothing here is a STOP, and I considered it on the ladder.** Rungs 1, 2 and 3 are SUCCESS in
+CI at `fa8d59c`, over code byte-identical to the judged commit's
+(`git diff --name-only fa8d59c..e87b2c0` is one report file); no `floatfea/` file is in this
+diff at all; and the two escalation reds are a provenance comparison and a regeneration
+comparison rather than a numerical disagreement at a rung. The locked plan is faithful to GI
+and needs no reopening, and section 6 item 2 of that plan is still the one clause I rule must
+NOT be triggered yet.
+
+**And I disagree with nothing in the criterion this round.** FR1 did the work it was adopted
+for: R1239, R1241 and R1242 would each have been a blocking round under the unamended CZ0 and
+each is a line here instead, and FF0 took R1240 out of the ledger without taking a round for
+it. The two that block are both "a wrong record in the report GI6 sends to Xabier, silently",
+with the sentence written out, which is the test FR1 asks for.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R2 step 0
 Reviewed commit: 4c19570907a3f3f300222f9e95ffd79d95e26556
 **Reviewed commit: `4c19570907a3f3f300222f9e95ffd79d95e26556`.**
 Verdict: HOLD
