@@ -576,7 +576,13 @@ def test_the_guard_reads_the_step_being_worked_on() -> None:
         "unreadable, or the naming changed. Every assertion in this file is "
         "about a report, so none of them means anything in this state."
     )
-    assert STEP > 0, (
+    # R1227, R1206's FOURTH site. `STEP > 0` is the same sentinel collision one file
+    # over: at step 0 it fired with a message asserting "no step has both" when step 0
+    # has both, and being first in this test it killed three later assertions -- among
+    # them `STEP_REPORT - STEP <= 1`, the one that forbids opening step k+1 over an
+    # unreviewed step k. The condition is whether a step with BOTH a report and a
+    # verdict exists, which is `REPORTED & REVIEWED`, not whether its number is positive.
+    assert REPORTED & REVIEWED, (
         f"reports exist for steps {sorted(REPORTED)} and verdicts for "
         f"{sorted(REVIEWED)}; no step has both. There is no carry list to check."
     )

@@ -70,6 +70,27 @@ belongs with the next thing that needs it.
 
 
 def _source() -> Path:
+    # R1226. THE DS0 NAME REFUSAL, which this file had none of. `hsp_pin.py` stated the
+    # hazard in prose and named this file as the reason there are two keys; prose does not
+    # refuse. The reviewer's control: with the stable key pointed at HSP-RUNS and at
+    # HSP-STABLE, `--check` printed BYTE-IDENTICAL output and exited 0 both times, so the
+    # gate certifying the EB6 reference could not tell which worktree it read.
+    #
+    # It cannot: `provenance.source` is the LITERAL f"HSP-stable/{SOURCE_REL}" and
+    # `provenance.hsp_tag` is a MODULE CONSTANT, so neither can be wrong, while `blob_sha`
+    # comes from whichever tree was used -- both sides move together and `--check` prints
+    # `current`. FR1's second head: an input accepted and used other than as declared.
+    #
+    # This is the predicate `run_floatsim_design_waves.py:112` carries for the runs key,
+    # inverted for the stable key.
+    if "HSP-stable" not in HSP_STABLE.resolve().parts:
+        raise SystemExit(
+            f"REFUSED: the STABLE key resolves to {HSP_STABLE.resolve()}, which is not an "
+            "HSP-stable worktree. This file's provenance DECLARES "
+            f"'HSP-stable/{SOURCE_REL}' as a literal, so generating it from any other tree "
+            "records a source it did not read (R1226). Set $FLOATFEA_HSP_STABLE, or declare "
+            "floatsim.worktree_stable, to the HSP-stable worktree."
+        )
     path = HSP_STABLE / SOURCE_REL
     if not path.is_file():
         raise SystemExit(
@@ -81,9 +102,20 @@ def _source() -> Path:
 
 
 def _blob_sha(path: Path) -> str:
-    """The source file's git blob sha, from HSP-stable's own index."""
+    """The blob sha of THE BYTES THIS SCRIPT READ, not of `HEAD`'s version of them.
+
+    R1226's second limb. This used `git rev-parse HEAD:<rel>` while `build()` reads the
+    numbers from `source.read_text()` -- the WORKING file -- so a dirty stable worktree
+    recorded a sha for a version the numbers did not come from.
+
+    **The repair is to hash the working file, and not to add `--dirty` to a describe.**
+    Both would make the mismatch visible; only this one makes the recorded sha describe
+    the bytes the snapshot was actually built from, which is what a provenance field is
+    for. A `--dirty` marker would say "something here is uncommitted" while still
+    publishing the wrong sha beside it.
+    """
     out = subprocess.run(
-        ["git", "rev-parse", f"HEAD:{SOURCE_REL}"],
+        ["git", "hash-object", str(path)],
         cwd=HSP_STABLE,
         capture_output=True,
         text=True,

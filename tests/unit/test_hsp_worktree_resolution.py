@@ -27,6 +27,7 @@ CI, by design, and is the whole reason `worktree()` has a non-refusing default.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pytest
@@ -120,7 +121,12 @@ def test_an_UNSET_key_falls_through_without_refusing() -> None:
     """
     got = hsp_pin.worktree("runs")
     assert got.name == "HSP-runs"
-    assert not got.is_absolute() or True  # the value is a path, existing or not
+    # `assert not got.is_absolute() or True` stood here. `X or True` is True for every
+    # X, so it was a check that could not fail -- eleven lines below a docstring saying
+    # exactly that (CW0). Deleted rather than repaired: the line above is the real
+    # check, and whether the fallback path is absolute is not a property this test is
+    # about. THIRD instance of this shape in one session; the other two were a source-text
+    # assertion for R1213 and a wait condition that could not see its own process.
 
 
 def test_require_True_refuses_and_names_every_candidate_it_tried() -> None:
@@ -145,20 +151,25 @@ def test_a_RELATIVE_value_resolves_against_the_repo_root_not_the_cwd(
 
     Measured by moving the cwd and nothing else: the resolved path is the same.
     """
+    # NOTHING IS CREATED IN THE REPOSITORY. An earlier version made and removed
+    # `HSP-runs-r1219-probe` in the repo root to have something a relative path could
+    # reach; a test that writes into the tree it is testing is one interrupted run away
+    # from leaving litter behind. The relative value here is `tmp_path` expressed
+    # relative to the root, which exercises the same anchor with no side effect.
     root = Path(hsp_pin.__file__).resolve().parents[1]
-    target = root / "HSP-runs-r1219-probe"
-    target.mkdir(exist_ok=True)
-    try:
-        monkeypatch.setenv(hsp_pin.HSP_RUNS_ENV, "HSP-runs-r1219-probe")
-        here = hsp_pin.worktree("runs")
-        monkeypatch.chdir(tmp_path)
-        there = hsp_pin.worktree("runs")
-        assert here == there == target.resolve(), (
-            "a relative key resolved differently from two working directories, so one "
-            "declaration named two trees (R1219)"
-        )
-    finally:
-        target.rmdir()
+    target = tmp_path / "HSP-runs"
+    target.mkdir()
+    relative = os.path.relpath(target, root)
+    assert not Path(relative).is_absolute(), "the probe value must be relative to mean anything"
+
+    monkeypatch.setenv(hsp_pin.HSP_RUNS_ENV, relative)
+    here = hsp_pin.worktree("runs")
+    monkeypatch.chdir(tmp_path)
+    there = hsp_pin.worktree("runs")
+    assert here == there == target.resolve(), (
+        "a relative key resolved differently from two working directories, so one "
+        "declaration named two trees (R1219)"
+    )
 
 
 def test_an_unknown_key_name_is_a_programming_error_not_a_path() -> None:

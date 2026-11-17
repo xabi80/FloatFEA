@@ -55,6 +55,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -66,6 +67,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "scripts" / "measure"))
+
+# R1225: both already existed and nothing in this path called either.
+from floatfea import determinism, hsp_pin  # noqa: E402
 
 OUT_DIR = ROOT / "data" / "f4"
 NPZ = OUT_DIR / "dynamic_inputs.npz"
@@ -89,6 +93,20 @@ def _blob_sha(path: Path) -> str:
         ["git", "hash-object", str(path)], cwd=ROOT, capture_output=True, text=True, check=True
     )
     return out.stdout.strip()
+
+
+def _dist_version(pkg: str) -> str | None:
+    """An installed package's version, or `None` if it is absent (R1225).
+
+    `None` rather than a raise: this is provenance, and a missing package is a fact
+    about the environment worth recording rather than a reason to refuse a write.
+    """
+    import importlib.metadata as md
+
+    try:
+        return md.version(pkg)
+    except md.PackageNotFoundError:
+        return None
 
 
 def _sha256(path: Path) -> str:
@@ -517,6 +535,36 @@ def main(argv: list[str] | None = None) -> int:
         },
         # R726: every FloatFEA file the run's import closure reached, not a list of two.
         "import_closure": _import_closure_shas(),
+        # R1225. THE TOOLCHAIN THIS FILE WAS BUILT UNDER, RECORDED. It was not, and the
+        # consequence was measured: `--check` was GREEN at `cfb76ff` and REFUSES at
+        # `9e1092a` with 36 of 100 arrays differing, while all 64 INPUT arrays stayed
+        # bit-identical and the HSP worktree stayed at `floatfea-ref-1`. One variable
+        # moved between those commits and it is not in this file: `constraints-dev.txt`'s
+        # numpy and scipy pins (`09d5bc9`), 2.4.4 -> 2.5.4 and 1.17.1 -> 1.18.1.
+        #
+        # The thread count is NOT the cause -- it was unpinned on both sides of the
+        # boundary -- and `ci.yml` says why that was never sufficient anyway: "THE BLAS
+        # KERNEL, PINNED (CF1). Thread count alone was not enough."
+        #
+        # So a bit-exactness gate was deciding whether this artifact is believed while
+        # the conditions its answer depends on appeared nowhere in the artifact. Both
+        # halves come from `floatfea/determinism.py`, which already had them and which
+        # nothing in this path called.
+        "environment": {
+            **determinism.report(),
+            "openblas_coretype": os.environ.get("OPENBLAS_CORETYPE"),
+            "versions": {
+                pkg: _dist_version(pkg)
+                for pkg in ("numpy", "scipy", "capytaine", "xarray", "pandas", "netCDF4")
+            },
+            "baseline_conditions": list(hsp_pin.BASELINE_CONDITIONS),
+            "note": (
+                "R1225: recorded, not asserted. A refusal from `--check` against a "
+                "provenance whose environment differs from this one is FQ3's case -- "
+                "'if the golden moves under these pins, STOP and report rather than "
+                "re-baselining' -- and not a finding about FloatSim."
+            ),
+        },
         # R726: THE RUN PARAMETERS AS EXPLICIT FIELDS, so a consumer can assert them
         # against `docs/milestones/F4.md` rather than trust that the npz was made the way
         # the plan says. The heading is first because it is the one the reviewer moved.

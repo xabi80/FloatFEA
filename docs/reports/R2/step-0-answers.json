@@ -1,0 +1,119 @@
+{
+ "_": [
+  "POINTERS ONLY (CH4). No prose here -- every row points at the section",
+  "that discusses it, and the guard checks that the section MENTIONS the id.",
+  "",
+  "R2 STEP 0, REVISION 1. It answers the R2 PLAN-LOCK verdict at adc6c3c",
+  "(written by the reviewer at 8d40843 on review/91c2d2e05c7b and carried",
+  "onto F3 by cherry-pick, byte-identical, because the branch had already",
+  "advanced past 91c2d2e and a force-push is forbidden). HOLD, FOUR",
+  "blocking findings and four ledger rows.",
+  "",
+  "THE PLAN-LOCK ROUND COUNTS AGAINST NO ES0 REVISION -- the verdict says",
+  "so in its own header -- so step 0 stands at 1 of 3 after this report.",
+  "",
+  "THREE OF THE FOUR BLOCKING FINDINGS ARE ANSWERED. R1206 IS NOT, and it",
+  "is not claimed to be: the exit that would close it needs a change to",
+  "`.claude/hooks/`, which CLAUDE.md permits only in a standalone",
+  "`process:` commit citing a directive. It is escalated in sec.7 with its",
+  "minimal diff, and the red it leaves is named in advance in sec.9."
+ ],
+ "answered": {
+  "R1205": {
+   "state": "answered",
+   "where": "§6"
+  },
+  "R1207": {
+   "state": "answered",
+   "where": "§6"
+  },
+  "R1208": {
+   "state": "answered",
+   "where": "§6"
+  },
+  "R1206": {
+   "state": "open",
+   "where": "§6"
+  },
+  "R1209": {
+   "state": "answered",
+   "where": "§6"
+  },
+  "R1210": {
+   "state": "answered",
+   "where": "§6"
+  },
+  "R1211": {
+   "state": "answered",
+   "where": "§4"
+  },
+  "R1212": {
+   "state": "later",
+   "where": "§8"
+  },
+  "R1196": {
+   "state": "later",
+   "where": "§8"
+  },
+  "R1197": {
+   "state": "later",
+   "where": "§8"
+  },
+  "R1198": {
+   "state": "later",
+   "where": "§8"
+  },
+  "R1199": {
+   "state": "later",
+   "where": "§8"
+  },
+  "R1200": {
+   "state": "later",
+   "where": "§8"
+  },
+  "R1201": {
+   "state": "later",
+   "where": "§8"
+  },
+  "R1186": {
+   "state": "later",
+   "where": "§8"
+  },
+  "R1188": {
+   "state": "later",
+   "where": "§8"
+  },
+  "R1189": {
+   "state": "later",
+   "where": "§8"
+  },
+  "R1190": {
+   "state": "later",
+   "where": "§8"
+  },
+  "R1191": {
+   "state": "later",
+   "where": "§8"
+  },
+  "R1193": {
+   "state": "later",
+   "where": "§8"
+  },
+  "R1203": {
+   "state": "later",
+   "where": "§8"
+  },
+  "R1204": {
+   "state": "later",
+   "where": "§8"
+  },
+  "R835": {
+   "state": "later",
+   "where": "§8"
+  },
+  "R1202": {
+   "state": "answered",
+   "where": "§8"
+  }
+ }
+}
