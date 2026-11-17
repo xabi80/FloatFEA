@@ -1645,12 +1645,24 @@ judge  Fixed at `tests/test_report_carried.py` and `scripts/carried_table.py`. *
        reader whether a fourth site would be a site.
 ```
 
-**R1241 -- two sentences one command each refuted, both corrected.** Section 14 said the
-ladder's single failure "is the staleness guard"; the generated list twenty lines above it
-names `test_R756_...`, and the staleness guard sits in the rung CI skipped. I attributed a
-red to a test that had not run, with the right answer printed on the same page. And this
-report's answers file said revision 1 answered verdict 62 -- it named 61, which is R1230's
-own defect, restated with the sign flipped.
+**R1241 -- two sentences one command each refuted, both corrected.**
+
+```
+claim  section 14's attribution of the ladder's single failure, and the answers file's
+       account of which verdict revision 1 answered
+cmd    the generated CI list in section 14, read against the sentence below it
+out    the list names the F6 deliverable regression test; the sentence named the
+       staleness guard, which lives in the rung CI SKIPPED
+cmd    git show 4c19570:docs/reports/R2/step-0.md | sed -n '5p'
+out    the header named the earlier verdict, not the newest -- which is R1230 itself
+rule   BF0 -- every sentence stating a fact about the repository carries the command
+       that would refute it
+judge  I attributed a red to a test that had not run, with the right answer printed
+       twenty lines above on the same page. And the answers file's preamble asserted
+       revision 1 had answered the NEWEST verdict, which is R1230's own defect restated
+       with the sign flipped -- a correction that repeated the error it corrected.
+       Both are fixed at their sites.
+```
 
 **R1242 -- left as a ledger row.** `_FINDING` is unfiltered, so a bold line opening with a
 plan file name injects a phantom id. It is loud rather than silent, and it constrains the
@@ -1750,11 +1762,16 @@ judge  The row set and the subject column come from the verdict; the state and t
 ```
 claim  every site the newest verdict names is either touched by this diff or declared
 cmd    the gate's own SITES list, against `git diff a3a30d2 -U0` on this tree
-out    245 sites named, 24 touched, 221 declared below
+out    245 sites named, 16 touched, 229 declared below
 rule   tests/test_report_carried.py::test_every_named_site_is_touched_or_declared, whose
        escape hatch is a `no change` beside the exact site
-judge  GENERATED from the same `SITES` the gate reads, not from a reimplementation of its
-       pattern. Most are citations -- CLAUDE.md, earlier verdicts, files a finding quotes
+judge  GENERATED from the gate's own `SITES` **and its own `TOUCHED`**. The first
+       version parsed the diff itself and expanded a hunk header to its whole line
+       range, where the gate takes only the hunk START lines -- so mine was lenient
+       and under-declared by EIGHT sites, which shipped as eight reds. THIRD time in
+       this step that a second implementation of one predicate disagreed with the
+       first, after R1221's filter and R1240's scoping. Read the gate's value; do not
+       re-derive it. Most are citations -- CLAUDE.md, earlier verdicts, files a finding quotes
        for context -- rather than sites needing a repair; the ones that needed one are in
        sections 17 to 19 and among the 24 touched.
 ```
@@ -1876,6 +1893,10 @@ judge  GENERATED from the same `SITES` the gate reads, not from a reimplementati
 | R1221 | `docs/milestones/R1.md:3` | **no change** |
 | R1221 | `docs/milestones/R2.md` | **no change** |
 | R1221 | `docs/milestones/R2.md:12` | **no change** |
+| R1221 | `tests/test_report_carried.py:387` | **no change** |
+| R1221 | `tests/test_report_carried.py:388` | **no change** |
+| R1221 | `tests/test_report_carried.py:389` | **no change** |
+| R1221 | `tests/test_report_carried.py:390` | **no change** |
 | R1222 | `tests/test_report_carried.py:423` | **no change** |
 | R1222 | `tests/test_report_carried.py:424` | **no change** |
 | R1222 | `tests/test_report_carried.py:425` | **no change** |
@@ -1982,6 +2003,10 @@ judge  GENERATED from the same `SITES` the gate reads, not from a reimplementati
 | R1239 | `CLAUDE.md` | **no change** |
 | R1240 | `scripts/carried_table.py:158` | **no change** |
 | R1240 | `tests/test_report_carried.py:366` | **no change** |
+| R1242 | `tests/test_report_carried.py:387` | **no change** |
+| R1242 | `tests/test_report_carried.py:388` | **no change** |
+| R1242 | `tests/test_report_carried.py:389` | **no change** |
+| R1242 | `tests/test_report_carried.py:390` | **no change** |
 
 ## 20. The generated record, re-run as the last edit
 
