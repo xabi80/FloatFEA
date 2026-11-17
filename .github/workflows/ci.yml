@@ -524,19 +524,30 @@ jobs:
         run: sh scripts/run_rung.sh full:tests/verification/rung2
       - name: "ladder 3 -- the model is the platform"
         run: sh scripts/run_rung.sh full:tests/verification/rung3
-      # R1239. THE RUNGS RUN IN THE LADDER'S OWN ORDER. Rung 6 ran here, BEFORE 4 and 5,
-      # and a step's failure skips every step after it -- so a red rung 6 meant CI never
-      # executed rungs 4 or 5 at all. Measured across this step: rungs 4 and 5 are
-      # `skipped` at every reviewed commit, and RUNG 4 IS WHERE THE NPZ STALENESS GUARD
-      # LIVES. CI has never measured the one red that constitutes R2's escalation.
+      # R1243 REVERTS R1239's REPAIR. The order below is CH3's and it is deliberate; the
+      # comment eight lines above this one says so, and I reordered the steps without
+      # reading it. What the reorder cost, measured from the two runs rather than argued:
       #
-      # CLAUDE.md § Testing is the reason this is the wrong order and not merely an
-      # unlucky one: "The verification ladder is ordered by dependency. A failure at a low
-      # rung makes higher rungs uninterpretable" -- so running the highest rung first
-      # inverts exactly the property the ladder exists to have.
+      #   rungs 1,2,3,6   ladder row  2143 passed, 1 failed, 0 skipped
+      #   rungs 1,2,3,4   ladder row  2011 passed, 1 failed, 0 skipped
+      #                   -477 (rung 6 AND the whole of tests/regression), +345 (rung 4)
+      #
+      # Rung 4 is red while R2's escalation stands, so with 4 first it is rungs 5 and 6
+      # that skip -- the very mechanism R1239 identified, applied to R1239's own repair.
+      # **The prediction shipped with that repair was refuted by its own run: ONE red, not
+      # two.** The escalation did not become visible; it MOVED, and the rung-6 deliverable
+      # red went invisible instead, taking `tests/regression` out of CI with it -- which
+      # FV1 assigns to CI in so many words, and which holds the only automated check that
+      # a published deliverable still regenerates.
+      #
+      # R1239's OBSERVATION STANDS AND ITS REPAIR DOES NOT. Chaining rungs in one job
+      # means a red rung hides every rung after it whichever order they sit in; the fix is
+      # to stop the chaining, not to choose which rung gets hidden. That is step 1's,
+      # carried by name, and `tests/test_ci_determinism_gate.py` asserts the position
+      # below in the meantime.
+      - name: "ladder 6 -- it stays fixed"
+        run: sh scripts/run_rung.sh empty:tests/verification/rung6 full:tests/regression
       - name: "ladder 4 -- the loads are the loads"
         run: sh scripts/run_rung.sh full:tests/verification/rung4
       - name: "ladder 5 -- independent confirmation"
         run: sh scripts/run_rung.sh full:tests/verification/rung5
-      - name: "ladder 6 -- it stays fixed"
-        run: sh scripts/run_rung.sh empty:tests/verification/rung6 full:tests/regression

@@ -22,7 +22,11 @@
   "",
   "REVISION 3 REPOINTS EVERY ROW AT 17, 18 OR 19 -- the sections IT has. A pointer",
   "must name a section the NEWEST revision carries, and 20 is the generated record",
-  "rather than a discussion, so it is not a pointer target."
+  "rather than a discussion, so it is not a pointer target.",
+  "",
+  "THE CLOSURE COMMIT adds R1243, verdict 65's one blocking finding: my R1239 repair",
+  "broke the gate that exists to prevent it. Reverted; section 21 carries the two",
+  "measured CI rows that refute the prediction the repair shipped with."
  ],
  "answered": {
   "R1205": {
@@ -240,6 +244,10 @@
   "R1242": {
    "state": "later",
    "where": "§19"
+  },
+  "R1243": {
+   "state": "answered",
+   "where": "§21"
   }
  }
 }
