@@ -87,18 +87,46 @@ def worktree(
     env_name = HSP_RUNS_ENV if which == "runs" else HSP_STABLE_ENV
     legacy = _repo_root().parent / _LEGACY_SIBLING[which]
     tried: list[str] = []
+    # R1214. A SOURCE THAT IS SET AND WRONG IS A REFUSAL. ONLY AN UNSET ONE FALLS THROUGH.
+    #
+    # The first version of this loop appended to `tried` and CONTINUED whenever a set path
+    # was not a directory, so a mistyped `FLOATFEA_HSP_RUNS` was silently discarded and the
+    # legacy sibling used instead -- the caller then opened a DIFFERENT tree from the one
+    # declared, with nothing printed. That is FR1's second head: an input accepted and used
+    # other than as declared. Someone who sets a key has stated an intent, and the only
+    # honest answers are "that tree" or a refusal naming it.
+    #
+    # The legacy sibling is NOT such a source. Nobody set it; it is the implicit
+    # pre-GI3(e) fallback, so its absence is the ordinary state of a machine with no
+    # worktree -- true of CI by design -- and it falls through under `require=False` for
+    # the import-time reason in the docstring above.
     for source, value in (
         (f"declared (floatsim.worktree_{which})", declared),
         (f"${env_name}", os.environ.get(env_name)),
-        ("legacy sibling of the repo root", legacy),
     ):
         if value is None or value == "":
             tried.append(f"{source}: not set")
             continue
+        # R1219. A RELATIVE VALUE IS RESOLVED AGAINST THE REPOSITORY ROOT, NOT THE CWD.
+        # `FLOATFEA_HSP_RUNS=../HSP-runs` otherwise resolved to a different tree
+        # depending on where the process was started -- measured at two values -- so the
+        # same declaration named two worktrees. The repo root is the only anchor that is
+        # a property of the declaration rather than of the caller's shell.
         path = Path(value).expanduser()
+        if not path.is_absolute():
+            path = _repo_root() / path
         if path.is_dir():
             return path.resolve()
-        tried.append(f"{source}: {path} is not a directory")
+        raise SystemExit(
+            f"REFUSED: the HSP {which} worktree was declared and is not a directory.\n"
+            f"  {source} = {path}\n"
+            f"This is not silently replaced by another source (R1214): a key that is set "
+            f"states an intent, and using a different tree than the one declared is an "
+            f"input used other than as declared. Fix the value or unset it."
+        )
+    if legacy.is_dir():
+        return legacy.resolve()
+    tried.append(f"legacy sibling of the repo root: {legacy} is not a directory")
     if require:
         raise SystemExit(
             f"REFUSED: cannot locate the pinned HSP {which} worktree (tag {HSP_TAG}).\n"

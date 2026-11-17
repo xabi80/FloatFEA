@@ -99,6 +99,25 @@ def preflight() -> None:
     """Refuse to run unless the worktree and the database are what they claim."""
     if not RUNS.is_dir():
         _fail(f"{RUNS} does not exist. Create it with `git worktree add`.")
+    # R1213. THE NAME TEST IS FIRST AND THE IDENTITY TEST IS KEPT BESIDE IT, not replaced
+    # (EK2: repair, not a new mechanism).
+    #
+    # The identity test below asks whether the RUNS key happens to equal the STABLE key.
+    # That held while both were literals -- `parents[2] / "HSP-runs"` could not be made to
+    # name the other tree -- and GI3(e) made it reachable: with
+    # `FLOATFEA_HSP_RUNS` pointed at the stable worktree and the stable key unset, the two
+    # differ, the identity test is False, and DS0 printed NOTHING while `main()` went on to
+    # `OUT.mkdir()` and six `case_*.csv` writes INSIDE HSP-stable -- the read-only
+    # production worktree GI1 and `docs/hsp-coupling.md:121` forbid writing to. The
+    # module docstring above records what happened the one time this repository did write
+    # there. Measured by the reviewer against the real worktree, not reasoned about.
+    if "HSP-stable" in RUNS.resolve().parts:
+        _fail(
+            f"the runs worktree resolves to {RUNS.resolve()}, which is HSP-stable -- "
+            "read-only from here (DS0). This script writes case files into the tree "
+            "`RUNS` names, so it refuses by NAME and not only by identity with the "
+            "stable key (R1213)."
+        )
     if RUNS.resolve() == STABLE.resolve():
         _fail("the runs worktree is HSP-stable, which is read-only from here (DS0)")
 

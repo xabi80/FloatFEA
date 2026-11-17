@@ -69,8 +69,20 @@ _STEP_LINE = re.compile(r"<!--\s*step-under-execution:\s*(\d+)\s*-->")
 _MILESTONES = ROOT / "docs" / "milestones"
 
 
-def _active_plan() -> tuple[Path | None, int]:
-    """The plan carrying the step marker, and the step. `(None, 0)` if unclear.
+def _active_plan() -> tuple[Path | None, int | None]:
+    """The plan carrying the step marker, and the step. `(None, None)` if unclear.
+
+    THE SENTINEL IS `None` AND NOT `0`, BECAUSE `0` IS A LEGAL STEP NUMBER (R1206).
+    GI3 names R2's measure-only step "step 0", and while the sentinel was `0` the
+    guards could not tell "the marker says step 0" from "there is no readable
+    marker": `_plan_step() > 0` was False in both cases, so a correctly marked R2
+    step 0 reported the DB2 fallback message and the step boundary was permanently
+    red by construction. EK2 -- a guard that fails false is fixed, not extended.
+
+    The `Stop` hook never had this collision: its sentinel is the EMPTY STRING
+    (`require-verdict.sh:134`, `[ -z "$step" ]`) and `0` is readable at `:110`, so
+    the hook resolved `step-0.md` correctly throughout and needs no change.
+
 
     THE MILESTONE IS READ FROM THE PLAN, NOT HARDCODED (DX2). `_PLAN` used to be
     `docs/milestones/F2.md` and `REPORTS`/`REVIEWS` used to be `docs/*/F2`, which
@@ -97,7 +109,7 @@ def _active_plan() -> tuple[Path | None, int]:
         # below is what identifies a plan, so the wider glob admits no non-plan file.
         plans = sorted(_MILESTONES.glob("*.md"))
     except OSError:
-        return None, 0
+        return None, None
     carrying: list[tuple[Path, int]] = []
     for plan in plans:
         try:
@@ -108,7 +120,7 @@ def _active_plan() -> tuple[Path | None, int]:
         if m:
             carrying.append((plan, int(m.group(1))))
     if len(carrying) != 1:
-        return None, 0
+        return None, None
     return carrying[0]
 
 
@@ -117,8 +129,12 @@ MILESTONE = _PLAN.stem if _PLAN is not None else "F2"
 """The milestone under execution, from whichever plan carries the step marker."""
 
 
-def _plan_step() -> int:
-    """The step the plan says is under execution, or 0 if it says nothing."""
+def _plan_step() -> int | None:
+    """The step the plan says is under execution, or `None` if it says nothing.
+
+    `None` AND NOT `0` (R1206). `0` is a legal step number -- GI3 names R2's
+    measure-only step "step 0" -- so a sentinel of `0` cannot be told from it.
+    """
     return _PLAN_STEP_NUMBER
 
 
@@ -213,7 +229,13 @@ _PAIRED = max(REPORTED & REVIEWED) if (REPORTED & REVIEWED) else 0
 # injected a report AND a verdict for step 10 with the plan line untouched at 5 --
 # which is the state the harness existed to inject. That state was deleted under
 # DR1 (391e375); it is named in the past tense here because the reason survives it.
-STEP = max(_PLAN_STEP if _PLAN_STEP in REPORTED else 0, _PAIRED)
+# R1206: `_PLAN_STEP` is now `int | None`, so the membership test is guarded. The
+# `else 0` arm is the NO-PLAN-STEP fallback and is no longer reachable by a plan
+# that legitimately says step 0 -- which is the whole collision.
+STEP = max(
+    _PLAN_STEP if _PLAN_STEP is not None and _PLAN_STEP in REPORTED else 0,
+    _PAIRED,
+)
 VERDICT = REVIEWS / f"step-{max(REVIEWED)}.md" if REVIEWED else REVIEWS / "step-0.md"
 REPORT = REPORTS / f"step-{STEP}.md"
 
@@ -614,10 +636,12 @@ def test_the_plan_names_the_step_under_execution() -> None:
         "read a closed milestone's last step and report green while checking "
         "nothing."
     )
-    assert _plan_step() > 0, (
+    assert _plan_step() is not None, (
         f"{_PLAN} carries no readable step number, so the guards fell back to the "
         "newest complete report/verdict pair. That is the behaviour DB2 replaced, "
-        "and it makes the step boundary permanently red."
+        "and it makes the step boundary permanently red. R1206: the test is `is not "
+        "None` and NOT `> 0`, because `0` is a legal step number (GI3 names R2's "
+        "step 0) and `> 0` could not tell a marked step 0 from an unreadable marker."
     )
     # THE MARKED STEP HAS A REPORT **OR** A VERDICT (FT0's repair, one file over).
     #
