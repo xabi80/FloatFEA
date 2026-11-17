@@ -45,7 +45,13 @@ from pathlib import Path
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-HSP_RUNS = Path(__file__).resolve().parents[2] / "HSP-runs"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from floatfea import hsp_pin  # noqa: E402
+
+HSP_RUNS = hsp_pin.worktree("runs")
+"""GI3(e)/R1208: the RUNS key, resolved in one place rather than guessed from this
+file's own depth. `parents[2]` was the guess, and it reached `C:/dev/HSP-runs`."""
 STUDY = HSP_RUNS / "studies" / "platform-12buoy"
 SEED = 20260928
 """not-a-tolerance: the seed of the probe state. Nothing is compared against it;

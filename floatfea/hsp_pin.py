@@ -13,15 +13,105 @@ and is one of the more valuable things this tool will produce.
 
 from __future__ import annotations
 
-from typing import Final
+import os
+from pathlib import Path
+from typing import Final, Literal
 
 HSP_TAG: Final[str] = "floatfea-ref-1"
 HSP_COMMIT: Final[str] = "25de7ce"
-HSP_WORKTREE: Final[str] = "../HSP-stable"
-"""Production FloatSim runs live in this worktree, checked out at the tag, so
-they are unaffected by export development on main."""
 
 PINNED_ON: Final[str] = "2026-08-10"
+
+# ---------------------------------------------------------------------------
+# Where the two pinned worktrees are (GI3(e), R1208).
+#
+# `HSP_WORKTREE: Final[str] = "../HSP-stable"` used to live here. It was READ BY
+# NOTHING -- a declared constant with no consumer, verified over the whole tree --
+# while six other files carried seven assignments of their own, none of which
+# resolves from this repository's actual location. GI3(e) asked for a config key
+# with an env-var fallback; R1208 is why there are TWO keys and not one.
+#
+# TWO, BECAUSE ONE IS SILENT IN ONE DIRECTION. DS0 is enforced by three refusals
+# keyed on the NAME `HSP-stable`, so a single key pointed at STABLE is loud. A
+# single key pointed at RUNS is not: `scripts/export_buoy_centers_ref.py` has no
+# DS0 refusal, so it would regenerate `data/platform/buoy_centers_ref.json` -- the
+# input to EB6's label-provenance gate -- from the runs tree while that file's
+# `"source"` field declares `HSP-stable/...` and its `_blob_sha` records that
+# tree's sha. Both worktrees sit at the same tag today, so the bytes match and
+# `--check` stays green with both sides moving together. That is C155's shape and
+# FR1's second head: an input accepted and used other than as declared.
+#
+# THIS RESOLVES A PATH AND NOTHING ELSE. It does not check the tag. Each caller's
+# own tag refusal stays exactly where it is, because R1208's closing condition is
+# that those three refusals are still seen to fire -- centralising them here would
+# have replaced three loud, differently-worded refusals with one, which is the
+# repair-not-extend line EK2 draws.
+# ---------------------------------------------------------------------------
+
+HSP_RUNS_ENV: Final[str] = "FLOATFEA_HSP_RUNS"
+HSP_STABLE_ENV: Final[str] = "FLOATFEA_HSP_STABLE"
+
+_LEGACY_SIBLING: Final[dict[str, str]] = {"runs": "HSP-runs", "stable": "HSP-stable"}
+"""The pre-GI3(e) convention: a sibling of the repository root. Kept as the last
+fall-back so a checkout that already satisfies it keeps working unchanged."""
+
+
+def worktree(
+    which: Literal["runs", "stable"],
+    declared: Path | str | None = None,
+    *,
+    require: bool = False,
+) -> Path:
+    """The pinned HSP worktree, resolved in one place.
+
+    Order: `declared` (a config key, `floatsim.worktree_runs` /
+    `floatsim.worktree_stable`), then the environment variable, then the legacy
+    sibling of the repository root.
+
+    **`require=False` IS THE DEFAULT AND THAT IS DELIBERATE.** The six call sites
+    this replaces are MODULE-LEVEL constants, and three of them are imported by
+    `tests/` and by `scripts/export_f4_dynamic_inputs.py`. Refusing at import
+    would turn "this machine has no worktree" -- which is true of CI, by design,
+    since no HSP worktree is checked out there -- into an ImportError that takes
+    the whole module with it. That is R670's shape: 124 of 126 gate cases errored
+    in CI while all 126 passed on the machine that wrote them.
+
+    So the default returns the best CANDIDATE, existing or not, exactly as the
+    bare `ROOT.parent / "HSP-runs"` expressions it replaces did; each caller's own
+    preflight still refuses, with its own message, and R1208's three DS0 refusals
+    are untouched. `require=True` is for a caller that is about to open the tree
+    and wants one refusal naming every place it looked.
+    """
+    if which not in _LEGACY_SIBLING:
+        raise ValueError(f"which must be 'runs' or 'stable', not {which!r}")
+    env_name = HSP_RUNS_ENV if which == "runs" else HSP_STABLE_ENV
+    legacy = _repo_root().parent / _LEGACY_SIBLING[which]
+    tried: list[str] = []
+    for source, value in (
+        (f"declared (floatsim.worktree_{which})", declared),
+        (f"${env_name}", os.environ.get(env_name)),
+        ("legacy sibling of the repo root", legacy),
+    ):
+        if value is None or value == "":
+            tried.append(f"{source}: not set")
+            continue
+        path = Path(value).expanduser()
+        if path.is_dir():
+            return path.resolve()
+        tried.append(f"{source}: {path} is not a directory")
+    if require:
+        raise SystemExit(
+            f"REFUSED: cannot locate the pinned HSP {which} worktree (tag {HSP_TAG}).\n"
+            + "".join(f"  tried {line}\n" for line in tried)
+            + f"Set ${env_name}, or declare floatsim.worktree_{which} in the run config."
+        )
+    return legacy
+
+
+def _repo_root() -> Path:
+    """This repository's root, from this file's own location."""
+    return Path(__file__).resolve().parents[1]
+
 
 # ---------------------------------------------------------------------------
 # Reproducible baseline at the tag (gate G1.5 compares against this).

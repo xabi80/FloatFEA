@@ -42,7 +42,9 @@ sys.path.insert(0, str(ROOT))
 
 from floatfea import hsp_pin  # noqa: E402
 
-HSP_RUNS = ROOT.parent / "HSP-runs"
+HSP_RUNS = hsp_pin.worktree("runs")
+"""GI3(e)/R1208: resolved by `hsp_pin.worktree`, not by a sibling-of-the-repo guess.
+The tag and commit refusals below are unchanged and still fire on this path."""
 STUDY = HSP_RUNS / "studies" / "platform-12buoy"
 OUT = ROOT / "data" / "platform" / "platform12_deck.yaml"
 _IMPORT_DIRS = (

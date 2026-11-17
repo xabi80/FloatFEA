@@ -5,7 +5,9 @@
 
 **NO FLOATSIM, NO `HSP-runs`, NO SOLVE.** That is the whole point of this module and the
 reason EX0 re-locked the plan: the gate it replaces ran green on one machine and errored on
-124 of 126 cases in CI, because the file it reached for resolves `ROOT.parent / "HSP-runs"`.
+124 of 126 cases in CI, because the file it reached for opens the pinned HSP runs
+worktree. (That was `ROOT.parent / "HSP-runs"` when this was written; GI3(e) moved it to
+`hsp_pin.worktree("runs")`, and a worktree that is absent is still absent in CI.)
 Nothing here imports anything outside `numpy`, `floatfea` and the standard library.
 `tests/verification/rung4/test_f4_g41_dynamic.py::test_the_module_the_gate_IMPORTS_reaches_nothing_but_numpy_and_the_stdlib`
 asserts exactly that over this file's own AST, and also that no `floatfea` module reaches

@@ -47,8 +47,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-RUNS = Path(__file__).resolve().parents[2] / "HSP-runs"
-STABLE = Path(__file__).resolve().parents[2] / "HSP-stable"
+from floatfea import hsp_pin  # noqa: E402
+
+# GI3(e)/R1208. THIS FILE TAKES BOTH KEYS, which is why its two assignments are counted
+# separately in R2's census: it runs in RUNS and asserts it is not STABLE (DS0, DS1), so
+# a single key would make the comparison below compare a path with itself.
+RUNS = hsp_pin.worktree("runs")
+STABLE = hsp_pin.worktree("stable")
 STUDY = RUNS / "studies" / "platform-12buoy"
 DATABASE = STUDY / "platform12_bem.nc"
 OUT = STUDY / "floatfea_design_waves"

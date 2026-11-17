@@ -93,7 +93,9 @@ WAVE_HEIGHT_MODEL_M: Final[float] = 0.484
 WAVE_HEADING_DEG: Final[float] = 0.0
 """Head seas. EX3/R724: no other heading has been run, and the dependence is untested."""
 
-HSP_RUNS = ROOT.parent / "HSP-runs"
+HSP_RUNS = hsp_pin.worktree("runs")
+"""GI3(e)/R1208: the RUNS key. `_preflight` below still refuses a non-directory, a
+worktree that is HSP-stable (DS0) and a tree off the pin, with its own messages."""
 STUDY = HSP_RUNS / "studies" / "platform-12buoy"
 EXPORT = STUDY / "floatfea_design_waves"
 

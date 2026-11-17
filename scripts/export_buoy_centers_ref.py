@@ -39,7 +39,14 @@ sys.path.insert(0, str(ROOT))
 
 from floatfea import hsp_pin  # noqa: E402
 
-HSP_STABLE = ROOT.parent / "HSP-stable"
+HSP_STABLE = hsp_pin.worktree("stable")
+"""GI3(e)/R1208: the STABLE key, and this file is the REASON there are two keys.
+
+It has no DS0 refusal, so a single key pointed at the runs tree would send it there
+silently while the file it writes declares `"source": HSP-stable/...` and records that
+tree's blob sha. Both worktrees are at the same tag today, so `--check` would stay green
+with both sides moving together -- C155's shape, and FR1's second head: an input accepted
+and used other than as declared."""
 SOURCE_REL = "studies/platform-12buoy/platform_common.py"
 SNAPSHOT = ROOT / "data" / "platform" / "buoy_centers_ref.json"
 

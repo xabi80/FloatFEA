@@ -5,8 +5,11 @@
     python scripts/export_f4_dynamic_inputs.py --check    # regenerate and compare (EX0(c))
 
 WHY THIS EXISTS. F4's G4.1 dynamic gate was written to solve through
-`scripts/report_joint_reactions.py`, which reads `ROOT.parent / "HSP-runs"` and imports
-`platform_rao_pilot`. Neither is tracked, and CI checks out no HSP worktree, so 124 of the
+`scripts/report_joint_reactions.py`, which opens the pinned HSP runs worktree and imports
+`platform_rao_pilot`. (It read `ROOT.parent / "HSP-runs"` when this was written; GI3(e)
+moved that to `hsp_pin.worktree("runs")`, which changes WHERE the tree is looked for and
+nothing about the argument below.) Neither is tracked, and CI checks out no HSP worktree,
+so 124 of the
 gate's 126 cases errored in CI while all 126 passed on the machine that wrote them. That is
 R670 for the second time in `tests/verification/rung4/`. EX0 re-locked the plan on committed
 inputs: this script needs HSP and runs on demand; the gate needs only the file it writes.
