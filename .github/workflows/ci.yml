@@ -524,9 +524,19 @@ jobs:
         run: sh scripts/run_rung.sh full:tests/verification/rung2
       - name: "ladder 3 -- the model is the platform"
         run: sh scripts/run_rung.sh full:tests/verification/rung3
-      - name: "ladder 6 -- it stays fixed"
-        run: sh scripts/run_rung.sh empty:tests/verification/rung6 full:tests/regression
+      # R1239. THE RUNGS RUN IN THE LADDER'S OWN ORDER. Rung 6 ran here, BEFORE 4 and 5,
+      # and a step's failure skips every step after it -- so a red rung 6 meant CI never
+      # executed rungs 4 or 5 at all. Measured across this step: rungs 4 and 5 are
+      # `skipped` at every reviewed commit, and RUNG 4 IS WHERE THE NPZ STALENESS GUARD
+      # LIVES. CI has never measured the one red that constitutes R2's escalation.
+      #
+      # CLAUDE.md § Testing is the reason this is the wrong order and not merely an
+      # unlucky one: "The verification ladder is ordered by dependency. A failure at a low
+      # rung makes higher rungs uninterpretable" -- so running the highest rung first
+      # inverts exactly the property the ladder exists to have.
       - name: "ladder 4 -- the loads are the loads"
         run: sh scripts/run_rung.sh full:tests/verification/rung4
       - name: "ladder 5 -- independent confirmation"
         run: sh scripts/run_rung.sh full:tests/verification/rung5
+      - name: "ladder 6 -- it stays fixed"
+        run: sh scripts/run_rung.sh empty:tests/verification/rung6 full:tests/regression

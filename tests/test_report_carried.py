@@ -377,6 +377,31 @@ def _newest_revision(text: str) -> str:
     return text[marks[-1] :] if marks else text
 
 
+def _newest_verdict_entry(text: str) -> str:
+    """The newest `# Review` entry of a verdict file (R1240).
+
+    **DX2 PREPENDS, SO THE NEWEST ENTRY IS THE FIRST ONE** -- the opposite of a report,
+    where revisions are appended and `_newest_revision` takes the last. `_section` takes
+    `heads[-1]`, the LAST heading in whatever it is given, so handing it a whole
+    accumulated verdict file made `EXPECTED`'s mention half come from the OLDEST round:
+    at this commit, verdict 59's Carried section rather than verdict 63's.
+
+    Measured in both directions, which is what says it is a defect and not a preference:
+    reading the newest entry GAINS `R1212, R1217, R1218, R1219, R1224` -- five items the
+    newest verdict carries BY NAME and for which no parametrised case existed -- and
+    LOSES `R835, R1198, R1199, R1202`, which the oldest round named and the newest does
+    not.
+
+    The fix is to SCOPE the text, not to flip the index. `heads[0]` would be wrong for a
+    report, and `_section` serves both.
+    """
+    marks = [m.start() for m in re.finditer(r"^# Review\b", text, re.MULTILINE)]
+    if not marks:
+        return text
+    nxt = [m for m in marks if m > marks[0]]
+    return text[marks[0] : nxt[0]] if nxt else text[marks[0] :]
+
+
 def _reviewed_commit(text: str) -> str:
     m = re.search(r"^Reviewed commit:\s*(\S+)", text, re.MULTILINE)
     return m.group(1) if m else ""
@@ -430,7 +455,9 @@ ANSWERED = _answered_verdict(REPORT_TEXT)
 VERDICT_TEXT = _verdict_text_at(ANSWERED)
 CARRIED = _section(_newest_revision(REPORT_TEXT), "Carried")
 EXPECTED = sorted(
-    set(_FINDING.findall(VERDICT_TEXT)) | set(_mentions(_section(VERDICT_TEXT, "Carried"))),
+    set(_FINDING.findall(VERDICT_TEXT))
+    # R1240: the NEWEST entry's Carried section, not the whole file's last one.
+    | set(_mentions(_section(_newest_verdict_entry(VERDICT_TEXT), "Carried"))),
     key=lambda r: int(r[1:]),
 )
 

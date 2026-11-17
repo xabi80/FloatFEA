@@ -157,7 +157,25 @@ def classify(verdict_text: str) -> dict[str, str]:
     }
 
 
+def _newest_verdict_entry(text: str) -> str:
+    """The newest `# Review` entry (R1240). DX2 PREPENDS, so the newest is the FIRST.
+
+    The generator's copy. The guard and this must agree about which round's Carried
+    section is read, or the pair is unsatisfiable: the table is what
+    `test_the_Carried_table_is_what_the_generator_produces` compares against. Second
+    time in this step that a fix needed both sites -- R1221 was the first.
+    """
+    marks = [m.start() for m in re.finditer(r"^# Review\b", text, re.MULTILINE)]
+    if not marks:
+        return text
+    nxt = [m for m in marks if m > marks[0]]
+    return text[marks[0] : nxt[0]] if nxt else text[marks[0] :]
+
+
 def _carried_section(text: str) -> str:
+    # R1240: scoped to the newest entry before the last-heading search below, because
+    # `heads[-1]` over a whole accumulated verdict file is the OLDEST round's section.
+    text = _newest_verdict_entry(text)
     heads = list(re.finditer(r"^##+ .*Carried.*$", text, re.MULTILINE))
     if not heads:
         return ""

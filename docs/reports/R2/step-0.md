@@ -320,7 +320,7 @@ judge  THE COUNT DOES NOT DISCRIMINATE, AND NEITHER DOES THE MESSAGE. Both state
        **So: marker 0 -- which is also simply what is under execution.**
 ```
 
-**AND EXIT (iii) WAS TAKEN, SO R1206 IS CLOSED. My escalation of it was withdrawn
+**AND EXIT (iii) WAS TAKEN, SO R1206 IS ANSWERED. My escalation of it was withdrawn
 because its premise was wrong and I had not measured it.**
 
 ```
@@ -684,9 +684,15 @@ The reds at this revision, traced rather than predicted:
   and not waivers.
 * `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` was already red at `251af69`, before
   this turn began — measured in a detached worktree at that commit, `1 failed in 0.34s`.
-  Its subject is its own commit's CI run, which is FT1 limb two.
+  Its subject is its own commit's CI run, which is FT1 limb two. **Revision 3 withdraws
+  that reading too**: verdict 64 refused the same claim for the same test by measurement
+  rather than on its name, and §17 records why. A test FT1 names is not thereby a
+  boundary red in every state it fails.
 
-<!-- WHOLE_SUITE -->
+*A `WHOLE_SUITE` placeholder stood here in revision 1. It is removed rather than filled:
+the count belongs to the revision that is committed with it, and revision 3's is in §20.
+A placeholder left in a closed revision is a third thing a reader has to resolve, which is
+what R1231 was about.*
 
 ## 10. CI at the judged commit
 
@@ -756,31 +762,22 @@ judge  **THAT THIS GATE CAN CATCH ANYTHING IS THE MEASUREMENT THAT R1205'S REPAI
 | item | status | the verdict's own subject |
 |---|---|---|
 | R835 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
-| R1186 | **later** — §16 | (c), R1190, R1191, R1193 -- still open, routed to R2 by verdict 58 item 3. R1193 (the dead... |
-| R1188 | **later** — §16 | (c), R1190, R1191, R1193 -- still open, routed to R2 by verdict 58 item 3. R1193 (the dead... |
-| R1189 | **later** — §16 | (c), R1190, R1191, R1193 -- still open, routed to R2 by verdict 58 item 3. R1193 (the dead... |
-| R1190 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
-| R1191 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
-| R1193 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
-| R1196 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
-| R1197 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
-| R1198 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
-| R1199 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
-| R1200 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
-| R1201 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
-| R1202 | **answered** — §16 | (FF0, the base-case sha at five sites) -- ANSWERED before this commit, at bb952e7 (closure:... |
 | R1203 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
 | R1204 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
 | R1205 | **answered** — §16 | carried, and the verdict says nothing further about it here |
 | R1206 | **open** — §16 | carried, and the verdict says nothing further about it here |
 | R1207 | **answered** — §16 | carried, and the verdict says nothing further about it here |
 | R1208 | **answered** — §16 | carried, and the verdict says nothing further about it here |
+| R1212 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
 | R1213 | **answered** — §16 | The DS0 refusal in run_floatsim_design_waves.py DOES NOT FIRE on the input this diff newly... |
 | R1214 | **answered** — §16 | A key that is SET BUT WRONG is silently discarded and a different worktree is used. claim what... |
 | R1215 | **answered** — §16 | docs/milestones/R2.md:5 says the marker reads 1 while :3 reads 0, and calls the shipped state... |
+| R1217 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
+| R1218 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
 | R1221 | **answered** — §16 | The Carried gate is parametrised over PHANTOM finding ids -- R2, and R1 too -- and no wording... |
 | R1222 | **later** — §16 | test_a_blocking_item_is_not_routed_to_4a is red because verdict 59 wrote its dispositions as... |
 | R1223 | **open** — §16 | A PUBLISHED DELIVERABLE no longer regenerates from this tree, and the two rows that moved are... |
+| R1224 | **later** — §16 | no clause this generator can cut -- see the verdict's Carried section |
 | R1225 | **open** — §16 | THE --check REFUSAL IS NOT THREAD COUNT. The npz golden moved when THIS REPOSITORY'S OWN... |
 | R1226 | **answered** — §16 | R1213 ONE KEY OVER: NOTHING TIES THE TREE THE STABLE KEY NAMES TO THE TREE THE SNAPSHOT... |
 | R1227 | **answered** — §16 | R1206's FOURTH SITE: tests/test_report_carried.py:579 still reads assert STEP > 0, and it goes... |
@@ -793,6 +790,12 @@ judge  **THAT THIS GATE CAN CATCH ANYTHING IS THE MEASUREMENT THAT R1205'S REPAI
 | R1234 | **later** — §16 | tests/test_report_vocabulary_corpus.py HAS TWO NEW REDS AND THEY ARE MINE, NOT YOURS. cmd... |
 | R1235 | **answered** — §16 | R1221 AND R1228 ARE UNCHANGED. Verdict 62's item 5 read "R1227 and R1228 in the next commit... |
 | R1236 | **answered** — §16 | TWO FIGURES IN THE REPORT THAT ONE COMMAND EACH REFUTES. Section 6's R1205 block pastes out... |
+| R1237 | **answered** — §14 | THE GENERATED 0a TABLE PUBLISHES A RUN THAT CONCLUDED FAILURE AS "no result", AND OMITS A RUN... |
+| R1238 | **answered** — §14 | THE WHOLE-SUITE RED LIST IS TWO REDS SHORT OF THE COUNT IN ITS OWN LINE, AND THE GENERATOR... |
+| R1239 | **answered** — §16 | CI RUNS RUNG 6 BEFORE RUNGS 4 AND 5, SO THE HIGHEST RUNG SKIPS THE TWO THIS STEP NEEDS. claim... |
+| R1240 | **answered** — §16 | THE CARRY GATE READS THE OLDEST ROUND'S Carried SECTION, SO FIVE ITEMS THE NEWEST VERDICT... |
+| R1241 | **answered** — §16 | TWO SENTENCES THAT ONE COMMAND EACH REFUTES. Sec.14 reads "the verification ladder at 4c19570... |
+| R1242 | **later** — §16 | THE _FINDING PATH IS UNFILTERED, SO A MILESTONE LABEL CAN STILL ENTER THE PARAMETRISED SET.... |
 
 ## 13. Runs since the commit verdict 63 judged
 
@@ -1177,11 +1180,20 @@ immediately as 247 failures. Restored from the commit and redone as a bounded,
 exact-match edit. A splice that assumes its anchor is the last thing in the file is a
 splice that truncates, and nothing in the anchor says where the file ends.
 
-What *can* be measured before the commit is the selection, and it is in §14's generated
-table: the verification ladder at `4c19570` ran **2143 passed, 1 failed** — that one
-failure is the staleness guard, which is the FQ3 escalation in §7(1) — and
-`lint, unit and guards` ran **1103 passed, 146 failed, 1 skipped**, the reds being the
-report guards this revision is repairing.
+**R1241 CORRECTS WHAT THIS PARAGRAPH SAID.** It read: "the verification ladder at
+`4c19570` ran 2143 passed, 1 failed — that one failure is the staleness guard, which is
+the FQ3 escalation". **The staleness guard was not what failed, and could not have been.**
+The generated list twenty lines above names
+`test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree`, which is R1223.
+The staleness guard lives in **rung 4**, and rung 4 was **skipped** — which is R1239:
+`ci.yml` ran rung 6 before rungs 4 and 5, and a failed step skips every step after it, so
+**CI has never measured the one red that constitutes this step's escalation.** The rungs
+now run in the ladder's own order, which is what CLAUDE.md § Testing requires of them:
+"A failure at a low rung makes higher rungs uninterpretable."
+
+I attributed a red to a test that had not run, in the same paragraph that corrects a
+splice for deleting two sections. The generated list was right there and I did not read
+it against my own sentence.
 
 ## 15. Every site verdict 63 names that this commit does not touch
 
@@ -1468,9 +1480,584 @@ report beyond being carried, which is what §12 does.
 reviewer under BE3; the `PreToolUse` hook enforces it and refused one of my own paragraphs
 until it went through the editing tool.
 
+**Brought into scope by R1240's repair, which is the point of that repair.** The carry
+gate had been reading the OLDEST round's Carried section, so five items the newest verdict
+carries by name had no parametrised case at all: **R1212** (the verdict's filename, which
+is Xabier's and not actionable here), **R1217** (two citations three lines short),
+**R1218** (§4 row 1's form — answered in part in revision 1, where draft became absolute
+metres and trim absolute radians; the reviewer re-opened the half where trim's
+justification sat on draft's quantity, and that half is still open), **R1219** (answered
+in revision 1: relative keys anchor to the repo root) and **R1224** (the reviewer's own
+correction to its own reasoning). Four others left scope — R835, R1198, R1199, R1202 —
+because the oldest round named them and the newest does not. Both directions measured.
+
+**This round's findings.** **R1237** and **R1238** are answered in §14: the rounds table
+regenerated after every run of the round had concluded, and the whole-suite red list
+pasted verbatim with its length equal to its own counts. **R1239** is the CI rung order,
+fixed in `ci.yml` — rung 6 ran before rungs 4 and 5, so a red rung 6 skipped them, and
+rung 4 is where the staleness guard lives; **CI had never measured this step's
+escalation**. **R1240** is fixed at both sites, the guard and the generator, because a
+repair in one alone makes the pair unsatisfiable — the second time in this step a fix
+needed both, after R1221. **R1241** is the ladder sentence corrected in §14 and this
+file's own preamble, which had said revision 1 answered verdict 62 when it named 61 —
+restating R1230's error with the sign flipped. **R1242** is the reviewer's note that
+`_FINDING` is unfiltered, which constrains its wording rather than this report's; left as
+a ledger row.
+
 **Carried in from verdict 58, still open, and none of them a step-0 matter.** R835, R1186,
 R1188, R1189, R1190, R1191, R1193, R1196, R1197, R1198, R1199, R1200, R1201, R1202, R1203,
 R1204. Six are prose or one-line items in two files; R1193 and R1188 are discharged from
 the reviewer's side (the dead corpus-pause clause, and GG3's per-commit concurrency group);
 R1202 was answered before this milestone at `bb952e7`; R1203, R1204 and R835 are
 reviewer-side or Xabier's. They carry to step 1, which GI6 holds.
+
+# Revision 3 -- R1237 and R1238, the two generated records that were wrong as published
+
+Answers: verdict 64 @ a3a30d2
+Answers file: `docs/reports/R2/step-0-answers.json`
+
+**2026-11-17. THE SCHEDULE is unchanged: GI sets no date and GI6 stops the milestone at
+step 0's report.** This is **revision 3 of 3 -- the last the ES0 cap allows**, so whatever
+verdict 65 finds goes to the closure artifact or to step 1 rather than to a revision 4.
+Both of verdict 64's blocking findings are about records this report GENERATED and
+published wrongly, not about the tool; the tool's two reds are unchanged and are the FQ3
+escalation. This is the one hand-written paragraph the revision gets.
+
+## 17. R1237 -- the rounds table published a FAILED run as "no result", and omitted one
+
+```
+claim  section 13's table agreed with `gh` for every row
+cmd    pytest -q tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+out    the row for the run at the verdict commit says `**no result** (status
+       `in_progress`)` where `gh` says `failure`
+cmd    gh run view <that run> --json conclusion,updatedAt
+out    conclusion failure, updated 18:58:00Z
+cmd    git log -1 --format=%cI e87b2c0
+out    19:28:58Z -- THIRTY MINUTES after that run concluded
+rule   CP3 -- "a figure is pasted from the run that produced the artifact it is pasted
+       into, and the pasting is the LAST edit ... if an edit follows the paste, the paste
+       is void"
+judge  I generated the table while the runs were in progress and then went on editing. The
+       paste was true when taken and void when committed, in the commit whose entire
+       purpose was a figure taken last. **And I claimed FT1 limb two for the red, which
+       the reviewer refused by measurement rather than on the test's name**: the subject
+       is a run at an ancestor pushed three commits earlier that concluded before the
+       carrying commit existed, so neither limb applies and CZ1 (iv) stood. The table was
+       also INCOMPLETE -- the run at `fa8d59c`, a commit of this round, had no row
+       at all, and nothing catches an omitted run.
+       **The silently wrong result it published:** section 13 is the only part of this
+       report that says anything about CI at this round's commits, and it told a reader
+       the round reached NO CI RESULT where the truth was two red runs. A reader without
+       `gh` in hand cannot tell those apart, which is CE1's own subject.
+```
+
+## 18. R1238 -- the whole-suite red list was two reds short of its own count
+
+```
+claim  the fenced block under the whole-suite line was that run's failing ids
+cmd    the line against the block it sits above
+out    the line: "The excluded set: 464 passed, 9 failed, 1 skipped"
+       the block: NINE bullets -- 2 `failed` and SEVEN `failed, in the excluded set`
+cmd    the two the reviewer found missing
+out    test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]
+       test_the_guard_survives_the_state[zero_padded_step_number]
+rule   scripts/suite_count.py prints every id in `failing` then every id in `ex_failing`,
+       and returns the count as `len()` OF THAT SAME LIST -- so the generator CANNOT
+       produce a line and a list that disagree
+judge  **THE CAUSE IS MINE AND IT IS SPECIFIC: I pasted the generator's output from a
+       task-output file the harness had TRUNCATED.** The closing fence was missing and I
+       did not notice, so two of the eleven bullets were cut and I published the first
+       nine as the whole list -- without checking the bullet count against the two counts
+       in the line directly above it.
+       **The silently wrong result:** that block is the step's red trace, which is what
+       the next boundary-red waiver is decided from, and it published two red tests as
+       green. They are not arbitrary members of a cascade -- they are two of the exactly
+       eight reds CI reports at `fa8d59c`, and EG3 (i) exists because eight planted states
+       were once ruled as one cascade by class and the eighth was a real defect.
+       Section 20 carries the generator's output verbatim, re-run as the last edit, with
+       the bullet count checked against the line.
+```
+
+**AND THE COUNT ITSELF WAS RIGHT, WHICH AN INDEPENDENT RUN SETTLES.** The reviewer ran
+the whole suite at `e87b2c0` in its own worktree and got **10 failed, 4436 passed** — the
+ten being exactly the ten verdict 64 names, with no eleventh. That reconciles with the two
+halves of my line at `fa8d59c` exactly:
+
+```
+claim  the published whole-suite COUNT was correct and only its LIST was short
+cmd    my two halves at fa8d59c, against the reviewer's single run at e87b2c0
+out    mine, fa8d59c:  3970 + 464 = 4434 passed,  2 + 9 = 11 failed,  1 skipped
+       its,  e87b2c0:                4436 passed,          10 failed,  0 skipped
+       delta:                           +2 passed,          -1 failed, -1 skipped
+rule   R1238's condition -- the block's length must equal the counts in its own line
+judge  **THE DELTA IS THE WHOLE-SUITE LINE ARRIVING, AND NOTHING ELSE.**
+       `test_the_report_carries_a_WHOLE_SUITE_count` flips red to green (-1 failed, +1
+       passed), and the one test it had been skipping now runs and passes (-1 skipped,
+       +1 passed). One commit, two tests, three numbers, no residue. So `3970 passed,
+       2 failed` was right; **the count was never the problem.** What was wrong is the
+       list inside it, which is R1238, and a reader of that block would have taken two
+       red tests for green.
+```
+
+## 19. R1239, R1240, R1241, R1242
+
+**R1239 -- CI ran the ladder out of its own order, and that is why CI has never measured
+this step's escalation.** `ci.yml` ran `ladder 6` before `ladder 4` and `ladder 5`, and a
+failed step skips every step after it, so rungs 4 and 5 are `skipped` at every reviewed
+commit of this step. **Rung 4 is where the npz staleness guard lives.** The rungs now run
+1-2-3-4-5-6, which is what CLAUDE.md § Testing requires of a ladder whose whole property
+is that "a failure at a low rung makes higher rungs uninterpretable". This also settles
+why the reviewer withdrew its own condition 7: it was unsatisfiable, not unmet.
+
+**AND THE REORDER HAS A CONSEQUENCE THIS REPORT HAS TO STATE IN ADVANCE, OR THE NEXT
+READER WILL MISREAD IT.** With rungs 4 and 5 ahead of 6, the escalation's rung-6 red no
+longer skips them, so **rung 4 will measure
+`test_the_npz_is_NOT_STALE_against_the_code_that_generated_it` in CI for the first time in
+this step.** Expect CI's ladder job to go from ONE red to TWO. **The second is not a new
+defect: it is the escalation becoming visible.** It has been in the tree since GI3(e)
+moved three files in the npz's import closure, every local run has reported it, and the
+only thing that changes is that CI now runs the rung it lives in.
+
+**R1240 -- the carry gate read the OLDEST round's Carried section.** `_section` takes the
+LAST matching heading, and DX2 prepends newest-first in a verdict file, so the mention
+half of `EXPECTED` came from verdict 59. Fixed by SCOPING to the newest entry rather than
+flipping the index, because `_section` also serves reports, where revisions are appended
+and the last one IS the newest. Measured in both directions:
+
+```
+cmd    EXPECTED, before and after, at the same commit
+out    GAINS R1212, R1217, R1218, R1219, R1224 -- five items the newest verdict carries
+       BY NAME and for which no parametrised case existed
+       LOSES R835, R1198, R1199, R1202 -- named by the oldest round and not the newest
+rule   R1240's own condition: both sites, because a repair in one makes the
+       generator/gate pair unsatisfiable
+judge  Fixed at `tests/test_report_carried.py` and `scripts/carried_table.py`. **Second
+       time in this step that a fix needed both sites**, after R1221 -- and I found that
+       one by running the generator rather than reading it.
+       `scripts/check_carried.py` is NOT a third site, and **my first reason for saying
+       so was wrong while the conclusion was right.** I said it scopes to the report's
+       newest revision first. It does, at `:73-80`, and `heads[-1]` IS in that file --
+       but that is its REPORT path, where the last heading is the right one. What makes
+       it immune is that **on the VERDICT side it never extracts a Carried section at
+       all**: `:145` is `set(_FINDING.findall(_read(verdict)))`, findings only. The
+       oldest-round hazard needs a Carried extraction from an ACCUMULATED text, and that
+       line does not do one. The distinction matters because it is what tells a later
+       reader whether a fourth site would be a site.
+```
+
+**R1241 -- two sentences one command each refuted, both corrected.** Section 14 said the
+ladder's single failure "is the staleness guard"; the generated list twenty lines above it
+names `test_R756_...`, and the staleness guard sits in the rung CI skipped. I attributed a
+red to a test that had not run, with the right answer printed on the same page. And this
+report's answers file said revision 1 answered verdict 62 -- it named 61, which is R1230's
+own defect, restated with the sign flipped.
+
+**R1242 -- left as a ledger row.** `_FINDING` is unfiltered, so a bold line opening with a
+plan file name injects a phantom id. It is loud rather than silent, and it constrains the
+reviewer's wording rather than this report's.
+
+### The items earlier revisions answered, and where each answer is
+
+*A pointer has to name a section the NEWEST revision carries, so every row points here.
+The answers themselves are unchanged and live in the sections named below; nothing in
+revision 3 moved any of them.*
+
+**Answered in revision 1, in sections 6 and 6a.** **R1205** -- one live marker, the
+resolvers reaching R2. **R1206** -- exit (iii), and my escalation withdrawn because its
+premise was unmeasured. **R1207** -- step 2's gate (ii) made a pair and (iii) read back
+from the npz. **R1208** -- two keys over seven assignments. **R1213** -- the DS0 name test
+beside the identity test. **R1214** -- a set-and-wrong key refuses, an unset one falls
+through. **R1215** -- the marker comment. **R1226** -- the stable key refuses a
+non-`HSP-stable` tree, with the sha taken from the bytes read. **R1227** -- `STEP > 0`
+replaced by the condition it was a proxy for. **R1229** -- the assertion that could not
+fail, deleted.
+
+**Answered in revision 2.** **R1231** -- the three generated sections generated, though
+the record two of them produced is R1237 and R1238 above. **R1233** -- the magnitude
+sentence narrowed to the one case measured. **R1235** -- R1221 and R1228 landed in the
+commit where they were due. **R1236** -- the two stale figures corrected.
+
+**Open, and waiting on Xabier.** **R1223** and **R1225** are one item and section 7(1)
+carries it: the committed npz does not regenerate from this tree, the difference is
+round-off, FQ3 already ruled that this is stop-and-report rather than re-baseline, and
+R1223's deliverable red is downstream of the same cause. **R1232** stands for the write
+run and not for this step, for the reason in section 16.
+
+**Reviewer-side, carried and not acted on.** **R1203**, **R1204**, **R1222** and
+**R1234**: two routed from verdict 58 as the reviewer's or Xabier's, one prediction the
+reviewer measured green at its own commit, and two corpus entries in a directory BE3 makes
+the reviewer's. None asks anything of this report beyond being carried.
+
+## 19b. Carried -- verdict 64
+
+*Generated by `scripts/carried_table.py`, which is what
+`test_the_Carried_table_is_what_the_generator_produces` compares against. I hand-wrote
+this table twice in earlier revisions and `check_carried` caught it short both times; the
+generator existed throughout.*
+
+```
+claim  this table carries every finding the newest verdict declares
+cmd    python scripts/check_carried.py
+out    see section 20, where it is re-run as part of the last edit
+rule   BS0 -- a missing Carried row is a build failure, not a review finding
+judge  The row set and the subject column come from the verdict; the state and the
+       pointer come from `step-0-answers.json`. Neither is retyped here, which is the
+       whole reason the generator exists.
+```
+
+<!-- generated: scripts/carried_table.py -->
+
+| item | status | the verdict's own subject |
+|---|---|---|
+| R835 | **later** — §19 | no clause this generator can cut -- see the verdict's Carried section |
+| R1203 | **later** — §19 | no clause this generator can cut -- see the verdict's Carried section |
+| R1204 | **later** — §19 | no clause this generator can cut -- see the verdict's Carried section |
+| R1205 | **answered** — §19 | carried, and the verdict says nothing further about it here |
+| R1206 | **open** — §19 | carried, and the verdict says nothing further about it here |
+| R1207 | **answered** — §19 | carried, and the verdict says nothing further about it here |
+| R1208 | **answered** — §19 | carried, and the verdict says nothing further about it here |
+| R1212 | **later** — §19 | no clause this generator can cut -- see the verdict's Carried section |
+| R1213 | **answered** — §19 | The DS0 refusal in run_floatsim_design_waves.py DOES NOT FIRE on the input this diff newly... |
+| R1214 | **answered** — §19 | A key that is SET BUT WRONG is silently discarded and a different worktree is used. claim what... |
+| R1215 | **answered** — §19 | docs/milestones/R2.md:5 says the marker reads 1 while :3 reads 0, and calls the shipped state... |
+| R1217 | **later** — §19 | no clause this generator can cut -- see the verdict's Carried section |
+| R1218 | **later** — §19 | no clause this generator can cut -- see the verdict's Carried section |
+| R1221 | **answered** — §19 | The Carried gate is parametrised over PHANTOM finding ids -- R2, and R1 too -- and no wording... |
+| R1222 | **later** — §19 | test_a_blocking_item_is_not_routed_to_4a is red because verdict 59 wrote its dispositions as... |
+| R1223 | **open** — §19 | A PUBLISHED DELIVERABLE no longer regenerates from this tree, and the two rows that moved are... |
+| R1224 | **later** — §19 | no clause this generator can cut -- see the verdict's Carried section |
+| R1225 | **open** — §19 | THE --check REFUSAL IS NOT THREAD COUNT. The npz golden moved when THIS REPOSITORY'S OWN... |
+| R1226 | **answered** — §19 | R1213 ONE KEY OVER: NOTHING TIES THE TREE THE STABLE KEY NAMES TO THE TREE THE SNAPSHOT... |
+| R1227 | **answered** — §19 | R1206's FOURTH SITE: tests/test_report_carried.py:579 still reads assert STEP > 0, and it goes... |
+| R1228 | **answered** — §19 | tests/test_report_guard_states.py:117 quotes the expression this commit changed. It reads "The... |
+| R1229 | **answered** — §19 | tests/unit/test_hsp_worktree_resolution.py:123 IS AN ASSERTION THAT CANNOT FAIL, and it is the... |
+| R1230 | **answered** — §19 | THE Answers: HEADER NAMES VERDICT 61 WHILE THE NEWEST IS 62, AND THE GATE'S FINDING SET IS... |
+| R1231 | **answered** — §19 | ALL THREE GENERATED SECTIONS ARE UNFILLED PLACEHOLDERS, AND CI IS RED AT THIS COMMIT, WHICH IS... |
+| R1232 | **open** — §19 | R1225 (ii) IS RECORDED AND NOT HELD, AND pin_threads() CANNOT BE WIRED AT THE CALL SITE THE... |
+| R1233 | **answered** — §19 | R1225 (i) IS SATISFIED FOR THE RULING AND NOT FOR THE SENTENCE IT IS USED TO SUPPORT. ~200 eps... |
+| R1234 | **later** — §19 | tests/test_report_vocabulary_corpus.py HAS TWO NEW REDS AND THEY ARE MINE, NOT YOURS. cmd... |
+| R1235 | **answered** — §19 | R1221 AND R1228 ARE UNCHANGED. Verdict 62's item 5 read "R1227 and R1228 in the next commit... |
+| R1236 | **answered** — §19 | TWO FIGURES IN THE REPORT THAT ONE COMMAND EACH REFUTES. Section 6's R1205 block pastes out... |
+| R1237 | **answered** — §17 | THE GENERATED 0a TABLE PUBLISHES A RUN THAT CONCLUDED FAILURE AS "no result", AND OMITS A RUN... |
+| R1238 | **answered** — §18 | THE WHOLE-SUITE RED LIST IS TWO REDS SHORT OF THE COUNT IN ITS OWN LINE, AND THE GENERATOR... |
+| R1239 | **answered** — §19 | CI RUNS RUNG 6 BEFORE RUNGS 4 AND 5, SO THE HIGHEST RUNG SKIPS THE TWO THIS STEP NEEDS. claim... |
+| R1240 | **answered** — §19 | THE CARRY GATE READS THE OLDEST ROUND'S Carried SECTION, SO FIVE ITEMS THE NEWEST VERDICT... |
+| R1241 | **answered** — §19 | TWO SENTENCES THAT ONE COMMAND EACH REFUTES. Sec.14 reads "the verification ladder at 4c19570... |
+| R1242 | **later** — §19 | THE _FINDING PATH IS UNFILTERED, SO A MILESTONE LABEL CAN STILL ENTER THE PARAMETRISED SET.... |
+
+## 19c. Every site verdict 64 names that this commit does not touch
+
+```
+claim  every site the newest verdict names is either touched by this diff or declared
+cmd    the gate's own SITES list, against `git diff a3a30d2 -U0` on this tree
+out    245 sites named, 24 touched, 221 declared below
+rule   tests/test_report_carried.py::test_every_named_site_is_touched_or_declared, whose
+       escape hatch is a `no change` beside the exact site
+judge  GENERATED from the same `SITES` the gate reads, not from a reimplementation of its
+       pattern. Most are citations -- CLAUDE.md, earlier verdicts, files a finding quotes
+       for context -- rather than sites needing a repair; the ones that needed one are in
+       sections 17 to 19 and among the 24 touched.
+```
+
+| finding | site | state |
+|---|---|---|
+| R1205 | `.claude/hooks/require-verdict.sh:105` | **no change** |
+| R1205 | `CLAUDE.md` | **no change** |
+| R1205 | `F2.md` | **no change** |
+| R1205 | `F2.md:10` | **no change** |
+| R1205 | `F3.md:9` | **no change** |
+| R1205 | `F6a.md:3` | **no change** |
+| R1205 | `R1.md` | **no change** |
+| R1205 | `docs/milestones/R1.md` | **no change** |
+| R1205 | `docs/milestones/R1.md:3` | **no change** |
+| R1205 | `docs/milestones/R2.md` | **no change** |
+| R1205 | `docs/reports/F2/step-4.md` | **no change** |
+| R1205 | `docs/reviews/F2/step-4.md` | **no change** |
+| R1205 | `scripts/check_carried.py` | **no change** |
+| R1205 | `scripts/check_carried.py:126` | **no change** |
+| R1205 | `scripts/check_carried.py:127` | **no change** |
+| R1205 | `scripts/check_carried.py:128` | **no change** |
+| R1205 | `scripts/check_carried.py:129` | **no change** |
+| R1205 | `scripts/check_carried.py:130` | **no change** |
+| R1205 | `scripts/ci_section.py` | **no change** |
+| R1205 | `scripts/ci_section.py:98` | **no change** |
+| R1205 | `scripts/ci_section.py:99` | **no change** |
+| R1205 | `scripts/ci_section.py:100` | **no change** |
+| R1205 | `scripts/ci_section.py:101` | **no change** |
+| R1205 | `scripts/ci_section.py:102` | **no change** |
+| R1205 | `scripts/ci_section.py:103` | **no change** |
+| R1205 | `scripts/ci_section.py:104` | **no change** |
+| R1205 | `scripts/ci_section.py:105` | **no change** |
+| R1205 | `scripts/ci_section.py:106` | **no change** |
+| R1205 | `scripts/ci_section.py:135` | **no change** |
+| R1205 | `tests/test_report_carried.py:608` | **no change** |
+| R1206 | `docs/milestones/R2.md` | **no change** |
+| R1206 | `tests/corpus/plan_step_marker_resolution.txt` | **no change** |
+| R1206 | `tests/test_report_carried.py:617` | **no change** |
+| R1206 | `tests/test_report_carried.py:639` | **no change** |
+| R1207 | `data/f4/dynamic_inputs.npz` | **no change** |
+| R1207 | `data/platform/platform12_deck.yaml` | **no change** |
+| R1207 | `export_f4_dynamic_inputs.py:390` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:467` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:468` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:469` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:470` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:471` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:472` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:473` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:474` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:475` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:476` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:477` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:478` | **no change** |
+| R1207 | `scripts/export_f4_dynamic_inputs.py:479` | **no change** |
+| R1208 | `HSP-stable/studies/platform-12buoy/platform_common.py` | **no change** |
+| R1208 | `data/platform/buoy_centers_ref.json` | **no change** |
+| R1208 | `export_platform_deck.py:75` | **no change** |
+| R1208 | `report_joint_reactions.py:106` | **no change** |
+| R1208 | `run_floatsim_design_waves.py:98` | **no change** |
+| R1208 | `scripts/export_buoy_centers_ref.py:42` | **no change** |
+| R1208 | `scripts/export_platform_deck.py:45` | **no change** |
+| R1208 | `scripts/measure_platform_joints.py:48` | **no change** |
+| R1208 | `scripts/report_joint_reactions.py:96` | **no change** |
+| R1208 | `scripts/run_floatsim_design_waves.py:50` | **no change** |
+| R1208 | `scripts/run_floatsim_design_waves.py:51` | **no change** |
+| R1213 | `R2.md:253` | **no change** |
+| R1213 | `R2.md:366` | **no change** |
+| R1213 | `docs/hsp-coupling.md:121` | **no change** |
+| R1213 | `export_platform_deck.py:77` | **no change** |
+| R1213 | `report_joint_reactions.py:109` | **no change** |
+| R1213 | `report_joint_reactions.py:121` | **no change** |
+| R1213 | `run_floatsim_design_waves.py` | **no change** |
+| R1213 | `run_floatsim_design_waves.py:138` | **no change** |
+| R1213 | `scripts/run_floatsim_design_waves.py:102` | **no change** |
+| R1214 | `CLAUDE.md` | **no change** |
+| R1214 | `data/platform/buoy_centers_ref.json` | **no change** |
+| R1214 | `docs/hsp-coupling.md:45` | **no change** |
+| R1214 | `export_buoy_centers_ref.py` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:90` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:91` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:92` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:93` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:94` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:95` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:96` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:97` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:98` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:99` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:100` | **no change** |
+| R1214 | `floatfea/hsp_pin.py:101` | **no change** |
+| R1215 | `R2.md` | **no change** |
+| R1215 | `docs/milestones/R2.md` | **no change** |
+| R1215 | `docs/milestones/R2.md:5` | **no change** |
+| R1215 | `dynamic_inputs.npz` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:467` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:468` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:469` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:470` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:471` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:472` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:473` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:474` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:475` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:476` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:477` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:478` | **no change** |
+| R1215 | `export_f4_dynamic_inputs.py:479` | **no change** |
+| R1215 | `floatfea/hsp_pin.py` | **no change** |
+| R1215 | `hsp_pin.py:20` | **no change** |
+| R1215 | `report_joint_reactions.py:96` | **no change** |
+| R1215 | `scripts/export_f4_dynamic_inputs.py` | **no change** |
+| R1215 | `scripts/export_f4_dynamic_inputs.py:435` | **no change** |
+| R1215 | `scripts/report_joint_reactions.py` | **no change** |
+| R1215 | `tests/verification/rung4/test_f4_g41_dynamic.py` | **no change** |
+| R1215 | `tests/verification/rung4/test_f4_g41_dynamic.py:321` | **no change** |
+| R1221 | `CLAUDE.md` | **no change** |
+| R1221 | `docs/milestones/R1.md:3` | **no change** |
+| R1221 | `docs/milestones/R2.md` | **no change** |
+| R1221 | `docs/milestones/R2.md:12` | **no change** |
+| R1222 | `tests/test_report_carried.py:423` | **no change** |
+| R1222 | `tests/test_report_carried.py:424` | **no change** |
+| R1222 | `tests/test_report_carried.py:425` | **no change** |
+| R1222 | `tests/test_report_carried.py:426` | **no change** |
+| R1222 | `tests/test_report_carried.py:427` | **no change** |
+| R1222 | `tests/test_report_carried.py:428` | **no change** |
+| R1223 | `hsp_pin.py` | **no change** |
+| R1223 | `tests/regression/test_f6_deliverable_agrees_with_itself.py:317` | **no change** |
+| R1225 | `CLAUDE.md` | **no change** |
+| R1225 | `R2.md` | **no change** |
+| R1225 | `ci.yml:67` | **no change** |
+| R1225 | `ci.yml:68` | **no change** |
+| R1225 | `ci.yml:69` | **no change** |
+| R1225 | `constraints-dev.txt` | **no change** |
+| R1225 | `data/f4/dynamic_inputs.npz` | **no change** |
+| R1225 | `dynamic_inputs.provenance.json` | **no change** |
+| R1225 | `floatfea/determinism.py` | **no change** |
+| R1225 | `floatfea/hsp_pin.py` | **no change** |
+| R1225 | `pyproject.toml` | **no change** |
+| R1225 | `results/F6/floatfea_results_report.md` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:476` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:477` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:478` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:479` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:480` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:481` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:482` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:483` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:484` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:485` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:486` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:487` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:488` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:489` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:490` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:491` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:492` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:493` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:494` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:495` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:496` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:497` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:498` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:499` | **no change** |
+| R1225 | `scripts/export_f4_dynamic_inputs.py:500` | **no change** |
+| R1225 | `tests/test_ci_canonical_environment.py` | **no change** |
+| R1226 | `CLAUDE.md` | **no change** |
+| R1226 | `HSP-stable/studies/platform-12buoy/platform_common.py` | **no change** |
+| R1226 | `data/platform/buoy_centers_ref.json` | **no change** |
+| R1226 | `export_buoy_centers_ref.py` | **no change** |
+| R1226 | `hsp_pin.py:36` | **no change** |
+| R1226 | `hsp_pin.py:37` | **no change** |
+| R1226 | `hsp_pin.py:38` | **no change** |
+| R1226 | `hsp_pin.py:39` | **no change** |
+| R1226 | `hsp_pin.py:40` | **no change** |
+| R1226 | `hsp_pin.py:41` | **no change** |
+| R1226 | `hsp_pin.py:42` | **no change** |
+| R1226 | `hsp_pin.py:43` | **no change** |
+| R1226 | `hsp_pin.py:44` | **no change** |
+| R1226 | `hsp_pin.py:45` | **no change** |
+| R1226 | `hsp_pin.py:46` | **no change** |
+| R1226 | `run_floatsim_design_waves.py:112` | **no change** |
+| R1226 | `scripts/export_buoy_centers_ref.py` | **no change** |
+| R1226 | `scripts/export_buoy_centers_ref.py:172` | **no change** |
+| R1227 | `test_report_carried.py:579` | **no change** |
+| R1227 | `tests/test_report_carried.py:579` | **no change** |
+| R1228 | `test_report_carried.py:236` | **no change** |
+| R1228 | `tests/test_report_guard_states.py:117` | **no change** |
+| R1229 | `test_report_guard_states.py` | **no change** |
+| R1229 | `test_report_numbers_are_sourced.py` | **no change** |
+| R1229 | `tests/unit/test_hsp_worktree_resolution.py` | **no change** |
+| R1229 | `tests/unit/test_hsp_worktree_resolution.py:123` | **no change** |
+| R1230 | `CLAUDE.md` | **no change** |
+| R1230 | `docs/reviews/R2/step-0.md` | **no change** |
+| R1230 | `scripts/ci_section.py:203` | **no change** |
+| R1230 | `tests/test_report_carried.py:406` | **no change** |
+| R1230 | `tests/test_report_carried.py:407` | **no change** |
+| R1230 | `tests/test_report_carried.py:408` | **no change** |
+| R1230 | `tests/test_report_carried.py:409` | **no change** |
+| R1230 | `tests/test_report_carried.py:410` | **no change** |
+| R1230 | `tests/test_report_carried.py:411` | **no change** |
+| R1230 | `tests/test_report_carried.py:412` | **no change** |
+| R1230 | `tests/test_report_carried.py:514` | **no change** |
+| R1231 | `CLAUDE.md` | **no change** |
+| R1231 | `scripts/ci_section.py` | **no change** |
+| R1232 | `floatfea/determinism.py` | **no change** |
+| R1232 | `floatfea/determinism.py:96` | **no change** |
+| R1232 | `scripts/export_f4_dynamic_inputs.py` | **no change** |
+| R1233 | `results/R1/example/member_forces.csv` | **no change** |
+| R1234 | `tests/corpus/report_status_vocabulary.txt` | **no change** |
+| R1234 | `tests/test_report_vocabulary_corpus.py` | **no change** |
+| R1235 | `tests/test_report_guard_states.py:117` | **no change** |
+| R1236 | `R2.md` | **no change** |
+| R1236 | `R2.md:15` | **no change** |
+| R1237 | `test_report_guard_states.py` | **no change** |
+| R1238 | `scripts/suite_count.py` | **no change** |
+| R1238 | `scripts/suite_count.py:282` | **no change** |
+| R1238 | `scripts/suite_count.py:283` | **no change** |
+| R1238 | `scripts/suite_count.py:284` | **no change** |
+| R1238 | `scripts/suite_count.py:285` | **no change** |
+| R1238 | `scripts/suite_count.py:286` | **no change** |
+| R1238 | `scripts/suite_count.py:287` | **no change** |
+| R1239 | `CLAUDE.md` | **no change** |
+| R1240 | `scripts/carried_table.py:158` | **no change** |
+| R1240 | `tests/test_report_carried.py:366` | **no change** |
+
+## 20. The generated record, re-run as the last edit
+
+## 0a. Runs since the commit verdict 64 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 64 at `e87b2c0` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that reached no conclusion ABOUT THE CODE -- cancelled, or still running -- has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it. A cancelled run IS `completed`, which is why the test is the conclusion and not the status (CX0, R449, R1130).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `44164723945` | push | `a3a30d2` | conclusion **failure** |
+
+**Run `44164723945`, conclusion **failure**: 9 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+- `tests.regression.test_f6_deliverable_agrees_with_itself::test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree` (the verification ladder)
+
+## 0. CI at `e87b2c0`, the commit verdict 64 judged — **report-only; no run by design** — conclusion **FAILURE**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 64 at `e87b2c0` through the report's own `Answers:` line. The judged commit touches only paths the workflow ignores (`docs/reports/**`, `docs/reviews/**`), so no run was created for it. **Code-identical run at `fa8d59c7a7bd5ae17ae70b60abc08da25554ca66`**: run `44149168617`, event `push`, conclusion **failure**.
+
+```
+cmd  gh run list --commit e87b2c00a7cab740f27841f66e9362ac5248283e
+out  (no output)
+cmd  git diff --name-only fa8d59c e87b2c0
+out  only paths under the workflow's paths-ignore
+judge NO RUN BY DESIGN, not CK2 and not a red. The run below measures the same
+     code, because every path that differs is one the workflow ignores.
+```
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| the verification ladder | 2143 | 1 | 0 |
+| lint, unit and guards | 1381 | 8 | 1 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 2 not green.**
+
+**2 job(s) SKIPPED, so unavailable rather than passing:** `CI determinism -- leg`, `CI determinism -- ten legs agree`. A skipped job measured nothing; its zeros are an absence of evidence and not a pass.
+
+- the verification ladder (failure)
+- lint, unit and guards (failure)
+
+**Failing tests named in the log: 9.**
+
+- `tests/test_report_carried.py::test_the_report_carries_a_WHOLE_SUITE_count` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+- `tests.regression.test_f6_deliverable_agrees_with_itself::test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree` (the verification ladder)
+
+**Whole suite at `a3a30d2`: 3970 passed, 2 failed, 0 skipped.** **The excluded set: 466 passed, 8 failed, 0 skipped.** Generated by `python scripts/suite_count.py`, run after every other edit to this revision, in a clean worktree at that commit. The first count excludes 474 tests in 3 files parametrised over this report (tests/test_report_carried.py, tests/test_report_numbers_are_sourced.py, tests/test_report_guard_states.py); the second is those same files, run at the same commit. R339: the count of what is excluded is part of the line. R497: so is its result, because a reader cannot otherwise tell a green tree from a green subset.
+
+```
+- **failed** `tests.regression.test_f6_deliverable_agrees_with_itself::test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree`
+- **failed** `tests.verification.rung4.test_f4_g41_dynamic::test_the_npz_is_NOT_STALE_against_the_code_that_generated_it`
+- **failed, in the excluded set** `tests.test_report_carried::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[baseline]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[non_numeric_step_suffix]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[superscript_digit_step_number]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[step_number_is_the_empty_string]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]`
+- **failed, in the excluded set** `tests.test_report_guard_states::test_the_guard_survives_the_state[zero_padded_step_number]`
+```
