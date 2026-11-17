@@ -2,6 +2,127 @@
 Reviewed commit: 3d24e1c3808cd6be35490eab76b43f5ccf9d175b
 **Reviewed commit: `3d24e1c3808cd6be35490eab76b43f5ccf9d175b`.**
 Verdict: HOLD
+Scope: **ADDENDUM to the interim check above, same reviewer, same branch, same judged
+commit, accumulating under DX2.** It exists because **CI's verification ladder concluded
+AFTER I ruled** and it found a red I had not measured -- in `tests/regression`, which I
+declined to run locally and gave a reason for that THIS REFUTES. Still an ES0 interim check:
+it counts against none of step 0's three revisions and closes nothing. One new blocking
+finding, one correction to my own Tests line, and two measurements that arrived late.
+
+## Carried
+
+Everything carried in the entry below stands unchanged -- R1206 open and blocking, R1213,
+R1214, R1215, R1221, R1222, the ledger, and the rung-4 staleness red under CZ1 (iv).
+**R1223 below is a consequence of that staleness red reaching a published deliverable**, so
+it is answered by the same follow-on commit and adds no separate work. Nothing is withdrawn.
+
+## Findings
+
+**R1223. (BLOCKS) A PUBLISHED DELIVERABLE no longer regenerates from this tree, and the two
+rows that moved are gate STATUSES: the shipped report says `G4.1 force ... pass` where this
+tree produces `FAIL`.**
+
+```
+claim  CI's ladder is a pass, or its red is the staleness guard I already ruled
+cmd    gh api .../actions/runs/44118920983/jobs  (after the run CONCLUDED, 16:25Z)
+out    the verification ladder: CONCLUDED FAILURE
+       ladder 1 success, ladder 2 success, ladder 3 success,
+       ladder 6 -- it stays fixed  FAILURE,  ladder 4 SKIPPED, ladder 5 SKIPPED
+cmd    gh run view --job <the ladder job> --log-failed
+out    run_rung: FAIL -- tests/regression is red.
+       run_rung: 477 collected, 1 failed, 0 errored, 0 skipped
+       run_rung:   failure  tests.regression.test_f6_deliverable_agrees_with_itself::
+                            test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree
+cmd    the same test, my own run, in my own worktree at the judged sha
+out    1 failed in 56.14s -- "the committed deliverable is not what this tree regenerates:
+       4 line(s) differ, shipped has 470 lines against 470.
+         line 154: shipped `| G4.1 force | ... | F4_G41_DYNAMIC_FORCE | pass |`
+                   vs fresh `| ... | F4_G41_DYNAMIC_FORCE | FAIL |`
+         line 155: shipped `| G4.1 moment | ... | pass |` vs fresh `| ... | FAIL |`
+         line 165: shipped `  G4.1 force       116 passed`
+                   vs fresh `  G4.1 force       1 failed, 115 passed`"
+cell   ONE VARIABLE -- the same test at `91c2d2e`'s code, in the worktree at `8d40843`
+       (which adds only verdict 59's file to that tree)
+out    1 passed in 74.74s
+rule   tests/regression/test_f6_deliverable_agrees_with_itself.py:317; EZ0 -- a published
+       deliverable is anything under `results/` or `scripts/measure/` that produces one
+judge  **THIS COMMIT CAUSED IT.** Green at 91c2d2e, red at 3d24e1c, code the only variable.
+       It is downstream of the rung-4 staleness guard -- the G4.1 gate's 116 cases include
+       it, so `116 passed` became `1 failed, 115 passed` and the generator wrote `FAIL` --
+       but it is a STRICTLY LARGER claim than the staleness red, and FS1's predicate does
+       not reach it: it names no finding and no site of verdict 59, and its subject is a
+       shipped deliverable rather than the commit carrying it. CZ1 (iv).
+```
+
+**The silently wrong result, in the form FR1 asks for:** the shipped F6 results report --
+a file sent to Xabier -- states that gates `G4.1 force` and `G4.1 moment` **pass**, with
+`116 passed` beside them, while the tree at this commit regenerates the same report with
+`FAIL` and `1 failed, 115 passed`. A reader of the deliverable is told a dynamic-equilibrium
+gate holds; the tree says it does not. That is FR1's first head verbatim -- a wrong value in
+a published deliverable -- and it is invisible to `pytest tests/unit`, to the four root
+guards, to `ruff`, `black` and `mypy`, and to the selection either of us ran before CI.
+
+**And the correction, which is mine (R1224, DOES NOT BLOCK -- a reasoning error of my own,
+recorded so the next round does not inherit it).** My Tests line argued that rungs 1, 2, 5,
+6 and `tests/regression` could not be reached, because `git diff --stat ... -- floatfea` is
+`hsp_pin.py` alone and only two test files import it. **The argument is refuted by the
+measurement:** `tests/regression` reaches the changed lines INDIRECTLY, through a gated run
+of the G4.1 gate inside the deliverable generator. An import census over `tests/` cannot see
+a test that shells out to a generator that runs another gate. **FV1's own clause said so and
+I read past it:** *"any regression test that reads a deliverable the diff regenerates"* runs
+locally. This diff regenerates one. Convert arguments into measurements -- the measurement
+was 56 seconds and I reasoned instead.
+
+## Tolerances touched
+
+**None.** Unchanged from the entry below and re-checked against this red: the four differing
+lines are STATUS and COUNT cells, not thresholds -- `2.5e-12` / `F4_G41_DYNAMIC_FORCE` and
+`0.0002` / `F4_G41_DYNAMIC_MOMENT` are byte-identical on both sides of the comparison, so no
+tolerance moved and none is implicated. EU1 still does not arise.
+
+## Next step opens when
+
+The five conditions below stand, with one addition and one sharpening.
+
+6. **R1223 -- the deliverable regenerates.** It should fall out of condition 4 (the
+   provenance refresh) with no separate work, and the check is one command:
+   `pytest -q tests/regression/test_f6_deliverable_agrees_with_itself.py` green at the
+   follow-on commit, pasted. **If it does NOT go green once the provenance is refreshed,
+   stop and say so** -- that would mean the G4.1 gate's `116 passed` is not restored by the
+   refresh, which is a different and larger finding than anything in this file.
+   **Do not regenerate the deliverable to match a red gate.** Re-running
+   `scripts/measure/f6_results_report.py` now would write `FAIL` into the shipped report and
+   turn this test green while publishing a failing gate; that is the golden-file error
+   CLAUDE.md names, one artifact over.
+7. **Condition 4 is sharpened: the follow-on commit's own CI run must be GREEN on the
+   LADDER, not only on lint** (CZ1 (iii), (iv)). Rungs 4 and 5 were SKIPPED behind this red,
+   so **nothing at this commit has measured rung 4 or rung 5 in CI at all** -- including the
+   staleness guard's companions and the whole of rung 5. That is the hiding CZ1 (iii) exists
+   for, and it is why a concluded, green ladder at the follow-on sha is the condition rather
+   than a local run.
+
+**Two measurements that arrived after I ruled, recorded here so the next revision does not
+have to take them.** CI at the judged commit is now fully concluded: `lint, unit and guards`
+FAILURE (the 108, as traced), `the verification ladder` FAILURE at `ladder 6` with rungs 4
+and 5 skipped, both determinism jobs skipped by their own condition -- so **CA2 is reached
+on both jobs**, and rungs 1, 2 and 3 are measured SUCCESS in CI at this sha, which is the
+half of my STOP paragraph that survives. And EG3 (ii), measured at MY verdict commit
+`b2dc268` on the two report-guard files: **187 failed, 120 passed, 1 skipped in 111.90s**,
+up from the 107 those two files carried at `3d24e1c` -- because
+`test_every_named_site_is_touched_or_declared` is parametrised over the newest verdict's
+sites and this verdict names many more. That is R835 in one line, not re-measured further
+(GE3). Paste that count in the next revision; the number to compare against is 187.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R2 step 0 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: 3d24e1c3808cd6be35490eab76b43f5ccf9d175b
+**Reviewed commit: `3d24e1c3808cd6be35490eab76b43f5ccf9d175b`.**
+Verdict: HOLD
 Scope: **ES0 INTERIM CHECK on the OPEN step** -- no new report revision exists
 (`git ls-files docs/reports/R2` is empty; `docs/reports/R2/step-0.md` is untracked), so this
 **counts against none of step 0's three revisions** and closes nothing, and `--closes` is
