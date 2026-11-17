@@ -1,4 +1,708 @@
 # Review — R2 step 0 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: 3d24e1c3808cd6be35490eab76b43f5ccf9d175b
+**Reviewed commit: `3d24e1c3808cd6be35490eab76b43f5ccf9d175b`.**
+Verdict: HOLD
+Scope: **ES0 INTERIM CHECK on the OPEN step** -- no new report revision exists
+(`git ls-files docs/reports/R2` is empty; `docs/reports/R2/step-0.md` is untracked), so this
+**counts against none of step 0's three revisions** and closes nothing, and `--closes` is
+correctly absent (FK1). Light scope per ES0: the suite, CI at the commit, and a CZ0 (a)-(d)
+scan of the diff. **Ruled under FR1 with EZ0**, and each blocking finding names the silently
+wrong result it produces. **GE3: `R835: unchanged, R2`. Not re-measured.**
+**EU1 DOES NOT ARISE, MEASURED RATHER THAN TAKEN:** `git diff adc6c3c..3d24e1c --
+floatfea/tolerances.py` is empty, so is `git diff 91c2d2e..3d24e1c -- floatfea/tolerances.py`,
+and no declared counter moves anywhere in the diff. **I took the diff from `91c2d2e`, the last
+JUDGED commit, not from `adc6c3c`**, so `8c0edce` is inside it and is judged below.
+**GA3's length target is OVERRUN and I say so rather than trimming the evidence**: the
+overrun is the per-id trace of 108 reds with its one-variable control (EG3 (i) forbids ruling
+a cascade by family), two blocking findings with their cells, and the four rulings you asked
+for by name.
+Tests: **MY OWN RUNS, in my own worktree at the judged sha, `-p no:randomly`, and the first
+reproduces your figure exactly rather than taking it.**
+* your stated selection -- `tests/unit` + the four root guards +
+  `rung3/test_platform_deck_export.py` + `rung4/test_f4_g41_dynamic.py`:
+  **1 failed, 828 passed in 365.65s**, and the one failure is the staleness guard.
+* the six report-guard files: **108 failed, 557 passed, 1 skipped in 442.68s**, traced per
+  id below. Your selection excludes all six, so your report's "1 failed" is true of what it
+  ran and silent about the file where the marker decision lands.
+* CI's own guards selection, `pytest tests --ignore=tests/unit --ignore=tests/verification
+  --ignore=tests/regression`, in a second worktree: **108 failed, 1047 passed, 1 skipped in
+  903.77s -- THE SAME 108, id for id.** `comm -23` and `comm -13` over the two sorted FAILED
+  lists are BOTH EMPTY, so **no root test outside the six report-guard files is red at this
+  commit** and nothing is hiding inside CI's aggregate.
+* the one-variable control (marker back on R1 step 4, this commit's code unchanged):
+  **8 failed, 849 passed in 607.41s** -- see the trace.
+* `ruff check floatfea tests scripts`, `black --check floatfea tests scripts`,
+  `mypy floatfea`: **all clean, my own runs.**
+* **NOT RUN LOCALLY and I say which rather than implying coverage**: rungs 1, 2, 5, 6 and
+  `tests/regression`. The reason is measured, not assumed:
+  `git diff --stat 91c2d2e..HEAD -- floatfea` is `hsp_pin.py` alone, and
+  `git grep -ln hsp_pin -- tests` outside the corpus returns only
+  `rung3/test_platform_deck_export.py` and `rung4/test_f4_g41_dynamic.py`, so no test in
+  those rungs reaches a changed line. FV1 puts the whole of `tests/regression` on CI.
+CI: **run `44118920983` at the FULL sha `3d24e1c3808cd6be35490eab76b43f5ccf9d175b` EXISTS
+and `lint, unit and guards` CONCLUDED FAILURE**, at step 10 `guards and meta-tests`, with
+`actionlint`, `ruff`, `black --check`, `mypy` and `unit tests` all **success** before it --
+so the guards step is seen to have RUN rather than been skipped behind an earlier red
+(CZ1 iii). **`the verification ladder` had NOT finished when I ruled** (`in_progress`, both
+runners assigned, started 15:50:31Z); a run that has not finished is not a pass. Expect it
+to redden at `ladder 4` on the same staleness guard -- and note CI orders `ladder 6 --
+tests/regression` BEFORE `ladder 4`, so that rung is not hidden behind it. Both determinism
+jobs `skipped` by their own `workflow_dispatch` condition. **This is NOT CK2**: runners
+`GitHub Actions 1000001916` and `1000001917` were assigned and the jobs executed for
+minutes. **CA2 IS REACHED -- CI is red at the judged commit** -- and the per-id list is
+**unavailable, not skipped over**: `gh run view --log` refuses while any job is in progress
+(*"logs will be available when it is complete"*), so the id-for-id agreement between my 108
+and CI's list is deferred to the next revision. FP1 held: the commit was pushed before I was
+invoked. GC2 does not arise -- `git diff --name-only 91c2d2e..HEAD` touches `floatfea/` and
+`scripts/`, so the push triggered a run of its own. **One throughput observation, not a
+finding:** the runs at `91c2d2e` and `8c0edce` are STILL `in_progress` after 1h18 and 1h00,
+their ladders unfinished, because GG3's per-commit group no longer cancels them -- three
+ladders now run in parallel and CI's answer arrives long after the commit.
+Door (FV2 / GG2): `git worktree add -b review/3d24e1c3808c <a path outside the repository>
+3d24e1c3808cd6be35490eab76b43f5ccf9d175b` **succeeded on the first try, so no review of this
+commit existed**; `git push origin review/3d24e1c3808c` likewise. Every measurement above was
+taken in that worktree, and this verdict is written there through `scripts/write_verdict.py`,
+committed on that branch and pushed -- merge it with `git merge --ff-only
+origin/review/3d24e1c3808c`. **Three writes of my own, all in my own worktree and all
+reverted before committing** -- the marker-1 cell, the marker control, and a second DETACHED
+worktree for CI's wide selection, which I removed with `rm -rf` followed by `git worktree
+prune` -- the one `.git`-metadata write I made in `C:\dev\floatfea`, which touches no file
+in the working tree and which I disclose rather than leave for you to find. `git status --porcelain` there is empty
+and both marker lines read as committed. In `C:\dev\floatfea` I ran only read-only `git` and
+`gh`, and the one write-shaped thing I did touch -- `preflight()` against the real
+`HSP-stable` -- reads only (`git describe`, `git hash-object` without `-w`) and wrote nothing.
+
+## Carried
+
+Verdict 59's four blocking findings, its four closing conditions, and verdict 58's items
+routed to R2's first report. **Three of four answered; two halves open.**
+
+* **R1205 (two live markers; the `Carried` gate reporting on F2 step 4) -- ANSWERED, and I
+  re-ran both checks the condition asked for rather than reading them.**
+  `docs/milestones/R1.md:3` now reads `<!-- step-under-execution: moved to R2 at step 0
+  (GI) -->`, the `F2.md:10` form.
+  ```
+  cmd  grep -rnE "<!--[[:space:]]*step-under-execution:[[:space:]]*[0-9]+[[:space:]]*-->" docs/milestones/
+  out  docs/milestones/R2.md:3   (one plan, not two)
+  cmd  python -c "import sys; sys.path.insert(0,'scripts'); import check_carried as cc; print(cc._active_step())"
+  out  ('R2', 0)
+  cmd  python scripts/check_carried.py ; echo exit=$?
+  out  check_carried: .../docs/reviews/R2/step-0.md or .../docs/reports/R2/step-0.md missing
+       exit=1
+  cmd  python -c "import sys; sys.path.insert(0,'.'); import scripts.ci_section as c; print(c.MILESTONE, c.STEP)"
+  out  R2 0
+  ```
+  The gate that was green about the wrong milestone is now red about the right one, naming
+  the file the next revision adds. That is the repair.
+
+* **R1206 (`0` is both a legal step number and the resolvers' sentinel) -- STILL OPEN,
+  still blocking, and it carries by name into step 0's list.** You do not claim it
+  answered; what shipped is verdict 59's **cell 2**, not exit (ii) -- see R1215 and
+  ruling (1), where I withdraw the escalation by measurement.
+
+* **R1207 (step 2's gates (ii) and (iii) both passable by a no-op) -- ANSWERED in the
+  plan, at `docs/milestones/R2.md:317-332`.** (ii) is now a pair with the inverted half
+  stated as the gate ("a run at a PERTURBED mass does *not* [reproduce], differing in
+  `case<i>/body_mass`, `m_xddot` and `accel`"), and (iii) closes against
+  `case<i>/body_mass` read back from the npz. Both citations resolve in substance; one
+  line number is off by three (R1217).
+
+* **R1208 (one key is silent in one direction) -- HALF ANSWERED. The two keys are
+  written and routed correctly; the half that says "the three DS0 refusals shown firing
+  after the change" FAILS BY MEASUREMENT.** The routing I checked site by site, as you
+  asked:
+  ```
+  cmd  git grep -n "hsp_pin.worktree(" -- scripts
+  out  export_buoy_centers_ref.py:42   "stable"     <- correct, the no-refusal site
+       export_platform_deck.py:45      "runs"
+       measure_platform_joints.py:52   "runs"
+       report_joint_reactions.py:96    "runs"
+       run_floatsim_design_waves.py:55 "runs"   :56 "stable"   <- both, correct
+  cmd  for each touched script: import it with NO worktree present and NO env var set
+  out  OK export_buoy_centers_ref / export_platform_deck / measure_platform_joints /
+       report_joint_reactions / run_floatsim_design_waves / f4_dynamic_residual /
+       export_f4_dynamic_inputs      (7 of 7 -- `require=False` does what its docstring
+       claims and R670's import-time ImportError is avoided, measured not argued)
+  ```
+  The refusals are **R1213**: two of the three fire on the adversarial input, one does not.
+
+* **Verdict 59's ledger -- R1209, R1210, R1211, the Â§4 row-1 form, the CP3 header, the
+  triple grammar, and Â§5's DO-NOT-HAND-EDIT line: all SIX addressed in the plan diff.**
+  I read each against its site. R1209's census is rewritten with a needle that finds all
+  seven (`git grep -nE '(ROOT|parents?\[[0-9]\])...'`) and now splits runs from stable;
+  R1210's false `out` line is replaced by what the command returns, with the consequence
+  for D4 stated; R1211 gains the one-body/three-component limit and the GI1 declared-file
+  distinction; Â§5 gains the deck bullet; the CP3 header names its two carried figures; the
+  triple-grammar paragraph is accurate -- `grep -c "^cmd:" docs/milestones/R2.md` is `0`
+  and the file says so rather than pretending otherwise. **The Â§4 row-1 form is half
+  right and I re-open that half as a ledger item (R1218).**
+
+* **R1212 -- unchanged, mine, Xabier's.** The verdict is at `step-0.md` and not `plan.md`
+  for the reason recorded there; this entry accumulates into the same file under DX2.
+
+* **Verdict 58's items -- R1196 to R1201, R1186, R1188, R1189 (c), R1190, R1191, R1193 --
+  STILL OPEN, due in R2's first report**, which is in flight. None is answerable by this
+  commit and none is a plan matter. **R1193 stays discharged from my side** (I am
+  operating under the post-`2e08766` text). **R1203, R1204 -- reviewer-side or Xabier's.**
+
+* **Verdict 59's four "things for step 0's report" -- not yet due**, and three of the four
+  are the report that is in flight. The `--check` determinism run is ruling (4) below,
+  where I correct what it can and cannot clear.
+
+## The 108, per id, at this commit -- traced from each id's own message (EG3 (i))
+
+```
+cmd    python -m pytest -q -p no:randomly <the six report-guard files>, my own run in my
+       own worktree at the judged sha
+out    108 failed, 557 passed, 1 skipped in 442.68s
+cmd    grep "^FAILED" | strip the parameter | sort | uniq -c
+out    50  test_every_named_site_is_touched_or_declared[...]
+       21  test_the_report_carries_the_finding[...]
+       19  test_the_guard_survives_the_state[...]
+       18  singletons in test_report_carried / test_report_guard_states /
+             test_report_numbers_are_sourced
+rule   FS1 with FT1, per id. Limb one: names a finding or a site of the NEWEST verdict
+       (verdict 59, `adc6c3c`, whose entry is in this same file). Limb two: its SUBJECT is
+       the commit carrying it.
+```
+
+**The 50 and the 21 are parametrised over verdict 59's OWN findings and sites**, so limb one
+holds by construction, and their messages say what clears them: *"...the step's diff does not
+touch it, and the newest report revision does not say..."* and *"the report does not carry
+..."*. EG3 state (2), cleared by the answering report. **Three of the 50 are worth naming
+rather than waiving silently, because their content IS R1213:**
+`[R1208-run_floatsim_design_waves.py:98]`, `[R1208-report_joint_reactions.py:106]` and
+`[R1208-export_platform_deck.py:75]` -- the three DS0 refusals -- are red because *the diff
+does not touch them*. The guard is enforcing CLAUDE.md's *a closing condition that names
+sites is closed site by site*, mechanically, and it is right: two of the three needed no
+change and one did.
+
+**The 19 share ONE cause with the singleton `test_R887_...`, and the harness names it
+itself** rather than being ruled by class: R887 reports *"the harness copies FROM step-0.md,
+which does not exist. Every state built by a `copy2` dies in `_build` before planting
+anything."* State (2). Two of the 19 additionally report `<state>: expected a clean run`,
+which is the same absence seen from inside the inner run.
+
+**The 18 singletons, each read individually. SIXTEEN are state (2) in their own words** --
+*"the newest report revision has no `Answers:` header"*, *"...no Carried section"*, *"...no
+`## ... CI ...` section"*, *"the CI section names no commit"*, *"no step report found
+under docs/reports/R2"*, *"step-0-answers.json is not committed ... That is EG3 state (2)"*.
+That sixteen includes the two names FC1 put under limb two,
+`test_the_report_carries_a_WHOLE_SUITE_count` and
+`test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` -- **and limb two is not needed for either
+here**, because at this commit they fail on report absence like the rest (*"the newest
+revision carries no whole-suite line"*, *"the 0a table has neither a run row nor the
+generator's zero-run row"*). Measured, not assumed from the name. **And two are neither,
+and they are the two that matter:**
+
+* **`test_the_plan_names_the_step_under_execution` is R1206 ITSELF.** The marker count is
+  now 1, so the first assertion passes; it dies at `assert _plan_step() > 0`. It is not a
+  boundary red and it needs no waiver -- it is the true, loud symptom of an open blocking
+  finding carried from verdict 59, and it clears when exit (iii) is taken and not when a
+  report is written.
+
+* **`test_a_blocking_item_is_not_routed_to_4a` IS MINE, AND NO REPORT CAN CLEAR IT --
+  R1222 under Findings.** It is red on verdict 59's heading FORMAT, not on anything the
+  implementer did or can do.
+
+**So: of 108, ONE HUNDRED AND SIX are EG3 state (2) and the waiver covers them --
+50 + 21 + 19 + 16, which sums exactly; ONE is R1206, already blocking and already carried;
+ONE is mine (R1222). The 109th red, `test_the_npz_is_NOT_STALE...` in the separate rung-4
+run, fails the predicate and is CZ1 (iv) unchanged.**
+
+**THE CONTROL, ONE VARIABLE, AND IT IS THE MEASUREMENT THAT SETTLES OWNERSHIP OF ALL 108.**
+A list of names cannot be checked against a failure message and a family cannot be ruled as a
+cascade (EG3 (i)), so I moved the marker back to `8c0edce`'s state **with this commit's CODE
+DIFF LEFT IN PLACE** -- R1 at step 4, R2's retired -- and re-ran the identical selection in my
+own worktree, then reverted (`git status --porcelain` empty, both marker lines back):
+
+```
+cmd    the judged tree (R1 retired, R2 at step 0), six report-guard files
+out    108 failed, 557 passed, 1 skipped in 442.68s
+cmd    ONE VARIABLE MOVED -- the marker back on R1 step 4, R2's retired, same code
+out      8 failed, 849 passed in 607.41s
+cmd    the eight, by name
+out    test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW
+       test_the_guard_survives_the_state[baseline, non_numeric_step_suffix,
+         superscript_digit_step_number, draft_suffix_beside_a_step_report,
+         step_number_is_the_empty_string,
+         verdict_amended_after_the_commit_the_report_answers, zero_padded_step_number]
+rule   FS1/FT1 per id, and `8c0edce`'s own trace of the same eight
+judge  **THE EIGHT ARE EXACTLY THE SET `8c0edce` TRACED BY NAME, id for id**, including the
+       one it showed red at `251af69` before this turn began. So **not one of the 108 is
+       caused by the code in this commit** -- the hundred extra are a function of the
+       marker/no-report state alone, and the collection total moves with it (666 vs 857)
+       because both guards are parametrised over the active report's verdict (R861).
+```
+
+That is the control R1 step 1's report got wrong by comparing two instances of the SAME state:
+here the two cells differ in one variable and the code is held fixed, so it separates "red
+because no report exists" from "red because of this diff". The answer is all of the first.
+
+## Findings
+
+**R1213. (BLOCKS) The DS0 refusal in `run_floatsim_design_waves.py` DOES NOT FIRE on the
+input this diff newly admits, and I ran it against the real production worktree rather than
+reasoning about it.**
+
+```
+claim  verdict 59's condition 4 -- "the three DS0 refusals shown still firing" -- holds
+       after the change
+cmd    FLOATFEA_HSP_RUNS=C:/Users/xlama/OneDrive/Documents/buoy/HSP-stable, the stable key
+       UNSET and its legacy sibling absent (the state measured at C:\dev\floatfea);
+       import scripts/run_floatsim_design_waves and call preflight() -- preflight only,
+       nothing written
+out    RUNS   = C:\Users\xlama\OneDrive\Documents\buoy\HSP-stable
+       STABLE = ...\scratchpad\HSP-stable            (the legacy candidate, absent)
+       worktree  HSP-stable at floatfea-ref-1
+       database  blob f26501001916, sha256 3dca8b131b4a028b -- matches the commit
+       output    ...\HSP-stable\studies\platform-12buoy\floatfea_design_waves
+       >>> preflight() RETURNED. DS0 did not fire.
+cmd    the same input, through the OTHER two refusals' predicate
+out    "HSP-stable" in RUNS.resolve().parts  ->  True     (they DO fire)
+       RUNS.resolve() == STABLE.resolve()    ->  False    (this one does not)
+rule   scripts/run_floatsim_design_waves.py:102 -- the refusal is an IDENTITY test against
+       the other key, not a NAME test. report_joint_reactions.py:109 and
+       export_platform_deck.py:77 test the name and are unaffected.
+cell   one variable: at `91c2d2e`, `RUNS = Path(__file__).resolve().parents[2] /
+       "HSP-runs"` reads no config and no environment, so no input could reach this state.
+       The diff is what makes it reachable; the refusal is what was supposed to hold it.
+```
+
+**The silently wrong result.** `main()` calls `preflight()` and then, at
+`run_floatsim_design_waves.py:138`, `OUT.mkdir(parents=True, exist_ok=True)` and writes six
+`case_*.csv` solve-state windows **inside the tree `RUNS` names** -- so six FloatSim
+design-wave solves run and write into `HSP-stable`, the read-only production worktree GI1,
+`R2.md:366` and `docs/hsp-coupling.md:121` (*"`HSP-stable` is read-only from FloatFEA
+(DS0)"*) forbid writing to, with the one refusal that exists to prevent exactly that
+printing nothing. The module's own docstring records the precedent: *"this repository wrote
+into it once: a `platform_bem.py` run regenerated `platform12_bem.nc` and overwrote the
+version commit `e1010fe` had corrected, after which FloatSim's own restoring-PSD gate
+refused the database."* And the export is read back by `report_joint_reactions.py:121`
+(`EXPORT.glob("case_*.csv")`) through **its own** runs key, so a case set written into one
+tree is described from the other -- the September case set is still sitting in `HSP-runs`.
+That is FR1's second head: an input accepted and used other than as declared, with DS0's
+declaration silent.
+
+*Closed when* `preflight()` refuses on the measured input -- the one-line name test the
+other two sites already carry, kept **beside** the identity test rather than replacing it
+(EK2: repair, not a new mechanism) -- and the run above is pasted showing the refusal, which
+is also what `R2.md:253` and `:291` promise and what verdict 59's condition 4 asked for.
+
+**R1214. (BLOCKS) A key that is SET BUT WRONG is silently discarded and a different
+worktree is used.**
+
+```
+claim  what happens to a declared value that is not a directory
+cmd    FLOATFEA_HSP_STABLE=C:/typo/HSP-stable-oops (set, not a directory), with a legacy
+       sibling of the repo root that EXISTS; then hsp_pin.worktree("stable")
+out    legacy sibling exists?  True
+       worktree('stable') -> ...\scratchpad\HSP-stable
+       the declared value was DISCARDED with no message and no refusal
+cmd    the same shape through `declared`, which is the config half GI3(e) asks for
+out    declared=<nonexistent>, env set to another existing tree -> the ENV tree is
+       returned; the declared value is discarded silently
+rule   floatfea/hsp_pin.py:90-101 -- the loop appends `f"{source}: {path} is not a
+       directory"` to `tried` and then CONTINUES. `tried` is read only under
+       `require=True`, which NO caller passes (`git grep -n "require=" -- scripts` is
+       empty), so the distinction between NOT SET and SET-AND-WRONG is computed and
+       thrown away.
+```
+
+**The silently wrong result.** `data/platform/buoy_centers_ref.json` -- a committed data
+file and the input to EB6's label-provenance gate -- regenerated from a worktree nobody
+declared, with its `"source"` field naming `HSP-stable/...` and `_blob_sha` recording that
+other tree's sha, so both sides move together and `--check` stays green. That is C155's
+shape and it is the **same defect R1208 was**, surviving one level up inside the resolver
+written to fix it: `export_buoy_centers_ref.py` is the one site with no tag, name, commit or
+dirtiness refusal -- I checked, its only `SystemExit` on the tree is "the source file is not
+a file" (`:74-76`) -- which is precisely why you gave it the stable key. A typo'd or stale
+`FLOATFEA_HSP_STABLE` on a checkout that satisfies the legacy convention reaches it today,
+and that convention is the DOCUMENTED one: `docs/hsp-coupling.md:45` and `:141-142`
+prescribe `git worktree add ../HSP-stable` and `../HSP-runs` as the scheme, so a conforming
+checkout HAS the sibling this falls through to.
+
+*Closed when* a source that is **set and not a directory** is a refusal and only an **unset**
+source falls through -- the information is already in `tried`, so this is a two-line change
+in `hsp_pin.worktree` and no new apparatus. CLAUDE.md's own line is the rule here: *never
+let a validation failure degrade to a warning*; this one degrades to silence. FZ rule 2 says
+refuse rather than silently adjust.
+
+**R1215. (DOES NOT BLOCK -- FF0, next commit, not the ledger) `docs/milestones/R2.md:5`
+says the marker reads `1` while `:3` reads `0`, and calls the shipped state "exit (ii)",
+which it is not.** No wrong number follows, so FR1 does not block it; FF0 keeps it out of
+the ledger because it is the gating apparatus's own record.
+
+```
+cmd    sed -n '3p;5p' docs/milestones/R2.md
+out    3: <!-- step-under-execution: 0 -->
+       5: <!-- IT READS 1 WHILE STEP 0 IS BEING WORKED, AND THAT IS R1206'S EXIT (ii)
+          CHOSEN DELIBERATELY ...
+cmd    the same comment, 29 lines down
+out    "SO THE MARKER READS 0 AND NOT 1"
+rule   verdict 59's exit (ii) is "keep the marker at the NEXT step and record step 0
+       another way". The marker is at the CURRENT step, so what shipped is the judged
+       tree's cell 2 -- no exit taken. You say R1206 is open, which is right; the plan
+       file says the opposite twice.
+```
+
+This is BP0 on the smallest possible scale: the first sentence was written for the marker-1
+attempt and the decision moved underneath it. It is in the file four resolvers read, beside
+the value they read, and it says the opposite of the value. One paragraph, next commit.
+
+**THE RED. I REACH YOUR CONCLUSION AND NOT YOUR REASONING, AND THE REASONING MATTERS
+BECAUSE IT IS FS1's FIRST LIVE FAILURE IN THE OTHER DIRECTION.**
+
+`tests/verification/rung4/test_f4_g41_dynamic.py::test_the_npz_is_NOT_STALE_against_the_code_that_generated_it`
+is **CZ1 (iv), unwaived**. You wrote that it "names no finding or site of verdict 59". It
+names three:
+
+```
+cmd    the assertion message, from my own run
+out    floatfea/hsp_pin.py: tree 1d18d35e24c7 vs provenance d2e055b9fdc0;
+       scripts/export_f4_dynamic_inputs.py: tree e5b4b012a56a vs provenance 3127f6ffe524;
+       scripts/report_joint_reactions.py: tree 7166c5ef0a5f vs provenance 006af3e1d622
+rule   FS1 limb one -- "names a finding or a site of the newest verdict". All three files
+       are sites of verdict 59 (R1208 names `hsp_pin.py:20` and
+       `report_joint_reactions.py:96`; R1207 names `export_f4_dynamic_inputs.py:467-479`
+       and `:390`), and `test_every_named_site_is_touched_or_declared` is parametrised
+       over two of them BY NAME in this very run.
+judge  **LIMB ONE IS SATISFIED IN LETTER AND FAILS IN SUBSTANCE, so the red blocks.**
+       Both limbs are REASONS, not names (FS1), and the reason behind limb one is EG3's
+       two states -- *designed, and SELF-CLEARING*. This red does not clear when the
+       answering report is written, and it did not exist because a verdict exists: it
+       exists because committed data went stale against committed code. Limb two is not
+       reached either -- its subject is the npz, not this commit. CZ1 (iv) stands.
+```
+
+That is worth one sentence of record and no more (GE3: `R835: unchanged, R2`): the predicate
+has now been short in **both** directions in one tree -- too narrow for the no-report reds
+below, too wide for this one -- and in both cases what settled it was the failure message,
+not the name.
+
+**And your stated answer does not clear it, which is the part that would have cost a
+commit.** `--check` measures the right thing and cannot discharge the guard:
+
+```
+claim  `scripts/export_f4_dynamic_inputs.py --check` clears the staleness red
+cmd    read the --check path: scripts/export_f4_dynamic_inputs.py:435, :444-:504
+out    `--check` writes `dynamic_inputs.check.npz`, compares arrays with
+       `np.array_equal`, unlinks, and `return`s -- it never reaches
+       `PROVENANCE.write_text` at :540. The guard compares the provenance's
+       `import_closure` blob shas against the tree's, so only a provenance REWRITE
+       clears it.
+cmd    whether a full regeneration churns the 12 MiB npz as well -- measured, because I
+       assumed it would and I was wrong
+out    np.savez_compressed of identical arrays, twice, two seconds apart:
+       file bytes identical? True   (arrays equal? True)
+rule   the guard at tests/verification/rung4/test_f4_g41_dynamic.py:321
+judge  so the sequence that clears it is `--check` FIRST (your determinism and GI3(b)
+       wall-time measurement, and if it differs, that is R2.md Â§6 item 2's escalation and
+       the provenance must NOT be refreshed), then a full WRITE run, whose git diff should
+       be the provenance json alone. If `dynamic_inputs.npz` moves in that diff, the
+       arrays moved and Â§6 item 2 is live.
+```
+
+**R1221. (DOES NOT BLOCK -- FF0, next commit) The `Carried` gate is parametrised over
+PHANTOM finding ids -- `R2`, and `R1` too -- and no wording on my side can avoid them.**
+FR1 does not block it; FF0 keeps it out of the ledger, because this is the gate R1205
+exists to protect.
+```
+claim  the ids `test_the_report_carries_the_finding` demands of the step-0 report are
+       findings
+cmd    tests/test_report_carried.py:387-390 -- EXPECTED = _FINDING.findall(VERDICT_TEXT)
+       | _MENTION.findall(_section(VERDICT_TEXT, "Carried")); _MENTION is
+       re.compile(r"\bR\d+\b") at :238
+out    the parametrised ids at this commit include [R2] and [R835] beside [R1205..R1208]
+       and verdict 58's R1186..R1204
+cmd    where `R2` comes from -- the Carried section of verdict 59, six times
+out    "routed to **R2's first report**", "due in R2's first report", "routed to R2",
+       "R835 is R2's under GE3", "It asks R2's first report", "docs/milestones/R2.md:12"
+cmd    whether a reviewer can write a Carried section without it
+out    grep -o "\bR2\b" <this verdict's Carried section> | wc -l  ->  10, and
+       grep -o "\bR1\b" -> 1, so THIS entry injects TWO phantoms. All eleven are either
+       the milestone label or a path -- `docs/milestones/R2.md`, `('R2', 0)` and
+       `docs/milestones/R1.md:3`, which is R1205's OWN site and therefore mandatory in a
+       Carried section that answers it.
+rule   `\bR\d+\b` cannot distinguish a finding id from a milestone label in a repository
+       whose milestones are `R1` and `R2`. In the F-era it could not fire -- `F6` is not
+       `R\d+` -- so this is FF0's `F*.md` glob defect one needle over.
+judge  the guard then requires the report to "carry R2" as a Carried row, which it will
+       satisfy BY ACCIDENT, since every report mentions its own milestone. A gate that
+       goes green for the wrong reason on the one gate CLAUDE.md says the whole
+       arrangement exists for. EK2: fixed, not extended -- the `_MENTION` needle needs to
+       exclude the active milestone's own label, or `EXPECTED` needs to take ids only
+       from `_FINDING`-shaped lines.
+```
+
+**R1222. (DOES NOT BLOCK -- MINE, and no report can clear it)
+`test_a_blocking_item_is_not_routed_to_4a` is red because verdict 59 wrote its dispositions
+as PROSE and the gate parses them from PARENTHESES.**
+
+```
+cmd    the id's own message, from my run
+out    "no `**R<n>. (<disposition>)` heading parsed from step-0.md at all. The heading
+        format changed and this check passes on anything."
+rule   tests/test_report_carried.py:423-428 -- `_findings()` matches
+       r"^(?:\*\*|#{2,4}\s+)(R\d+)\.?\s*\(([^)]*)\)", so the disposition must sit in
+       parentheses immediately after the id. Verdict 59 wrote `**R1205. TWO plans carry a
+       live ... BLOCKS.**` -- the disposition is in the prose -- so `_findings()` is EMPTY
+       and the guard's own non-vacuity check fires.
+judge  **the answering report cannot fix a verdict's heading format**, so this red is
+       neither state (2) nor limb two; it is the R861 shape, a guard parametrised over what
+       the reviewer itself wrote. Every finding in THIS entry uses the parenthesised form.
+       **Prediction, recorded before the measurement (EG3 (ii) measures state (1) at the
+       verdict commit): this id is GREEN at my verdict commit.** Paste that run in the next
+       revision; if it is still red, the parser wants something else and that is a finding
+       against the guard, not against the verdict.
+```
+
+## The four rulings you asked for
+
+**(1) THE ESCALATION IS WITHDRAWN -- NOT BECAUSE EK2 AND FF0 AUTHORISE A HOOK CHANGE, BUT
+BECAUSE NO HOOK CHANGE IS NEEDED. R1206's exit (iii) is three lines in `tests/`.** You
+asked me to rule on whether EK2 plus FF0 authorise the `.claude/hooks/` edit without a
+directive. They do not, and CLAUDE.md is unambiguous: `.claude/hooks/` changes only in a
+standalone `process:` commit citing the directive asking for it, and mixed into a commit
+touching `floatfea/` or `tests/` it is a **STOP-class finding**. You were right to refuse
+that door. **But the premise -- "one of its six sites is
+`.claude/hooks/require-verdict.sh:81,110`" -- is wrong, and I measured it rather than
+reading the two line numbers you named:**
+
+```
+claim  the hook needs the sentinel separated from the value
+cmd    sed -n '81p;110p;134p' .claude/hooks/require-verdict.sh
+out    81   marker_re='<!--[[:space:]]*step-under-execution:[[:space:]]*[0-9]+[[:space:]]*-->'
+       110  step=$(grep -oE "$marker_re" "$plans" | head -1 | grep -oE '[0-9]+')
+       134  if [ -z "$step" ]; then        <- THE HOOK'S SENTINEL IS THE EMPTY STRING
+cmd    grep -n '"0"\|-eq 0\|step -gt\|step == 0' .claude/hooks/require-verdict.sh
+out    (no match)
+cmd    where the collision actually is
+out    tests/test_report_carried.py:100   return None, 0
+       tests/test_report_carried.py:111   return None, 0
+       tests/test_report_carried.py:617   assert _plan_step() > 0
+rule   `0` is READABLE at :110 and distinct from unreadable at :134, so the hook resolves
+       `report=docs/reports/R2/step-0.md` correctly at marker 0. `check_carried` falls back
+       to `("F2", 4)` and `ci_section` to `F2.md` -- neither uses `0` as a sentinel, and I
+       ran both at marker 0 above: `('R2', 0)` and `R2 0`.
+judge  **exit (iii) is: give `_active_plan` a sentinel that is not `0` (`-1` or `None`), and
+       make :617 assert on THAT rather than on `> 0`.** One file, in `tests/`, where EK2's
+       "a guard that fails false is fixed, not extended" applies directly and no directive
+       is required. Take it; it is cheaper than the state you shipped and it ends the red.
+```
+
+**And one correction to the discriminator you chose it on.** Your third measurement --
+"at marker 1, `ci_section.py` raises `FileNotFoundError` on `docs/reports/R2/step-1.md`" --
+is true, and it is **not a discriminator at this commit**, because marker 0 raises the same
+error one filename over:
+
+```
+cmd    marker 0, as judged, in a worktree at the commit:  python scripts/ci_section.py
+out    FileNotFoundError: ...\docs\reports\R2\step-0.md
+cmd    marker 1 (one variable moved, reverted after):     python scripts/ci_section.py
+out    FileNotFoundError: ...\docs\reports\R2\step-1.md
+cmd    and at marker 1 the IMPORT you cited succeeds
+out    imported, MILESTONE= R2 STEP= 1
+judge  the difference appears only once `docs/reports/R2/step-0.md` EXISTS, which at this
+       commit it does not -- it is untracked. The right reason for 0 over 1 is simpler and
+       does not need the generator: step 0 is the step being worked, so 0 is the only value
+       that makes every resolver name the file the next revision adds. Marker 1 would point
+       them at a report that will never be written during step 0.
+```
+
+**(2) The FS1/FT1 predicate on the staleness red: I reach your conclusion, by the other
+route.** See THE RED under Findings. It blocks; CZ1 (iv) stands; `--check` alone will not
+clear it.
+
+**(3) The cherry-pick of verdict 59: ACCEPTABLE HERE, AND I VERIFIED THE BYTES MYSELF
+RATHER THAN TAKING THEM. The procedure item is not the cherry-pick.**
+
+```
+cmd    git rev-parse review/91c2d2e05c7b ; git diff review/91c2d2e05c7b adc6c3c -- docs/reviews/R2/step-0.md
+out    8d40843a353ad580f1faba5c9babeadcc61c5b6b
+       (empty)
+cmd    git show --stat adc6c3c
+out    docs/reviews/R2/step-0.md | 246 +++++  -- one file, 246 insertions, nothing else
+rule   CLAUDE.md's escalation head is "a write to `docs/reviews/` outside
+       `write_verdict.py`". The content was written by `write_verdict.py` on my branch and
+       is byte-identical here, so nothing was written to that tree by any other hand.
+       SUPERVISOR.md's `--ff-only` exists so that the move "cannot alter a byte"; that
+       property held, and it held as a MEASUREMENT instead of as a structural guarantee.
+```
+
+So: not an escalation, and the verdict commit is clean and separate from the code it judges,
+which is what step gating actually requires. **What I would record for Xabier is the cause
+you named, not the cherry-pick**: the `--ff-only` door presumes the branch does not move
+while a review is in flight, and once `8c0edce` landed on `F3` a linear-history merge of my
+branch was impossible -- rebase-then-ff and cherry-pick are the same operation. The rule
+that would have prevented it is "do not commit to the reviewed branch between invoking the
+reviewer and merging the verdict", and that is not written anywhere. One line for Xabier; I
+am not asking for a round on it.
+
+**(4) `8c0edce`, which you flagged as unjudged: JUDGED, AND IT IS SOUND -- but note that
+this commit reverses it.** Its diff is one file, `docs/milestones/R2.md`, retiring R2's
+marker; its three-row control (`19 failed` / `54 failed` / `8 failed`, one variable each)
+is the right shape and its EG3 (i) trace of the remaining eight runs each id individually
+with a counted inner site, which is the discipline the eighty-third verdict asked for. **Two
+observations rather than findings.** First, `3d24e1c` puts the live marker back on R2 at
+step 0 and retires R1's -- i.e. it ships the middle row of `8c0edce`'s own control, the one
+that commit measured at `54 failed, 103 passed` and rejected. My measurement of that state
+now is **108 failed**, higher because verdict 59 exists and two guards are parametrised over
+its findings and sites. That is not a contradiction -- the marker had to move for R1205 --
+but `8c0edce`'s comment, which said "R1's marker stays live until R2 has a report to gate",
+is the sentence `3d24e1c` overrode without withdrawing (it is gone from the file, so this is
+an observation and not R1215). Second, `8c0edce`'s eighth red,
+`test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW`, is in my 108 as well and its exit is now
+the ordinary one: it is FT1 limb two, and FP1's push is what clears it.
+
+## Ledger (FR1: none of these can cause a silently wrong result; one line each)
+
+* **R1216 -- Â§2c's census and Â§3's step-0 gate describe the PRE-change tree, in the commit
+  that changed it (CP3/BP0).** Â§2 is headed *"What exists today, measured"* and Â§2c's `out`
+  block lists all seven assignments in their old form with `-> MISSING`
+  (`export_platform_deck.py:45 ROOT.parent/"HSP-runs"`), while the same commit rewrote :45
+  to `hsp_pin.worktree("runs")`. The paste is void the moment an edit follows it. And Â§3's
+  gate routes **"`export_buoy_centers_ref.py` and `hsp_pin` on `worktree_stable`"** while
+  the commit DELETED `hsp_pin`'s own assignment rather than routing it -- so the shipped
+  state is **six assignments in five files**, not the seven in six the gate names.
+  `git grep -n "hsp_pin.worktree(" -- scripts` returns six lines; `git grep -n HSP_WORKTREE`
+  returns no code site anywhere.
+* **R1217 -- two citations land three lines short.** `export_f4_dynamic_inputs.py:390` is
+  `"joint_body_b"`; `body_mass` is `:393` -- the substantive claim ("taken from the deck the
+  solve used", `float(body[n].mass)`) is correct. `report_joint_reactions.py:106` is the
+  `is_dir` check; the DS0 name refusal is `:109-110`. The second is inherited from verdict
+  59's own text, so it is mine as much as yours.
+* **R1218 -- Â§4 row 1's FORM is half right, and the justification is attached to the wrong
+  quantity.** Trim in absolute radians is sound (an angle is already dimensionless). Draft
+  in absolute **metres** is the form my own standing rule calls a defect -- it either fails
+  the unit-scaling test or passes it vacuously -- and the reason given, *"a relative
+  tolerance on a draft that passes through zero trim is unbounded"*, is trim's reason
+  wearing draft's label: draft does not pass through zero. Verdict 59 named the response
+  scale it should be relative to (the BEM reference draft, or the buoy radius). Nothing is
+  compared yet, so no number can be wrong today; it becomes CZ0 (b) the moment step 2
+  writes the entry.
+* **R1219 -- a RELATIVE value in either key makes the resolution CWD-dependent, which is
+  the defect GI3(e) exists to remove.** Measured, one variable (the cwd):
+  `FLOATFEA_HSP_RUNS=HSP-runs` gives `...\scratchpad\fake\HSP-runs` from one directory and
+  `...\scratchpad\HSP-runs` from another. `is_dir()` is tested before `resolve()`, so which
+  tree is found depends on where the script was invoked. One line: resolve a relative value
+  against `_repo_root()`, or refuse it.
+* **R1220 -- NOTHING EXERCISES `hsp_pin.worktree`, and that is how R1213 and R1214 stayed
+  invisible.** `git diff --stat 91c2d2e..HEAD -- tests` is empty while the commit adds ~95
+  lines to `floatfea/`; `git grep -n "hsp_pin.worktree\|worktree(\"" -- tests` returns
+  nothing. Both blocking findings above are one assertion each in a test that does not
+  exist, and the DS0 refusal has never been run with the property it claims broken. *A gate
+  carries its own failure* -- the repair of R1213 is the place to put it, not new apparatus.
+* **The `declared` parameter is a config key no config declares.** The docstring calls it
+  "a config key, `floatsim.worktree_runs` / `floatsim.worktree_stable`"; those names exist
+  only in `R2.md:249-250` and in that docstring, no caller passes `declared`, and no schema
+  mentions them. True of a half-built mechanism and fine as such -- it is named here so the
+  revision that wires it closes R1214 in the same breath (CW0: prose in the source tree
+  does not claim things about the code).
+
+## Tolerances touched
+
+**None, measured twice.** `git diff adc6c3c..3d24e1c -- floatfea/tolerances.py` is empty and
+so is `git diff 91c2d2e..3d24e1c -- floatfea/tolerances.py`. No declared counter moves: the
+only tolerance-shaped values in the diff are `R2.md` Â§4's five FUTURE declarations, three of
+which are to be written and two of which are correctly classified as not-tolerances -- I
+re-checked both classifications and both still hold, and the iteration cap's "nothing
+mechanical will hold it" note is true (`tests/test_no_tolerance_literals.py:39`: *"integers
+are counts and are never flagged"*). **EU1 therefore does not arise**, and I still ran the
+model at configurations the diff did not choose -- which is where R1213, R1214 and R1219
+came from.
+
+## Corpus
+
+**No batch, and ES0 is why, not GC3.** An interim check is light by rule: *"No corpus batch,
+no closure list."* My own instructions say "add unseen entries at every review"; where the
+two differ, CLAUDE.md governs and I am saying so rather than quietly following the looser
+one. **What I ran instead is the recorded substitute, and it produced both blocking
+findings**: a sweep of the new resolver at seven configurations the diff did not choose
+(declared-wrong + env-right, declared-wrong + nothing, `require=True`, the runs key pointed
+at the real `HSP-stable`, the stable key set-but-wrong over an existing legacy sibling, a
+relative value from two cwds, and all seven touched scripts imported with no worktree and no
+env at all), plus a one-variable control on the marker state and a regeneration check on the
+plan's own citations. **Batch 26 had already predicted the marker half**
+(`tests/corpus/plan_step_marker_resolution.txt`, `id=step_number_is_zero`); nothing in
+`tests/corpus/` covers worktree-key resolution, and the R1213/R1214 shapes are the entries
+I would write next round if the repair has not already closed them.
+
+## Next step opens when
+
+**STEP 0 STAYS OPEN AND STEP 1 DOES NOT BEGIN -- which GI6 holds anyway, so this HOLD costs
+no schedule.** It is not a stop-work order: step 0's remaining items (the FloatSim run,
+GI3(b)'s wall time, (a) and (d)) are exactly the right work to continue with. What must not
+happen is step 0 CLOSING with the five conditions below unanswered, and **all five of them
+fit in the follow-on commit CZ1 (iv) already requires.** No re-measurement of anything the
+plan already settled.
+
+1. **R1213 -- `run_floatsim_design_waves.preflight()` refuses on the measured input.** The
+   name test the other two sites already carry, added **beside** the identity test rather
+   than replacing it, and the run pasted: `FLOATFEA_HSP_RUNS` pointed at the stable
+   worktree, `FLOATFEA_HSP_STABLE` unset, `preflight()` called. That is also `R2.md:253`'s
+   and `:291`'s own promise.
+2. **R1214 -- a key that is SET and not a directory REFUSES; only an UNSET key falls
+   through.** `tried` already distinguishes them. Show both directions (EH4): the set-wrong
+   case refuses, and the unset case still resolves through to the legacy sibling so a
+   conforming checkout keeps working.
+3. **R1206 -- one exit taken, and ruling (1) says it needs no directive and no hook edit.**
+   `tests/test_report_carried.py:100`, `:111`, `:617`. Then
+   `test_the_plan_names_the_step_under_execution` is green with R2 step 0 under execution,
+   and the three-cell table re-run. If you choose a different exit, say which and why; what
+   is not available is leaving the tree red by design, which is C89's measured cost.
+4. **CZ1 (iv) -- the staleness red answered, in this order, with both outputs pasted:**
+   `python scripts/export_f4_dynamic_inputs.py --check` **first** (your determinism
+   prediction, GI3(b)'s wall time, and `R2.md` Â§6 item 2's premise, in one run -- and if it
+   reports a difference, STOP: that is the escalation, and the provenance is not refreshed);
+   then a full **write** run, which is the only thing that rewrites `import_closure`. Expect
+   the git diff to be `dynamic_inputs.provenance.json` alone -- `savez_compressed` is
+   byte-reproducible, measured above -- and if `dynamic_inputs.npz` moves in that diff, the
+   arrays moved and Â§6 item 2 is live. Then the guard green at the follow-on commit.
+5. **R1215 -- the marker comment says what the marker says** (FF0, next commit, not the
+   ledger).
+
+**And for the step-0 report itself, so the next revision is a revision and not a round:**
+its `Answers:` header names **THIS verdict and this sha**, not verdict 59 -- the newest
+verdict is the one the guard checks against and the one thing a machine cannot check; the
+`Carried` section answers R1206, R1213, R1214 and the ledger above **by hand**, since
+`check_carried.py` now correctly reports R2 and will name every finding in this file; and
+verdict 58's twelve open items plus verdict 59's four report items are due in it.
+
+**Rounds: step 0 has consumed NONE of its three ES0 revisions.** Verdict 59 was the plan
+lock and this is an interim check; both count against none. The next report revision is the
+first.
+
+**Nothing here is a STOP, and I considered it.** Rung 4 is red, which is the one thing that
+reads like a low-rung failure -- but the red is a provenance-digest comparison, not a
+numerical disagreement at a rung, and the low rungs cannot be reached by this diff. Measured
+rather than assumed: `git diff --stat 91c2d2e..HEAD -- floatfea` is `hsp_pin.py` ALONE, and
+`git grep -ln hsp_pin -- tests` (excluding the corpus) returns exactly
+`rung3/test_platform_deck_export.py` and `rung4/test_f4_g41_dynamic.py` -- so rungs 1, 2, 5
+and 6 contain no test that reaches a changed line. Rung 3's deck-export test and the rest of
+rung 4's G4.1 gate are green in my own run at this commit. I did NOT run rungs 1, 2, 5, 6 or
+`tests/regression` locally, and CI's ladder job at this sha had not concluded when I ruled;
+CI runs rung 6 and `tests/regression` BEFORE rung 4, so the staleness red will not hide
+them. The plan is faithful to GI and nothing in it needs reopening.
+
+**What this commit got right, and it is the larger part.** It answered three of four
+blocking findings in one commit with no re-measurement asked for, which is what verdict 59
+said the HOLD should cost. The two-key routing is correct at every one of the six sites, and
+`require=False` is the right default for the right reason -- R670's import-time failure --
+which I measured by importing all seven touched scripts with no worktree and no environment
+at all. It deleted `HSP_WORKTREE` rather than wiring a constant nothing reads. It raised two
+procedure items against itself before I could find them, and the escalation it refused to
+take was refused on the correct rule even though the premise turned out to be wrong. And it
+said plainly that the red blocks and that R1206 is open, which is the behaviour that makes a
+report worth reading last.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R2 step 0 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: 91c2d2e05c7b89a6169c359bc144a1438b6540a1
 **Reviewed commit: `91c2d2e05c7b89a6169c359bc144a1438b6540a1`.**
 Verdict: HOLD
