@@ -1,4 +1,411 @@
 # Review — R2 step 0
+Reviewed commit: 0fb8c936e2043d954d6661140b03fbdabcb27273
+**Reviewed commit: `0fb8c936e2043d954d6661140b03fbdabcb27273`.**
+Closes: R2/step-0
+Verdict: PASS
+Scope: **R2 step 0, REVISION 3 -- the THIRD AND LAST reviewed revision ES0 allows, so this
+verdict CLOSES the step** (`--closes R2/step-0`, FK1). Ruled under **FR1 with EZ0**: each
+blocking finding names the silently wrong result it produces, and the narrowing is this
+milestone's own -- `docs/milestones/R2.md:32` carries *"Blocking stays FR1 -- a silently
+wrong result"*. **GE3: `R835: unchanged, R2`. Not re-measured.**
+
+**ITEM 1b PASSES.** One comparison, made:
+```
+cmd    sed -n '1516p' docs/reports/R2/step-0.md ; git log --oneline -1 -- docs/reviews/R2/step-0.md
+out    Answers: verdict 64 @ a3a30d2
+       a3a30d2 review: R2 step 0 REVISION 2 at e87b2c0 -- HOLD, two blocking findings
+cmd    python -c "import test_report_carried as t; print(t.ANSWERED, len(t.EXPECTED))"
+out    a3a30d2 35      -- and the generated table at sec.19b has 35 rows, counted
+```
+The newest revision's header names the newest verdict. Lines 5 and 704 still read 61 and 63;
+both are correct as the record of their own rounds and the guard reads `_newest_revision()`.
+
+**4 / 4b / 4c, each diffed separately against `a3a30d2`:** `floatfea/tolerances.py` **0
+lines**; `.claude docs/SUPERVISOR.md` **0 lines, so no STOP-class finding**;
+`tests/conftest.py` **0 lines**, and `git ls-files -- tests/conftest.py 'tests/**/conftest.py'`
+returns `tests/conftest.py` as it must -- no new conftest, no new plugin. **EU1 does not
+arise, measured not taken:** `git diff a3a30d2..HEAD | grep -cE '^[-+].*_COUNTER'` is `0`.
+`git diff --name-only a3a30d2..HEAD -- floatfea data results docs/F6_utilisation.csv scripts/measure`
+is **empty** -- no tool change, no write run, no re-based npz, no regenerated deliverable.
+The step's whole `floatfea/` diff since the plan lock is still one file, `hsp_pin.py`, which
+is what the plan allows.
+
+Tests: **1646 passed, 3 failed, 0 skipped -- MY OWN RUNS, in my own worktree at the judged
+sha, `-p no:randomly`.** Two of the three reds are the escalation; **the third is new and it
+is R1243.**
+* `tests/test_report_numbers_are_sourced.py` + `tests/test_report_carried.py` -> **465
+  passed** (446 + 19). `tests/test_report_guard_states.py` -> **24 passed in 89.59s**. Those
+  are your figures exactly, and **all three report-guard files are green for the first time
+  in this step.**
+* FV1 selection -- `tests/unit`, the four root guards, `tests/verification/rung4`,
+  `tests/regression/test_f6_deliverable_agrees_with_itself.py` -> **2 failed, 1071 passed in
+  321.89s**, the two being `test_the_npz_is_NOT_STALE_against_the_code_that_generated_it` and
+  `test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree`. The escalation, by
+  name, and nothing else.
+* **`tests/test_ci_determinism_gate.py` -> 1 failed, 12 passed.** The file the diff's own
+  change is about, and it is not in your stated FV1 selection. See R1243.
+* `tests/test_ci_ladder_gating.py` + `test_ci_runs_the_whole_suite.py` +
+  `test_ci_workflow_is_wellformed.py` -> **74 passed.**
+* `python scripts/check_carried.py` -> **all 28 findings carried, exit 0.** `ruff`,
+  `black --check`, `mypy floatfea` -> clean (163 files unchanged, 45 source files).
+* **NOT RUN LOCALLY, and I say which rather than implying coverage:** rungs 1, 2, 3, 5, 6 and
+  the rest of `tests/regression`, and the whole suite. `git diff --name-only a3a30d2..HEAD --
+  floatfea` is empty, so FV1 puts them on CI; CI ran rungs 1-4 at `772f616` and rungs 1, 2, 3
+  are SUCCESS there. **Rungs 5 and 6 did not run in CI either, and that is R1243.**
+
+CI: **the judged commit `0fb8c93` HAS NO RUN AND CANNOT HAVE ONE. GC2's case, both conditions
+measured.**
+```
+cmd    gh run list --commit 0fb8c936e2043d954d6661140b03fbdabcb27273 --json name,conclusion,workflowName
+out    []
+cmd    git diff --name-only 772f616..0fb8c93
+out    docs/reports/R2/step-0.md     -- the only path, and `docs/reports/**` is in ci.yml's
+                                       paths-ignore (CK0)
+```
+So the evidence is the nearest ancestor with a run: **run `44180156206` at
+`772f616bfac3e20455c04764be3666d04b9f5fdf`, `completed`, conclusion FAILURE.** **NOT CK2** --
+both executing jobs were given work and ran. The two determinism jobs are `skipped` by their
+own `workflow_dispatch` condition: unavailable, not passing.
+```
+the verification ladder   failure   rungs 1,2,3 SUCCESS | rung 4 FAILURE | rungs 5,6 SKIPPED
+lint, unit and guards     failure   17 FAILED ids
+```
+**EVERY CI RED TRACED PER ID FROM ITS OWN MESSAGE (EG3 (i)), AGAINST THE FS1/FT1 PREDICATE,
+AND SIXTEEN OF SEVENTEEN CLEAR AT THE JUDGED COMMIT -- MEASURED, NOT ASSUMED.**
+```
+8   test_every_named_site_is_touched_or_declared[R1221|R1242-tests/test_report_carried.py:387..390]
+      -> names a FINDING and a SITE of verdict 64. Limb one. GREEN at 0fb8c93 (465 passed).
+7   test_the_guard_survives_the_state[baseline | non_numeric_step_suffix |
+    superscript_digit_step_number | draft_suffix_beside_a_step_report |
+    step_number_is_the_empty_string | verdict_amended_after_the_commit_the_report_answers |
+    zero_padded_step_number]
+      -> EG3 state (2). Limb one. GREEN at 0fb8c93 (24 passed).
+1   test_every_number_in_prose_is_sourced_in_its_own_section[19. ...]
+      -> section 19 IS verdict 64's answer section. Limb one. GREEN at 0fb8c93.
+1   rung4 ... test_the_npz_is_NOT_STALE_against_the_code_that_generated_it
+      -> names R1225/R1223, carried by verdict 64, at the site it named. Limb one. The
+         escalation; red at 0fb8c93 with its cause named, and correctly not cleared.
+1   test_ladder_6_is_not_gated_behind_a_rung_that_is_red_under_Q8
+      -> FAILS BOTH LIMBS. Names no finding and no site of verdict 64; its subject is the
+         workflow's step order, not the commit carrying it. STILL RED at 0fb8c93.
+         CZ1 (iv) applies unchanged. This is R1243.
+```
+**The test I used to separate "boundary" from "introduced": a boundary red is SELF-CLEARING
+-- EG3's own word for both of its states. The sixteen above cleared, and I measured them
+clearing. This one does not clear at any future commit until the order is settled.**
+
+Door (FV2 / GG2): `git worktree add -b review/0fb8c936e204 <a path outside the repository>
+0fb8c936e2043d954d6661140b03fbdabcb27273` **succeeded on the first try, so no review of this
+commit existed.** Every measurement was taken there; the corpus is committed separately at
+`30e3c56` and this verdict is written through `scripts/write_verdict.py`, committed on that
+branch and pushed -- merge with `git merge --ff-only origin/review/0fb8c936e204`. **My own
+writes, all in my own worktree, all reverted before committing:** one Carried row removed, one
+`no change` row planted, four `ci.yml` plants, two `data/platform/buoy_centers_ref.json`
+regenerations, with `git status --porcelain` empty after each. `C:\dev\floatfea` was clean when
+I was invoked and I wrote nothing into it. **And one of my own measurements was wrong and I
+caught it before writing it down:** my first "empty directory named `HSP-stable`" probe ran
+against a POPULATED fake a previous round of mine had left in the same scratch directory, so
+`mkdir -p` was a no-op and the fixture was not what I believed. Re-run on a genuinely empty
+directory the code refuses correctly. The entry in the Corpus section is the controlled plant,
+not that first probe.
+
+## Carried
+
+Verdict 64's five numbered conditions and its carry list. **FOUR ANSWERED, ONE ANSWERED INTO A
+NEW BLOCKING FINDING, TWO CORRECTLY UNCHANGED, AND TWO OF MY OWN CLAIMS WITHDRAWN.**
+
+* **R1238 -- ANSWERED AND CLOSED, and this is the cleanest answer of the round.** Sec.20's
+  fenced block is the generator's output with **10 bullets = 2 + 8**, equal to the two counts
+  in its own line, counted by me. `splice3.py` now exits non-zero on a bullet/line mismatch, on
+  a file that would shrink, and on a vanished site row -- three defects of this step turned
+  into preconditions on the script that caused them, which is the right place for them.
+* **R1240 -- ANSWERED AND CLOSED, at both sites, and the repair carries its own failure.**
+  `tests/test_report_carried.py:380` and `scripts/carried_table.py:160` both scope to the
+  newest `# Review` entry. **I measured the repair rather than reading it:** deleting the
+  R1217 row -- one of the ids the repair brings into scope -- gives `2 failed` at
+  `test_the_report_carries_the_finding[R1217]` and
+  `test_the_Carried_table_is_what_the_generator_produces`, so the newly-covered ids are
+  genuinely inside the gate's domain and the generator/gate pair agrees. **And your correction
+  to my reason for the third site is right and I verified it line by line:**
+  `scripts/check_carried.py:80`'s `heads[-1]` is on the REPORT path, scoped at `:73-80`, where
+  the last heading IS correct; what makes it immune is that `:145` is
+  `set(_FINDING.findall(...))` and extracts no Carried section from accumulated text at all.
+  Recording the distinction rather than the conclusion is what tells the next reader whether a
+  fourth site would be a site, and you wrote it that way.
+* **R1241 -- ANSWERED at both named sites**, and the rewrite into a `claim/cmd/out/rule/judge`
+  block rather than prose was the right call: the number-sourcing guard was red on the two
+  figures inside the first correction, which is CP2 exactly -- a repair's own numbers carrying
+  no triple. One site of the same class is left: sec.15's judge still reads *"this reads the
+  SAME `SITES` the gate reads rather than reimplementing the pattern and getting a different
+  answer from the thing it has to satisfy"*, and the eight reds of `772f616` are the
+  measurement that it reimplemented the TOUCHED half. Closure item.
+* **R1242 -- correctly a ledger row, unchanged.**
+* **R1237 -- THE MECHANISM IS ANSWERED AND DEMONSTRATED; THE NAMED SITE IS NOT, AND I NARROW MY
+  OWN CONDITION RATHER THAN HOLD YOU TO IT.** The ordering is real -- all four runs concluded
+  first, then each generator to its own file, then the paste, then the commit -- and sec.20 is
+  the proof: I verified its nine failing ids against `gh run view 44164723945 --log-failed` and
+  the eight lint ids match exactly, with `test_R756` the ninth from the ladder. GC2 was handled
+  correctly for `e87b2c0`, with both shas, the diff listing and the run id printed. **But the
+  site my condition named is unchanged:** `docs/reports/R2/step-0.md:813` still reads
+  `| 44145793006 | push | 0c5c864 | **no result** (status in_progress) |` and `gh` says
+  `conclusion=failure, updated 18:58:00Z`; `44149168617` has no row in that table. Your
+  hand-back says "the rounds table now reads `conclusion **failure**` for the run it had
+  published as 'no result'" -- **that is true of sec.20's table and of a different run, and it
+  is not true of the run and the row the finding named.** I am not holding on it, for a reason
+  I can state: **it is no longer silent.** Sec.17 declares, in the report's own words, that the
+  row said no result where `gh` says failure and that the table was incomplete, and sec.19b's
+  generated row points R1237 at sec.17. Under FR1 that makes it a ledger item, not a blocking
+  one. And leaving the row is defensible on the ground verdict 64 itself used for revision 1's
+  `Answers:` header -- a revision is the record of its round. What is missing is the pointer AT
+  the site: sec.17 never names run `44145793006`, so a reader at line 813 has nothing to
+  follow. One line, in the closure artifact. **R1244.**
+* **R1239 -- ANSWERED IN FORM, AND THE FORM OF THE ANSWER IS A NEW BLOCKING FINDING. R1243,
+  AND THE FIRST EXIT OF MY OWN CONDITION IS WITHDRAWN.** I offered "either the two existing
+  steps move ahead of rung 6 -- a reorder of steps that already exist, so no new apparatus is
+  created -- or the report records that rungs 4 and 5 are unmeasurable in CI". **The first exit
+  is not available and I did not know it when I wrote it**: `ci.yml:496-503` carries CH3, which
+  put rung 6 ahead of rung 4 deliberately and for a measured reason, and names
+  `tests/test_ci_determinism_gate.py` as the gate that asserts the position. You took the exit
+  I named, which was the right thing to do with a reviewer's condition; the condition was
+  wrong. **And I withdraw a second claim of my own from the same finding:** R1239's judge said
+  *"Nothing is published wrongly -- a skipped step is recorded as skipped"*. Measured at
+  `scripts/ci_section.py:473-505` and `:628-653`: the counts come from `run_rung:` log lines
+  and the SKIPPED notice is keyed on `job["conclusion"]`. **A skipped STEP emits no log line
+  and is named nowhere.** I asserted it and did not run it; that is the pattern this step has
+  been about all month and this instance is mine.
+* **Conditions 4 and 6 (R1225, R1223) -- OPEN, UNCHANGED, AND CORRECTLY SO.** Both red in my
+  own run with the cause named; `git diff --name-only a3a30d2..HEAD -- data results` is empty.
+  **Fourth round running in which the cheap wrong repair was available and not taken.** Sec.7
+  states both options with both costs and leaves the choice where it belongs. This is the part
+  of the step that is actually good, and it is what GI6 sends to Xabier.
+* **Condition 5 (R1232) -- NOTHING TO DO, and nothing was done.** No write run was made.
+* **R1217, R1218 -- still open and not answerable here**; R1218 becomes a blocking item when
+  step 2 writes the tolerance entry. **R1212, R1203, R1204, R1222, R1224 -- reviewer-side or
+  Xabier's; no action asked of you. R1234 -- withdrawn by me last round, stays withdrawn.
+  R835 -- `unchanged, R2` (GE3), one line.** The R1213 message assertion stays a ledger row.
+* **Verdict 58's twelve and verdict 59's four -- ROUTED, and now held in place by a gate that
+  reads the right round**, which is what R1240's repair bought.
+* **THE THREE-INSTANCES LESSON: YES, IT BELONGS IN THE CLOSURE ARTIFACT, and it is stronger
+  than you put it.** R1221 (filter), R1240 (scoping) and `772f616`'s eight reds (the
+  touched-line predicate) are three instances of one shape, each found by running the pair
+  rather than reading either. **The fourth fact sharpens it into a rule:**
+  `scripts/untouched_sites.py` is a COMMITTED generator for exactly the sec.19c table, it
+  already reads `SITES` and `TOUCHED` from the gate, and it already REFUSES when the diff is
+  unavailable (`TOUCHED_ERROR`, `:77-79`) -- and sec.15 and sec.19c were produced by an ad-hoc
+  script instead, with no `<!-- generated: -->` mark on either section. So the rule is not
+  "take the gate's value" but **"use the committed generator; where one exists, a second
+  implementation is the defect, and the one you write will be the lenient one."** Both halves
+  of that sentence are measured: lenient (`range(380, 405)` against `{379, 380}`) and
+  already-solved (the committed script). Put it in the closure artifact in those terms.
+
+## Findings
+
+**R1243. (BLOCKS) THE RUNG REORDER BREAKS THE GATE THAT EXISTS TO PREVENT IT, AND IT TAKES THE
+WHOLE OF `tests/regression` OUT OF CI. THE PREDICTION IT SHIPPED WITH IS REFUTED BY ITS OWN
+RUN.**
+
+```
+claim  the rungs now run in the ladder's own order, and CI's ladder job goes from one red
+       to two -- the second being the escalation becoming visible
+cmd    python -m pytest -q -p no:randomly tests/test_ci_determinism_gate.py
+out    1 failed, 12 passed
+       test_ladder_6_is_not_gated_behind_a_rung_that_is_red_under_Q8
+       AssertionError: the goldens run after ladder 4, so a red ladder 4 stops them --
+       which is where they were for eleven rounds, gated nowhere while running on ten
+       determinism legs.   assert 5 < 3
+cmd    sed -n '496,503p' .github/workflows/ci.yml     (UNCHANGED by this diff, four lines
+                                                       above the comment that reorders it)
+out    "AND RUNG 6 RUNS BEFORE RUNG 4 (CH3). The goldens ask whether today's bytes equal
+        yesterday's, which stays interpretable whatever ladder 4 says; chained behind it
+        they were skipped for eleven rounds while running on ten determinism legs ...
+        `tests/test_ci_determinism_gate.py` asserts that position."
+cmd    gh api repos/:owner/:repo/actions/runs/44180156206/jobs --jq '.jobs[] |
+       select(.name=="the verification ladder") | .steps[] | "\(.name) -> \(.conclusion)"'
+out    ladder 1,2,3 -> success ; ladder 4 -> FAILURE ; ladder 5 -> skipped ;
+       ladder 6 -> skipped
+cell   ONE VARIABLE, the step order, measured from the two runs rather than reasoned:
+         44149168617  rungs 1,2,3,6   ladder row  2143 passed, 1 failed, 0 skipped
+         44180156206  rungs 1,2,3,4   ladder row  2011 passed, 1 failed, 0 skipped
+       -477 (rung 6 AND all of tests/regression), +345 (rung 4), net -132, SAME `1 failed`.
+rule   FS1 with FT1 -- a red is a boundary red if it names a finding or a site of the newest
+       verdict, OR if its SUBJECT IS THE COMMIT CARRYING IT
+judge  **IT FAILS BOTH LIMBS, and it is not self-clearing, which is EG3's defining property
+       of both of its states.** CZ1 (iv) applies unchanged. **And the prediction is refuted
+       by the commit's own run: ONE red, not two.** Rung 4 fails, so rungs 5 and 6 skip --
+       which is the very mechanism R1239 identified, applied to the repair for R1239. The
+       escalation did not become visible; it MOVED, from the rung-6 deliverable red to the
+       rung-4 staleness red, and the rung-6 one is now invisible in CI.
+```
+
+**The silently wrong result.** `scripts/ci_section.py` reads `job["conclusion"]` and parses
+`run_rung:` lines out of the log. **A skipped STEP emits no `run_rung:` line, and the "N job(s)
+SKIPPED, so unavailable rather than passing" notice is keyed on a JOB's conclusion** -- so the
+next report publishes `the verification ladder | 2011 | 1 | 0` and nothing anywhere says that
+477 tests did not execute. Among them is the whole of `tests/regression`, which FV1 assigns to
+CI at the pushed sha in so many words, and
+`tests/regression/test_f6_deliverable_agrees_with_itself.py`, **the only automated check that a
+published deliverable still regenerates.** Under the previous order that check ran and reported
+its red; under this one it cannot run while the escalation stands, and the figure that would
+have told a reader so is a smaller number beside an unchanged `1 failed`. The gate that held
+the property is the one now red, so the tree cannot say it either.
+
+**And one thing it is NOT.** This is not a new-apparatus request and it is not an extension:
+`tests/test_ci_determinism_gate.py` is not failing false. It is reporting, correctly, that the
+order it asserts is gone.
+
+*Closed when* **either** the CH3 order is restored and R1239's SECOND exit is taken -- the
+report, or the closure artifact, records that rungs 4 and 5 are unmeasurable in CI while the
+escalation stands -- **or**, if the new order is kept, `ci.yml:496-503`'s CH3 paragraph and
+`tests/test_ci_determinism_gate.py:199`'s assertion are changed in the same commit with CH3's
+own measurement answered, and the CI section names every skipped ladder step rather than only
+skipped jobs. **Either way the stale CH3 comment goes** -- two adjacent comments in one file
+currently assert opposite orderings -- **and sec.19's "ONE red to TWO" is replaced by the
+measurement above.** This is FF0-class apparatus, so it is the NEXT COMMIT, which is the step's
+closure commit; under EQ0 that commit changes a gate and I review it, and under EB4 that review
+costs no round.
+
+## Closure items
+
+1. **R1244 -- `docs/reports/R2/step-0.md:813`.** The `44145793006` row stays as the record of
+   its round; it needs one sentence AT the site naming the run and pointing at sec.17, because
+   sec.17 never names the run id. And `44149168617`'s conclusion appears only inside sec.20's
+   GC2 preamble, not as a row of the round it belonged to.
+2. **R1245 -- two stale figures, both inherited from me, both one line.** (i) Sec.19's cell and
+   `step-0-answers.json`'s preamble both read *"GAINS R1212, R1217, R1218, R1219, R1224 -- five
+   items"*; **`R1219` is not in `EXPECTED` (35 ids) and has no row in sec.19b.** The figure is
+   four, and it is four because **my verdict-64 cell measured the gain against verdict 63 while
+   the repair landed against verdict 64** -- BP0, the rule moving under the figure, and the
+   rule was my own newest-verdict pointer. (ii) Sec.19c's `out` reads `16 touched` and its
+   `judge` reads *"among the 24 touched"*; measured, `len(SITES) - 229 = 16`. Both reach a
+   green tree -- the number-sourcing guard is green with `24` in the judge line and with
+   `R1219` in the prose, on the shipped artifact and not on a plant.
+3. **R1246 -- sec.15 and sec.19c carry no `<!-- generated: -->` mark and were produced by an
+   uncommitted script, while `scripts/untouched_sites.py` is the committed generator for that
+   table.** BI3's rule is that a table is regenerated by a script at the commit it describes or
+   it does not belong in that file. Sec.15's judge claim is the R1241-class sentence left over.
+4. **R1247 -- three measured holes in the newest-entry scoper, all reachable from MY OWN
+   wording, none caught by anything.** A newest entry with no `## Carried` heading empties the
+   mention half of `EXPECTED`; a heading written `#Review` without the space makes the scoper
+   read the SECOND-newest entry, which is R1240 re-entering through a typo; and a line reading
+   `# Review` quoted inside a fenced `out` block truncates the entry before its real Carried
+   section. The third is live for me -- I quote verdict text in `out` lines every round. Noted
+   for the record, not as a repair request: the constrained party here is the reviewer.
+5. **R1248 -- `scripts/export_buoy_centers_ref.py` checks the stable tree's NAME and never its
+   TAG.** Measured on a controlled plant: a git tree at commit `8dfdc6c` with no tags, merely
+   named `HSP-stable`, regenerates `data/platform/buoy_centers_ref.json` -- EB6's
+   label-provenance input -- and the written file declares `hsp_tag: floatfea-ref-1` beside a
+   `blob_sha` from that tree. `hsp_pin.worktree`'s docstring scopes itself out of tag checking
+   deliberately and R1226 gave this file a NAME refusal, so the gap is documented rather than
+   hidden, and the committed snapshot is untouched this round (`b8b8123904af`). It does not
+   block -- no artifact in the tree was produced that way and the realistic error, pointing the
+   stable key at `HSP-runs`, is refused loudly. **It belongs in step 2**, which is where the
+   override file and its provenance get written, and it is FR1's second head the moment someone
+   regenerates on a machine with a stale stable worktree.
+
+## Tolerances touched
+
+**None, measured twice.** `git diff a3a30d2..HEAD -- floatfea/tolerances.py` is **0 lines** and
+`git diff a3a30d2..HEAD | grep -cE '^[-+].*_COUNTER'` is **0**, so **EU1 does not arise** -- and
+I ran the apparatus at configurations the diff did not choose anyway, which is where R1243's
+cell and R1240's both-direction measurement came from. The one tolerance-shaped thing still
+implicated is not a tolerance and has not moved: `--check`'s `np.array_equal` with no threshold,
+by Q8's rule. **If any answer to the escalation introduces a tolerance on that comparison, that
+is a widening and it is refused.** R1218's row-1 form question becomes blocking at step 2.
+
+## Corpus
+
+**One batch, committed separately at `30e3c56`:
+`tests/corpus/ci_step_skipped_inside_a_job_that_ran.txt`, 32 entries, all new.** GC3 left the
+pause expired, so this is my own call under GA3's length target. It is the axis none of the
+three existing CI corpora has: every entry in `report_ci_section.txt`, `ci_ladder_gating.txt`
+and `ci_workflow_job_gating_shapes.txt` is about a JOB, and this round's blocking finding is
+about a **step inside a job that ran.**
+
+**10 of the 32 measured this round, one variable at a time in my own worktree, reverted after
+each. 1 CAUGHT, 9 reach a green tree.** The one catch is dropping `full:tests/regression` from
+rung 6's `run:` line, which `test_every_test_in_the_suite_is_run_by_some_ci_job` sees because it
+is a NAMING check. The three that do not: `continue-on-error: true` on rung 4 (step fails, job
+concludes success), `if: ${{ !cancelled() }}` on rungs 5 and 6 (CK0's own premise that "steps
+stop at the first failure, so the chain is the order" silently falsified), and splitting
+`tests/regression` into its own step behind rung 6 (still named, still gated on a rung that can
+be red). Plus three on the verdict scoper and two taken on the SHIPPED artifact rather than a
+plant -- the `24`/`16` judge line and the `R1219` prose row, both green.
+
+**AND THE BASELINE SUBTRACTION IS PART OF THE MEASUREMENT, NOT BOOKKEEPING.** At this commit
+`test_ladder_6_...` is already red, so all four workflow plants "look caught" if the `FAILED`
+list is read without comparing it against the unplanted tree. Subtracting the baseline -- 1
+failed, 86 passed -- leaves exactly one catch out of four. A corpus measured against a tree
+that is already red over-reports its own coverage, which is a shape worth naming for the next
+round.
+
+**What I ran beside the batch** is the recorded substitute: a continuum over the parameter space
+the carry gate's decision rule guards, solved in both directions (EH4) -- the weakening
+direction found that a TOUCHED site declared `**no change**` leaves `test_report_carried.py` at
+`446 passed`, which is the escape hatch working as designed and is why the reviewer reading the
+table is the bound; and a regeneration check on a published-deliverable producer, which is
+R1248.
+
+## Next step opens when
+
+**STEP 0 IS CLOSED BY THIS VERDICT (DD1, `--closes R2/step-0`). STEP 1 DOES NOT BEGIN: GI6
+holds it until Xabier confirms or overrides D1-D4, and R1243 holds it independently.** Rounds:
+this consumed **revision 3 of 3 under ES0 and the cap is reached**, so nothing here is a request
+for a revision 4. R1238, R1240 and R1241 are **DISCHARGED**; R1237 is discharged in its
+mechanism and ledgered at its site; condition 7 and R1234 stay **WITHDRAWN**, and the first exit
+of R1239's condition plus R1239's own skipped-step parenthetical are **WITHDRAWN TOO**, both
+mine, both with the measurement that forced it.
+
+1. **R1243 in the closure commit, before anything else (FF0).** One of the two exits above, with
+   the stale CH3 paragraph removed either way and sec.19's prediction replaced by the two ladder
+   rows. **Under EQ0 I review that commit because it changes a gate; under EB4 the review counts
+   against no step's rounds.** R1243 also carries by name into step 1's `Carried` and stays
+   blocking there until that review passes.
+2. **The closure artifact carries CZ1's four outputs at the closure commit's own sha** --
+   `ruff`, `black --check`, `mypy`, `pytest -q`, then the pushed `gh run list`, with any red
+   answered in a follow-on that repeats both. **And EG3 (ii): the report-guard files run AT the
+   verdict commit and the counts recorded**, which is the half no verdict in this milestone had
+   measured and which this step has now measured twice.
+3. **The closure list above, items 1-5, fixed once as a list** -- not re-reviewed item by item.
+   R1248 is the one to route forward rather than fix: it belongs to step 2's provenance work.
+4. **Conditions 4 and 6 stay open and stay escalated.** Do not clear the staleness guard by
+   regenerating the npz and do not clear R1223 by regenerating the deliverable against a red
+   gate. Four rounds of not doing the cheap wrong thing is the best evidence this step produced.
+5. **No write run until R1232's pin is above `import numpy` or in the invocation's
+   environment**, with the provenance recording the pinned values.
+
+**Why PASS and not HOLD, stated so it is not read as a caveat.** ES0's cap and CZ1 (iv) collide
+here, and CLAUDE.md resolves the collision itself: *"A blocking item still open at that point
+carries by name into the next step's `Carried` section and stays blocking there."* That sentence
+presupposes a step closing with a blocking item open, which is this. A HOLD would demand a
+revision the cap forbids and would rebuild DD1's deadlock, which this project has already paid
+two verdicts for. And the honest part: **R1243 exists because the first exit of my own condition
+was wrong** -- I named a reorder as safe without reading the comment four lines above the step I
+was asking to move. Holding you for a round on a defect my own condition specified would be the
+exact failure I named last round -- relaying a condition no action of yours can meet --
+inverted. So: the step closes, the report goes to Xabier, and the two-line repair plus its
+review happen in the closure commit where FF0 puts them.
+
+**Nothing here is a STOP, and I considered it on the ladder.** Rungs 1, 2 and 3 are SUCCESS in
+CI at `772f616` over code byte-identical to the judged commit's; no `floatfea/` file is in this
+diff; and the escalation's two reds are a provenance comparison and a regeneration comparison,
+not a numerical disagreement at a rung. Rung 4's red is that same provenance comparison and rung
+5 has not run -- which is R1243, not a rung failure. The locked plan is faithful to GI and needs
+no reopening, and section 6 item 2 of that plan is still the one clause I rule must NOT be
+triggered yet.
+
+**And I disagree with nothing in the criterion this round.** FR1 did the work again: R1244-R1248
+would each have been a blocking round under the unamended CZ0 and each is a line here instead,
+and the one that blocks is given the sentence FR1 asks for -- a published CI figure that
+conceals 477 tests, including the only check that a deliverable still regenerates, never having
+run.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R2 step 0
 Reviewed commit: e87b2c00a7cab740f27841f66e9362ac5248283e
 **Reviewed commit: `e87b2c00a7cab740f27841f66e9362ac5248283e`.**
 Verdict: HOLD
