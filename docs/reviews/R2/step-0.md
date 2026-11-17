@@ -1,4 +1,453 @@
 # Review — R2 step 0 — ES0 INTERIM CHECK (counts against no round)
+Reviewed commit: 9e1092a35eed45ee5351789778a3c50752af1bb1
+**Reviewed commit: `9e1092a35eed45ee5351789778a3c50752af1bb1`.**
+Verdict: HOLD
+Scope: **ES0 INTERIM CHECK on the OPEN step, the third.** `git ls-files docs/reports/R2` is
+EMPTY, so no new report revision exists and this **counts against none of step 0's three
+revisions** and closes nothing; `--closes` is correctly absent (FK1). Light per ES0: the
+suite, CI at the commit, a CZ0 (a)-(d) scan of the diff. **Ruled under FR1 with EZ0**, and
+each blocking finding names the silently wrong result it produces. **GE3: `R835: unchanged,
+R2`. Not re-measured.** 1b does not arise -- there is no report, so there is no `Answers:`
+header to compare against the newest verdict.
+**EU1 does not arise, measured not taken:** `git diff 3d24e1c..HEAD -- floatfea/tolerances.py`
+is 0 lines, so is `git diff 91c2d2e..HEAD`, and `git diff 3d24e1c..HEAD | grep -cE '^[-+].*_COUNTER'`
+is `0`. I ran the adversarial case anyway and it is where both blocking findings came from.
+**CH2/CI0: `git ls-files -- tests/conftest.py 'tests/**/conftest.py'` returns `tests/conftest.py`,
+and `git diff 3d24e1c..HEAD` over it is 0 lines. No new conftest, no new plugin.**
+**4b: `git diff 3d24e1c..HEAD -- .claude docs/SUPERVISOR.md` is 0 lines. No STOP-class finding.**
+Tests: **MY OWN RUNS, in my own worktree at the judged sha, `-p no:randomly`.**
+* `tests/unit` + the four root guards: **703 passed in 196.31s.** That is verdict 60's 692 at
+  `3d24e1c` plus the new file's 10 plus one parametrised root-guard case over the new file.
+* `tests/verification/rung4/test_f4_g41_dynamic.py` + `tests/regression/test_f6_deliverable_agrees_with_itself.py`:
+  **2 failed, 138 passed in 146.11s.** The two are conditions 4 and 6 BY NAME --
+  `test_the_npz_is_NOT_STALE_against_the_code_that_generated_it` and
+  `test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree`. Both still open.
+* the new file's revert-red-restore cycles, **run by me rather than taken**: R1214's `raise`
+  reverted to `tried.append(...); continue` gives **2 failed, 8 passed**; R1213's name test
+  disabled with `if False and ...` gives **1 failed, 9 passed**; **R1219's anchor removed
+  gives 1 failed, 9 passed, a cycle the commit did not report**; all restored gives
+  **10 passed**, with `git status --porcelain` empty.
+* **CI's own wide guards selection**, `pytest tests --ignore=tests/unit
+  --ignore=tests/verification --ignore=tests/regression`, in my worktree: **172 failed, 1057
+  passed, 1 skipped in 555.85s**, and the reds are confined to THREE files --
+  `test_report_carried.py` 151, `test_report_guard_states.py` 20,
+  `test_report_numbers_are_sourced.py` 1. **No root test outside the report guards is red at
+  this commit.** Per-id ruling under FS1/FT1 below.
+* `ruff check floatfea tests scripts`, `black --check floatfea tests scripts`, `mypy floatfea`:
+  **all clean, my own runs** -- 163 files unchanged, 45 source files.
+* **NOT RUN LOCALLY and I say which rather than implying coverage:** rungs 1, 2, 5, 6 and
+  `tests/regression` beyond the one deliverable test. The diff's only `floatfea/` file is
+  `hsp_pin.py` (32 lines) and the only rung tests reaching it are rung 3's deck export and
+  rung 4's G4.1, both run above; FV1 puts the rest on CI.
+CI: **run `44133344180` at the FULL sha `9e1092a35eed45ee5351789778a3c50752af1bb1` EXISTS, so
+FP1 held.** `lint, unit and guards` **CONCLUDED FAILURE at step 10 `guards and meta-tests`**,
+with `actionlint`, `ruff`, `black --check`, `mypy` and `unit tests` all **success** before it
+-- so the guards step is seen to have RUN rather than been skipped behind an earlier red
+(CZ1 iii), and CI's `mypy` passes at the pinned toolchain this time. **`the verification
+ladder` had NOT finished when I ruled** (`in_progress`, runner `GitHub Actions 1000001919`,
+started 17:06:50Z); a run that has not finished is not a pass. Both determinism jobs
+`skipped` by their own `workflow_dispatch` condition. **NOT CK2** -- runners `1000001918` and
+`1000001919` were assigned and both jobs executed for minutes. **CA2 IS REACHED: CI is red at
+the judged commit.** CI's per-id list is **UNAVAILABLE, not skipped over**: `gh run view --job
+<id> --log-failed` answers *"run 44133344180 is still in progress; logs will be available when
+it is complete"* while the ladder runs, so the id-for-id agreement with my local 172 is
+deferred -- but my local run IS that selection, so nothing is hiding inside CI's aggregate
+that I have not measured. GC2 does not arise: the diff touches `floatfea/` and `tests/`.
+Door (FV2 / GG2): `git worktree add -b review/9e1092a35eed <a path outside the repository>
+9e1092a35eed45ee5351789778a3c50752af1bb1` **succeeded on the first try, so no review of this
+commit existed.** Every measurement above was taken in that worktree; this verdict is written
+there through `scripts/write_verdict.py` (`grep -nE '"(commit|add)"|check_call|\.run\(' ` over
+it: no match), committed on that branch and pushed -- merge with `git merge --ff-only
+origin/review/9e1092a35eed`. **Writes of my own, all in my own worktree and all reverted
+before committing:** the three revert cycles, a planted `docs/reports/R2/step-0.md` for the
+R1227 cell, and the plan marker moved to `3` and back for the provenance cell.
+`git status --porcelain` in my worktree is empty. In `C:\dev\floatfea` I ran only read-only
+`git` and `gh`. **Two read-only things I ran outside the repository and disclose rather than
+leave for you to find:** `git -C <HSP-runs> describe/rev-parse/status --porcelain`, and
+`export_buoy_centers_ref.py --check` under two values of `FLOATFEA_HSP_STABLE` -- `--check`
+compares and writes nothing (`:188`). Neither wrote a byte anywhere.
+
+## Carried
+
+Verdict 60's five conditions and verdict 61's two. **FIVE ANSWERED, TWO OPEN, and one of the
+five answered its condition without closing its finding.**
+
+* **R1213 (the DS0 refusal that did not fire) -- ANSWERED, verified three ways.** The name
+  test is at `run_floatsim_design_waves.py:112-119`, **beside** the identity test at `:120`
+  and not replacing it (EK2), and `test_the_DS0_refusal_fires_when_the_RUNS_key_names_the_STABLE_tree`
+  drives `preflight()` rather than reading its source. Revert cycle: **1 failed**. And the
+  adversarial case the commit did not run -- a **case-folded** value:
+  ```
+  cmd  Path('C:/users/xlama/onedrive/documents/buoy/hsp-stable').resolve().parts
+  out  ('C:\','Users','xlama','OneDrive','Documents','buoy','HSP-stable')
+       NAME TEST ("HSP-stable" in parts): True
+  rule run_floatsim_design_waves.py:112; Windows `resolve()` restores the on-disk case for an
+       existing path, so the predicate is not defeated by the casing of the declaration
+  ```
+* **R1214 (set-but-wrong silently discarded) -- ANSWERED AS WRITTEN, and the finding is not
+  closed: see R1226.** The condition was *"a source that is set and not a directory is a
+  refusal and only an unset source falls through"*, and that is exactly what shipped
+  (`hsp_pin.py:120-126`, with the legacy sibling moved outside the loop at `:128-130`). Both
+  directions (EH4): revert gives **2 failed**; unset still resolves through. **And the
+  direction the condition did not ask for, measured because R670 is the reason
+  `require=False` exists:** a set-and-wrong key now raises `SystemExit` from a module-level
+  constant in six scripts, so I checked it cannot take a rung down in collection --
+  `FLOATFEA_HSP_RUNS=C:/nope/not/a/worktree python -m pytest --collect-only
+  tests/verification/rung4 tests/verification/rung3` gives **670 tests collected in 0.75s, no
+  errors.** R670 is not resurrected.
+* **R1206 (`0` is both a legal step number and the resolvers' sentinel) -- THE CONDITION'S
+  THREE LINES ARE FIXED AND THE FINDING IS NOT CLOSED. R1227 below, with the cell.** Exit
+  (iii) was the right exit and the escalation was rightly withdrawn; `_plan_step() is not
+  None` is green, `check_carried._active_step()` is `('R2', 0)`, `ci_section` is `R2 0`, and
+  `test_R887_the_plant_base_is_the_step_the_GUARD_reads` passes its `STEP == guard.STEP`
+  assertion. A **fourth** site of the same `> 0` collision is live.
+* **R1215 (the marker comment said the opposite of the marker) -- ANSWERED.** `R2.md:5-25`
+  now reads `IT READS 0, WHICH IS WHAT IS UNDER EXECUTION`, with the withdrawn escalation and
+  its refuting grep recorded. Read against the diff, not inferred.
+* **R1216 (the census described the pre-change tree in the commit that changed it) --
+  ANSWERED.** `R2.md:208-223` states BOTH counts and names why they differ. **R1219 --
+  ANSWERED** (`hsp_pin.py:106-111`), and I measured the revert cycle the report did not.
+  **R1220 -- ANSWERED**, with one defect in the new file: R1229.
+* **CZ1 (iv), the rung-4 staleness red (condition 4) -- OPEN.** Confirmed red in my own run.
+  **The diagnosis offered for it is refuted by a measurement already in this repository:
+  R1225.**
+* **R1223 (the published deliverable stops regenerating, condition 6) -- OPEN.** Confirmed
+  red in my own run; the four differing lines are the same `pass` to `FAIL` and `116 passed`
+  to `1 failed, 115 passed` cells verdict 61 named. **Not touched, which is right.**
+* **Condition 7 (the follow-on commit's own CI run GREEN on the LADDER) -- NOT MET.** The
+  ladder job at this sha is still `in_progress`, so **rungs 4 and 5 remain unmeasured in CI
+  at any commit of this step.** That is the hiding CZ1 (iii) exists for; the condition stands.
+* **R1222 -- ANSWERED, and the prediction verdict 60 recorded before measuring is
+  CONFIRMED.** `test_a_blocking_item_is_not_routed_to_4a` is **green** at this commit, because
+  the newest verdict writes dispositions in the parenthesised form the parser needs: that id
+  plus `test_the_plan_names_the_step_under_execution` give **2 passed**. Withdrawn.
+* **R1217, R1218, R1221 -- STILL OPEN**, unchanged and not answerable by this commit (R1218
+  becomes CZ0 (b) when step 2 writes the entry; R1221 is FF0 and belongs with R1227 in the
+  same file). **`declared` is still a config key no config declares.** **Verdict 58's twelve
+  items and verdict 59's four report items -- STILL OPEN, due in R2's first report.**
+  **R1212, R1203, R1204 -- reviewer-side or Xabier's. R1224 -- mine, recorded, no action.**
+
+## Findings
+
+**R1225. (BLOCKS) THE `--check` REFUSAL IS NOT THREAD COUNT. The npz golden moved when THIS
+REPOSITORY'S OWN numpy/scipy PIN moved, and the ablation cell is already in the git history:
+`--check` was GREEN before the pin and refuses after it, with the thread count unpinned on
+BOTH sides.**
+
+```
+claim  `--check` ran with no thread pins, and the six named arrays are what multi-threaded
+       BLAS would perturb  (the commit message's diagnosis)
+cmd    git log --oneline -1 -- data/f4/dynamic_inputs.npz
+out    62a8281  R1 step 1 revision 3
+cmd    git show cfb76ff   (R1 step 2, first commit -- AFTER 62a8281, npz untouched since)
+out    cmd  python scripts/export_f4_dynamic_inputs.py --check   (on the shipped npz)
+       out  100 arrays reproduce the committed file EXACTLY      (exit 0, no stray file)
+cmd    git log --oneline -S "numpy==2.5.4" -- constraints-dev.txt
+out    09d5bc9  R1 step 2, revision 1: FQ0-FQ3, and a refusal site nobody had named
+cmd    git merge-base --is-ancestor cfb76ff 09d5bc9 ; echo $?
+out    0        -- the GREEN --check PRECEDES the pin move
+cmd    constraints-dev.txt, the FQ3 block's own measured table
+out    numpy  local 2.4.0   CI 2.5.4        scipy  local 1.17.1   CI 1.18.1
+       "a minor bump in either can move the last bits of a linear solve. The verification
+        ladder asserts at ULP scale, so 'can move a number' is not hypothetical here"
+       "FQ3: if the golden moves under these pins, STOP and report rather than re-baselining."
+cmd    python -c "import numpy, scipy; print(numpy.__version__, scipy.__version__)"
+out    2.5.4 1.18.1          -- i.e. AT the pin, which is the value that moved
+cmd    git grep -ln "pin_threads\|OMP_NUM_THREADS" -- scripts floatfea pyproject.toml
+out    floatfea/determinism.py   floatfea/hsp_pin.py
+       -- nothing in the export path pins threads, and nothing did at cfb76ff either
+cell   ONE VARIABLE ACROSS THE GREEN/RED BOUNDARY. Thread count: unpinned at cfb76ff
+       (green, 100 arrays EXACT) and unpinned today (red, 36 of 100 differ). numpy and
+       scipy: moved, by the named commit, between the two.
+rule   scripts/export_f4_dynamic_inputs.py:476-500 -- np.array_equal, Q8's golden rule,
+       "there is no tolerance on this comparison"
+judge  **THE THREAD COUNT IS HELD CONSTANT ACROSS THE BOUNDARY, SO IT IS NOT THE CAUSE.**
+       The diagnosis cites `ci.yml:67-69`; three lines BELOW that citation the same file
+       says *"THE BLAS KERNEL, PINNED (CF1). Thread count alone was not enough."*
+       `OPENBLAS_CORETYPE` is unset locally. And 36 of 100 arrays differ while all 64 input
+       arrays are bit-identical -- the signature of a solver-bit move, not of inputs that
+       moved. Measured: HSP-runs is at `floatfea-ref-1` / `25de7ce`, clean but for the
+       untracked `floatfea_design_waves/` export, so no input moved either.
+```
+
+**The silently wrong result, in the form FR1 asks for.** Condition 4 as verdict 60 wrote it
+says *"then a full **write** run, which is the only thing that rewrites `import_closure`"*.
+Executed on this machine that overwrites `data/f4/dynamic_inputs.npz` with arrays computed at
+numpy 2.5.4 / scipy 1.18.1 / an unpinned OpenBLAS kernel, writes a fresh provenance **that
+records none of those three** -- there is no `threads`, no `coretype` and no library version
+in `dynamic_inputs.provenance.json`, I read every key -- and moves every `G4.1 force` and
+`G4.1 moment` figure in `results/F6/floatfea_results_report.md`, a file sent to Xabier, for a
+toolchain reason, **with the staleness guard and R1223's deliverable test both going GREEN to
+confirm it.** That is CLAUDE.md's golden-file rule verbatim: *"Regenerating a golden file to
+match new output, without that explanation, is the same error as widening a tolerance."* The
+npz is the one canonical artifact that **cannot** be produced in the canonical environment --
+CI checks out no HSP worktree, which is EX0's whole reason -- so Q8's "CI is canonical" does
+not reach it, and `tests/test_ci_canonical_environment.py` reads the workflow, not this file.
+
+*Closed when* three things are true. **(i)** The **magnitude** is measured and reported per
+array -- max |fresh - committed| and its ratio to the array's own scale, with the operating
+point. `--check` prints names only, correctly, because FP2/C20 made it a gate and not a
+report; so this is a one-off probe under `/tmp`, not apparatus. A last-bits move (relative
+`~1e-16`) is consistent with the pin; `1e-3` is a different and larger finding. *A residual
+destroys information* -- 36 names cannot tell a wrong sign from a wrong magnitude. **(ii)** No
+write run until the environment the regeneration runs under is recorded in the provenance and
+held at the point of generation. `floatfea/determinism.py` already has `pin_threads` and
+`report()` and nothing in the export path calls either, so this is wiring and not new
+apparatus. **This answers your question directly: FF0-class, next commit, not a ledger row** --
+`--check` is the thing that decides whether the committed npz is believed and whether `R2.md`
+section 6 item 2 fires, it reported REFUSED with no defect established, and EK2 says a guard
+that fails false is fixed. **(iii)** The escalation is raised under **FQ3**, not under `R2.md`
+section 6 item 2. *"If it refuses again with the pins set, I read that as section 6 item 2's
+escalation"* -- **no.** That item asks whether a **zero-change FloatSim re-run** is
+bit-identical, and the premise is untested while numpy, scipy and the BLAS kernel all sit off
+the values the artifact was built under; reopening the R2 plan on it attributes to FloatSim an
+effect this repository has already measured twice, CF1 by CPU vendor and FQ3 by library minor.
+FQ3's ruling already covers it: **STOP and report rather than re-baselining.** *A causal claim
+carries its ablation*, and this one cost three `git log` commands. **If the pinned re-run in
+flight comes back GREEN, R1225 still stands:** a bit-exactness gate whose answer depends on
+unrecorded ambient conditions is the finding, and a pass does not record them either.
+
+**R1226. (BLOCKS) R1213 ONE KEY OVER: NOTHING TIES THE TREE THE STABLE KEY NAMES TO THE TREE
+THE SNAPSHOT DECLARES, AND I RAN IT WITH A CONTROL.**
+
+```
+claim  the two-key split makes a stable key pointed at the runs tree safe
+cmd    FLOATFEA_HSP_STABLE=.../buoy/HSP-runs    python scripts/export_buoy_centers_ref.py --check
+out    EB6 reference: current. blob b8b8123904af, tag floatfea-ref-1, 12 buoys and 4 hubs.
+       exit=0
+cmd    FLOATFEA_HSP_STABLE=.../buoy/HSP-stable  python scripts/export_buoy_centers_ref.py --check
+out    EB6 reference: current. blob b8b8123904af, tag floatfea-ref-1, 12 buoys and 4 hubs.
+       exit=0      (the control)
+cell   ONE VARIABLE -- the tree the key names. The two outputs are BYTE-IDENTICAL and both
+       exit 0, so the gate that certifies the EB6 reference cannot tell which worktree it
+       was derived from.
+rule   scripts/export_buoy_centers_ref.py:172  "source": f"HSP-stable/{SOURCE_REL}"  <- a LITERAL
+                                         :176  "hsp_tag": hsp_pin.HSP_TAG            <- a MODULE CONSTANT
+                                         :180  "blob_sha": _blob_sha(source)         <- from WHICHEVER tree
+cmd    grep -n SystemExit scripts/export_buoy_centers_ref.py
+out    :75 "is not a file"  :93 "could not read the blob sha"  :111 :135 :146 :167 (parse/shape)
+       -- no DS0 name refusal, no tag refusal, no dirtiness refusal, on any line
+```
+
+**The silently wrong result.** `data/platform/buoy_centers_ref.json` -- a committed data file
+and the input to EB6's label-provenance gate -- regenerated from the **runs** worktree while
+its own `provenance.source` declares `HSP-stable/studies/platform-12buoy/platform_common.py`
+and its `provenance.hsp_tag` declares `floatfea-ref-1`, **because both are literals that
+cannot be wrong**, with `blob_sha` taken from the other tree's index so both sides move
+together and `--check` prints `current`. That is FR1's second head verbatim, and CLAUDE.md's
+own note on that head covers this case word for word: *"No number was wrong in any artifact at
+the time, and the input was used other than as declared."* **Both worktrees are at the same
+tag today -- `blob b8b8123904af` from either -- so nothing in the tree as it stands is wrong,
+and I say so rather than overstating it.** `hsp_pin.py:36-46` states this hazard in prose and
+names this file as the reason there are two keys; what it does not do is refuse it, and
+GI3(e) is what made a key able to name the wrong tree at all, exactly as it did for R1213.
+**A second limb, same file, from reading rather than running:** `:153` reads the constants
+from the WORKING file (`source.read_text()`) while `:88-93` takes `blob_sha` from
+`git rev-parse HEAD:<rel>`, so a dirty stable worktree records a sha for a version of the file
+the numbers did not come from.
+
+*Closed when* `export_buoy_centers_ref.py` refuses a stable key whose resolved path is not
+`HSP-stable` -- the one-line predicate this commit just wrote at
+`run_floatsim_design_waves.py:112`, inverted -- or declares the tree it actually read instead
+of the literal; with both runs pasted and the control beside them (EH4). The dirtiness limb
+closes with `--dirty` on the describe, or by taking the sha from the working file; **say which
+and why**, not both.
+
+**R1227. (DOES NOT BLOCK -- FF0, next commit, not the ledger) R1206's FOURTH SITE:
+`tests/test_report_carried.py:579` still reads `assert STEP > 0`, and it goes red with a FALSE
+message the moment the step-0 report lands -- which is your next commit.**
+
+```
+cmd    plant a minimal docs/reports/R2/step-0.md in my own worktree, then
+       pytest -q tests/test_report_carried.py::test_the_guard_reads_the_step_being_worked_on
+out    E  AssertionError: reports exist for steps [0] and verdicts for [0]; no step has
+          both. There is no carry list to check.
+       E  assert 0 > 0
+       tests\test_report_carried.py:579
+       1 failed   (and test_the_plan_names_the_step_under_execution: 1 passed)
+rule   tests/test_report_carried.py:579, inside test_the_guard_reads_the_step_being_worked_on
+judge  step 0 HAS both, so the message is FALSE -- `0` is the sentinel AND the value, which
+       is R1206 verbatim at a site its three line numbers did not name. The condition asked
+       for `:100`, `:111` and `:617`; those three are fixed and the finding is not.
+```
+
+Three things make this more than one line. **The assert is FIRST in its test, so three further
+assertions in the same function are dead for the whole of step 0** -- the spelling check,
+`STEP_REPORT == _PAIRED`, and `STEP_REPORT - STEP <= 1`, which is the one that forbids opening
+step k+1 over an unreviewed step k. **The obvious repair makes one of them silently vacuous:**
+`_PAIRED` at `:229` is `max(REPORTED & REVIEWED) if ... else 0`, so at step 0 the sentinel
+equals the value there too -- fix `:579` alone and `STEP_REPORT == _PAIRED` passes at step 0
+whether a verdict exists or not, which is loud today only because `:579` fires first.
+**Treat `:229` in the same commit.** And it changes the class of one red next revision:
+`test_the_guard_reads_the_step_being_worked_on` is state (2) today (`assert REPORTED`, no
+report directory) and becomes **CZ1 (iv)** the moment the report exists, because the answering
+report does not clear it. A third measurement, on provenance rather than existence:
+`marker 0 -> STEP 0, REPORT step-0.md` and `marker 3 -> STEP 0, REPORT step-0.md`, so the plan
+marker currently has **no effect** on which report the guard reads -- the `else 0` arm is doing
+the work, and the repair's claim that the resolver follows the plan is not demonstrated by
+this tree.
+
+**R1228. (DOES NOT BLOCK -- FF0, next commit) `tests/test_report_guard_states.py:117` quotes
+the expression this commit changed.** It reads *"The guard resolves `max(_PLAN_STEP if
+_PLAN_STEP in REPORTED else 0, _PAIRED)`"*, while `test_report_carried.py:236` now reads
+`max(_PLAN_STEP if _PLAN_STEP is not None and _PLAN_STEP in REPORTED else 0, _PAIRED)`. BP0 at
+the smallest scale, inside the gating apparatus, and the same shape as R1215 which this commit
+fixed one file over: a figure whose rule moved underneath it, in the file that exists to hold
+the other guard's resolution.
+
+**R1229. (DOES NOT BLOCK -- ledger, and the direct answer to your question)
+`tests/unit/test_hsp_worktree_resolution.py:123` IS AN ASSERTION THAT CANNOT FAIL, and it is
+the ONLY other one of that shape in the file.**
+
+```
+cmd    sed -n '121,123p' tests/unit/test_hsp_worktree_resolution.py
+out        got = hsp_pin.worktree("runs")
+           assert got.name == "HSP-runs"
+           assert not got.is_absolute() or True  # the value is a path, existing or not
+rule   `X or True` is True for every X -- in the file whose own docstring says "A check that
+       cannot fail is not a check (CW0)", eleven lines above it
+judge  Delete it; `:122` is the real check and it does fail if `worktree()` refuses or
+       returns another name. I checked the other nine individually: four are held by the
+       revert cycles I ran (R1213, R1214 twice, R1219), and the remaining five -- the
+       precedence pair, key independence, `require=True`, the unknown key -- each drive
+       `worktree()` or `preflight()` and assert on the returned value or the raised message,
+       so each can fail. **One, and this is it.**
+```
+
+Two smaller notes against the same file, both ledger. The R1213 test's message assertion is
+`"HSP-stable" in message and "DS0" in message`, and the **identity** refusal's message
+(`"the runs worktree is HSP-stable, which is read-only from here (DS0)"`) satisfies both
+clauses -- so the assertion cannot tell which of the two refusals fired, which is R1213's whole
+content. It is not vacuous here, because `:209` asserts the two keys differ and the identity
+path therefore cannot fire; a match on `R1213` or `by NAME` would make it say what it means.
+And `:148-161` creates and `rmdir`s `HSP-runs-r1219-probe` **in the repository root**, outside
+`tmp_path`, in the file whose docstring says *"NOTHING HERE TOUCHES A REAL WORKTREE"*: an
+interrupted run leaves it behind, and `mkdir(exist_ok=True)` with an unconditional `rmdir`
+deletes a pre-existing directory of that name. It cleaned up correctly in my run --
+`git status --porcelain` empty.
+
+**FS1/FT1 PER-ID RULING ON THE 172 REDS, checked against each id's own failure rather than by
+family name (EG3 (i)).** State **(2)** throughout: a verdict exists, the answering report does
+not, `git ls-files docs/reports/R2` is empty. **Limb one** -- names a finding or a site of the
+newest verdict -- takes the 110 `test_every_named_site_is_touched_or_declared[R12xx-<path>:<line>]`
+and the 27 `test_the_report_carries_the_finding[R12xx]`, each of which carries a verdict-60 or
+verdict-61 finding id **in its own parameter**; that is the whole of R835, the count being a
+function of what the reviewer wrote. The 19
+`test_report_guard_states.py::test_the_guard_survives_the_state[...]`,
+`test_R887_the_plant_base_is_the_step_the_GUARD_reads` (*"the harness copies FROM step-0.md,
+which does not exist"*, with its `STEP == guard.STEP` assertion PASSING),
+`test_report_numbers_are_sourced.py::test_the_report_parsed_into_sections`, and the 12
+`test_report_carried.py` singletons about the absent report --
+`the_report_names_the_verdict_it_answers`, `carries_a_CI_SECTION`,
+`reported_CI_counts_are_not_all_zero`, `the_Carried_table_is_what_the_generator_produces`,
+`the_ROUNDS_SECTION...`, `a_carried_row_points_at_a_section_that_discusses_it`,
+`a_report_does_not_say_CLOSED`, `there_are_pointers_to_resolve`,
+`the_parse_found_something_to_check`, `the_generator_would_catch_a_row_under_the_wrong_number`,
+`the_CI_section_is_about_the_REVIEWED_commit`, `the_guard_reads_the_step_being_worked_on` --
+are each about the report that answers this verdict and clear when it is written (EG3 state
+(2), cleared BY THE ANSWERING REPORT and not by time). **Limb two** -- subject IS the commit
+carrying it -- takes the remaining two, as FT1 names them:
+`test_the_report_carries_a_WHOLE_SUITE_count` and
+`test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW`. **No id fails the predicate, so no red here
+is CZ1 (iv)** -- with the single exception R1227 records, whose class changes next revision.
+**R835: unchanged, R2 (GE3).** Not re-measured further.
+
+## Tolerances touched
+
+**None, measured twice.** `git diff 3d24e1c..HEAD -- floatfea/tolerances.py` is 0 lines and so
+is `git diff 91c2d2e..HEAD -- floatfea/tolerances.py`. No declared counter moves:
+`git diff 3d24e1c..HEAD | grep -cE "^[-+].*_COUNTER"` is `0`. **EU1 therefore does not arise**,
+and I ran the model at configurations the diff did not choose anyway -- which is where R1225
+and R1226 came from. One tolerance-shaped thing is implicated by R1225 and is NOT a tolerance:
+`--check`'s comparison is `np.array_equal` with no threshold, by Q8's rule, and nothing in
+R1225 asks for one. **If any answer to condition 4 introduces a tolerance on that comparison,
+that is a widening and it is refused.**
+
+## Corpus
+
+**No batch, and ES0 is why, not GC3.** An interim check is light by rule: *"No corpus batch,
+no closure list."* My own instructions say "add unseen entries at every review"; where the two
+differ CLAUDE.md governs and I say so rather than quietly following the looser one.
+**What I ran instead is the recorded substitute, and it produced both blocking findings:** a
+continuum over the parameter space the new resolver guards (the stable key at the runs tree
+with a control, a case-folded value, a set-and-wrong key through collection of two rungs, the
+plan marker at 0 and at 3, three revert-red-restore cycles) plus a **regeneration check on a
+published deliverable** -- the F6 results report and the npz, which is where R1225 lives.
+Nothing in `tests/corpus/` covers worktree-key *provenance* as against resolution;
+`stable_key_names_the_runs_tree` and `declared_tag_is_a_literal` are the entries I would write
+next round if R1226 is not closed by then.
+
+## Next step opens when
+
+**STEP 0 STAYS OPEN AND STEP 1 DOES NOT BEGIN** -- which GI6 holds anyway, so this HOLD costs
+no schedule. Step 0's remaining work (the FloatSim run, GI3(b)'s wall time, (a) and (d)) is
+the right work to continue with. **Conditions 1, 2, 3-as-written, 5, and R1216/R1219/R1220 are
+DISCHARGED and are not re-measured.** What remains:
+
+1. **R1225 -- the magnitude, then the decision, then the escalation under FQ3.** (i) the
+   per-array magnitude and its ratio to that array's own scale, pasted, with the operating
+   point; (ii) **no write run** until the generation environment is recorded in the provenance
+   and held at the point of generation, through the existing `floatfea/determinism.py` (FF0,
+   next commit); (iii) if it is a last-bits move, the escalation is **FQ3** -- *STOP and
+   report, do not re-baseline* -- and **NOT** `R2.md` section 6 item 2, whose premise is
+   untested while the pin sits off the artifact's basis. A green pinned re-run does not close
+   this; it only changes which sentence is written.
+2. **Condition 4 (the staleness red) and condition 6 (R1223) -- UNCHANGED and now subordinate
+   to R1225.** Verdict 60's ordering was right and is what saved the npz; what has changed is
+   that the second half of it is not available yet. **Do not clear the staleness guard by
+   writing a provenance whose npz moved for an unrecorded reason** -- that turns both reds
+   green and publishes the move. If answering R1225 means the figures legitimately move, that
+   is a golden-file change and it carries a written explanation naming the pin commit
+   `09d5bc9`, per CLAUDE.md section Testing.
+3. **Condition 7 -- a concluded, GREEN ladder in CI at the follow-on sha.** Rungs 4 and 5 have
+   not been measured in CI at any commit of this step.
+4. **R1226 -- the stable key refuses a tree that is not `HSP-stable`, or the snapshot declares
+   the tree it read.** Both runs pasted, control beside them (EH4), and the dirtiness limb
+   answered or declared left with its reason.
+5. **R1227 and R1228 in the next commit (FF0, not the ledger), and R1227 covers `:229` as well
+   as `:579`.** R1221 is in the same file and belongs in the same commit. **R1229 is a ledger
+   row: delete the line.**
+
+**And for the step-0 report itself, so the next revision is a revision and not a round:** its
+`Answers:` header names **THIS verdict and this sha** (`9e1092a35eed45ee5351789778a3c50752af1bb1`),
+not verdict 60 or 61 -- the newest verdict is the one the guard checks against and the one
+thing a machine cannot check. EG3 (ii): paste the report-guard files run AT my verdict commit;
+verdict 61 asked for that figure at `b2dc268` and gave 187 to compare against, and at this
+commit the wide guards selection is **172 failed, 1057 passed, 1 skipped**, of which
+`tests/test_report_carried.py` is 151. Verdict 58's twelve open items and verdict 59's four
+report items are due in it.
+
+**Rounds: step 0 has consumed NONE of its three ES0 revisions.** Verdict 59 was the plan lock;
+60, 61 and this are interim checks. The next report revision is the first.
+
+**Nothing here is a STOP, and I considered it twice.** Rung 4 is red and one `tests/regression`
+test is red, which read like low-rung failures -- but both are provenance and regeneration
+comparisons rather than numerical disagreements at a rung, and R1225 establishes that what
+moved is the committed golden and not the code: `git diff --stat 3d24e1c..HEAD -- floatfea` is
+`hsp_pin.py` alone, 32 lines, and rungs 1, 2 and 3 were SUCCESS in CI at the previous sha over
+byte-identical rung code. The locked plan is faithful to GI and needs no reopening; **`R2.md`
+section 6 item 2 is the one clause I am ruling must NOT be triggered yet**, which is the
+opposite of reopening it. If Xabier's answer under FQ3 is that the npz is re-baselined at the
+pin, that is a golden-file change with a written explanation, not a plan change.
+
+**What this commit got right, and it is the larger part.** Five conditions answered in one
+commit with no re-measurement asked for. Each repair is held by a test that reddens when the
+repair is reverted, and I ran all three cycles myself rather than taking them -- plus a fourth,
+R1219's, that the report did not claim. **The commit found and fixed a check of its own that
+could not fail, and said so**; that is the most useful sentence in the diff, and the only other
+instance in the file is one decorative line. The escalation was withdrawn on a measurement
+rather than defended, with its own wrong premise named as BF0's shape applied to an escalation.
+And **condition 4 was stopped at the refusal rather than pushed through it** -- the one decision
+in this step that could have republished a dozen figures in a file sent to Xabier, taken
+correctly, with the bit-identity prediction admitted wrong before anyone asked for it.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R2 step 0 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: 3d24e1c3808cd6be35490eab76b43f5ccf9d175b
 **Reviewed commit: `3d24e1c3808cd6be35490eab76b43f5ccf9d175b`.**
 Verdict: HOLD
