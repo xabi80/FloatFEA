@@ -1,0 +1,113 @@
+# CORPUS: a PUBLISHED CLOSURE ARTIFACT (`docs/closure/**`) that records a GATE AS
+# GREEN WHEN THE GATE IS RED AT THE COMMIT PUBLISHING IT -- and, more generally,
+# a figure in `docs/closure/**` that no check in this repository can read
+# (CP3, BF0, BP0, EG3 (i), EZ0, FR1, CZ1).
+#
+# Owner: the reviewer. Test DATA only -- one candidate per line, nothing here
+# imports from floatfea and nothing here is test code. Written at the
+# sixty-sixth verdict on R2 step 0, the EQ0 review of the step's closure commit
+# (judged commit ce5a84f).
+#
+# WHY THIS FILE EXISTS (BE3). `tests/corpus/report_record_freshness_and_completeness.txt`
+# is the right family -- "a GENERATED record that was TRUE WHEN GENERATED and is
+# FALSE WHEN READ" -- and every one of its 26 entries is about a STEP REPORT.
+# `grep -c "docs/closure" tests/corpus/report_record_freshness_and_completeness.txt`
+# is 0. `tests/corpus/report_ci_section.txt`, `report_numbers_sourced.txt` and
+# `report_guard_states.txt` are the same: the report, the report, the report.
+#
+# The closure artifact is the OTHER axis and it is the weaker one of the two,
+# because the report has three guard files parametrised over it and the artifact
+# has none. Measured at the judged commit:
+#
+#   tests/test_tree_prose_consistent.py:99
+#     ROOTS = ("floatfea", "tests", "scripts", "docs/milestones", "docs/verification")
+#     -- `docs/closure` is not in it, and neither is `.github`
+#   tests/test_report_carried.py:3054
+#     CLOSURE = ROOT / "docs" / "closure" / f"{MILESTONE}.md"
+#     -- `docs/closure/R2.md`, which does not exist; the artifact is
+#        `docs/closure/R2-step0.md`, and five of this repository's closure
+#        artifacts are named `<MILESTONE>-step<k>.md`
+#   tests/verification/rung3/test_closure_evidence_exists.py:45
+#     _PATH matches `tests|floatfea|docs` only -- not `scripts`, `data`,
+#     `results` or `.github`, which is where this artifact's citations mostly are
+#
+# So the only automated reader of a closure artifact checks that its `tests/`,
+# `floatfea/` and `docs/` path citations EXIST. Nothing reads a number in one.
+#
+# THE SHAPE THIS ROUND'S BLOCKING FINDING HAS. `docs/closure/R2-step0.md:30`
+# publishes `| scripts/check_carried.py | all 29 findings carried |`. At the
+# commit that publishes it the script prints "verdict declares 29 findings; 28
+# are carried" and exits 1, and the one it does not carry is R1243 -- the step's
+# only open blocking item. The row was TRUE at the previous commit `e71ecd5`,
+# where the report named R1243 four times; the next commit reverted the report
+# byte-for-byte under EK3 and the row was not re-measured. CP3's ordering
+# exactly: an edit followed the paste, so the paste is void.
+#
+# A PASSING SCAN MEANS: for every candidate below, something in this repository
+# goes RED -- a gate, a report guard, or a rung. A candidate that reaches a green
+# tree is recorded as reaching one; that is the coverage measurement and not a
+# to-do list. `m=` means MEASURED THIS ROUND, in the reviewer's own probe
+# worktree at ce5a84f, one variable at a time, `git status --porcelain` empty
+# after each. BASELINE for the selection used
+# (`tests/verification/rung3/test_closure_evidence_exists.py`,
+# `tests/test_collected_set_golden.py`, `tests/test_tree_prose_consistent.py`):
+# 200 passed, 0 failed. A line with no `m=` is unmeasured and says so by its
+# absence.
+#
+# -------------------------------------------------------------------------
+# A. A GATE ROW THAT IS FALSE AT THE COMMIT PUBLISHING IT
+# -------------------------------------------------------------------------
+m=NOT CAUGHT (+0) : `| all 29 findings carried |` changed to `| all 999 findings carried |` -- a bare wrong number in a gate row of a published artifact
+m=NOT CAUGHT (+0) : the lint row `| clean |` rewritten `| clean (17 errors suppressed) |`, so the row contradicts itself and still reads as a pass
+m=NOT CAUGHT (+0) : the row names `scripts/check_carried_v2.py`, a gate that does not exist, and reports a result for it
+m=NOT CAUGHT (+0) : the whole-suite row deleted from the table, so the artifact records four gates and not five and nothing notices the absence
+m=NOT CAUGHT (+0) : the suite row's sha replaced by `deadbee`, which is not a commit in this repository
+m=NOT CAUGHT (+0) : a row annotated with a DIFFERENT commit than the artifact's own -- `the three report-guard files (at e71ecd5) | 468 + 24 passed` -- which is honest labelling and is also how a stale row survives a reader
+m=NOT CAUGHT (+0) : a `claim:/cmd:/out:` triple appended to the artifact whose `out` is false (`out: all 29 findings carried` against a script that exits 1); `docs/closure` is outside `ROOTS`, so the triple is never run
+the row quoting the gate's stderr verbatim but dropping the exit code, so "28 are carried" appears under a heading that says the gate passes
+a gate row whose number is right and whose gate name is wrong -- `check_carried` result attributed to `test_report_carried.py`
+a gate row for a gate that exits 0 because its own input is empty (a glob that found nothing), published as a pass
+the table given a sha in its caption that is an ANCESTOR of the artifact's commit, so every row is true and none is about the commit under judgement
+a gate row recording a BOUNDARY red as green rather than "red with its cause named", which is the one thing EG3 (i) forbids
+a gate row recording a boundary red as `n/a` or `unavailable` where the gate ran and failed
+# -------------------------------------------------------------------------
+# B. A FIGURE WHOSE SCOPE OR RULE MOVED (BP0)
+# -------------------------------------------------------------------------
+m=NOT CAUGHT (+0) : an engineering figure changed by an order of magnitude -- `11-14 iterations` to `1-2 iterations` -- in the artifact's summary of a measured table
+a per-group range in the report republished in the artifact with the group dropped, so a platform-only range reads as applying to every body
+a figure summarised from a table the same commit deleted from the report
+a gain, a ratio or a count carried into the artifact from a verdict rather than from a run (CP3: a figure is pasted from the run that produced the artifact it is pasted into)
+a count of review rounds whose parenthetical does not add up to it -- "five rounds (three interim plus three revisions)"
+a line distance quoted in the artifact and in a source comment that is true at neither commit in play
+a tolerance declared "unchanged" in the artifact while the artifact's own commit is the one that moves it
+# -------------------------------------------------------------------------
+# C. CITATIONS: WHAT THE ONE AUTOMATED READER CAN AND CANNOT SEE
+# -------------------------------------------------------------------------
+m=CAUGHT (+1: tests/verification/rung3/test_closure_evidence_exists.py::test_the_artifact_cites_evidence_at_all[R2-step0]) : every backticked path citation removed, so the artifact names no evidence at all
+m=NOT CAUGHT (+0) : a cited `scripts/` path that does not exist (`scripts/untouched_sites_v2.py`) -- rung 3's `_PATH` matches `tests|floatfea|docs` only, so the one guard that exists for phantom citations cannot see the directory most of this artifact's citations are in
+a cited `data/` or `results/` path that does not exist
+a cited `.github/workflows/ci.yml` line range that does not exist
+a cited path that exists and whose CONTENT does not support the row, which existence cannot distinguish
+a cited test id that exists in no file, written as prose rather than as a backticked path
+a quotation attributed to a docstring, verbatim-looking, that the docstring does not contain
+# -------------------------------------------------------------------------
+# D. THE ARTIFACT THE ROUTER CANNOT FIND
+# -------------------------------------------------------------------------
+a closure artifact named `<MILESTONE>-step<k>.md` while `CLOSURE` resolves `<MILESTONE>.md`, so `Closes: R2/step-0` routes the FC1 guards to the STEP REPORT and they pass on a figure measured three commits earlier
+the same shape with the artifact ABSENT, which the router treats identically, so "no artifact" and "an artifact under the step's own name" are indistinguishable to it
+an artifact that exists under the milestone name with no `<!-- cz1-closure-outputs -->` block, which is the one state the router was built to redden
+two artifacts, `R2.md` and `R2-step0.md`, disagreeing about the same gate row, with the router reading whichever one its format string names
+a `Closes:` line naming a step whose artifact is a DIRECTORY rather than a file
+CZ1's four outputs placed only in the closure commit's MESSAGE, which no guard and no reader of the record reads
+CZ1's four outputs placed in the artifact while the router reads the report, so both exist and the one that is checked is the stale one
+# -------------------------------------------------------------------------
+# E. `Closes:` READ FROM AN ACCUMULATED FILE
+#   `_newest_verdict_closes()` is documented as "the `Closes:` line of the
+#   NEWEST entry" and implemented as `_CLOSES.search(whole_file)` -- the FIRST
+#   line anywhere. Every FK2 test is synthetic and single-entry, so the
+#   accumulated case (DX2) is never exercised by any of them.
+# -------------------------------------------------------------------------
+a verdict written AFTER a closing one, carrying no `Closes:` line, which inherits the closing verdict's routing because the search is over the whole file
+the same file after a SECOND increment closes in it, so the first line wins and the older closure routes the newer one's guards
+a `Closes:` line quoted inside a fenced `out` block of a later entry, which the MULTILINE search cannot tell from a real one
+an entry whose `Closes:` line names a step of a DIFFERENT milestone, placed above a correct one

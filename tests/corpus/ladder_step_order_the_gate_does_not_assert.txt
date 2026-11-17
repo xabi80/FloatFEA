@@ -1,0 +1,69 @@
+# CORPUS: THE LADDER'S STEP ORDER THAT NO GATE ASSERTS -- the positions of
+# rungs 1, 2 and 5 inside the collapsed ladder job, and what can be moved
+# through them while the tree stays green (CK0, CH3, CLAUDE.md section Testing,
+# FR1).
+#
+# Owner: the reviewer. Test DATA only -- one candidate per line, nothing here
+# imports from floatfea and nothing here is test code. Written at the
+# sixty-sixth verdict on R2 step 0, the EQ0 review of the step's closure commit
+# (judged commit ce5a84f).
+#
+# WHY THIS FILE EXISTS (BE3). `tests/corpus/ci_ladder_gating.txt`,
+# `tests/corpus/ci_workflow_job_gating_shapes.txt` and
+# `tests/corpus/ci_step_skipped_inside_a_job_that_ran.txt` are about whether a
+# rung RUNS and whether its result is REPORTED. None of them is about WHERE a
+# rung sits. The commit under review is a REVERT of a step reorder, so the step
+# order is this round's subject -- and the gate that the revert was made to
+# satisfy builds its position map over three rung names and no more:
+#
+#   tests/test_ci_determinism_gate.py:197
+#     where = {n: i for i, step in enumerate(order)
+#              for n in ("rung3", "rung4", "rung6") if n in step}
+#
+# So the two assertions beneath it, at :199 and :204 -- `where["rung6"] < where["rung4"]` and
+# `where["rung3"] < where["rung6"]`, say nothing at all about rungs 1, 2 and 5.
+# `CLAUDE.md` section Testing says "The verification ladder is ordered by
+# dependency. A failure at a low rung makes higher rungs uninterpretable", and
+# CK0's own comment says the step order IS that rule now that six jobs are six
+# steps. The rule is therefore asserted for half the ladder.
+#
+# THE ADVERSARIAL PRINCIPLE THIS FILE IS AN INSTANCE OF: move the rungs the
+# gate does NOT name. The diff chose rungs 4 and 6; a reviewer reading the diff
+# reads the configuration the author chose.
+#
+# A PASSING SCAN MEANS: for every candidate below, something in this repository
+# goes RED. A candidate that reaches a green tree is recorded as reaching one;
+# that is the coverage measurement, not a to-do list.
+#
+# `m=` MEANS MEASURED THIS ROUND, in the reviewer's own detached probe worktree
+# at ce5a84f, one variable at a time, `git status --porcelain` asserted empty
+# inside the harness after each. Selection:
+# `tests/test_ci_determinism_gate.py` + `tests/test_ci_ladder_gating.py` +
+# `tests/test_ci_workflow_is_wellformed.py` + `tests/test_ci_runs_the_whole_suite.py`.
+#
+# BASELINE: 87 passed, 0 failed. **THE BASELINE IS CLEAN AND THAT IS WHAT THE
+# REVERT BOUGHT THIS MEASUREMENT.** Last round, at a commit where
+# `test_ladder_6_is_not_gated_behind_a_rung_that_is_red_under_Q8` was ALREADY
+# red, four workflow plants "looked caught" until the baseline was subtracted.
+# Here a plant that reddens is unambiguously caught and a plant that does not is
+# unambiguously missed.
+#
+# -------------------------------------------------------------------------
+# A. THE POSITIONS NOTHING ASSERTS -- MEASURED
+# -------------------------------------------------------------------------
+m=NOT CAUGHT (+0) : rungs 1 and 3 swapped, so the solver rung runs after the model rung and a solver failure is reported beside three rungs it makes uninterpretable
+m=NOT CAUGHT (+0) : rung 1 moved to the END of the job, after rung 5 -- the lowest rung of the ladder last, which inverts the whole ordering property, and nothing in the repository says so
+m=NOT CAUGHT (+0) : rung 2 moved after rung 6, so the element rung runs after the goldens whose inputs it is what makes meaningful
+m=NOT CAUGHT (+0) : `full:tests/regression` moved OFF rung 6's step and ONTO rung 4's, which is R1243's exact silently-wrong-result mechanism -- the only automated check that a published deliverable regenerates, gated behind the rung that is red while the escalation stands
+m=CAUGHT (+2: test_ladder_6_is_not_gated_behind_a_rung_that_is_red_under_Q8, test_every_test_in_the_suite_is_run_by_some_ci_job) : rung 5's step deleted outright -- caught by `assert len(order) >= 6` at :196 and by the naming check, not by anything about position
+# -------------------------------------------------------------------------
+# B. THE SAME AXIS, UNMEASURED
+# -------------------------------------------------------------------------
+rung 5 moved ahead of rung 4, so the independent confirmation runs before the loads it confirms
+rungs 1, 2 and 3 all moved after rung 6, leaving only `rung3 < rung6` to be satisfied by nothing because rung 3 is gone from the front
+rung 3 duplicated, once before rung 6 and once after, so `where` records only the LAST index for the name and the assertion reads the wrong one
+a rung's `run:` line renamed so the step name says `ladder 3` and the directory it runs is `rung5`, which the position map keys on the directory and the human reads from the name
+a seventh step added between rungs 3 and 6 that runs a different directory, satisfying every position assertion while inserting an unrelated red ahead of the goldens
+the six rungs split across two jobs with no `needs:`, so each job's internal order is correct and the dependency between the two halves is gone
+rung 1's step given `continue-on-error: true`, so the lowest rung cannot stop anything and the order is irrelevant
+the whole `steps:` list reversed, which satisfies neither assertion and is the control this file needs to show the pair can fail at all
