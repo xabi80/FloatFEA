@@ -1,3 +1,502 @@
+# Review — R2 step 0
+Reviewed commit: 4c19570907a3f3f300222f9e95ffd79d95e26556
+**Reviewed commit: `4c19570907a3f3f300222f9e95ffd79d95e26556`.**
+Verdict: HOLD
+Scope: **R2 step 0, REVISION 1 -- a REVIEWED REVISION, not an interim check.**
+`docs/reports/R2/step-0.md` exists at this commit, so under ES0 this is **1 of step 0's
+3 revisions** and **2 remain**. It closes nothing, so `--closes` is correctly absent (FK1).
+**Ruled under FR1 with EZ0**, and each blocking finding names the silently wrong result it
+produces. **GE3: `R835: unchanged, R2`. Not re-measured.**
+
+**ITEM 1b IS THE FINDING, AND IT IS THE ONE COMPARISON A MACHINE WAS NOT GIVEN.** The
+report's header reads `Answers: verdict 61 @ c931885`. The newest verdict is **62**, at
+reviewed commit `9e1092a`, written by commit `0901933`. **The invocation told me the header
+names verdict 62 and `0901933`; it does not, and `grep` over the whole report finds
+`verdict 62`, `0901933` and `9e1092a` zero times.** R1230 below, with the consequence
+measured rather than asserted.
+
+**4 / 4b / 4c, each diffed separately against `0901933`:** `floatfea/tolerances.py` 0 lines;
+`.claude docs/SUPERVISOR.md` 0 lines, so **no STOP-class finding**; `tests/conftest.py`
+0 lines, and `git ls-files -- tests/conftest.py 'tests/**/conftest.py'` returns
+`tests/conftest.py` as it must. No new conftest, no new plugin.
+**EU1 does not arise, measured not taken:** `git diff 0901933..HEAD | grep -cE '^[-+].*_COUNTER'`
+is `0`. I ran the adversarial cases anyway and they are where R1226's closure came from.
+**One correction to my own instructions, stated rather than worked around:** step 2 says
+`git diff -- floatfea tests docs`, which **misses `scripts/`** -- where two of the three
+repairs under review live. I diffed the whole commit.
+
+Tests: **MY OWN RUNS, in my own worktree at the judged sha, `-p no:randomly`.**
+* FV1 selection plus the deliverable regression test (`tests/unit`, the four root guards,
+  rung 3 deck export, rung 4 G4.1, `tests/regression/test_f6_deliverable_agrees_with_itself.py`):
+  **2 failed, 862 passed in 341.01s.** The two are conditions 4 and 6 by name --
+  `test_the_npz_is_NOT_STALE_against_the_code_that_generated_it` and
+  `test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree`. Both still open and
+  correctly so. The report's `1 failed, 839 passed` is the same tree over a narrower
+  selection: 862 - 839 = 23 is the deliverable file it did not include.
+* **The six report-guard files, which the report did not run and left to me.** CI's wide
+  selection, `pytest tests --ignore=tests/unit --ignore=tests/verification --ignore=tests/regression`:
+  **146 failed, 1103 passed, 1 skipped in 595.04s.** Verdict 61 gave 187 and verdict 62 gave
+  172 at `9e1092a`; **the answering report moved 172 -> 146.** Per file: `test_report_carried`
+  151 -> 129, `test_report_guard_states` 20 -> 7, `test_report_numbers_are_sourced` 1 -> 8,
+  `test_report_vocabulary_corpus` 0 -> 2. **EG3 (ii) is measured on my side; it is still
+  owed on the report's.**
+* `ruff check floatfea tests scripts`, `black --check floatfea tests scripts`, `mypy floatfea`:
+  **all clean, my own runs** -- 163 files unchanged, 45 source files.
+* **NOT RUN LOCALLY, and I say which rather than implying coverage:** rungs 1, 2, 5, 6 and
+  `tests/regression` beyond the one deliverable test. **No `floatfea/` file is in this diff at
+  all** (`git diff --stat 0901933..HEAD -- floatfea` is empty), so FV1 puts the rest on CI.
+
+CI: **run `44140076843` at the FULL sha `4c19570907a3f3f300222f9e95ffd79d95e26556` EXISTS,
+so FP1 held.** `lint, unit and guards` **CONCLUDED FAILURE at step 10 `guards and
+meta-tests`**, with `actionlint`, `ruff`, `black --check`, `mypy` and `unit tests` all
+**success** before it -- so the guards step is seen to have RUN rather than been skipped
+behind an earlier red (CZ1 iii). **`the verification ladder` had NOT finished when I ruled**
+(`in_progress` at 18:14:29Z, started 17:43:22Z -- 31 minutes): **rungs 1, 2 and 3 SUCCESS**, rung 6 running,
+**rungs 4 and 5 unmeasured.** A run that has not finished is not a pass. Both determinism
+jobs `skipped` by their own `workflow_dispatch` condition. **NOT CK2** -- runners
+`1000001920` and `1000001921` were assigned and both jobs executed for minutes.
+**CA2 IS REACHED: CI IS RED AT THE JUDGED COMMIT.** CI's per-id list is **unavailable, not
+skipped over**: `gh run view --job 134240156555 --log-failed` answers *"run 44140076843 is
+still in progress; logs will be available when it is complete"* -- but my own wide run IS
+that job's selection, so nothing hides inside CI's aggregate that I have not measured.
+GC2 does not arise: the diff touches `scripts/` and `tests/`.
+
+Door (FV2 / GG2): `git worktree add -b review/4c19570907a3 <a path outside the repository>
+4c19570907a3f3f300222f9e95ffd79d95e26556` **succeeded on the first try, so no review of
+this commit existed.** Every measurement above was taken in that worktree; this verdict is
+written there through `scripts/write_verdict.py` (`grep -nE '"(commit|add)"|check_call|\.run\('`
+over it: no match), committed on that branch and pushed -- merge with `git merge --ff-only
+origin/review/4c19570907a3`. **My own writes, all in my own worktree and all reverted before
+committing:** the verdict file moved aside and back (cell A), a planted
+`docs/reports/R2/step-1.md` with the plan marker at 0 and 1 and back (cell B), the report
+moved aside and back (the vocabulary cell). `git status --porcelain` in my worktree is empty
+but for the corpus file, which is committed separately at `91f083d`.
+**Outside the repository, read-only:** `git -C <HSP-stable|HSP-runs>
+hash-object/rev-parse/status/check-attr/config`, and three throwaway `git init` trees under
+my scratch directory for the R1226 cells. Nothing wrote a byte into either HSP worktree or
+into `C:\dev\floatfea`.
+
+**AND A DISCLOSURE, BECAUSE IT IS THE HAZARD FV2 EXISTS FOR AND IT WAS LIVE WHILE I RULED.**
+`C:\dev\floatfea` was clean when I was invoked and is **dirty now** -- `git status --porcelain`
+there shows `docs/reports/R2/step-0.md`, `docs/reports/R2/step-0-answers.json`,
+`tests/test_report_carried.py` and `tests/test_report_guard_states.py` modified. Those are
+four of the five files I judged. **Every read I took was of the commit, in my own worktree,
+so the addendum-29 defect did not arise** -- but in a shared checkout it would have, on
+exactly these files, and the reading would have been of work that is not in `4c19570`.
+I judged `4c19570` and nothing else.
+
+## Carried
+
+Verdict 62's five numbered conditions, plus the header requirement and the EG3 (ii) paste it
+closed on. **TWO ANSWERED AND CLOSED, ONE HALF-ANSWERED, THREE OPEN, AND THE HEADER
+REQUIREMENT FAILED.**
+
+* **R1226 (the stable key, R1213 one key over) -- ANSWERED AND CLOSED, both limbs, and I ran
+  the control and the direction the commit did not.** The refusal is inside `_source()`, not
+  at module level, so it cannot take a rung down in collection. Six values through `--check`,
+  with exit codes measured separately because a pipe to `tail` hides them:
+  ```
+  cmd  FLOATFEA_HSP_STABLE=<...>/HSP-runs    export_buoy_centers_ref.py --check
+  out  REFUSED: the STABLE key resolves to ...\HSP-runs, which is not an HSP-stable
+       worktree ... records a source it did not read (R1226)            exit 1
+  cmd  FLOATFEA_HSP_STABLE=<...>/HSP-stable  (the control)
+  out  EB6 reference: current. blob b8b8123904af, tag floatfea-ref-1    exit 0
+  cmd  <...>/HSP-stable/../HSP-runs
+  out  REFUSED ... resolves to ...\HSP-runs   -- `resolve()` normalises the hop, so the
+                                                 classic bypass is closed
+  cmd  a REAL directory named HSP-stable-copy, source present and committed
+  out  REFUSED by the name predicate          -- measured with the existence refusal cleared,
+                                                 so the predicate is what fired
+  cmd  C:/nope/HSP-stable  and  C:/nope/not/a/tree
+  out  R1214's "declared and is not a directory" refusal, which fires first
+  cmd  <...>/hsp-stable  (case-folded, existing)
+  out  current  -- correct: `resolve()` restores the on-disk case, so it IS the tree
+  ```
+* **R1226's SECOND LIMB -- THE CHOICE IS RIGHT, AND THE REASON IS STRONGER THAN THE ONE THE
+  DOCSTRING GIVES.** You asked me to rule on hashing the working file against `--dirty`.
+  **Hashing is correct**, and measurements say so rather than the argument:
+  ```
+  cmd  git -C HSP-stable hash-object <rel> ; git -C HSP-stable rev-parse HEAD:<rel>
+  out  b8b8123904af...   b8b8123904af...      -- IDENTICAL on a clean tree
+  cmd  git -C HSP-stable config core.autocrlf ; git check-attr text eol -- <rel>
+  out  true ; text: unspecified, eol: unspecified
+  rule `git hash-object <path>` applies the attribute filters, so CRLF working bytes hash to
+       the LF blob. Had it not, `data/platform/buoy_centers_ref.json` would have STOPPED
+       REGENERATING at this commit -- R1223's shape -- and `--check` would be a third red.
+  cell ONE VARIABLE, the working file's bytes, in a throwaway git tree named HSP-stable:
+         clean                              -> "current"
+         comment-only edit, no value moves  -> "the VALUES match but the source blob moved,
+                                                b8b8123904af -> 48391dd3de42"
+         Z_HUB_REF edited                   -> "STALE -- hub_positions_xyz_m differs"
+       and the OLD code on that same dirty tree: `rev-parse HEAD:<rel>` still returns
+       `b8b8123904af`, so `--check` would have printed `current`.
+  judge `--dirty` would have said "something here is uncommitted" while publishing
+       `b8b8123904af` beside numbers that did not come from it. The hash makes `check()`'s
+       own `blob_sha` comparison (`:172-180`) the thing that catches it, and that comparison
+       already ships. Your docstring's reason is right; this is the measurement of it.
+  ```
+  **The residual, stated rather than left:** a real directory *named* `HSP-stable` holding
+  other content still prints `current` (measured). A name predicate is defeated by a name and
+  always will be; what covers the rest is the blob sha, which catches any tree whose bytes
+  differ. The pair is sound. The shapes nothing catches are in my corpus below.
+* **R1227 (R1206's fourth site) -- ANSWERED, AND I WITHDRAW THE `_PAIRED` HALF OF MY OWN
+  CONDITION.** `assert REPORTED & REVIEWED` is the right predicate and `:217` does **not**
+  need to move. You asked for this explicitly; here is the cell.
+  ```
+  cell ONE VARIABLE -- the verdict file present or absent, at this commit:
+         both present        -> REPORTED [0] REVIEWED [0] _PAIRED 0 STEP 0 STEP_REPORT 0,
+                                test green
+         verdict moved aside -> 1 failed at tests/test_report_carried.py:585,
+                                "reports exist for steps [0] and verdicts for []; no step
+                                 has both"
+  rule `STEP_REPORT == _PAIRED` at `:606`, the assertion I said would go silently vacuous
+  judge IT IS UNREACHABLE IN THAT STATE. `_PAIRED`'s `else 0` arm is taken exactly when
+       `REPORTED & REVIEWED` is empty, which is exactly when the NEW first assertion fires --
+       and it fires with a message that is TRUE. `grep -rn _PAIRED tests/ scripts/ .claude/`
+       gives three code sites, all in this one file (`:217`, `:237`, `:606`), and `:237`'s
+       use is sound in every state I constructed. The sequencing closes it, so my "treat
+       `:229` in the same commit" was wrong: it asked you to change a line that is
+       load-bearing for nothing.
+  ```
+* **AND THE MARKER MEASUREMENT IS WITHDRAWN TOO -- IT IS MINE, AND YOU WERE RIGHT TO ASK FOR
+  IT RULED EXPLICITLY RATHER THAN LET IT STAND.** Verdict 62 recorded `marker 0 -> STEP 0` and
+  `marker 3 -> STEP 0` and attached the cause *"the `else 0` arm is doing the work"*. The
+  figures were right; the cause was not.
+  ```
+  cell ONE VARIABLE -- the marker, with a step-1 report planted beside the step-0 one:
+         marker 0 -> _PLAN_STEP 0 _PAIRED 0 STEP 0 REPORT step-0.md
+         marker 1 -> _PLAN_STEP 1 _PAIRED 0 STEP 1 REPORT step-1.md
+  judge THE MARKER DOES CONTROL WHICH REPORT THE GUARD READS. It had no effect at `9e1092a`
+       because `3 not in REPORTED` -- only step 0 has a report -- not because the resolver
+       ignores it. A measurement over one value of the other axis with a causal sentence
+       attached: BG0, on my side of the loop. **Nothing to fix; the claim is withdrawn.**
+  ```
+* **"One, and this is it" -- ANSWERED, and the replacement is not decorative.**
+  `assert not Path(relative).is_absolute(), "the probe value must be relative to mean
+  anything"` is what stops the R1219 test passing on an absolute value, which is the shape
+  R1229 was. The probe directory is out of the repository root, and `git status --porcelain`
+  was empty after every run I made. **R1229 discharged.** One ledger note: `os.path.relpath`
+  raises `ValueError` when `tmp_path` and the repo root are on different drives -- loud, not
+  silent, so it is a note and not a finding.
+* **R1225 (ii) -- THE RECORDING HALF IS ANSWERED; THE HOLDING HALF IS NOT, AND THE OBVIOUS
+  REPAIR IS NOT A ONE-LINER. R1232 below.** The `environment` block is only built on a write
+  run, which nothing covers, so I exercised it: it builds and serialises, and it is already
+  informative -- `numpy 2.5.4 / scipy 1.18.1 / xarray 2026.4.0` against
+  `BASELINE_CONDITIONS`' `2.4.4 / 1.17.1 / 2026.7.0`, three libraries off the artifact's
+  basis, with `threads` all `null` and `openblas_coretype` `null`.
+* **R1225 (i) -- ANSWERED FOR THE DECISION, NOT FOR THE CLAIM IT IS USED TO SUPPORT. R1233.**
+* **R1225 (iii) -- ANSWERED.** Section 7 escalates under **FQ3** by name, does **not** trigger
+  `R2.md` section 6 item 2, and says so. The implementer's tree shows no `data/` entry:
+  **no write run was made.** This was the one decision in the step that could have
+  republished a dozen figures in a file sent to Xabier, and it was taken correctly for the
+  second round running.
+* **Conditions 4 and 6 -- OPEN, UNCHANGED, AND CORRECTLY SO.** Both red in my own run, both
+  recorded red with their cause named, neither cleared by writing a provenance. The staleness
+  message now names three blobs rather than two because this commit touched
+  `export_f4_dynamic_inputs.py`; that is the diff, not a new defect.
+* **Condition 7 (a concluded GREEN ladder in CI at the follow-on sha) -- NOT MET.** Rungs 1-3
+  are SUCCESS in CI at this sha, which is new and worth having. **Rungs 4 and 5 are still
+  unmeasured in CI at any commit of this step.**
+* **The header requirement -- FAILED. R1230.** **EG3 (ii)'s paste -- NOT DONE**: the report
+  carries no report-guard count, because `<!-- WHOLE_SUITE -->` was never filled.
+* **R1221 and R1228 -- STILL OPEN, and FF0 said "next commit". R1235.** **R1217, R1218 --
+  still open**, unchanged and not answerable here; R1218 becomes CZ0 (b) when step 2 writes
+  the entry. **The R1213 message assertion -- ledger, and the answer to your question is no:**
+  `:209` asserts the two keys differ, so the identity path cannot fire and the assertion is
+  not vacuous. It stays a ledger row and I am not asking you to narrow it in a round.
+  **R1212, R1203, R1204 -- reviewer-side or Xabier's. R1224 -- mine, no action.**
+* **Verdict 58's twelve items and verdict 59's four report items -- PARTLY ROUTED.** Section 8
+  routes R1196-R1201 and R1186/R1188/R1189(c)/R1190/R1191/R1193 to step 1, which is a
+  disposition and acceptable. Four of them (R1197-R1200) are nonetheless red as missing carry
+  rows, which is R1230's consequence rather than a separate item.
+
+## Findings
+
+**R1230. (BLOCKS) THE `Answers:` HEADER NAMES VERDICT 61 WHILE THE NEWEST IS 62, AND THE
+GATE'S FINDING SET IS COMPUTED FROM THE VERDICT THE HEADER NAMES. ITEM 1b.**
+
+```
+claim  the report answers the newest verdict
+cmd    git show HEAD:docs/reports/R2/step-0.md | sed -n '5p'
+out    Answers: verdict 61 @ c931885
+cmd    sed -n '1,4p' docs/reviews/R2/step-0.md ; git log --oneline -1 -- docs/reviews/R2/step-0.md
+out    # Review -- R2 step 0 -- ES0 INTERIM CHECK ... Reviewed commit: 9e1092a...
+       0901933 review: R2 step 0 ES0 INTERIM CHECK at 9e1092a -- HOLD, two blocking findings
+cmd    grep -n "verdict 62\|0901933\|9e1092a" docs/reports/R2/step-0.md
+out    (nothing -- three needles, zero hits)
+cmd    tests/test_report_carried.py:406-412 -- ANSWERED = _answered_verdict(REPORT_TEXT);
+       VERDICT_TEXT = _verdict_text_at(ANSWERED); EXPECTED = _FINDING.findall(VERDICT_TEXT) | ...
+out    ANSWERED = c931885, EXPECTED = 27 ids, and
+         R1225 in EXPECTED: False  R1226: False  R1227: False  R1228: False  R1229: False
+cell   ONE VARIABLE -- the sha in the header. `_verdict_text_at('0901933')` gives EXPECTED =
+       32, and the five it adds are EXACTLY ['R1225','R1226','R1227','R1228','R1229'].
+rule   tests/test_report_carried.py:514 test_the_answered_verdict_is_the_NEWEST_one, whose own
+       docstring reads "Item 1b, mechanically ... A header naming a real but older verdict
+       commit passed every check: the sha resolves, the findings parse, and the carry table
+       is complete about a list that has been superseded."
+out    FAILED -- "the report at `4c19570` is newer than the verdict at `0901933` and names
+       `c931885`. Written with the newest verdict available, it must answer that one."
+judge  That red names no finding and no site of the newest verdict, and its SUBJECT is not
+       the commit carrying it -- it is measurable at this commit and it was. It fails the
+       FS1/FT1 predicate in both limbs, so **CZ1 (iv) applies unchanged and it blocks.**
+```
+
+**The silently wrong result, in the form FR1 asks for -- two of them.** First: `EXPECTED` is
+the domain of `test_the_report_carries_the_finding`, so **neither of verdict 62's blocking
+findings is a parametrised case at this commit.** A revision that had answered nothing about
+R1225 or R1226 would read green on the one gate CLAUDE.md says the whole arrangement exists
+for -- *"the dependency list is part of what gets re-read at every step"* -- and the list it
+re-read is the superseded one. That is assertion domain blindness on the gate whose domain
+IS the dependency list. Second: `scripts/ci_section.py:203 _anchor()` reads **this same
+header** (`_ANSWERS` at `:178`), so generating section 10 now produces a CI table anchored on
+`c931885` and publishes it under the heading *"CI at the judged commit"* -- a wrong commit,
+and therefore wrong pass/fail counts, in the mandatory section of the report GI6 sends to
+Xabier, and silent because a CI table looks identical whichever commit it describes.
+
+**And the report is split between two verdicts rather than simply stale.** Section 7 and all
+three code comments answer verdict 62 (R1225, R1226, R1227 by name). The header, section 8's
+table, `step-0-answers.json` and section 9's red trace answer verdict 61. The prose at
+lines 8-12 asserts the opposite of what line 5 does -- *"This header names 61 because the
+newest verdict is the one the guard checks against"* -- and its parenthetical enumerates
+"61, 60, 59" with 62 absent. BP0 at the scale of a whole document: the body moved and the
+header did not.
+
+*Closed when* the header names `0901933` **and section 8 plus `step-0-answers.json` carry the
+32-id list in the same commit.** Fixing the header alone makes it worse by five: the table has
+no row for any of R1225-R1229, and it is also missing R1213, R1214, R1215, R1221, R1222,
+R1223 and `R2`, which the verdict it *names* already demanded --
+`test_the_report_carries_the_finding` is red on exactly those ten ids today. The 107
+`test_every_named_site_is_touched_or_declared[...]` reds and the seven
+`test_the_guard_survives_the_state[...]` reds are the same item: the harness copies the real
+report into every planted tree, so `baseline` reports *"expected a clean run"* with 122 of
+these inside it, and **the harness that holds the resolver in place is certifying nothing
+while the carry list is short.**
+
+**R1231. (BLOCKS) ALL THREE GENERATED SECTIONS ARE UNFILLED PLACEHOLDERS, AND CI IS RED AT
+THIS COMMIT, WHICH IS THE EXACT STATE CE1 WAS ADOPTED FOR.**
+
+```
+cmd    tail -6 docs/reports/R2/step-0.md
+out    <!-- WHOLE_SUITE -->   ## 10. CI at the judged commit   <!-- CI_SECTION -->
+cmd    pytest -q tests/test_report_carried.py -k "CI_SECTION or REVIEWED_commit or
+       counts_are_not_all_zero or ROUNDS_SECTION"
+out    test_the_report_carries_a_CI_SECTION  "the newest report revision has no
+         `## ... CI ...` section"  assert '' -- the section body is EMPTY, not a placeholder
+         that parses
+       test_the_CI_section_is_about_the_REVIEWED_commit  "the CI section names no commit"
+       test_the_reported_CI_counts_are_not_all_zero      "the shape without the measurement"
+       test_the_ROUNDS_SECTION_is_the_GENERATORS_and_not_a_paragraph  "no `## 0a` table"
+rule   CLAUDE.md section Step gating: "A report is its generated sections plus at most one
+       hand-written paragraph." This report is the hand-written paragraphs and none of the
+       generated sections.
+judge  Four reds, none naming a finding or a site of the newest verdict, and none whose
+       SUBJECT is this commit: a run exists at this sha (`44140076843`), FP1's push happened,
+       so `python scripts/ci_section.py` and `--rounds` were both runnable here. They fail
+       the FS1/FT1 predicate in both limbs, so **CZ1 (iv) applies unchanged.**
+```
+
+**The silently wrong result.** CI is **red at the judged commit** -- `lint, unit and guards`
+concluded `failure` -- and no revision of the report says so. CE1 was adopted because CI had
+been red at three consecutive reviewed commits with no revision saying so; this is the fourth,
+and the report GI6 sends to Xabier carries no CI status at all. **Order matters and it is the
+operative instruction: fix R1230 first.** Generating the section against the present header
+anchors it on `c931885`, which replaces "no CI status" with "a CI status about the wrong
+commit", and the second is worse than the first.
+
+**R1232. (DOES NOT BLOCK -- the condition stands for the write run) R1225 (ii) IS RECORDED AND
+NOT HELD, AND `pin_threads()` CANNOT BE WIRED AT THE CALL SITE THE DIFF CREATED.**
+
+```
+claim  the generation environment is "recorded in the provenance and held at the point of
+       generation", which is what verdict 62's condition (ii) says
+cmd    grep -n "pin_threads\|determinism\." scripts/export_f4_dynamic_inputs.py
+out    :554  **determinism.report(),     -- and no other hit. `report()` only.
+cmd    sed -n '64p;72p' scripts/export_f4_dynamic_inputs.py ;
+       grep -n "Call before importing numpy" floatfea/determinism.py
+out    64  import numpy as np
+       72  from floatfea import determinism, hsp_pin  # noqa: E402
+       floatfea/determinism.py:96  """Fix every BLAS/OpenMP thread count. Call before
+                                      importing numpy."""
+judge  **THE RECORDING HALF IS DONE AND IS THE RIGHT HALF TO DO FIRST.** An unpinned run now
+       records `threads: {all null}` and `openblas_coretype: null`, which is a TRUE statement
+       about the run, so an unpinned write run is loud rather than silent -- which is why
+       this does not block under FR1. **The holding half is open, and the one-line repair is
+       not available at `:72`:** the only import site the diff created is eight lines AFTER
+       `import numpy as np`, and `pin_threads`'s own documented precondition is the opposite.
+       Wiring it there would write `threads: {"OMP_NUM_THREADS": "1", ...}` into the
+       provenance of a run whose BLAS had already initialised at the ambient count -- a
+       provenance field that is false, which is strictly worse than the null it replaces.
+       I did NOT measure a thread count and I assert none: there is no `threadpoolctl` here.
+       What I assert is the documented precondition and the two line numbers.
+```
+*Closed when* either the pin is set before `import numpy` and the provenance records the
+pinned values, or the write run is launched with the five `THREAD_ENV` variables set in its
+environment and the report says that is the mechanism. **Either way: no write run before it.**
+One ledger note on the same block: `baseline_conditions` is a tuple of prose sentences while
+`versions` is a dict, so nothing can compare the two without a parse. Recorded, not asserted,
+is what was asked for, so this is a note.
+
+**R1233. (DOES NOT BLOCK) R1225 (i) IS SATISFIED FOR THE RULING AND NOT FOR THE SENTENCE IT IS
+USED TO SUPPORT. ~200 eps IS CONSISTENT WITH THE PIN -- HERE IS WHY, SINCE YOU ASKED.**
+
+The three rows are arithmetically right -- I recomputed every ratio and every eps count from
+the pasted maxima (`4.3670e-14 / 196.7`, `8.5350e-15 / 38.4`, `5.4106e-15 / 24.4`) -- and the
+answer is **yes, and the bound is two lines rather than a feeling**: a sequential convolution
+over `N = 884` steps accumulates round-off between `sqrt(N) * eps` and `N * eps`, i.e.
+**30 eps to 884 eps**, and 196.7 eps sits inside that band. `4.37e-14` relative is **twelve
+decades** below the `1e-3` I named as "a different and larger finding" and ten below the six
+figures `U = 1.71167` is published to. **It is round-off. Your reading is correct, and the
+self-correction of the `1.210e-01` probe -- an elementwise ratio anchored on near-zero
+entries, which measures the entry and not the array -- is the right diagnosis of the right
+error.**
+
+**What one case does not support is the sentence attached to it.** `--check` names **36 of
+100** arrays across **six** cases; section 7 measures **three arrays of one case**. The
+conclusion *"no published number can move"* is a claim over all six periods taken from one,
+and `results/R1/example/member_forces.csv` publishes `G4.1` rows at every period. The
+mechanism is period-independent and I expect the other five to look the same -- which is the
+point: an expectation is what a measurement is for. **This does not block and is not a
+condition of step 0**, because option 2 is not being taken and nothing is republished. It
+**is** a condition of choosing option 2: the other five cases are measured before any
+re-base, or the sentence is reduced to "at the governing period".
+
+**R1234. (DOES NOT BLOCK -- FF0, next commit) `tests/test_report_vocabulary_corpus.py` HAS TWO
+NEW REDS AND THEY ARE MINE, NOT YOURS.**
+
+```
+cmd    pytest -q tests/test_report_vocabulary_corpus.py, report present vs report moved aside
+out    report present -> 2 failed: legitimate_open_row, two_spaces_before_the_item_number
+       report absent  -> 32 passed
+cmd    grep -n "legitimate_open_row\|two_spaces" tests/corpus/report_status_vocabulary.txt
+out    :58  expect=allowed measured=allowed     row=| R231 | **open** - Q8 is locked; ... |
+       :97  expect=allowed measured=allowed...  row=|  R230 | **answered** in section 1 |
+judge  **BOTH `measured=` FIELDS WERE RECORDED IN A TREE WITH NO REPORT, WHERE THE GUARD
+       COULD NOT RULE AT ALL.** `allowed` there meant "never evaluated", not "allowed" -- a
+       baseline taken in a vacuous state, which is this project's own recorded guard applied
+       to my own directory. The moment a report exists the shipped guard refuses two row
+       shapes the corpus declares legitimate. Under FR1 the outcome is a refusal and so is
+       loud, which is why it does not block; it is gating apparatus, so FF0 rather than the
+       ledger. **I have NOT edited the corpus to match the guard** -- that is widening by
+       another name -- and the test's own message names the two exits: repair the guard so a
+       two-space indent and a hyphenated open row are ruled on, or declare the disagreement
+       with a reason. The first is yours under EK2; if the guard turns out to be right, the
+       re-measurement is mine and I will take it next round.
+```
+
+**R1235. (DOES NOT BLOCK -- FF0, and it was due in THIS commit) R1221 AND R1228 ARE
+UNCHANGED.** Verdict 62's item 5 read *"R1227 and R1228 in the next commit (FF0, not the
+ledger) ... R1221 is in the same file and belongs in the same commit."* This is that commit;
+R1227 and R1229 are in it, these two are not, and the commit does not say they were left.
+Measured: `tests/test_report_guard_states.py:117` still quotes
+`max(_PLAN_STEP if _PLAN_STEP in REPORTED else 0, _PAIRED)` against the code's
+`_PLAN_STEP is not None and _PLAN_STEP in REPORTED` at `:236`; and `EXPECTED` at this commit
+**literally contains `'R2'`** -- the phantom id is the first element of the 27 printed under
+R1230. **Both in the next commit.**
+
+**R1236. (DOES NOT BLOCK -- ledger) TWO FIGURES IN THE REPORT THAT ONE COMMAND EACH REFUTES.**
+Section 6's R1205 block pastes `out  ('R2', 1) R2.md`; the command it names prints
+**`('R2', 0)`**. Section 9 predicts `test_the_plan_names_the_step_under_execution` "stays red
+on the sentinel collision"; it **passes** (`1 passed`, measured), as verdict 62 and `R2.md:15`
+both already recorded. The second is the more useful of the two, because section 9 is the
+report's red trace and it predicts a red that does not exist while omitting the one that
+blocks. Report prose, so FR1 does not block it -- but EG3 (i) asks for every red traced by
+name, and the trace that exists is wrong in both directions. Also ledger:
+`test_every_number_in_prose_is_sourced_in_its_own_section` is red on the preamble and on
+sections 2, 3, 6, 7, 8 and 9, plus `test_a_table_of_numbers_shows_where_it_came_from[8.
+Carried]`.
+
+**WHAT THIS COMMIT GOT RIGHT, AND IT IS THE LARGER PART OF IT.** GI3 (a) is the measurement I
+most expected to have to re-derive, and it reproduces exactly: I rebuilt the momentum balance
+from `case1/m_xddot`, `case1/contrib` and `case1/pair_body` myself and got `2.414413e+01`
+against `2.414287e+01` on the platform and `1.4537e+01 / 1.4534e+01` on hub1, ratio 1.0001 --
+the report's own table -- and the judgement that a "share" between the two sides is 1:1 by
+construction is right, and is the honest answer to a question GI asked in a form the model
+cannot answer. The static/dynamic decomposition is exact: `269.72` and `455.72 MPa`,
+`My static 1.916016e+08`, `Mz dynamic 2.689043e+08`, and the dynamic `My` of `-1.141810e+07`
+is `total_instant - static` to the digit, all read out of the published CSVs. All six
+utilisations check (`1.71167` twice, `1.18223`, `1.17709`, `0.808211`, `0.790493`). Section
+2a's loop-gain table is internally consistent at every one of its 24 cells and its control
+`2059.7 t` reproduces; section 5's deck census is exact on all 17 bodies and `43 005 t` is
+`344.04 kg x 50^3` to the tonne. **And three figures were corrected against the author's own
+earlier statements before anyone asked** -- 74 minutes to 26, the ballast sign, and the
+`1.210e-01` probe -- each with the reason the first version was wrong. The
+`(1 - 0.75) x 2500` corroboration in section 4 is the kind of cross-check that catches a
+basis error, and it is the second time this step has found one that way.
+
+## Tolerances touched
+
+**None, measured twice.** `git diff 0901933..HEAD -- floatfea/tolerances.py` is 0 lines, and
+`git diff 0901933..HEAD | grep -cE "^[-+].*_COUNTER"` is `0`. **EU1 therefore does not
+arise**, and I ran the model at configurations the diff did not choose anyway -- which is
+where R1226's closure and R1234 came from. One tolerance-shaped thing remains implicated and
+is not a tolerance: `--check`'s comparison is `np.array_equal` with no threshold, by Q8's
+rule. **If any answer to R1225 introduces a tolerance on that comparison, that is a widening
+and it is refused.** R1218's row-1 form question is still unwritten and becomes CZ0 (b) at
+step 2.
+
+## Corpus
+
+**One batch, committed separately at `91f083d`: `tests/corpus/hsp_worktree_key_provenance.txt`,
+28 entries, all new.** GC3 left the pause expired, so this is my own call under GA3's length
+target. The surface is the one this step's only code change touches: GI3(e) turned a wrong
+path from a MISSING directory into a RESOLVING one, so the question became whether the tree
+that was read is the tree the artifact declares.
+
+**12 of the 28 measured this round. 6 caught, 3 reach a green `--check`, 1 correctly needs no
+refusal, 1 is not live on this tree, 16 carried unmeasured.** The three that get through:
+a real directory *named* `HSP-stable` holding other content (`current`, exit 0); the stable
+key set to the **empty string**, which falls through as unset and exits **0** with *"HSP-stable
+absent, so the snapshot cannot be re-derived here"* -- a gate that could not compare returning
+0, which is *empty parameter set is an error, not a skip*, and which is pre-existing rather
+than in this diff; and a stable tree at another tag with byte-identical source, where nothing
+is wrong because `hsp_tag` is a literal on both sides. Both entries verdict 62 said it would
+write are in it, and `declared_tag_is_a_literal` is still live. **What I ran beside the batch**
+is the recorded substitute, and it is where R1230 came from: a regeneration check on a
+published deliverable (the EB6 snapshot, in a throwaway tree, in both directions) and a
+continuum over the parameter space the new resolver guards.
+
+## Next step opens when
+
+**STEP 0 STAYS OPEN AND STEP 1 DOES NOT BEGIN** -- which GI6 holds anyway, so this HOLD costs
+no schedule, and you are right that it does not. **Rounds: this consumed revision 1 of 3
+under ES0. Two remain.** R1226, R1227, R1229 and R1225 (iii) are **DISCHARGED and are not
+re-measured**, and two conditions of my own are **WITHDRAWN** (the `_PAIRED` half of R1227,
+and the marker's cause). What remains, in this order, because the order is load-bearing:
+
+1. **R1230 -- the header to `0901933`, AND the 32-id carry list in the same commit.** Not the
+   header alone: section 8, `step-0-answers.json` and the generated Carried table move
+   together, or the next revision is red by five more than this one.
+2. **R1231 -- `python scripts/ci_section.py`, `--rounds`, and the whole-suite line, AFTER
+   item 1.** CI is red at this sha and the report has to say so.
+3. **R1232 -- no write run until the pin is above `import numpy` or in the invocation's
+   environment, and the provenance records the pinned values.** The recording half is done.
+4. **Conditions 4 and 6 -- unchanged, still subordinate to R1225, still red with their cause
+   named.** Do not clear the staleness guard by writing a provenance whose npz moved for an
+   unrecorded reason.
+5. **Condition 7 -- a concluded, GREEN ladder in CI.** Rungs 1-3 are green at this sha; 4 and
+   5 have still never run in CI during this step.
+6. **R1234 and R1235 in the next commit (FF0, not the ledger).** R1233's five remaining cases
+   only if option 2 goes on the table.
+
+**Nothing here is a STOP, and I considered it on the ladder.** Rungs 1, 2 and 3 are SUCCESS in
+CI at this commit, which is the first time this step has had that; the two local reds are a
+provenance comparison and a regeneration comparison rather than numerical disagreements at a
+rung, and R1225 established that what moved is the committed golden and not the code. No
+`floatfea/` file is in this diff. The locked plan is faithful to GI and needs no reopening,
+and `R2.md` section 6 item 2 is still the one clause I rule must NOT be triggered yet.
+
+**And I disagree with nothing in the criterion this round.** FR1 did the work it was adopted
+for: R1233, R1234 and R1236 would each have been a blocking round under the unamended CZ0,
+and each is a line here instead. The two findings that block are both "a wrong number in a
+report, silently" with the sentence written out, which is the test FR1 asks for and the
+reason it is cheap to apply.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
 # Review — R2 step 0 — ES0 INTERIM CHECK (counts against no round)
 Reviewed commit: 9e1092a35eed45ee5351789778a3c50752af1bb1
 **Reviewed commit: `9e1092a35eed45ee5351789778a3c50752af1bb1`.**
