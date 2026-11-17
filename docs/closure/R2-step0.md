@@ -63,6 +63,74 @@ ballast is identically zero, and then D2's draft cannot be held when steel moves
   the rungs after it do not execute. Written down rather than fixed wrongly — which is
   exactly what R1243 was.
 
+## R1243, and the two records the report must not carry (EK3)
+
+**R1243 is the closure commit's first item (FF0) and it is a defect introduced while
+repairing another.** R1239's observation was right -- CI had never measured rung 4 -- and
+the repair chosen for it was wrong in a way the file already said.
+
+```
+claim  the rungs should run in the ladder's own order, and CI's ladder job would go from
+       one red to two, the second being the escalation becoming visible
+cmd    sed -n '496,503p' .github/workflows/ci.yml       (UNCHANGED by that diff)
+out    "AND RUNG 6 RUNS BEFORE RUNG 4 (CH3). The goldens ask whether today's bytes equal
+        yesterday's, which stays interpretable whatever ladder 4 says; chained behind it
+        they were skipped for eleven rounds while running on ten determinism legs ...
+        `tests/test_ci_determinism_gate.py` asserts that position."
+cmd    pytest -q tests/test_ci_determinism_gate.py      (at the reordered commit)
+out    1 failed, 12 passed -- test_ladder_6_is_not_gated_behind_a_rung_that_is_red_under_Q8
+cell   ONE VARIABLE, the step order, from the two runs rather than from reasoning:
+         rungs 1,2,3,6   ladder row  2143 passed, 1 failed, 0 skipped
+         rungs 1,2,3,4   ladder row  2011 passed, 1 failed, 0 skipped
+       -477 (rung 6 AND the whole of tests/regression), +345 (rung 4), SAME `1 failed`
+rule   CH3, and `tests/test_ci_determinism_gate.py`, which asserts the position
+judge  **THE PREDICTION IS REFUTED BY ITS OWN COMMIT'S RUN: one red, not two.** Rung 4
+       fails while the escalation stands, so rungs 5 AND 6 skip -- the very mechanism
+       R1239 identified, applied to R1239's repair. The escalation did not become
+       visible; it MOVED, from the rung-6 deliverable red to the rung-4 staleness red,
+       and the rung-6 one went invisible, taking the whole of `tests/regression` out of
+       CI with it -- which FV1 assigns to CI in so many words, and which holds
+       `test_f6_deliverable_agrees_with_itself.py`, the only automated check that a
+       published deliverable still regenerates.
+       Nothing would have said so: `ci_section.py` reads a JOB's conclusion and parses
+       `run_rung:` lines, and a skipped STEP emits no such line.
+       **A general principle was appealed to over a specific, measured, gated ruling
+       recorded eight lines from the edit.** That is the whole error.
+```
+
+**Reverted; `tests/test_ci_determinism_gate.py` is green again (13 passed).** R1239's
+observation stands and its repair does not: chaining rungs in one job hides every rung
+after a red one whichever order they sit in, so the fix is to stop the chaining -- separate
+jobs, or `if: always()` per step, with a CI section that names skipped STEPS. That is step
+1's and **R1243 carries into it by name, still blocking.** Meanwhile R1239's second exit is
+taken as the honest record: **rungs 4 and 5 are unmeasurable in CI while the escalation
+stands.**
+
+**R1244 -- revision 2's rounds table has a wrong row, and it is corrected HERE rather than
+there.** The row for the run at `0c5c864` reads `**no result** (status in_progress)`; that
+run concluded `failure` at 18:58:00Z, thirty minutes before the commit carrying the table
+was written. That is R1237, and the report's §17 states the defect without naming the run
+or the row. **The table is left as it shipped.** Silently rewriting a reviewed generated
+record so it no longer shows what was published would remove the evidence of the finding.
+
+**AND EK3 IS WHY THESE TWO SIT HERE AND NOT IN THE REPORT.** The closure commit first put
+them into `docs/reports/R2/step-0.md`, which EK3 forbids -- *"a closure commit NEVER touches
+a step report after that report's final verdict"* -- and the guard said so immediately:
+
+```
+cmd    pytest -q tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one
+out    the report at `e71ecd5` is newer than the verdict at `e511161` and names `a3a30d2`.
+       Written with the newest verdict available, it must answer that one.
+rule   EK3, measured three ways in CLAUDE.md: "any commit that touches a closed report
+       before a newer verdict exists reddens it"
+judge  **FOURTH TIME IN THIS STEP THAT THE `Answers:` HEADER TRAILED THE NEWEST VERDICT**,
+       and the first three were R1230, which this report answered two revisions ago. The
+       report is restored byte-for-byte to its final-verdict state at `0fb8c93` and every
+       post-closure word is in this file instead, which is exactly where EK3 routes it.
+       The reviewer's own list said "closure artifact: R1243, R1244-R1247" and the report
+       was never the right home for them.
+```
+
 ## No number moved
 
 No tolerance was added, widened or removed: `git diff` over `floatfea/tolerances.py` is
