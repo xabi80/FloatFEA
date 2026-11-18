@@ -1,0 +1,118 @@
+# CORPUS: the ROUTED RECORD IS ABSENT rather than WRONG -- a gate routed by a
+# recorded signal (`Closes:`) whose destination does not exist, so the router's
+# fall-back answers from a DIFFERENT record and every gate reads green
+# (FK2, R803, R1250, CZ1, EZ0, FR1, EH4).
+#
+# Owner: the reviewer. Test DATA only -- one candidate per line, nothing here
+# imports from floatfea and nothing here is test code. Written at the
+# sixty-seventh verdict on R2 step 0, the EQ0 review of the closure commit that
+# repaired R1249 and R1250 (judged commit 5901738).
+#
+# A PASSING SCAN MEANS: for every line below, either the state cannot arise, or
+# some gate in this repository goes RED when it does, for a reason that names
+# the absence. A line that reaches a green tree is a measured coverage gap and
+# is recorded with `m=NOT CAUGHT`.
+#
+# WHY THIS FILE EXISTS (BE3), AND WHY IT IS NOT
+# `closure_artifact_published_as_green.txt`. That file, written one verdict ago
+# on the same surface, is about an artifact whose CONTENT IS FALSE -- a gate row
+# published green while red, a figure moved by an order of magnitude, a phantom
+# citation. Every one of its 38 entries presupposes that the artifact EXISTS and
+# that the router READS it.
+#
+# This file is the other half: the destination is MISSING, EMPTY, DUPLICATED, or
+# NAMED DIFFERENTLY, and the question is what answers in its place. The two
+# halves behave differently under the repair at the judged commit, which is the
+# measurement that justifies a second file rather than more entries in the first:
+#
+#   artifact EXISTS, no cz1 block   ->  cz1_record() returns ""   ->  2 guards RED
+#   artifact ABSENT                 ->  cz1_record() returns the  ->  3 guards GREEN
+#                                       STEP REPORT's body
+#
+# Before the repair both states routed to the report and were indistinguishable;
+# `closure_artifact_published_as_green.txt:97` says exactly that and was written
+# when it was true. After the repair they are distinguishable and ONE OF THEM WAS
+# FIXED. The corpus entry survived its own repair, which is the thing a corpus is
+# for and the thing a planted-shape count by the repair's author cannot show.
+#
+# THE DECISIVE MEASUREMENT, because `m=` on the first line below needs it. At the
+# judged commit, with the artifact absent, `scripts/check_carried.py` exits 1 --
+# but INCIDENTALLY, because this step's report is sealed by EK3 and so omits
+# R1243. With the report's `Carried` section complete, which is the NORMAL state
+# and the state every future step will be in:
+#
+#   closure artifact ABSENT + report's Carried COMPLETE
+#     check_carried                        exit 0, "all 36 findings carried"
+#     the three FC1 guards                 3 passed
+#     _suite_line()                        ('a3a30d2', 3970, 2, 0)
+#
+# `a3a30d2` is verdict 64's commit, four commits before the closure commit. A
+# closure commit that publishes no CZ1 record at all is green, and the record an
+# auditor reads is a count of a tree that is not the one being closed.
+#
+# HOW THE LINES ARE MARKED. `m=CAUGHT (+id)` and `m=NOT CAUGHT (+0)` are measured
+# at the judged commit against: `python scripts/check_carried.py`, the five
+# `test_FK2_*` ids, `test_the_report_carries_a_WHOLE_SUITE_count`,
+# `test_a_RED_suite_is_named_in_the_report`,
+# `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW`, and the whole of
+# `tests/verification/rung3/test_closure_evidence_exists.py`. Baseline on that
+# selection with the tree as shipped: nothing red. An unmarked line is NOT
+# MEASURED and is a candidate, not a result.
+#
+# TWO LINES BELOW ARE ROBUSTNESS PROBES, NOT DEFECTS (marked `probe=`). They are
+# states that SHOULD pass, and they do; they are kept because a corpus that only
+# holds defects cannot show that the normaliser beside them works.
+
+# --- 1. THE DESTINATION DOES NOT EXIST -------------------------------------
+m=NOT CAUGHT (+0, in the decisive cell above) : the closure artifact is absent entirely while the newest verdict carries `Closes: <this increment>`, so `cz1_record` takes its `not CLOSURE.exists()` branch and the FC1 guards answer from the step report
+the same state at the NEXT step, where the report is OPEN and carries every finding, so the incidental `check_carried` red of today's tree is not there either
+a closure commit that creates the artifact in a LATER commit than the one carrying the CZ1 claim, so the window between them is green and nothing records that it was
+the artifact created as an EMPTY FILE, zero bytes, which exists and has no block
+the artifact created with only a title line, so `test_the_artifact_cites_evidence_at_all` is the only gate that can see anything wrong with it
+the artifact present as a DIRECTORY named `R2-step0.md`, so `is_file()` is False in one reader and `exists()` is True in the other
+the artifact present as a symlink to a file outside the repository
+`docs/closure/` itself absent, which makes rung 3's `glob("*.md")` empty and every test in that module vacuous but for its own meta-test
+probe= `Closes: R2/step-00`, zero-padded, where the artifact is `R2-step0.md`: `int()` normalises it and the router resolves correctly
+probe= `Closes: R2/step0` with no hyphen, which `step-?` admits and resolves correctly
+
+# --- 2. THE DESTINATION EXISTS AND IS NOT THE ONE MEANT ---------------------
+m=CAUGHT (+0 guards, check_carried exit 1 -- AND THE TWO READERS DISAGREE) : `Closes: F2/step-4` names another milestone's EXISTING artifact; `cz1_record` refuses it on `closes.split("/")[0] != MILESTONE` and reads the report, `scripts/check_carried.py:_carrier` has no such check and reads `docs/closure/F2-step4.md`
+the same divergence in the direction that passes: a foreign artifact whose `Carried` section happens to mention every id the current verdict declares
+both `docs/closure/R2.md` and `docs/closure/R2-step0.md` present and disagreeing about the same gate row, with the router reading whichever the `Closes:` form selects
+`Closes:` naming step 1 while only step 0's artifact exists, which is the ordinary state between a closing verdict and its closure commit
+a step artifact whose name differs only in case -- `R2-Step0.md` on a case-insensitive filesystem and not on CI's
+a step artifact named with the milestone lower-cased, `r2-step0.md`
+
+# --- 3. THE BLOCK IS PRESENT AND SAYS NOTHING -------------------------------
+m=CAUGHT (+test_the_report_carries_a_WHOLE_SUITE_count, +test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW) : the two block markers present with nothing between them
+m=CAUGHT (same two) : the block's CLOSING marker deleted, so the regex finds no block and the increment reads as closed-with-no-block
+m=CAUGHT (+test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW) : a SECOND, stale block inserted ABOVE the real one, so the non-greedy search takes the stale one
+m=CAUGHT (+test_the_report_carries_a_WHOLE_SUITE_count) : the whole-suite line moved OUTSIDE the block into the artifact body, where it reads correctly to a human and is invisible to the router
+the block's markers written with a different comment spelling -- `<!--cz1_closure_outputs-->` -- so the block is prose
+the block present in the MILESTONE artifact and the step artifact routed to, so the outputs exist and the checked record is the empty one
+CZ1's four outputs present in the closure commit's MESSAGE and nowhere in the tree, which is the state the judged repair exists to make impossible and which no gate reads
+
+# --- 4. `check_carried` AS THE SECOND READER OF THE SAME PREDICATE ----------
+m=CAUGHT (+check_carried exit 1) : a second `## Carried`-matching heading added after the real one, so `heads[-1]` reads a section holding no ids
+m=CAUGHT (+check_carried exit 1) : the `Carried` section emptied and its ids moved to a later section of the same artifact
+m=NOT CAUGHT (+0) : the ids moved from the table into a fenced code block inside the same section, where `_MENTION` still finds them and a reader no longer sees a routing cell
+an artifact carrying a `# Revision 1` line, which makes `_newest_report_carried` slice the artifact as if it were a report
+the artifact's `Carried` heading spelled `## Items carried`, which matches, beside a `## Carried` heading that does not hold the table
+a `Closes:` line quoted inside a fenced `out` block of a NEWER verdict entry, which the MULTILINE search cannot distinguish from an anchored one
+the ids present as `R1243`-looking text inside a URL or a path, which `\bR\d+\b` admits
+
+# --- 5. THE ROUTING CELL NAMES A PLACE THE ITEM IS NOT IN -------------------
+m=NOT CAUGHT (+0) : a ledger row says `figure and needle corrections in this artifact, below` and two of its five ids appear nowhere in the artifact below, nor anywhere else in the repository outside the verdict
+m=NOT CAUGHT (+0) : a row routes an item to `docs/milestones/F2a.md`, the frozen apparatus list, which does not mention it
+m=NOT CAUGHT (+0) : a row routes a BLOCKING item to a step number the locked plan does not have
+a row routes an item to `the write run`, a phrase naming no file and no step, which is unfalsifiable by construction
+a row marks an item `answered` and names the section, where the section discusses a DIFFERENT id
+a row marks an item `withdrawn` where the verdict that raised it did not withdraw it
+a row carries an id the verdict never declared, so the set comparison is satisfied from the wrong side
+every id present and the `state` column deleted, so the gate is satisfied and the record says nothing
+
+# --- 6. THE ABSENCE OF A WHOLE STEP's ARTIFACT ------------------------------
+no `docs/closure/<M>-step<k>.md` for a step whose verdict carries `Closes:`, which nothing in the repository asserts: rung 3 parametrises over `glob("*.md")`, so the collection the assertion inspects is the set of files that exist and a missing one is invisible by construction
+a step closed with `Closes:` whose artifact is created only at the MILESTONE close, so the step's own gates were never recorded
+two steps closed and one artifact, named for the later step
+an artifact for a step the plan does not contain, which no reader checks against `docs/milestones/R2.md`
