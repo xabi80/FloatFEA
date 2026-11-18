@@ -1,4 +1,607 @@
 # Review — R2 step 0
+Reviewed commit: ce5a84fefe1f00cf98124b8ab2bb5a97fd0ef3d5
+**Reviewed commit: `ce5a84fefe1f00cf98124b8ab2bb5a97fd0ef3d5`.**
+Verdict: HOLD
+Scope: **the EQ0 REVIEW OF R2 STEP 0's CLOSURE COMMIT**, two commits -- `e71ecd5`, which changes a
+gate (`.github/workflows/ci.yml`), and `ce5a84f`, its EK3 correction. EQ0 puts it in scope because a
+gate moved; **EB4 makes it cost no round**, and under **DD1 step 0 remains CLOSED by verdict 65
+(`Closes: R2/step-0`)** -- this HOLD is on the CLOSURE COMMIT and on nothing else. It is not a
+revision 4, it closes nothing, and `--closes` is correctly absent (FK1). Ruled under **FR1 with
+EZ0**: each blocking finding names the silently wrong result it produces. **GE3: `R835: unchanged,
+R2`. Not re-measured.**
+
+**ITEM 1b, AND THE READING IT NEEDS HERE.** The report's header is `Answers: verdict 64 @ a3a30d2`
+while the newest verdict is 65 @ `e511161`.
+```
+cmd    sed -n '1516p' docs/reports/R2/step-0.md
+out    Answers: verdict 64 @ a3a30d2
+cmd    git diff 0fb8c93 HEAD -- docs/reports/ | wc -l
+out    0
+```
+**This is not a report revision and 1b does not fire.** Verdict 65 measured 1b PASSING at `0fb8c93`,
+where `a3a30d2` WAS the newest verdict; EK3 then sealed the file, and the restore is byte-for-byte,
+so the header is the one 1b has already passed on. I state it rather than skip it.
+
+**4 / 4b / 4c, each diffed separately against the previous verdict commit `e511161`:**
+`floatfea/tolerances.py` **0 lines**; `.claude docs/SUPERVISOR.md` **0 lines, so no STOP-class
+finding**; `tests/conftest.py` **0 lines**, and `git ls-files -- tests/conftest.py
+'tests/**/conftest.py'` returns `tests/conftest.py` as it must -- no new conftest, no new plugin.
+`git diff e511161..ce5a84f | grep -cE '^[-+].*_COUNTER'` is **0**, so EU1 does not arise, and the
+whole diff is two paths: `.github/workflows/ci.yml` and `docs/closure/R2-step0.md`.
+
+Tests: **8 failed, 481 passed on the three report-guard files; 87 passed and 200 passed on the two
+other gate selections; `ruff`, `black --check` and `mypy` clean -- MY OWN RUNS, in my own worktrees
+at the judged sha, `-p no:randomly`.**
+* `tests/test_report_carried.py` + `test_report_numbers_are_sourced.py` +
+  `test_report_guard_states.py` -> **8 failed, 481 passed in 108.36s.** Every id traced below.
+  **The artifact publishes this selection as `468 + 24 passed`; that is R1249.**
+* `tests/test_ci_determinism_gate.py` + `test_ci_ladder_gating.py` +
+  `test_ci_workflow_is_wellformed.py` -> **85 passed in 146.53s**, and 87 with
+  `test_ci_runs_the_whole_suite.py` added. The reverted gate is green, and green on the assertion it
+  was reverted to satisfy.
+* `tests/verification/rung3/test_closure_evidence_exists.py` + `test_collected_set_golden.py` +
+  `test_tree_prose_consistent.py` -> **200 passed in 41.99s** (the corpus baseline).
+* `ruff check floatfea tests` -> **All checks passed!**; `black --check floatfea tests` -> **129
+  files would be left unchanged**; `mypy floatfea` -> **Success: no issues found in 45 source
+  files.** Three of CZ1 (ii)'s four outputs confirmed at `ce5a84f`'s own sha rather than accepted
+  from the report, and your figures for these three match mine exactly.
+* `python scripts/check_carried.py` -> **exit 1**, and that is R1249.
+* **WHAT I DID NOT FINISH, SAID RATHER THAN IMPLIED: my own whole-suite `pytest -q`.** It was still
+  running when I came to write this file, and writing this file changes a document three of the
+  guards in that run read -- so I abandoned it rather than publish a count taken across a tree that
+  moved underneath it. That is CZ1's reusable half on the reviewer's own side and it is the same
+  ordering CP3 is about. **What stands in for it is better evidence, not worse: the CONCLUDED CI run
+  at the judged commit's own sha**, below, which executed 1276 + 66 + 329 + 477 ladder tests, 480
+  unit tests and 1406 guards and meta-tests on a machine neither of us controls, and whose eight
+  guard reds are THE SAME EIGHT IDS, by name, that my own local run of those three files produced.
+  Two independent measurements of the same eight is the cross-check a single whole-suite number
+  would not have given.
+
+CI: **THE JUDGED COMMIT HAS A CONCLUDED RUN AND IT IS RED. Under CA2 a red CI is a HOLD regardless of
+the local run, and this verdict is a HOLD -- but every red traces, so the redness is not an
+independent block on top of the two findings.**
+```
+cmd    gh run list --commit ce5a84fefe1f00cf98124b8ab2bb5a97fd0ef3d5 --json conclusion,status,databaseId
+out    [{"conclusion":"failure","databaseId":44196001239,"status":"completed"}]
+cmd    gh api repos/:owner/:repo/actions/runs/44196001239/jobs --jq '.jobs[] |
+       "\(.name) | \(.status) | \(.conclusion) | runner=[\(.runner_name)] | steps=\(.steps|length)"'
+out    the verification ladder            | completed | failure | runner=[GitHub Actions 1000001934] | 13
+       lint, unit and guards              | completed | failure | runner=[GitHub Actions 1000001935] | 14
+       CI determinism -- leg              | completed | skipped | runner=[null] | 0
+       CI determinism -- ten legs agree   | completed | skipped | runner=[null] | 0
+```
+**NOT CK2** -- the two executing jobs were given runners, steps and work; the two determinism jobs
+are `skipped` by their own `workflow_dispatch` condition, which is unavailable and not passing.
+`e71ecd5`, the other commit in scope, also concluded FAILURE, at run `44187721362`.
+
+**THE STEP LIST IS THE MEASUREMENT CZ1 (iii) EXISTS FOR, AND IT IS ALSO THE MEASUREMENT OF R1243's
+REVERT.**
+```
+cmd    gh api .../44196001239/jobs --jq '.jobs[] | .name as $j | .steps[] |
+       "\($j) :: \(.number) \(.name) -> \(.conclusion)"'
+out    the verification ladder :: 5 ladder 1 -- the solver is a solver        -> success
+                              :: 6 ladder 2 -- the element is the element    -> success
+                              :: 7 ladder 3 -- the model is the platform     -> success
+                              :: 8 ladder 6 -- it stays fixed                -> FAILURE
+                              :: 9 ladder 4 -- the loads are the loads       -> skipped
+                              :: 10 ladder 5 -- independent confirmation     -> skipped
+       lint, unit and guards  :: 5 actionlint -> success | 6 ruff -> success
+                              :: 7 black --check -> success | 8 mypy -> success
+                              :: 9 unit tests -> success | 10 guards and meta-tests -> FAILURE
+cmd    gh run view 44196001239 --log | grep -oE "run_rung: [0-9]+ collected, [0-9]+ failed[^\"]*"
+out    1276 collected, 0 failed | 66 collected, 0 failed | 329 collected, 0 failed |
+       477 collected, 1 failed
+cmd    gh run view 44196001239 --log | grep -i "ladder 6.*run_rung: *failure"
+out    tests.regression.test_f6_deliverable_agrees_with_itself::
+       test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree
+cmd    the same log, the two step totals
+out    unit tests  480 passed      |  guards and meta-tests  8 failed, 1398 passed
+```
+**CH3's order is in force in CI, measured from CI rather than from the file.** `guards and
+meta-tests` is seen to have RUN rather than been skipped behind an earlier red -- which is the exact
+hiding CZ1 (iii) was written for -- `ruff`, `black` and `mypy` are green on the canonical machine as
+well as on mine, and the ladder's single red is named rather than classified: `test_R756`, the
+escalation. **Rung 4 did not execute, so the npz staleness guard did not run in CI**, which is
+R1239's second exit recorded as the artifact records it, not a new fact.
+
+**EVERY RED TRACED PER ID AGAINST THE FS1/FT1 PREDICATE (EG3 (i)) -- THE PREDICATE CHECKED, NOT A
+LIST.** **NINE REDS AT `ce5a84f` IN CI, AND THE EIGHT IN THE GUARDS JOB ARE THE SAME EIGHT MY OWN
+RUN PRODUCED, BY NAME.** Both lists, matched id by id:
+```
+1   tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one
+      -> "the report at `e71ecd5` is newer than the verdict at `e511161` and names `a3a30d2`".
+         LIMB TWO: its subject IS the commit carrying it -- it compares the newest commit touching
+         the report with the newest touching the verdict, and the commit carrying it is the one
+         that touched the report. It also reaches limb one, since `docs/reports/R2/step-0.md` is a
+         site of verdict 65 (R1244 at `:813`, R1245 at sec.19 and sec.19c). Boundary red.
+7   tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline |
+    non_numeric_step_suffix | superscript_digit_step_number | draft_suffix_beside_a_step_report |
+    step_number_is_the_empty_string | verdict_amended_after_the_commit_the_report_answers |
+    zero_padded_step_number]
+      -> the harness's own baseline leg prints `1 failed, 445 passed in 2.07s ... assert 1 == 0`,
+         so all seven are the cascade of the one above, and they are the SAME seven verdict 65
+         traced and measured clearing at `0fb8c93`. Limb one. Boundary reds.
+1   tests/regression/test_f6_deliverable_agrees_with_itself.py::test_R756_the_SHIPPED_report_IS_a_
+    regeneration_of_the_current_tree   (CI's ladder, rung 6)
+      -> names R1223, carried and escalated by verdict 65 at the site it named, and red at this
+         commit WITH ITS CAUSE NAMED as EG3 (i) requires. Limb one. Correctly not cleared.
+```
+**Not one of the nine fails the predicate, so CZ1 (iv) does not fire on the suite or on CI.** The
+eight-way agreement between CI and my own run is the part I would not have had from a single
+whole-suite count, and it is measured rather than eyeballed:
+```
+cmd    comm -12 <(CI's 8, sorted) <(my own 8, sorted) | wc -l
+out    8
+cmd    comm -23 ... (CI only)  ;  comm -13 ... (local only)
+out    (empty)                 ;  (empty)
+```
+Neither list has a member the other lacks, so the eight are the same eight on two different
+operating systems and two different installs, which is what CA2 asks CI for. I do not assert
+the clearing. **EG3 (ii) IS MEASURED AT MY OWN VERDICT COMMIT, AFTER THIS FILE IS WRITTEN, AND THE
+COUNT GOES TO THE IMPLEMENTER IN MY HAND-BACK** -- a verdict cannot contain a measurement taken at
+the commit that creates it, which is CZ1's reusable half applied to the reviewer's own side of the
+loop, and it is why state (1)'s half had never been measured before this step. Third consecutive
+round in which it has been.
+
+**AND I REACH A DIFFERENT READING OF THE BOUNDARY STATE THAN THE ONE YOU CLAIMED, WITH THE SAME
+OUTCOME.** You claimed EG3 state (1). State (1) is *report written, verdict not yet*; state (2) is
+*verdict written, answering report not yet*. **This is neither.** A verdict IS written, no answering
+report is due because the step is closed, and the red exists because a commit written AFTER the
+verdict touched the report. That is not a step boundary at all -- it is EK3's own consequence -- and
+it reaches the waiver through **limb two of FS1/FT1**, not through either of EG3's named states. The
+outcome is identical; the label matters for the round after this one, because a reader told "state
+(1)" looks for a new report revision to clear it and there is none. My verdict commit is what
+clears it, which is why I MEASURE that rather than predict it and send you the count. You asked because you had claimed a boundary
+state wrongly twice: this is a third reading, and it is the cheapest of the three to get right,
+because the predicate is two reasons and neither is a list of names.
+
+Door (FV2 / GG2): `git worktree add -b review/ce5a84fefe1f <a path outside the repository>
+ce5a84fefe1f00cf98124b8ab2bb5a97fd0ef3d5` **succeeded on the first try, so no review of this commit
+existed.** A second, detached probe worktree at the same sha held every plant. **Fifteen plants of
+my own, one variable at a time, with `git status --porcelain` asserted empty inside the harness after
+each**, so a dirty tree would have aborted the measurement rather than contaminated it.
+`C:\dev\floatfea` was clean when I was invoked and I wrote nothing into it. This verdict is written
+through `scripts/write_verdict.py`, committed on `review/ce5a84fefe1f` and pushed -- merge with
+`git merge --ff-only origin/review/ce5a84fefe1f`. **The corpus is committed separately, at `d2d95b6`,
+BEFORE this verdict**, which is the order `require-verdict.sh` excludes `tests/corpus/` for.
+
+## Carried
+
+Verdict 65's one blocking finding, its five closure items and its carry list. **R1243's CONDITION IS
+DISCHARGED WITH ONE HALF OF IT WITHDRAWN BY ME; TWO CLOSURE ITEMS ARE OPEN AGAINST A HAND-BACK THAT
+REPORTS THEM ANSWERED, AND ONE OF THOSE WAS REPAIRED AND THEN REVERTED BY THE NEXT COMMIT.**
+
+* **R1243 -- THE CONDITION IS ANSWERED, AND THE REVERT IS CH3's ORDER RATHER THAN MERELY A DIFFERENT
+  ONE. That is the one thing you asked me to confirm, and it is measured three ways, two of them
+  outside the file.**
+```
+cmd    git diff 2e08766..ce5a84f -- .github/workflows/ci.yml
+out    one hunk, additions only: a 21-line comment block between `ladder 3` and `ladder 6`. NO
+       `- name:` or `run:` line is added, removed or moved, so the STEP SEQUENCE at the judged
+       commit is byte-identical to the pre-reorder commit's, which is CH3's.
+cmd    git show 2e08766:.github/workflows/ci.yml | grep -n 'name: "ladder'
+out    525 ladder 3 | 527 ladder 6 | 529 ladder 4        (pre-reorder)
+cmd    grep -n 'name: "ladder' .github/workflows/ci.yml
+out    525 ladder 3 | 548 ladder 6 | 550 ladder 4        (at ce5a84f -- same sequence, shifted by
+                                                          the comment block)
+cmd    the CI step list above, at e71ecd5's own run
+out    ladder 1,2,3 success | ladder 6 FAILURE | ladder 4, 5 skipped
+```
+  **So it is CH3's order and not a third ordering that happens to satisfy the gate.** I checked the
+  gate rather than assuming it: `tests/test_ci_determinism_gate.py:199` and `:204` assert **both**
+  `where["rung6"] < where["rung4"]` **and** `where["rung3"] < where["rung6"]`, which is CH3's whole
+  sentence -- behind rungs 1 to 3, out from behind rung 4 -- and both are green.
+  **The record R1239's second exit asked for is present**, in the artifact's "What was deferred and
+  why": *"Rungs 4 and 5 are unmeasurable in CI while the escalation stands. Rung 6 is red, so the
+  rungs after it do not execute."* CI's step list above is the measurement of that sentence rather
+  than a restatement of it.
+  **And the stale comment is gone in the sense that mattered**: `ci.yml:496-502` (CH3) and `:527-547`
+  (the new block) now assert the SAME order, the reorder's own comment is removed in full, and no two
+  comments in that file contradict each other. My condition's wording was loose -- under exit 1 the
+  comment that had gone stale was the REORDER's, not CH3's -- and the right thing happened anyway.
+  **THE HALF OF MY CONDITION I WITHDRAW, AND THE REASON IS STRUCTURAL.** I wrote *"sec.19's 'ONE red
+  to TWO' is replaced by the measurement above"*. `docs/reports/R2/step-0.md:1616` still reads
+  *"Expect CI's ladder job to go from ONE red to TWO"* and **cannot be changed by this commit**,
+  because EK3 forbids a closure commit from touching a step report after that report's final verdict.
+  The measurement is published in the artifact's R1243 cell instead, which discharges the substance.
+  **A closing verdict must not name a site inside the report it closes.** Mine did it twice -- this
+  and R1244's `docs/reports/R2/step-0.md:813` -- and both were unfulfillable by construction, under a
+  rule written three sections above the one I was applying. That is a reviewer-side instance of this
+  step's own recurring defect: a condition specified from reading rather than from running.
+  **The FORWARD item stands exactly as verdict 65 left it.** Chaining rungs in one job hides every
+  rung after a red one whichever order they sit in; the fix is to stop the chaining, which is step
+  1's. **R1243 carries into step 1's `Carried` by name and stays blocking there.**
+* **R1244 -- YOUR CHOICE IS CORRECT AND I RULE IT SO, in your own terms.** Revision 2's rounds table
+  stays as it shipped. Rewriting a reviewed generated record so it no longer shows what was published
+  removes the evidence of the finding, and the same rule already governs one file over: DX2 keeps
+  every verdict round verbatim for exactly that reason, and `scripts/write_verdict.py` carries the
+  measurement that forced it -- a file that went 397 -> 508 -> 508 -> 538 lines while mentions of one
+  withdrawn item went 3 -> 2 -> 2 -> 0. **Nothing further is owed on R1244.**
+* **R1245 -- OPEN, AND THE HAND-BACK'S CLAIM THAT IT IS ANSWERED IS REFUTED.** You wrote "THE FIGURE
+  CORRECTIONS from your verdict 65 are in `0fb8c93`'s report".
+```
+cmd    grep -n "five items" docs/reports/R2/step-0.md
+out    1629:out    GAINS R1212, R1217, R1218, R1219, R1224 -- five items the newest verdict carries
+cmd    grep -o "GAINS[^\"]*" docs/reports/R2/step-0-answers.json
+out    GAINS R1212, R1217, R1218, R1219, R1224 -- five items the
+cmd    python -c "import sys;sys.path.insert(0,'tests');import test_report_carried as t;
+       print('R1219' in t.EXPECTED, [i in t.EXPECTED for i in ('R1212','R1217','R1218','R1224')])"
+out    False [True, True, True, True]
+cmd    git show e71ecd5:docs/reports/R2/step-0.md | grep -c "four items"
+out    0
+cmd    grep -c "four items\|R1219" docs/closure/R2-step0.md
+out    0
+```
+  The figure is wrong in the report and in the answers JSON; it was **not** corrected at `e71ecd5`
+  either; and the correction exists only in `e71ecd5`'s commit message, which BF0 and CZ1 both put
+  outside the record. **I am not holding on it** -- verdict 65 classed R1245 a closure item, and
+  `CLAUDE.md` forbids me to re-review one item by item or to hold a step on one. It is recorded as
+  OPEN against a claim that it is answered, and EK3 now leaves the artifact as its only home.
+* **R1246 -- REPAIRED AT `e71ecd5` AND REVERTED BY `ce5a84f`, AND NOTHING SAYS SO.** This is the
+  collateral of the EK3 restore, and it is the one thing I think should also have moved.
+```
+cmd    git show e71ecd5:docs/reports/R2/step-0.md | grep -n "generated: scripts/untouched_sites"
+out    1800:<!-- generated: scripts/untouched_sites.py -->
+cmd    grep -c "generated: scripts/untouched_sites" docs/reports/R2/step-0.md
+out    0
+```
+  Your hand-back says "Â§15/Â§19c now come from `scripts/untouched_sites.py`, the committed generator".
+  **True at `e71ecd5`; false at the commit I am judging.** The byte-for-byte restore necessarily
+  reverted every closure-item repair that lived in the report, and the hand-back describes the tree
+  one commit back. **The general fact worth carrying: EK3 and "the implementer fixes the whole
+  closure list once, in the step's closure commit" are in direct collision for any closure item whose
+  site is the closed report.** Both of my predecessor's report-sited closure items hit it. Not
+  blocking, for the same reason as R1245; `docs/closure/R2-step0.md` is where they can still be
+  answered.
+* **R1247 -- reviewer-side, unchanged, nothing asked of you -- and I added a fourth hole to it this
+  round.** `tests/test_report_carried.py:3063-3076`'s `_newest_verdict_closes()` is documented as
+  "the `Closes:` line of the NEWEST entry" and implemented as a search over the WHOLE file, so under
+  DX2 accumulation every verdict written after a closing one inherits the closing one's routing.
+  Benign here, and in my own favour, which is why I measured it rather than trusting it. Every FK2
+  test is synthetic and single-entry, so the accumulated case is exercised by none of them. It is in
+  the corpus.
+* **R1248 -- correctly routed to step 2, and I checked the routing against the plan rather than
+  accepting it.** `docs/milestones/R2.md:313-330` is the row where the override file and its
+  provenance get written, and R1248 is a provenance-regeneration gap on a committed snapshot.
+  Accepted.
+* **R1232 -- correctly held for the write run**, which is step 2 (i). No write run was made:
+  `git diff --name-only e511161..ce5a84f -- data results docs/F6_utilisation.csv scripts/measure` is
+  empty.
+* **R1225 / R1223 -- OPEN, ESCALATED AND UNCHANGED, CORRECTLY.** Rung 4 is skipped in CI, so the
+  staleness guard did not run there; rung 6's single red is `test_R756...`, named in CI's own log
+  above. No `data/` or `results/` path is in this diff. **Fifth round in which the cheap wrong repair
+  was available and not taken.** This is still the good part of the step and it is what GI6 sends to
+  Xabier.
+* **R1217, R1218 -- open, not answerable here.** R1218 becomes blocking when step 2 writes the
+  tolerance entry. **R1212, R1203, R1204, R1222, R1224 -- reviewer-side or Xabier's; no action asked
+  of you. R1234, and R1239's first exit -- WITHDRAWN, both mine, both stay withdrawn. R835 --
+  `unchanged, R2` (GE3), one line, not re-measured.**
+* **R1230 -- your fourth instance is real and I confirm it.** What I would add is that the first
+  three and this one are not the same defect: the first three were a HEADER that trailed, which an
+  edit fixes, and this one is a COMMIT TIME, which no edit of the report's bytes can fix. That is the
+  measurement `CLAUDE.md` already records under EK3, and you quoted it correctly.
+
+## Findings
+
+**R1249. (BLOCKS) THE CLOSURE ARTIFACT'S "WHICH GATES PASS" TABLE PUBLISHES TWO OF ITS FIVE ROWS AS
+GREEN WHERE THE GATE IS RED AT THE COMMIT THAT PUBLISHES THEM, AND ONE OF THE TWO IS RED ABOUT
+R1243.**
+
+```
+claim  docs/closure/R2-step0.md:24-32 "Which gates pass" -- five rows, all green
+cmd    python scripts/check_carried.py ; echo "exit=$?"            (at ce5a84f, tree clean)
+out    check_carried: the newest report's Carried section omits R1243
+         verdict declares 29 findings; 28 are carried
+       exit=1
+cmd    python -m pytest -q -p no:randomly tests/test_report_carried.py
+       tests/test_report_numbers_are_sourced.py tests/test_report_guard_states.py
+out    8 failed, 481 passed in 108.36s
+cmd    gh run view 44187721362 --log-failed | grep -c "^FAILED"    (e71ecd5's own run)
+out    8
+cell   ONE VARIABLE, the report's content. Nothing in `floatfea/`, `tests/` or `scripts/` moves
+       between the two commits -- `git diff --name-only e71ecd5 ce5a84f` is two docs paths:
+         at e71ecd5   git show e71ecd5:docs/reports/R2/step-0.md | grep -c R1243   ->  4
+                      check_carried  ->  29 of 29, exit 0
+         at ce5a84f   grep -c R1243 docs/reports/R2/step-0.md                      ->  0
+                      check_carried  ->  28 of 29, exit 1
+rule   CP3 -- "a figure is pasted from the run that produced the artifact it is pasted into, and
+       the pasting is the LAST edit ... if an edit follows the paste, the paste is void"; CZ1 (ii),
+       which requires the outputs AT the closure commit's own sha; EG3 (i), which requires a
+       boundary red to be recorded RED WITH ITS CAUSE NAMED rather than reported as a pass
+judge  Row `:30` was TRUE at `e71ecd5` and the next commit voided it. Row `:29` was true at
+       NEITHER -- `468 + 24 passed` means 492 passed and 0 failed, and `e71ecd5`'s own CI run lists
+       eight reds in those same three files, so that figure was taken before the commit it
+       describes existed, which is CZ1's reusable half verbatim. Rows `:31` and `:32` I measured
+       and they are TRUE at ce5a84f (85 passed; ruff, black and mypy clean). Row `:28` carries its
+       own sha and is honest about being `a3a30d2`'s.
+```
+
+**The silently wrong result.** `docs/closure/R2-step0.md` is the one file written to answer "which
+gates passed when step 0 closed" -- `CLAUDE.md`'s working agreement mandates the artifact for exactly
+that -- and an auditor asking that question is told five gates were green. Two were red at the commit
+publishing the answer: the three report-guard files at `8 failed, 481 passed`, and the carry gate at
+`exit 1`, failing about **R1243, the step's only open blocking item, which is to say the one item the
+carry mechanism exists to stop anyone dropping.** Nothing else in the artifact and nothing in the
+tree says so: `docs/closure/**` is outside `tests/test_tree_prose_consistent.py:99`'s `ROOTS`,
+outside the number-sourcing guard's domain, and the only automated reader of a closure artifact
+checks path existence. **This is CZ1's own failure mode with the artifact substituted for the
+report** -- "two classes of red shipped in `8e4238d` ... nothing between it and the next step's
+report measures it". The sentence at `:34-36` sits inside the same
+blind spot and I state its status precisely rather than lumping it in: *"The two failures are the
+whole of the FQ3 escalation ... neither is clearable by any edit of the implementer's"* is TRUE of
+`a3a30d2`, which the row above it names, and false of the commit publishing it, where the failures
+are ten and eight of them clear -- at a verdict. It is the row's operating point doing the work, and
+only one of the five rows carries one.
+
+*Closed when* every row of that table either states the commit it was measured at and its true result
+there, with the two boundary reds recorded red and traced per id as EG3 (i) requires, or is removed
+in favour of a pointer to where CZ1's outputs actually live. Measured after the last edit to the
+artifact rather than before it (CP3). One table, in the CZ1 (iv) follow-on that is owed anyway.
+
+**R1250. (BLOCKS) `tests/test_report_carried.py:3054` CANNOT SEE A STEP CLOSURE ARTIFACT, SO AT THIS
+CLOSING COMMIT THE TWO FC1 GUARDS PASS WHILE READING A WHOLE-SUITE FIGURE MEASURED THREE COMMITS
+EARLIER.**
+
+```
+claim  `Closes: R2/step-0` routes the CZ1 guards to the closure artifact's block (FK2)
+cmd    python -c "import sys;sys.path.insert(0,'tests');import test_report_carried as t;
+       print(t.MILESTONE, t.CLOSURE.name, t.CLOSURE.exists(), t._newest_verdict_closes());
+       print(t.cz1_record()==t._newest_revision(t.REPORT_TEXT), t._suite_line())"
+out    R2  R2.md  False  R2/step-0
+       True  ('a3a30d2', 3970, 2, 0)
+cmd    ls docs/closure/
+out    F2-step4.md F2-step5.md F2-step6.md F2-step7.md ... R1.md R2-step0.md
+       -- five artifacts named `<MILESTONE>-step<k>.md`, which is this repository's own convention
+cmd    grep -rn '"-step\|}-step\|-step{' tests/*.py scripts/*.py
+out    (no match)
+rule   `cz1_record`'s own docstring -- "Returns `""` when this increment is closed and the artifact
+       has no block, so the guards fail with their own messages rather than falling back to a step
+       report whose older line would answer in their place. That fall-back is R803, and it failed
+       GREEN."
+judge  The increment IS recorded closed and the artifact DOES exist -- under the step name, which
+       `f"{MILESTONE}.md"` cannot produce. So `CLOSURE.exists()` is False, the router takes its "no
+       artifact" branch, and the guards read the step report. **The collection the check inspects
+       cannot contain the artifact it is looking for**, which is a fourth instance of the family the
+       comment eighteen lines above that constant enumerates three instances of.
+```
+
+**The silently wrong result.** At the closing commit `test_the_report_carries_a_WHOLE_SUITE_count` is
+GREEN on `Whole suite at a3a30d2: 3970 passed, 2 failed, 0 skipped` -- `a3a30d2` is verdict 64's
+commit, three commits before the artifact -- and `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` is
+GREEN on the report's CI table, which describes `e87b2c0`'s run. Both guards exist to hold a CLOSURE
+COMMIT's CZ1 record in place. At a closure commit they report green about a commit that is not the
+one they are supposed to be measuring, and **a closure commit that shipped CZ1's outputs nowhere at
+all would get exactly the same green.** It is also the mechanical reason this closure commit had
+nowhere legal to put CZ1 (ii)-(iv): the artifact is invisible to the router, the report is sealed by
+EK3, and so the outputs went into a commit message, which no guard and no reader of the record reads.
+
+*Closed when* `CLOSURE` is resolved from the `Closes:` value -- `R2/step-0` giving
+`docs/closure/R2-step0.md`, falling back to `docs/closure/<MILESTONE>.md` -- so that an existing step
+artifact WITHOUT a `<!-- cz1-closure-outputs -->` block reaches the `""` branch the docstring already
+describes instead of the report. **Solved in both directions as EH4 requires**, one measurement each:
+a step artifact WITH a block routes to it and the suite line is read from there, and one WITHOUT a
+block turns those two guards RED rather than green. This is the repair of a guard that passes false,
+not an extension and not new apparatus (EK2), and FF0 puts it in the next commit.
+
+**R1251. (ledger, FR1 -- no wrong result follows) THE "EIGHT LINES" FIGURE IS WRONG AT EVERY COMMIT IN
+PLAY, AND IT SITS IN THE TWO PLACES CW0's ENFORCEMENT CANNOT REACH.**
+```
+cmd    grep -n "AND RUNG 6 RUNS BEFORE RUNG 4 (CH3)\|asserts that position\|R1243 REVERTS\|
+       the comment eight lines above" .github/workflows/ci.yml
+out    496 (CH3 begins) | 502 (CH3's last line) | 527 (the new block begins)
+       528: "# comment eight lines above this one says so, and I reordered the steps without"
+cmd    git show 2e08766:.github/workflows/ci.yml | grep -n 'name: "ladder 6'
+out    527    -- the step the reorder moved, so the distance from CH3's last line (502) is 25 and
+              from its first (496) is 31. It is 8 at no commit in this step.
+rule   CW0 -- a claim about this repository in a comment is a test, a triple, or deleted
+```
+`docs/closure/R2-step0.md:98` carries the same figure ("recorded eight lines from the edit"), and my
+own verdict 65 wrote "four lines above the line I edited", which is also not 25. **Nobody measured it
+and three documents repeat it.** The reason nothing caught it is worth the line:
+`tests/test_tree_prose_consistent.py:99`'s `ROOTS` is
+`("floatfea","tests","scripts","docs/milestones","docs/verification")`, so `.github/` and
+`docs/closure/` are both outside the one guard that enforces CW0 -- and those two files carry some of
+the densest claim-prose in the repository. **Recorded, and explicitly NOT an apparatus request:** it
+goes on `docs/milestones/F2a.md`'s frozen list if it goes anywhere.
+
+**R1252. (ledger) THE ARTIFACT'S ROUND ARITHMETIC DOES NOT ADD UP, AND ITS "NINETEEN" IS A DIFFERENT
+QUANTITY.**
+```
+cmd    sed -n '5,6p' docs/closure/R2-step0.md
+out    "It consumed all three ES0 revisions and five reviewer rounds (three interim checks, which
+        count against none, plus three reviewed revisions)."             -- 3 + 3 = 6
+cmd    grep -c "^# Review" docs/reviews/R2/step-0.md ;
+       grep -c "^# Review â€” R2 step 0 â€” ES0 INTERIM CHECK" docs/reviews/R2/step-0.md
+out    7   4    -- 3 revision entries plus 4 interim entries over 3 distinct interim commits
+                  (`3d24e1c` carries two, the second an addendum to the first)
+cmd    grep -oE "R1[0-9]{3}\. \(BLOCKS\)" docs/reviews/R2/step-0.md | sort -u | wc -l
+out    10   -- against `:168`'s "nineteen blocking findings"
+```
+`19` does occur in that file, as the count of RED REPORT-GUARD IDS at `91c2d2e` -- "19 failed, 320
+passed", with CI's identical selection giving the same nineteen. A count of red ids and a count of
+blocking findings are different quantities. I state the measurement and attach no cause to it.
+
+**R1253. (ledger) THE ARTIFACT DROPS THE SCOPE ON THE ITERATION FIGURE, AND IT ERRS IN THE SAFE
+DIRECTION.** `docs/closure/R2-step0.md:17-19` reads "Loop gain `g = kÂ·m_steel/m_body` is 0.53-0.77,
+so the loop converges **monotonically** and 11-14 iterations are needed to reach D3's 0.5 % band."
+The report's own table is per group and scopes it correctly.
+```
+rule   docs/reports/R2/step-0.md:109-113 -- n = ln(0.005/e0)/ln(g), e0 = 0.178
+out    platform 2.5/0.18  g 0.767  13.5 | platform 3.0/0.12  g 0.732  11.4
+       hub 2.5/0.18       g 0.673   9.0 | hub 3.0/0.08       g 0.535   5.7
+cmd    re-derived independently from the four gains: ln(0.005/0.178)/ln(g)
+out    13.47, 11.45, 9.01, 5.71      -- the report's table is right to the digit
+```
+`11-14` is the PLATFORM range; the artifact attaches it to the whole gain range, where two of four
+rows are 5.7 and 9.0. It over-states iterations for the hubs, so the error is conservative, and that
+is why it is a ledger row and not a block.
+
+**R1254. (ledger, FR1's second non-blocking class -- a needle too narrow where no wrong result
+follows) RUNG 3's PHANTOM-CITATION GUARD CANNOT SEE `scripts/`, WHICH IS WHERE THIS ARTIFACT'S
+CITATIONS MOSTLY ARE.** `tests/verification/rung3/test_closure_evidence_exists.py:45`'s `_PATH`
+matches `(?:tests|floatfea|docs)/...\.(?:py|md)` only. Measured on a plant: replacing the cited
+`scripts/untouched_sites.py` with `scripts/untouched_sites_v2.py`, which does not exist, leaves **200
+passed, 0 failed** -- so the G1.1 failure that file's own docstring names ("a gate recorded PASS
+against a phantom test") is invisible for `scripts/`, `data/`, `results/` and `.github/`. No wrong
+result follows today: I checked all ten path citations in the artifact one by one and all ten
+resolve. **Widening the needle would be an EXTENSION of an existing guard, which EK2 forbids, so this
+is recorded and routed to `docs/milestones/F2a.md` rather than requested.**
+
+**R1255. (ledger, same class) THE LADDER's STEP ORDER IS ASSERTED FOR RUNGS 3, 4 AND 6 AND FOR
+NOTHING ELSE, SO RUNG 1 CAN BE MOVED TO THE END OF THE JOB AND THE TREE STAYS GREEN.** This is the
+adversarial case on this commit's own subject: the diff chose rungs 4 and 6, so I moved the rungs it
+did not choose.
+```
+rule   tests/test_ci_determinism_gate.py:197 --
+       where = {n: i for i, step in enumerate(order) for n in ("rung3","rung4","rung6") if n in step}
+       -- and the two assertions beneath it, at :199 and :204, are the only position claims there are
+cmd    five plants, one at a time, against tests/test_ci_determinism_gate.py +
+       test_ci_ladder_gating.py + test_ci_workflow_is_wellformed.py + test_ci_runs_the_whole_suite.py
+out    BASELINE                                  87 passed, 0 failed
+       rungs 1 and 3 swapped                     87 passed   NOT CAUGHT
+       rung 1 moved to the END, after rung 5     87 passed   NOT CAUGHT
+       rung 2 moved after rung 6                 87 passed   NOT CAUGHT
+       `full:tests/regression` moved onto rung 4 87 passed   NOT CAUGHT
+       rung 5's step deleted                     2 failed    CAUGHT -- and by
+         `assert len(order) >= 6` at :196 plus the naming check, not by anything about position
+```
+`CLAUDE.md` section Testing says "a failure at a low rung makes higher rungs uninterpretable", and
+CK0's comment says the step order IS that rule now that six jobs are six steps -- so the rule is
+asserted for half the ladder. **The fourth plant is the one worth naming: moving
+`full:tests/regression` onto rung 4's step is R1243's own silently-wrong-result mechanism, reproduced
+in a single line, reaching a green tree.** **Not blocking: no step in this diff moves, every rung's
+position at the judged commit is CH3's, and no wrong result follows today.** Recorded with the batch
+and routed rather than requested.
+
+## The four rulings you asked for
+
+1. **Is R1243 closed?** The CONDITION is discharged -- exit 1 taken; the order verified to be CH3's
+   by byte diff, by line numbers at the pre-reorder commit and by CI's own step list; the record
+   present in the artifact; the two contradicting comments reconciled; and the half of my condition
+   that named a sealed report site WITHDRAWN by me. **The FORWARD item is not closed and was never
+   going to be closed here:** chaining hides a rung in either order, and it carries into step 1 by
+   name, still blocking.
+2. **Is the EK3 correction the right shape?** Yes, and the restore is exact -- `git diff 0fb8c93 HEAD
+   -- docs/reports/` is 0 lines, which I ran rather than accepted, and `step-0-answers.json` is
+   restored with it. **One thing should also have moved and did not:** R1245's and R1246's repairs
+   lived in the report, the restore reverted them, and the hand-back still reports them done. The
+   artifact is now their only legal home. Nothing else should have moved: touching the report was
+   unavoidable once `e71ecd5` existed, and the red it leaves is the commit-time comparison, which no
+   arrangement of bytes could have avoided.
+3. **Is anything in `docs/closure/R2-step0.md` wrong?** Yes -- R1249, which blocks, and the ledger
+   rows R1251-R1253. What is RIGHT, because a list of defects is not an answer: all ten of its path
+   citations resolve, measured one by one; every engineering figure in it traces to the reviewed
+   report, and three I re-derived independently -- the gain/iteration table to the digit,
+   8 x 25.93 min = 3.46 h against its "â‰ˆ 3.5 h", and 11-14 x 25.93 min = 4.75-6.05 h against the
+   report's "4.8-6.0 h"; the two ladder rows in it and in `ci.yml` are confirmed from the CI logs
+   themselves (1276+66+325+477 = 2144 collected, 1 failed, so 2143 passed; 1276+66+325+345 = 2012,
+   so 2011 passed; -477/+345 = -132 with the same `1 failed`); the `untouched_sites.py` docstring
+   quotation is verbatim and that script predates the step (`git log --diff-filter=A` gives
+   `8beb0e4`); and (d)'s direction is right -- a lighter system needs ballast ADDED to hold draft.
+4. **Is the carried list right?** R1243 to step 1 and R1232 to the write run: correct. R1248 to step
+   2: correct, and checked against `docs/milestones/R2.md:313-330` rather than accepted. R1245 and
+   R1246: **misrouted in the one way that mattered -- they were routed to the report, which EK3
+   seals.** They go to the artifact. R1247: reviewer-side, and I added a fourth hole to it myself.
+
+## Tolerances touched
+
+**None, measured twice.** `git diff e511161..ce5a84f -- floatfea/tolerances.py` is **0 lines** and
+`git diff e511161..ce5a84f | grep -cE '^[-+].*_COUNTER'` is **0**, so **EU1 does not arise** -- and I
+ran the apparatus at configurations the diff did not choose anyway, which is where R1255's five
+ladder plants came from. The one tolerance-shaped thing still implicated has not moved: `--check`'s
+`np.array_equal` with no threshold, by Q8's rule. **If any answer to the escalation introduces a
+tolerance on that comparison, that is a widening and it is refused.** R1218's row-1 form question
+becomes blocking at step 2.
+
+## Corpus
+
+**Two batches, committed separately from this verdict.** GC3 left the pause expired, so the batches
+are my own call under GA3's length target.
+
+**(1) `tests/corpus/closure_artifact_published_as_green.txt` -- 38 entries, all new. 10 measured this
+round, 1 CAUGHT, 9 reach a green tree.** It is the axis none of the existing corpora has.
+`tests/corpus/report_record_freshness_and_completeness.txt` is the right family -- "a GENERATED record
+that was TRUE WHEN GENERATED and is FALSE WHEN READ" -- and `grep -c "docs/closure"` over it is **0**;
+all 26 of its entries are about a step report, as are those of `report_ci_section.txt`,
+`report_numbers_sourced.txt` and `report_guard_states.txt`. The closure artifact is the weaker half of
+that pair: the report has three guard files parametrised over it and the artifact has none. Baseline
+for the selection used (`rung3/test_closure_evidence_exists.py` + `test_collected_set_golden.py` +
+`test_tree_prose_consistent.py`): **200 passed, 0 failed.** The nine that reach a green tree are a
+wrong number in a gate row, a gate row inverted while still reading as a pass, a row naming a gate
+that does not exist, the whole-suite row deleted, a sha that is not a commit, an engineering figure
+moved by an order of magnitude, a false `claim:/cmd:/out:` triple appended to the artifact, a row
+attributed to a different commit, and a cited `scripts/` path that does not exist. **The one catch**
+is removing every path citation, which `test_the_artifact_cites_evidence_at_all[R2-step0]` sees,
+because it is an existence check.
+
+**(2) `tests/corpus/ladder_step_order_the_gate_does_not_assert.txt` -- 13 entries, all new. 5 measured,
+1 CAUGHT, 4 reach a green tree.** The counts are in R1255. **The baseline subtraction is part of the
+measurement and this time it is clean**: unlike last round, `test_ladder_6_is_not_gated_behind_a_rung_
+that_is_red_under_Q8` is green at the judged commit because of the revert, so a plant that reddens is
+unambiguously caught and a plant that does not is unambiguously missed. That is the one thing the
+revert bought the corpus, and it is worth saying, because last round four workflow plants "looked
+caught" against an already-red tree.
+
+**What I ran beside the batches** is the recorded substitute, both halves, and **both of this round's
+blocking findings came out of them rather than out of reading the diff.** A continuum over the
+parameter space a decision rule guards: the `Closes:`/`CLOSURE` router, swept over the four states its
+own comment enumerates plus the fifth nobody had -- an artifact that exists under the step's name --
+which is R1250. And a regeneration check on a published deliverable: the closure artifact itself,
+re-measured gate by gate at its own commit, which is R1249.
+
+## Next step opens when
+
+**STEP 0 STAYS CLOSED (DD1). THIS HOLD IS ON THE CLOSURE COMMIT AND NOT ON THE STEP**, and it consumes
+none of step 0's three ES0 revisions (EB4). Verdict 65's `Closes:` line is untouched and is still the
+one the FC1 router reads; **this verdict carries no `Closes:` line, as FK1 requires of a verdict that
+closes nothing.** Step 1 is held by GI6 until Xabier confirms or overrides D1-D4, and by R1243,
+independently of anything here.
+
+1. **R1249 and R1250, in the CZ1 (iv) follow-on commit that is already owed** -- one table and one
+   path resolution, each with the inversion EH4 asks for. CZ1 (iv) says a closure commit is not
+   finished until a pushed run at its own sha, or at the follow-on's, is green or has every red
+   traced. **`ce5a84f`'s run at `44196001239` has concluded FAILURE and I have traced all nine of
+   its reds above, so (iv) is satisfied on the CI half by this verdict rather than by a follow-on**
+   -- what the follow-on owes is the two findings and a run of its own.
+2. **CZ1 (ii)-(iv) at `ce5a84f`'s own sha, in the place CZ1 names for a closed report: step 1's
+   report `Carried`** -- "where that report is already closed, in the next report's Carried" -- and
+   not in a commit message. **Three of the four outputs, and the `gh run list` of CZ1 (iii), are
+   already measured at that sha in my Tests and CI sections above and may be taken from there; the
+   one still owed is your own `pytest -q` at `ce5a84f`, which you said was running.** When you paste
+   it, the nine reds above are what it should contain and nothing else -- a tenth is CZ1 (iv).
+3. **R1245 and R1246 move to `docs/closure/R2-step0.md`**, the only home EK3 leaves them. Two lines,
+   fixed once as part of the list and not re-reviewed item by item.
+4. **R1243 appears by name in step 1's `Carried` and stays blocking there** until the chaining is
+   fixed and that fix is reviewed.
+5. **The escalation's conditions are unchanged.** Do not clear the staleness guard by regenerating the
+   npz; do not clear R1223 by regenerating the deliverable against a red gate. Five rounds of
+   declining the cheap wrong repair is still the best evidence this step has produced.
+6. **Two report sites are DECLARE-ONLY, and I name the constraint because I created the sites.**
+   `docs/reports/R2/step-0.md:1616` and `:1629` are named in this verdict and EK3 forbids touching
+   them, so step 1's report declares them `**no change** -- EK3` rather than reaching for an edit it
+   is not allowed to make.
+
+**Nothing here is a STOP, and I considered it on the ladder.** No `floatfea/` file is in this diff; no
+tolerance moved; rungs 1, 2 and 3 are SUCCESS in CI at `e71ecd5`'s own run over code byte-identical to
+the judged commit's in every path the ladder reads; the locked plan is untouched and faithful to GI.
+Rung 4's red is the provenance comparison that is escalated, and rungs 4 and 5 did not execute, which
+is R1243 carried rather than a rung failure.
+
+**And I disagree with nothing in the criterion.** FR1 did the work again: five of this round's seven
+findings are single lines here instead of rounds, and the two that block are each given the sentence
+FR1 asks for -- a closure record that answers "which gates passed" with two gates it cannot have seen
+pass, and a pair of gates reporting green about a commit three earlier than the one they exist to
+measure. **What I would say to Xabier if asked, in one sentence, is not a criterion complaint:** the
+honest account section of the artifact is the best thing in this step's record, and the table four
+screens above it is the worst, and they are the same document.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R2 step 0
 Reviewed commit: 0fb8c936e2043d954d6661140b03fbdabcb27273
 **Reviewed commit: `0fb8c936e2043d954d6661140b03fbdabcb27273`.**
 Closes: R2/step-0
