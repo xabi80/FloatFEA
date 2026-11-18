@@ -2,6 +2,130 @@
 Reviewed commit: ce5a84fefe1f00cf98124b8ab2bb5a97fd0ef3d5
 **Reviewed commit: `ce5a84fefe1f00cf98124b8ab2bb5a97fd0ef3d5`.**
 Verdict: HOLD
+Scope: **ADDENDUM to the EQ0 review BELOW -- same reviewer, same branch, same judged commit,
+accumulating under DX2. It counts against no round (EB4) and closes nothing, so `--closes` is
+correctly absent (FK1), and the HOLD and both blocking findings are UNCHANGED.** It exists because
+two measurements landed after I had written the entry below, and one of them contradicts what that
+entry says about itself. **CP3 is the rule I was applying to the implementer four screens above --
+"if an edit follows the paste, the paste is void" -- and the symmetrical case is a measurement that
+arrives after the text.** Correcting it here is cheaper than leaving a reviewer's own figure wrong.
+
+**(1) MY WHOLE-SUITE RUN DID FINISH, AND THE ENTRY BELOW SAYS I ABANDONED IT. THE ENTRY IS WRONG
+ABOUT THAT AND THE RESULT IS THE TEN I PREDICTED, BY NAME.**
+```
+cmd    python -m pytest -q -p no:randomly          (my own worktree at ce5a84f)
+out    10 failed, 4456 passed, 2 warnings in 3575.01s (0:59:35)
+       FAILED tests/regression/test_f6_deliverable_agrees_with_itself.py::test_R756_...
+       FAILED tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one
+       FAILED tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]
+       FAILED ... [non_numeric_step_suffix] [superscript_digit_step_number]
+              ... [draft_suffix_beside_a_step_report] [step_number_is_the_empty_string]
+              ... [verdict_amended_after_the_commit_the_report_answers] [zero_padded_step_number]
+       FAILED tests/verification/rung4/test_f4_g41_dynamic.py::
+              test_the_npz_is_NOT_STALE_against_the_code_that_generated_it
+```
+**Exactly the nine CI produced plus the npz staleness guard, which CI could not reach because rung 4
+was skipped.** So every red in the tree at the judged commit is now accounted for from BOTH sides:
+eight boundary reds under the FS1/FT1 predicate, and the escalation's two, each named. **CZ1 (iv)
+does not fire.**
+
+**THE CAVEAT, STATED RATHER THAN BURIED, BECAUSE THE RUN OVERLAPPED TWO COMMITS OF MY OWN.** The
+session ran 15:07 to 16:06:36; my corpus commit landed 15:56:49 and my verdict commit 16:06:10, so
+the run finished 26 seconds after a commit that changes a file three of its tests read. Two
+measurements say the result is nonetheless a measurement of `ce5a84f`:
+```
+claim  the corpus commit adds no collected id
+cmd    pytest -q -p no:randomly tests/test_collected_set_golden.py   (with both new files present)
+out    106 passed
+claim  the eight report-guard ids ran BEFORE the verdict commit
+cmd    pytest -q -p no:randomly <the three report-guard files>       (at 3e34953, the verdict commit)
+out    489 passed, 0 failed
+judge  at the verdict commit those eight PASS, so had they run after 16:06:10 they would have
+       passed. They failed. Therefore they ran against `ce5a84f`'s tree, which is the only thing
+       the count had to be about. I am not claiming more than that: a run whose session spans a
+       commit is not a clean measurement, and the right fix is the ordering, which is why the
+       entry below says what it says about CZ1's reusable half.
+```
+
+**(2) EG3 (ii), MEASURED AT MY OWN VERDICT COMMIT. ALL EIGHT BOUNDARY REDS CLEAR.**
+```
+cmd    git checkout --detach 3e34953 ; pytest -q -p no:randomly tests/test_report_carried.py
+       tests/test_report_numbers_are_sourced.py tests/test_report_guard_states.py
+out    489 passed in 114.81s     (481 passed + the 8 that were red = 489, to the id)
+```
+State (1)'s half is the reviewer's to measure and this is the third consecutive round in which it
+has been. **It also settles the boundary-state reading in the entry below by measurement rather than
+by argument:** the clearing event is the VERDICT COMMIT, not a new report revision, which is why I
+filed it under limb two of FS1/FT1 rather than under EG3 state (1).
+
+**(3) AND THE PASS-COUNT DIFFERENCE AGAINST YOUR OWN RUN IS R1249's CELL, INDEPENDENTLY.** You
+measured `10 failed, 4459 passed` at `e71ecd5`; I measure `10 failed, 4456 passed` at `ce5a84f`.
+Same ten, three fewer ids.
+```
+cmd    pytest -q -p no:randomly --collect-only, at BOTH commits, on the same three files
+out    e71ecd5   test_report_carried + test_report_numbers_are_sourced  468 tests collected
+                 test_report_guard_states                               24 tests collected
+       ce5a84f   test_report_carried + test_report_numbers_are_sourced  465 tests collected
+                 test_report_guard_states                               24 tests collected
+cell   ONE VARIABLE, the report's content, from the two whole-suite runs and the two collections:
+         e71ecd5   4469 ids total   three report-guard files: 492 ids
+         ce5a84f   4466 ids total   three report-guard files: 489 ids
+       -3 in both places, and the three are the parametrised ids the R1243 rows in e71ecd5's
+       report created and the EK3 restore removed.
+judge  **SO THE ARTIFACT'S `468 + 24 passed` IS NOT A STALE PASS COUNT -- IT IS THE COLLECTED ID
+       COUNT PUBLISHED AS A PASS COUNT, AND I MEASURED IT RATHER THAN INFERRING IT.** `468` and
+       `24` are exactly what `--collect-only` prints at `e71ecd5`, where the RESULT was 484 passed
+       and 8 failed. A row that reports "collected" as "passed" is green by construction whatever
+       the suite does, which is a sharper defect than staleness and it is the same row. R1249
+       stands, with its mechanism now measured from a second direction.
+```
+
+## Carried
+
+**Everything in the entry below stands unchanged**, and nothing here answers or withdraws any of it.
+**R1249 and R1250 remain the two blocking findings**; R1243's condition remains discharged with its
+forward item carried into step 1 by name and still blocking; R1245 and R1246 remain OPEN against a
+hand-back that reports them answered; R1251-R1255 remain ledger rows; the escalation's R1225 and
+R1223 remain open and escalated, and the whole-suite run above is the first measurement this step
+has had of BOTH their reds in one place, since CI can only ever see one of the two while rung 4 is
+skipped. **R835: unchanged, R2 (GE3).**
+
+## Findings
+
+**No new findings.** Three corrections, all to my own entry, all above: the whole-suite run finished
+and the entry says it did not; EG3 (ii) is measured at `489 passed, 0 failed`; and the pass-count
+difference against your run closes R1249's cell from a second direction rather than opening anything.
+
+**One thing I will not dress up.** The defect in my own entry is the same shape as the one I blocked
+you for -- a figure that was true when written and false when read, with nothing in the tree to say
+so. Mine was cheap to catch because the measurement was still running and I was watching it. Yours
+was cheap to catch too, which is the point of R1249 and not a complaint about the artifact.
+
+## Tolerances touched
+
+**None, and the measurement is unchanged from the entry below:** `git diff e511161..ce5a84f --
+floatfea/tolerances.py` is 0 lines and `git diff e511161..ce5a84f | grep -cE '^[-+].*_COUNTER'` is 0,
+so EU1 does not arise. No tolerance appears anywhere in the whole-suite failure list above.
+
+## Next step opens when
+
+**Unchanged from the entry below, items 1 to 6, except that item 2 is now smaller.** CZ1 (ii)'s
+`pytest -q` at `ce5a84f` is in this addendum -- `10 failed, 4456 passed`, with the caveat stated and
+every id named -- and CZ1 (iii)'s `gh run list` at that sha is in the entry below, concluded. **So
+what step 1's report `Carried` owes for CZ1 is a pointer to those two measurements and your own
+confirming run, not a fresh set.** Step 0 stays CLOSED (DD1); this remains a HOLD on the closure
+commit and not on the step; R1249 and R1250 go in the CZ1 (iv) follow-on.
+
+
+---
+
+<!-- EARLIER ROUNDS, VERBATIM. Appended by scripts/write_verdict.py under
+     DX2: each round is added and no prior round is rewritten or removed. -->
+
+# Review — R2 step 0
+Reviewed commit: ce5a84fefe1f00cf98124b8ab2bb5a97fd0ef3d5
+**Reviewed commit: `ce5a84fefe1f00cf98124b8ab2bb5a97fd0ef3d5`.**
+Verdict: HOLD
 Scope: **the EQ0 REVIEW OF R2 STEP 0's CLOSURE COMMIT**, two commits -- `e71ecd5`, which changes a
 gate (`.github/workflows/ci.yml`), and `ce5a84f`, its EK3 correction. EQ0 puts it in scope because a
 gate moved; **EB4 makes it cost no round**, and under **DD1 step 0 remains CLOSED by verdict 65
