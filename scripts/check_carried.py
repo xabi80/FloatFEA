@@ -97,10 +97,19 @@ def _carrier(verdict: Path, report: Path) -> Path:
     """
     closes = _closes(verdict)
     m = re.fullmatch(r"(\w+)/step-?(\d+)", closes.strip()) if closes else None
+    # R1261, THE SIXTH INSTANCE: `tests/test_report_carried.py` checks that `Closes:`
+    # names THIS milestone before routing -- `Closes: F7` closes another increment and
+    # must not route -- and this reader did not. One predicate, two readers, diverging on
+    # a second clause after they were made to agree on the first.
+    if m and m.group(1) != _active_step()[0]:
+        return report
     if m:
         artifact = ROOT / "docs" / "closure" / f"{m.group(1)}-step{int(m.group(2))}.md"
-        if artifact.is_file():
-            return artifact
+        # R1256, SECOND READER. `if artifact.is_file(): return artifact` else the report
+        # meant an ABSENT artifact fell back to the step report and the gate went green
+        # about a file the closed step can no longer change. When `Closes:` names this
+        # increment the artifact is OWED, so its absence is the absence of the record.
+        return artifact
     return report
 
 
@@ -191,6 +200,22 @@ def main(argv: list[str] | None = None) -> int:
     # artifact is where the carried list lives. Open step -> the report, unchanged.
     carrier = _carrier(verdict, report)
     if carrier != report:
+        if not carrier.is_file():
+            # R1256: REFUSE, DO NOT RAISE. The first version of this repair let
+            # `_read` hit `FileNotFoundError`, and this file's own docstring says why
+            # that is not acceptable -- "a guard that raises is a guard that gets
+            # removed". The absence of an owed artifact is a reportable state, and the
+            # message has to say which file and why it is owed.
+            print(
+                f"check_carried: the newest verdict closes {_closes(verdict)}, so "
+                f"{carrier.relative_to(ROOT).as_posix()} is OWED and does not exist. "
+                "A closed step's Carried list lives in its closure artifact, because "
+                "EK3 seals the report -- so there is nowhere left to read it from, and "
+                "falling back to the report would report green about a file the closed "
+                "step can no longer change.",
+                file=sys.stderr,
+            )
+            return 1
         print(f"check_carried: the step is CLOSED, so reading {carrier.name}")
     section, carried = _newest_report_carried(carrier)
     if not section.strip():

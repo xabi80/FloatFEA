@@ -3128,8 +3128,28 @@ def cz1_record() -> str:
     # closes another one and must not route.
     if closes.split("/", 1)[0] != MILESTONE:
         return report
+    # R1256. AN ABSENT ARTIFACT REACHES THE SAME BRANCH AS A PRESENT-BUT-EMPTY ONE.
+    #
+    # This read `if not CLOSURE.exists(): return report`, so the repair that fixed the
+    # present-but-empty cell left its SIBLING green. Measured in a probe at `5901738`,
+    # one variable -- whether `docs/closure/R2-step0.md` exists -- with `Closes:`, the
+    # report and the code untouched in both halves:
+    #
+    #   artifact EXISTS, no block  ->  ""              ->  2 failed, 1 skipped   RED
+    #   artifact ABSENT            ->  the REPORT       ->  3 passed             GREEN
+    #
+    # And the decisive cell is the state every FUTURE step closes in -- artifact absent
+    # AND the report's `Carried` complete: `check_carried` exit 0, the three FC1 guards
+    # all pass, `_suite_line()` reading the report's own older line. So a closure commit
+    # that creates no artifact publishes NO CZ1 RECORD AT ALL and the tree is green,
+    # which is R1250's own sentence: "a closure commit that shipped CZ1's outputs nowhere
+    # at all would get exactly the same green."
+    #
+    # When the newest verdict's `Closes:` names THIS increment, an artifact is OWED. A
+    # missing one is the absence of the record, not a reason to read a different file --
+    # the same R803 fall-back the docstring above says "failed GREEN".
     if not CLOSURE.exists():
-        return report
+        return ""
     found = _CZ1_BLOCK.search(CLOSURE.read_text(encoding="utf-8", errors="replace"))
     return found.group(1) if found else ""
 

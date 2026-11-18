@@ -180,6 +180,9 @@ closed step's list can still gain a row (R1250).*
 | R1223, R1225 | **open, escalated** | **Xabier.** One item: the committed npz does not regenerate from this tree, FQ3 ruled the case in advance, and the deliverable red is downstream of the same cause |
 | R1232 | open | **the write run**, not this step: `pin_threads()` cannot be called below the module's own numpy import, so the environment is recorded in the provenance and not held |
 | R1248 | open | **step 2.** `scripts/export_buoy_centers_ref.py` checks the stable tree's NAME and never its TAG |
+| R1256 | **answered** | §22 -- an absent artifact now reaches the `""` branch in both readers, so a closure commit that creates no artifact can no longer publish nothing and stay green |
+| R1261 | **answered** | §22 -- the sixth two-readers instance: `check_carried` now checks the milestone before routing, as the guard already did |
+| R1257, R1258, R1259, R1260, R1262 | ledger, carried to **step 1** | figure wording, two routing pointers, the lock-file citation, and the block's `(ii)-(iv)` label carrying (ii) plus a run census. None can produce a wrong result; all are in this artifact's own prose and step 1's report records them |
 | R1249, R1250 | **answered in this commit** | the table above, and the router in both of its readers |
 | R1251, R1252, R1253, R1254, R1255 | ledger | figure and needle corrections in this artifact, below |
 | R1244, R1245, R1246, R1247 | answered | in this artifact, above |
@@ -280,8 +283,11 @@ judge  **THE PREDICTION IS REFUTED BY ITS OWN COMMIT'S RUN: one red, not two.** 
        Nothing would have said so: `ci_section.py` reads a JOB's conclusion and parses
        `run_rung:` lines, and a skipped STEP emits no such line.
        **A general principle was appealed to over a specific, measured, gated ruling
-       recorded TWENTY-FIVE lines from the edit** -- `ci.yml:528` against the edit, measured,
-       and "eight" was wrong at every commit in play. The distance is not the point and
+       recorded THIRTY-ONE lines from the edit** -- CH3 at `ci.yml:496`, the reverting
+       comment at `:527`, measured with a command rather than counted by eye. **"Eight"
+       was wrong and so was the "twenty-five" that replaced it**: I corrected an
+       unmeasured figure with another unmeasured figure, in the paragraph about
+       unmeasured figures. The distance is not the point and
        getting it wrong twice in the same sentence is: a figure in `.github/` and one in
        `docs/closure/` are both outside `test_tree_prose_consistent.py`'s ROOTS, so
        nothing in the tree checks either. That is the whole error.
@@ -355,8 +361,10 @@ touched".
 ## The honest account of the round
 
 Six reviewer rounds -- three interim checks, which count against no round, and three
-reviewed revisions -- produced **ten findings carrying the blocking marker, and every one
-was real.** The "five rounds" and "nineteen blocking findings" this paragraph used to
+reviewed revisions -- produced **TWELVE findings carrying the `(BLOCKS)` marker, and every one was real** --
+`grep -cE "^\*\*R[0-9]+\.? \(BLOCKS\)" docs/reviews/R2/step-0.md` is 12, counted rather
+than recalled. The "ten" that stood here was the reviewer's figure for an earlier round
+and I carried it forward without re-running the count.** The "five rounds" and "nineteen blocking findings" this paragraph used to
 carry were both wrong: 3 + 3 is six, and nineteen was a count of RED TEST IDS rather than
 of findings. Two arithmetic errors in one sentence about the step's own cost. The
 implementer's own, recorded because the pattern matters more than any single instance:
@@ -384,3 +392,47 @@ Every one was caught by something that ran, and none reached a number in front o
 declined**: pushing through the `--check` refusal, and regenerating the F6 deliverable to
 agree with a red gate. Four rounds of not taking the cheap wrong repair is the best
 evidence this step produced.
+
+## 22. R1256 and R1261 -- the sibling cell, and the sixth instance
+
+**R1256 -- the repair closed the cell its condition named and left the sibling green.**
+R1250 made a present-but-empty artifact redden. An ABSENT one still fell back to the step
+report, and at a closure commit that is fully green.
+
+```
+cmd    one variable -- whether docs/closure/R2-step0.md exists -- in a detached probe,
+       with `Closes:`, the report and the code untouched in both halves
+out    artifact EXISTS, no block  ->  cz1_record() == ""   ->  2 failed, 1 skipped  RED
+       artifact ABSENT            ->  the REPORT's newest  ->  3 passed            GREEN
+rule   `cz1_record`'s own docstring: the fall-back "is R803, and it failed GREEN"
+judge  **A closure commit that creates no artifact would publish NO CZ1 RECORD AT ALL and
+       the tree would be green** -- `check_carried` exit 0 against the step report and all
+       three FC1 guards passing on a whole-suite line measured four commits earlier. That
+       is R1250's own sentence applied to the state R1250's repair did not reach.
+       When `Closes:` names this increment the artifact is OWED, so its absence is the
+       absence of the record and not a reason to read another file. Fixed in BOTH readers.
+cmd    the inversion, after the repair
+out    artifact PRESENT with a block  ->  3 passed; check_carried reads the artifact
+       artifact ABSENT                ->  2 failed, 1 skipped; check_carried REFUSES,
+                                          naming the owed path and why it is owed
+```
+
+**And the first version of that repair RAISED instead of refusing** -- `_read` hit
+`FileNotFoundError` -- which this script's own docstring forbids in as many words: *"a
+guard that raises is a guard that gets removed."* The absence of an owed file is a
+reportable state, so it reports.
+
+**R1261 -- the sixth instance of one predicate with two readers.** The guard checks that
+`Closes:` names THIS milestone before routing; `check_carried` did not. Two readers made
+to agree on the first clause and left diverging on the second, one commit after the fifth
+instance. The running list, which is the closure artifact's one reusable rule:
+
+| | the two readers | what diverged |
+|---|---|---|
+| R1221 | the mention filter | present in one site only |
+| R1240 | the Carried-section scoping | fixed in one, the pair unsatisfiable |
+| the site census | the touched-line predicate | mine was lenient; eight reds shipped |
+| R1250 | the closure router | `check_carried` had the same blind spot |
+| R1256's fifth | count vs names | **created by the repair, not missed by it** |
+| R1261 | the milestone clause | agreed on clause one, diverged on clause two |
+
