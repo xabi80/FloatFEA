@@ -44,7 +44,36 @@ ordinary staleness. These are different defects and lumping them together would 
 the one that cannot fail.
 
 <!-- cz1-closure-outputs -->
-**CZ1 (ii)-(iv) at `ce5a84f`, the previous closure commit, with the tree clean.** These are
+**CZ1 (ii) AND (iv) at `ce5a84f`, the previous closure commit, with the tree clean.**
+**R1262: this was labelled "(ii)-(iv)" and carried (ii) plus a run census, which cannot
+answer the one question (iii) exists for** -- whether the `guards and meta-tests` step was
+seen to RUN rather than skipped behind an earlier red. That answer is below, measured at
+`5901738` rather than asserted:
+
+```
+cmd    gh api .../actions/runs/44210685970/jobs -- the step list of each job
+out    lint, unit and guards        CONCLUDED SUCCESS, 14 steps
+         actionlint, ruff, black, mypy  success
+         unit tests                     success, 480 passed
+         guards and meta-tests          SUCCESS, 1406 passed     <- RAN, not skipped
+       the verification ladder      CONCLUDED FAILURE, 13 steps
+         ladder 1, 2, 3                 success
+         ladder 6                       FAILURE
+         ladder 4, 5                    skipped   (R1239's second exit, R1243 carried)
+       CI determinism x2            skipped -- unavailable, not passing
+rule   CZ1 (iii) -- the guards step must be SEEN to have run rather than skipped behind
+       an earlier red
+judge  **`guards and meta-tests` ran and passed for the first time in this step**, and the
+       arithmetic cross-checks the repair from CI's side rather than mine: `ce5a84f`'s same
+       step was 8 failed / 1398 passed, and 1398 + 8 = 1406. The eight cleared and nothing
+       else moved, on a machine neither the implementer nor the reviewer controls.
+       The whole run has ONE red: `test_R756_...`, which is R1223, the escalation. No
+       boundary state is claimed for it and none is needed -- it is an open blocking
+       finding, red by design, because the cheap wrong repair has been declined six rounds
+       running.
+```
+
+The outputs below are
 the outputs CZ1 owes and that `e71ecd5` put in a commit message instead -- which R1250 is
 the mechanical reason for: this artifact was invisible to the router, and the report is
 sealed by EK3, so there was nowhere legal left.
@@ -168,6 +197,14 @@ R1249 is about rather than a detail**: reverting the report to satisfy EK3 remov
 only mention, which turned `check_carried` red about the step's one open blocking item.
 <!-- /cz1-closure-outputs -->
 
+**AND CZ1's RECORD FOR `5901738` IS NOT IN THIS BLOCK, DELIBERATELY.** Two reasons, the
+second decisive: this block is the record for the closure commit `ce5a84f`, and
+overwriting it with a later commit's would delete the record R1249 was raised to produce;
+and a count taken at `5901738` cannot be written into `5901738`. Three of CZ1 (ii)'s four
+outputs and the whole of (iii) are already measured at that sha in the verdict file, and
+the owed `pytest -q` goes in **step 1's report `Carried`**, which is CZ1's own second
+clause for a closed report.
+
 ## Carried out of step 0
 
 *`scripts/check_carried.py` and `tests/test_report_carried.py` both read this section once
@@ -184,7 +221,8 @@ closed step's list can still gain a row (R1250).*
 | R1261 | **answered** | §22 -- the sixth two-readers instance: `check_carried` now checks the milestone before routing, as the guard already did |
 | R1257, R1258, R1259, R1260, R1262 | ledger, carried to **step 1** | figure wording, two routing pointers, the lock-file citation, and the block's `(ii)-(iv)` label carrying (ii) plus a run census. None can produce a wrong result; all are in this artifact's own prose and step 1's report records them |
 | R1249, R1250 | **answered in this commit** | the table above, and the router in both of its readers |
-| R1251, R1252, R1253, R1254, R1255 | ledger | figure and needle corrections in this artifact, below |
+| R1251, R1252, R1253 | ledger, answered | the figure corrections below |
+| R1254, R1255 | ledger, carried to **step 1** | **R1258: this row said "this artifact, below" and neither appears anywhere outside the verdict file.** Third time in two rounds a record claimed an item answered where it was not. They are needle-breadth findings about the phantom-citation check and the ladder-order assertions, and step 1's report records them |
 | R1244, R1245, R1246, R1247 | answered | in this artifact, above |
 | R1212, R1217, R1218, R1222, R1224, R1234, R1242 | reviewer-side or ledger | carried as the verdict routed them; none is a step-0 matter |
 | R1205, R1206, R1207, R1208 | answered in revision 1 | `docs/reports/R2/step-0.md` §6 -- the marker, exit (iii), step 2's gates, the two keys |
@@ -202,13 +240,20 @@ until this one.** `docs/reports/R2/step-0.md:1629` and `step-0-answers.json` bot
 verdict 64 and I restated it without checking it against `EXPECTED` itself, which is the
 same failure as every other restated figure in this step.
 
-The correction was made in `e71ecd5` **and the byte-for-byte restore in `ce5a84f` reverted
-it** -- `git show e71ecd5:docs/reports/R2/step-0.md | grep -c "four items"` is `0`, so it
-never existed in a file at all. It lived in a commit message, which no guard and no reader
-of the record reads.
+**R1259 CORRECTS THIS PARAGRAPH, WHICH ASSERTED A HISTORY AND REFUTED IT IN THE SAME
+SENTENCE.** It read that the correction "was made in `e71ecd5` and the restore reverted
+it ... so it never existed in a file at all" -- two mutually exclusive claims. Measured at
+`e71ecd5`: `grep -c "four items"` is **0**, `"five items"` is **1**, `R1219` appears **7**
+times. **R1245's correction was never in any file.** It lived in a commit message, which no
+guard and no reader of the record reads, and that is the whole of it -- no revert was
+involved.
 
-**R1246 -- the same thing happened to the `<!-- generated: scripts/untouched_sites.py -->`
-marker.** It was at `e71ecd5` and is absent now, reverted by the same restore.
+**The reverted clause belongs to R1246, where it is true.** The
+`<!-- generated: scripts/untouched_sites.py -->` marker WAS at `e71ecd5` --
+`grep -c "generated: scripts/untouched_sites"` is **1** there -- and the byte-for-byte
+restore in `ce5a84f` removed it. One item was never written; the other was written and
+reverted. Attaching one item's mechanism to the other's is how a record stops being
+checkable.
 
 **AND THAT COLLISION IS THE REUSABLE PART.** EK3 seals a step report at its final verdict;
 CZ0 requires the whole closure list fixed in the closure commit. **For any closure item
@@ -226,7 +271,10 @@ The reviewer withdrew that half of its own condition for exactly this reason.
 ## What is escalated, and it is the substance of this step
 
 **The committed `data/f4/dynamic_inputs.npz` does not regenerate from this tree.** numpy
-and scipy sit off `requirements-lock.txt` (2.5.4 / 1.18.1 against 2.4.4 / 1.17.1), the
+and scipy sit off **`HSP-runs/requirements-lock.txt`** (2.5.4 / 1.18.1 against
+2.4.4 / 1.17.1 -- R1260: this cited the path unprefixed and `git ls-files '*lock*'` in
+THIS repository is empty; `floatfea/hsp_pin.py` says the environment is the HSP repo's
+lock file, not a manifest here), the
 difference is round-off — ~197 eps relative to each array's own scale, on the one case
 measured — and FQ3 already ruled this case in advance: *"if the golden moves under these
 pins, STOP and report rather than re-baselining."* Two options, both costed in the
@@ -335,6 +383,34 @@ as **not** tolerances, with the reason.
 
 ## The one reusable rule this step produced
 
+**SWEEP THE GRID, NOT THE CELL. A repair is measured at every reader of its predicate and
+at every state of its decision rule, AFTER the repair — not at the state its condition
+named.**
+
+That is the reviewer's wording and it is stronger than the version this section first
+carried ("use the committed generator"), which was a special case. **The evidence is that
+this step produced, twice running, a repair that was exactly right at the state its
+condition named and green at the state beside it:**
+
+* **R1250** made a present-but-empty closure artifact redden, and left an ABSENT one
+  falling through to the step report — so a closure commit creating no artifact would
+  publish no CZ1 record at all and stay green. Found by sweeping 14 cells of
+  {`Closes:`} × {artifact} × {block}, not by reading the diff.
+* **R1256's fifth instance** was created BY a repair rather than missed by it: `_suite_line()`
+  was taught to read the artifact and the naming guard was not, so the count came from one
+  file and the names from another.
+
+**And the committed-generator rule is the same lesson one level down**, kept because it is
+the cheap form: where a gate and a generator both compute a predicate, read the gate's
+value. `scripts/untouched_sites.py` was committed throughout, its docstring already saying
+*"a generator with its own regex is a second implementation of the thing being satisfied,
+and the two drift."* An ad-hoc script written beside it drifted by that mechanism, in that
+direction, and shipped eight reds.
+
+### Six instances, which is why this is a rule and not an anecdote
+
+
+
 **Use the committed generator. Where one exists, a second implementation is the defect —
 and the one you write will be the lenient one.**
 
@@ -376,8 +452,11 @@ implementer's own, recorded because the pattern matters more than any single ins
 * a false claim in a reviewer brief about the implementer's own file contents;
 * a figure attributing a red to a test that had not run, with the right answer printed
   twenty lines above;
-* **a repair that broke the gate existing to prevent it**, with the reason recorded eight
-  lines from the edit, and shipping a prediction its own run refuted;
+* **a repair that broke the gate existing to prevent it**, with the reason recorded
+  THIRTY-ONE lines from the edit (R1257: this read "eight" after the figure had already
+  been corrected above -- republished rather than fixed, and invisible to `grep -n "eight
+  lines"` BECAUSE THE PHRASE WRAPS A LINE, which is the narrow-needle family turned on its
+  own repair), and shipping a prediction its own run refuted;
 * U+FFFD written into a published report by a script missing an `encoding` argument;
 * a splice that deleted two sections by replacing a range instead of a token;
 * a generator output pasted from a truncated console capture, publishing two red tests as
