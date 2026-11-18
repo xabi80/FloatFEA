@@ -1,0 +1,104 @@
+# CORPUS: NOTHING HOLDS THE ROUTING BRANCH -- a decision rule that is CORRECT
+# today and that no test in this repository would redden if it were deleted
+# tomorrow (FK2, EQ0, EK2, R1250, R1256, R1261, BG0).
+#
+# Owner: the reviewer. Test DATA only -- one candidate per line, nothing here
+# imports from floatfea and nothing here is test code. Written at the
+# sixty-eighth verdict on R2 step 0, the EQ0 review of the closure follow-on
+# that repaired R1256 and R1261 (judged commit 8fe7fea; the gate changes are in
+# its parent 0464568).
+#
+# A PASSING SCAN MEANS: for every line below, the single-line change named is
+# either impossible to write, or some gate in this repository goes RED when it
+# is written. A line that reaches a fully green tree is a measured coverage gap
+# and is recorded with `m=GREEN`.
+#
+# WHY THIS FILE EXISTS, AND WHY IT IS NOT THE PREVIOUS TWO.
+# `closure_artifact_published_as_green.txt` is about an artifact whose CONTENT
+# IS FALSE. `closure_record_absent_rather_than_wrong.txt` is about a routed
+# DESTINATION THAT DOES NOT EXIST. Both ask what the code does when the RECORD
+# moves. This file asks the other question -- what happens when the CODE moves
+# and the record does not -- because that is the one the two preceding rounds
+# could not see:
+#
+#   R1250 fixed the present-but-empty cell and left the ABSENT one green;
+#   R1256 fixed the absent cell IN BOTH READERS and added no test row, so the
+#   repair of the repair is itself held in place by nothing.
+#
+# This is EQ0's own stated reason for reviewing closure commits -- "a decision
+# rule that nothing holds in place ... so reverting the fix left the whole suite
+# green" -- turned into a measurement instead of an argument.
+#
+# THE HEADLINE MEASUREMENT, at the judged commit, in a detached probe worktree,
+# ONE MUTATION AT A TIME, `git checkout --` between each and
+# `git status --porcelain` asserted empty before every cell:
+#
+#   selection:  pytest tests/test_report_carried.py
+#                      tests/verification/rung3/test_closure_evidence_exists.py
+#               plus `python scripts/check_carried.py` and its exit status
+#   baseline:   504 passed; check_carried exit 0, "all 43 findings carried"
+#
+#   17 single-line mutations of the two readers of ONE predicate
+#     4  CAUGHT
+#    13  reach a FULLY GREEN TREE
+#
+#   and the split by reader is the finding, not the ratio:
+#     tests/test_report_carried.py   3 of 7 caught
+#     scripts/check_carried.py       1 of 10 caught, and that one was caught by
+#                                    the SCRIPT exiting 1 rather than by a test
+#
+# `grep -rln check_carried tests/` names this file, two sibling corpus files and
+# `tests/test_report_carried.py`, which mentions it in prose. NO TEST IN THIS
+# REPOSITORY EXERCISES `scripts/check_carried.py`. It is a gate that CI runs,
+# that the `Stop` hook runs, and that nothing measures.
+#
+# HOW THE LINES ARE MARKED. `m=CAUGHT (+what)` and `m=GREEN (+0)` are measured
+# against the selection above. An unmarked line is NOT MEASURED and is a
+# candidate, not a result. `reach=` says whether the mutated branch is even
+# ENTERED in today's tree -- a mutation of a branch nothing takes is green for a
+# second, weaker reason than one that is taken and unchecked, and the two must
+# not be reported as one number.
+
+# ---- READER A, tests/test_report_carried.py: the branch R1256 repaired ----
+id=A1_absent_artifact_branch_reverted surface=cz1_record case=the_repair_under_review_reverted_one_line_`return ""`_back_to_`return report` reach=NOT_TAKEN_the_artifact_exists_today expect=RED_some_row_asserts_the_absent_state m=GREEN (+0) 504 passed, check_carried exit 0 -- THE REPAIR OF THE REPAIR IS HELD BY NOTHING, and verdict 67's closing condition asked in as many words for "a row in the existing FK2 block for the state"
+id=A2_milestone_clause_deleted surface=cz1_record case=`if closes.split("/",1)[0] != MILESTONE: return report`_removed reach=NOT_TAKEN_Closes_names_R2_today expect=RED m=CAUGHT (+test_FK2_a_CLOSES_naming_ANOTHER_increment_does_not_route) -- the clause R1261 propagated to the second reader is held in the FIRST reader only
+id=A3_step_regex_loses_the_unhyphenated_form surface=_closure_path case=`step-?(\d+)`_narrowed_to_`step-(\d+)`_so_`Closes: R2/step0`_falls_to_the_milestone_artifact reach=NOT_TAKEN_the_live_line_is_hyphenated expect=RED m=GREEN (+0) 504 passed -- the `step-?` tolerance was measured by the reviewer's own plants in verdict 67 and by no test
+id=A4_router_deleted_always_reads_the_report surface=cz1_record case=an_unconditional_`return report`_at_the_top_of_the_function reach=TAKEN expect=RED m=CAUGHT (+3 failed) -- the only mutation of reader A that the suite catches outright
+id=A5_step_number_not_normalised surface=_closure_path case=`int(m.group(2))`_replaced_by_`m.group(2)`_so_`step-00`_routes_to_R2-step00.md reach=NOT_TAKEN expect=RED m=GREEN (+0) -- `int()`'s normalising role is stated in verdict 67's plant table and asserted nowhere
+id=A6_reads_the_OLDEST_Closes_line surface=_newest_verdict_closes case=`_CLOSES.search`_replaced_by_`findall()[-1]`,_which_is_R798's_withdrawn_reading reach=TAKEN_BUT_DEGENERATE_every_Closes_in_this_file_is_R2/step-0 expect=RED m=GREEN (+0) -- the comment above `_CLOSES` argues for `search` from DX2's ordering; the argument is correct and is the whole defence
+id=A7_block_markers_regex_made_unanchored surface=_CZ1_BLOCK case=the_marker_pair_replaced_by_`(?s)(.*)`_so_the_whole_artifact_is_the_block reach=TAKEN expect=RED m=CAUGHT (+1 failed)
+id=A8_block_regex_made_greedy surface=_CZ1_BLOCK case=`(.*?)`_to_`(.*)`_so_two_blocks_in_one_file_merge_across_the_prose_between_them reach=TAKEN_ONE_BLOCK_TODAY expect=RED
+id=A9_CLOSURE_bound_before_the_Closes_reader surface=module_import case=`CLOSURE = _closure_path()`_moved_above_`_newest_verdict_closes`_so_import_raises_and_the_module_reports_one_error_instead_of_running reach=TAKEN expect=RED_LOUDLY_R234
+id=A10_MILESTONE_fallback_changed_from_F2_to_the_empty_string surface=module_import case=the_two_resolvers'_fallbacks_made_to_DIFFER_so_a_tree_with_no_plan_marker_routes_the_two_readers_to_different_files reach=NOT_TAKEN_exactly_one_plan_carries_the_marker expect=RED
+
+# ---- READER B, scripts/check_carried.py: ten mutations, one caught ----
+id=B1_absent_artifact_branch_reverted surface=_carrier case=`return artifact`_restored_to_`if artifact.is_file(): return artifact`,_the_second_half_of_the_repair_under_review reach=NOT_TAKEN expect=RED m=GREEN (+0) 504 passed, check_carried exit 0
+id=B2_milestone_clause_reverted surface=_carrier case=the_R1261_repair_removed_entirely_one_commit_after_it_landed reach=NOT_TAKEN_Closes_names_R2 expect=RED m=GREEN (+0) -- the clause is asserted in reader A (A2) and in reader B by nothing
+id=B3_refusal_deleted_so_it_RAISES surface=main case=`if not carrier.is_file():`_made_`if False:`_so_`_read`_hits_FileNotFoundError,_which_this_file's_own_docstring_forbids reach=NOT_TAKEN expect=RED m=GREEN (+0) -- and the implementer's first attempt at the repair SHIPPED this behaviour and caught it by running the inversion by hand
+id=B4_refusal_returns_0_instead_of_1 surface=main case=the_owed-artifact_refusal_prints_its_message_and_exits_0 reach=NOT_TAKEN expect=RED m=GREEN (+0) -- a refusal that prints and passes is the exact shape FF0 was adopted for
+id=B5_finding_anchor_requires_the_dot_again surface=_FINDING case=R1120_reverted,_so_a_heading_written_`### R1106 (BLOCKS).`_is_invisible_and_the_script_prints_all_N_carried reach=TAKEN_AND_DEGENERATE_every_heading_in_today's_verdict_file_carries_the_dot expect=RED m=GREEN (+0) still "all 43 findings carried" -- a repair for a defect that printed success while blind, held in place by the incidental shape of one file
+id=B6_finding_anchor_loses_the_comma_form surface=_FINDING case=R1138_reverted,_`,(?!\s*R\d)`_dropped,_so_`**R1136, and it is ...`_has_no_id_in_the_set reach=TAKEN_AND_DEGENERATE expect=RED m=GREEN (+0) still "all 43 findings carried"
+id=B7_plan_glob_narrowed_back_to_F_star surface=_active_step case=FF0_reverted,_so_R2's_marker_is_invisible_and_the_resolver_falls_back_to_F2_step_4 reach=TAKEN expect=RED m=CAUGHT (+check_carried exit 1 "verdict declares 7 findings; 0 are carried") -- caught by the SCRIPT, not by a test, and only because F2 step 4's own files disagree
+id=B8_reads_the_FIRST_revision_of_the_carrier surface=_newest_report_carried case=`revisions[-1]`_to_`revisions[0]`,_so_the_oldest_revision's_Carried_answers reach=TAKEN_ONE_REVISION_IN_THE_ARTIFACT expect=RED m=GREEN (+0)
+id=B9_missing_ids_no_longer_fail surface=main case=the_script's_ONLY_ASSERTION_deleted_--_`return 1`_to_`return 0`_when_a_finding_is_not_carried reach=TAKEN expect=RED m=GREEN (+0) 504 passed, exit 0 -- THE WHOLE PURPOSE OF THE GATE CAN BE DELETED IN ONE CHARACTER WITH THE TREE GREEN
+id=B10_empty_findings_set_no_longer_fails surface=main case=`no findings parsed`_returns_0,_so_a_format_change_that_blinds_the_anchor_reads_as_a_clean_bill reach=NOT_TAKEN_43_findings_parse_today expect=RED m=GREEN (+0) -- and the comment beside it says "a parse failure, not a clean bill"
+id=B11_both_defaults_hardcoded_again surface=main case=EA2_reverted,_`--verdict`_and_`--report`_default_to_docs/*/F2/step-4.md reach=TAKEN expect=RED
+id=B12_carrier_compared_by_string_not_by_Path surface=main case=`if carrier != report:`_made_`if str(carrier) != args.report:`_so_the_closed-step_branch_is_entered_for_the_open_step_too reach=TAKEN expect=RED
+id=B13_read_decodes_strictly surface=_read case=`errors="replace"`_dropped,_so_a_Windows-1252_dash_in_a_verdict_raises_--_the_defect_the_docstring_was_written_against reach=NOT_TAKEN_today's_files_are_UTF-8 expect=RED
+id=B14_MENTION_widened_to_any_digit_run surface=_MENTION case=`\bR\d+\b`_to_`\d+`,_so_any_number_in_the_Carried_section_counts_as_carrying_any_finding reach=TAKEN expect=RED
+
+# ---- THE PREDICATE'S THIRD READER, and the fourth ----
+id=C1_hook_tests_the_VALUE_of_Closes_not_its_presence surface=.claude/hooks/require-verdict.sh:332 case=`grep -qE '^Closes:'`_changed_to_match_a_specific_increment_so_the_hook_becomes_a_fourth_reader_of_the_same_predicate reach=TAKEN expect=A_STOP_CLASS_FINDING_the_hook_is_the_reviewer's_instructions
+id=C2_carried_table_generator_drifts_from_the_anchor surface=scripts/carried_table.py case=`FINDING`_edited_in_the_generator_and_not_in_the_script,_which_is_the_"six_copies"_the_comment_names reach=TAKEN expect=RED
+id=C3_write_verdict_accepts_a_Closes_for_another_milestone surface=scripts/write_verdict.py:_closes case=`--closes F2/step-4`_written_into_an_R2_verdict,_which_verdict_67_measured_as_WRITABLE reach=NOT_TAKEN_FK1_forbids_it expect=the_two_readers_AGREE_after_R1261
+id=C4_bare_milestone_Closes_routes_the_two_readers_differently surface=_carrier_vs__closure_path case=`Closes: R2`_with_no_step_--_the_form_`test_FK2_the_CLOSES_line_routes_to_the_CLOSURE_BLOCK`_itself_uses reach=TAKEN_BY_THE_TEST_SUITE expect=the_two_readers_agree m=MEASURED_THEY_DIVERGE reader_A=docs/closure/R2.md reader_B=the_STEP_REPORT -- the SEVENTH instance of one predicate with two readers, in the function the sixth was fixed in, and it fails LOUD (check_carried exit 1, "omits R9001, R9002") rather than green
+id=C5_bare_milestone_Closes_with_the_artifact_PRESENT surface=_carrier case=docs/closure/R2.md_planted_complete_and_`Closes: R2`_anchored,_which_is_what_R2's_OWN_closure_will_look_like reach=THE_END_OF_R2 expect=check_carried_reads_the_artifact m=MEASURED_exit_1_reading_the_step_report_instead -- R1250's ORIGINAL defect ("a guard whose only satisfying action is forbidden") reproduced for the milestone-level form
+
+# ---- THE SHAPE ITSELF: a repair's closing condition, limb by limb ----
+id=D1_closing_condition_with_three_limbs_answered_at_two surface=the_round case=a_verdict's_`Closed when`_names_both_readers,_the_inversion_and_a_test_row;_the_repair_lands_the_first_two_and_is_silent_on_the_third reach=TAKEN_THIS_ROUND expect=the_report_states_the_site_was_left_and_why_(CLAUDE.md,_"closed_site_by_site") m=NOT_STATED_in_the_commit_message_or_the_artifact
+id=D2_the_inversion_run_by_hand_and_not_committed surface=the_round case=both_directions_of_a_boundary_measured_in_a_probe_and_pasted_into_a_commit_message,_where_no_guard_and_no_future_reader_reads_them reach=TAKEN_THIS_ROUND expect=a_row_in_an_existing_test_file m=THE_COMMIT_MESSAGE_ONLY -- the same disposal route R1245's correction took, named in this artifact two sections above
+id=D3_a_figure_recorrected_from_the_reviewers_own_number surface=the_round case=a_count_published_as_"counted_rather_than_recalled"_taken_at_the_PARENT_commit,_before_the_verdict_it_counts_landed_in_the_file reach=TAKEN_THIS_ROUND expect=the_needle_rerun_after_the_last_edit_(CP3) m=MEASURED_13_at_the_judged_commit,_12_at_5901738,_published_as_12
+id=D4_a_prose_only_closure_commit_edits_text_INSIDE_the_gate_s_block surface=EQ0 case=a_commit_touching_only_docs/closure/**_inserts_29_lines_between_`<!-- cz1-closure-outputs -->`_and_its_closing_marker,_which_is_the_string_three_FC1_guards_parse reach=TAKEN_THIS_ROUND expect=EQ0_calls_it_prose_and_does_not_require_review m=MEASURED_INERT cz1_record 11647 -> 13371 chars, _suite_line and all six CI rows unchanged -- inert this time, and "only prose" is not a property of the PATH
+id=D5_a_heading_announcing_a_table_that_is_in_another_section surface=docs/closure/R2-step0.md:410 case=`### Six instances, ...`_followed_by_three_blank_lines_and_a_DIFFERENT_table_of_three;_the_six-row_table_is_at_:475_under_another_heading reach=TAKEN_THIS_ROUND expect=a_reader_following_the_heading_finds_the_six m=THEY_FIND_THREE
+id=D6_a_mutation_green_because_the_branch_is_never_entered surface=the_measurement_itself case=11_of_the_13_green_cells_above_are_green_because_`reach=NOT_TAKEN`,_which_is_a_WEAKER_statement_than_"taken_and_unchecked" reach=TAKEN_BY_THIS_FILE expect=the_two_are_reported_separately_and_not_as_one_ratio m=SEPARATED_IN_THE_reach=_FIELD_ABOVE
+id=D7_a_corpus_file_whose_own_count_is_its_authors_count surface=BE3 case=a_batch_whose_coverage_number_is_the_fraction_of_ITS_OWN_entries_that_a_gate_catches,_written_by_the_party_that_also_judges reach=TAKEN_EVERY_ROUND expect=the_entries_are_ones_the_implementer_has_not_read m=STATED_36_entries,_26_measured,_4_of_17_mutations_caught
