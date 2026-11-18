@@ -3051,7 +3051,33 @@ def test_a_docs_commit_does_not_also_edit_the_guard_that_judges_it() -> None:
 # THE REPORT'S SECTIONS 0 AND 0a ARE NOT DUPLICATED BY THIS. They are about the commit the
 # VERDICT JUDGED; the closure block is about the CLOSURE COMMIT. Two commits, two
 # questions, which is why four other CI guards still read the report and are untouched.
-CLOSURE = ROOT / "docs" / "closure" / f"{MILESTONE}.md"
+def _closure_path() -> Path:
+    """The closure artifact the newest verdict's `Closes:` names (R1250).
+
+    `f"{MILESTONE}.md"` stood here and **the collection it inspects cannot contain the
+    artifact it is looking for.** This repository's own convention names a STEP artifact
+    `<MILESTONE>-step<k>.md` -- `docs/closure/` holds four of them from F2 alone -- and
+    `Closes: R2/step-0` is exactly that path in the verdict's own words. So at a closing
+    commit `CLOSURE.exists()` was False, `cz1_record()` took its no-artifact branch, and
+    the two FC1 guards fell back to reading the STEP REPORT: green on a whole-suite line
+    measured three commits earlier, and green on a CI table describing a different commit
+    again. **A closure commit that shipped CZ1's outputs nowhere at all would have got the
+    same green**, which is R803's fall-back failing green, one layer up.
+
+    It is also why that closure commit had nowhere legal to put CZ1 (ii)-(iv): this router
+    could not see the artifact, EK3 seals the report, and so the outputs went into a commit
+    message that no guard and no reader of the record reads.
+
+    `Closes: <milestone>/step-<k>` resolves to `docs/closure/<milestone>-step<k>.md`;
+    anything else falls back to `docs/closure/<MILESTONE>.md`, which is the milestone-level
+    convention and what every pre-R2 closure used.
+    """
+    closes = _newest_verdict_closes()
+    m = re.fullmatch(r"(\w+)/step-?(\d+)", closes.strip()) if closes else None
+    if m:
+        return ROOT / "docs" / "closure" / f"{m.group(1)}-step{int(m.group(2))}.md"
+    return ROOT / "docs" / "closure" / f"{MILESTONE}.md"
+
 
 _CZ1_BLOCK = re.compile(
     r"<!--\s*cz1-closure-outputs\s*-->(.*?)<!--\s*/cz1-closure-outputs\s*-->", re.S
@@ -3075,6 +3101,12 @@ def _newest_verdict_closes() -> str:
         return ""
     found = _CLOSES.search(text)
     return found.group(1) if found else ""
+
+
+# BOUND HERE AND NOT ABOVE, because `_closure_path` reads the newest verdict's `Closes:`
+# line and that reader needs `_CLOSES` and `_newest_verdict_closes` to exist first. The
+# constant is still a module-level value, so every consumer below sees one resolution.
+CLOSURE = _closure_path()
 
 
 def cz1_record() -> str:
@@ -3374,7 +3406,16 @@ def test_a_RED_suite_is_named_in_the_report() -> None:
     _, _, failed, _ = found
     if not failed:
         return
-    body = _newest_revision(REPORT_TEXT)
+    # THE NAMES COME FROM WHEREVER THE LINE CAME FROM. `_suite_line()` reads
+    # `cz1_record()`, which R1250 taught to resolve a closed step's artifact, and this
+    # read `_newest_revision(REPORT_TEXT)` -- so at a closed step the COUNT came from the
+    # artifact and the NAMES from the report, and the guard compared ten against two.
+    #
+    # That is R1250's own defect reintroduced by R1250's repair: one record, two readers,
+    # fixed in one of them. FIFTH instance in this step, after R1221's filter, R1240's
+    # scoping, the touched-line census and `check_carried`'s router -- and the first one
+    # the repair itself created rather than merely failed to reach.
+    body = cz1_record() or _newest_revision(REPORT_TEXT)
     named = re.findall(r"\*\*failed\*\*\s*`([^`]+)`", body)
     assert len(named) >= failed, (
         f"the whole-suite line reports {failed} failing tests and the report "

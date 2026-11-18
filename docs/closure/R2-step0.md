@@ -2,8 +2,10 @@
 
 **Closed by verdict 65 (PASS) at `0fb8c93`, with one blocking item carried.** Step 0 was
 GI3's measure-only step: five measurements, one permitted code change, and GI6's
-instruction to report and stop. It consumed all three ES0 revisions and five reviewer
-rounds (three interim checks, which count against none, plus three reviewed revisions).
+instruction to report and stop. It consumed all three ES0 revisions and **six** reviewer
+rounds -- three interim checks, which count against none, plus three reviewed revisions --
+and then two further reviews of the closure commit itself under EQ0, which cost no round
+either. **This sentence read "five" and 3 + 3 is six** (R1252).
 
 ## What was built
 
@@ -12,7 +14,10 @@ GI3's five items, all answered in `docs/reports/R2/step-0.md`:
 * **(a)** the inertial/joint-reaction split, and the loop gain it implies. At the body the
   split is 1:1 by construction; at the governing member the stress is 59.2 % static /
   40.8 % dynamic. Loop gain `g = k·m_steel/m_body` is 0.53–0.77, so the loop converges
-  **monotonically** and 11–14 iterations are needed to reach D3's 0.5 % band.
+  **monotonically**. **The group matters and this line dropped it:** the PLATFORM needs
+  11–14 iterations to reach D3's 0.5 % band; each HUB needs 5.7–9.0. Published without
+  the group it reads as a whole-model figure, and it errs on the slow side rather than the
+  safe one.
 * **(b)** one D4 iteration is **25 min 56 s** with threads pinned. D3's cap of 8 is ≈ 3.5 h.
 * **(c)** the in-memory mass/inertia override already exists and HSP's deck builder takes
   **no file input at all**, so the returned Deck object is the only override point and
@@ -21,19 +26,199 @@ GI3's five items, all answered in `docs/reports/R2/step-0.md`:
   their own. The system gets **lighter** on iteration one, so ballast is **added**.
 * **(e)** the two-key worktree resolver, seven assignments across six files, with tests.
 
-## Which gates pass
+## Which gates pass, AND AT WHICH COMMIT
 
-| | |
-|---|---|
-| whole suite at `a3a30d2` | 3970 passed, 2 failed, 0 skipped |
-| the three report-guard files | 468 + 24 passed |
-| `scripts/check_carried.py` | all 29 findings carried |
-| the CI workflow guards | 85 passed |
-| `ruff`, `black --check`, `mypy` | clean |
+**R1249: the table that stood here published five rows as green, and two were red at the
+commit publishing them.** One of those two was red *about R1243* -- the step's only open
+blocking item, which is to say the one thing the carry mechanism exists to stop anyone
+dropping. The rows now carry their own operating point, because a gate result without one
+is a figure whose rule can move underneath it (BP0), and `docs/closure/**` sits outside
+every prose guard in this repository, so nothing would have said so.
 
-**The two failures are the whole of the FQ3 escalation** — the npz staleness guard and the
-F6 deliverable test downstream of it — and neither is clearable by any edit of the
-implementer's.
+**AND ONE OF THE TWO WAS WORSE THAN STALE, WHICH I HAD UNDERSTATED.** The row read
+`468 + 24 passed`, and `pytest --collect-only` gives **468 and 24 at that commit** -- so
+the figure was the COLLECTED ID COUNT PUBLISHED AS A PASS COUNT. A number taken that way
+is green by construction whatever the suite does; the actual result there was 484 passed,
+8 failed. The other row was true at the previous commit and voided by the next, which is
+ordinary staleness. These are different defects and lumping them together would have lost
+the one that cannot fail.
+
+<!-- cz1-closure-outputs -->
+**CZ1 (ii)-(iv) at `ce5a84f`, the previous closure commit, with the tree clean.** These are
+the outputs CZ1 owes and that `e71ecd5` put in a commit message instead -- which R1250 is
+the mechanical reason for: this artifact was invisible to the router, and the report is
+sealed by EK3, so there was nowhere legal left.
+
+```
+cmd    ruff check floatfea tests
+out    All checks passed!
+cmd    black --check floatfea tests
+out    129 files would be left unchanged
+cmd    mypy floatfea
+out    Success: no issues found in 45 source files
+cmd    pytest -q
+out    10 failed, 4456 passed, 2 warnings in 3552.86s
+```
+
+**Whole suite at `ce5a84f`: 4456 passed, 10 failed, 0 skipped.**
+
+*Generated, and generated AFTER every run of the round concluded, which is R1237's
+ordering. The hand-written one-row table that stood here would have been the same
+defect a third time.*
+
+## 0a. Runs since the commit verdict 64 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 64 at `e87b2c0` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that reached no conclusion ABOUT THE CODE -- cancelled, or still running -- has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it. A cancelled run IS `completed`, which is why the test is the conclusion and not the status (CX0, R449, R1130).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `44164723945` | push | `a3a30d2` | conclusion **failure** |
+| `44180156206` | push | `772f616` | conclusion **failure** |
+| `44186415061` | push | `e511161` | conclusion **failure** |
+| `44187721362` | push | `e71ecd5` | conclusion **failure** |
+| `44196001239` | push | `ce5a84f` | conclusion **failure** |
+| `44205027019` | push | `3e34953` | conclusion **failure** |
+
+**Run `44164723945`, conclusion **failure**: 9 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+- `tests.regression.test_f6_deliverable_agrees_with_itself::test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree` (the verification ladder)
+
+**Run `44180156206`, conclusion **failure**: 18 failing test name(s) in the log.**
+- `tests/test_ci_determinism_gate.py::test_ladder_6_is_not_gated_behind_a_rung_that_is_red_under_Q8` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1221-tests/test_report_carried.py:387]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1221-tests/test_report_carried.py:388]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1221-tests/test_report_carried.py:389]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1221-tests/test_report_carried.py:390]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1242-tests/test_report_carried.py:387]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1242-tests/test_report_carried.py:388]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1242-tests/test_report_carried.py:389]` (lint, unit and guards)
+- `tests/test_report_carried.py::test_every_named_site_is_touched_or_declared[R1242-tests/test_report_carried.py:390]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+- `tests/test_report_numbers_are_sourced.py::test_every_number_in_prose_is_sourced_in_its_own_section[19. R1239, R1240, R1241, R1242]` (lint, unit and guards)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_npz_is_NOT_STALE_against_the_code_that_generated_it` (the verification ladder)
+
+**Run `44186415061`, conclusion **failure**: 2 failing test name(s) in the log.**
+- `tests/test_ci_determinism_gate.py::test_ladder_6_is_not_gated_behind_a_rung_that_is_red_under_Q8` (lint, unit and guards)
+- `tests.verification.rung4.test_f4_g41_dynamic::test_the_npz_is_NOT_STALE_against_the_code_that_generated_it` (the verification ladder)
+
+**Run `44187721362`, conclusion **failure**: 9 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+- `tests.regression.test_f6_deliverable_agrees_with_itself::test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree` (the verification ladder)
+
+**Run `44196001239`, conclusion **failure**: 9 failing test name(s) in the log.**
+- `tests/test_report_carried.py::test_the_answered_verdict_is_the_NEWEST_one` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[baseline]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[non_numeric_step_suffix]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[superscript_digit_step_number]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[step_number_is_the_empty_string]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` (lint, unit and guards)
+- `tests/test_report_guard_states.py::test_the_guard_survives_the_state[zero_padded_step_number]` (lint, unit and guards)
+- `tests.regression.test_f6_deliverable_agrees_with_itself::test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree` (the verification ladder)
+
+**Run `44205027019`, conclusion **failure**: 1 failing test name(s) in the log.**
+- `tests.regression.test_f6_deliverable_agrees_with_itself::test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree` (the verification ladder)
+
+**The ten, traced per id and not by family (EG3 i), because two of them are not the
+escalation and saying "ten reds, two are the escalation" would be the cascade EG3 forbids:**
+
+- **failed** `tests.verification.rung4.test_f4_g41_dynamic::test_the_npz_is_NOT_STALE_against_the_code_that_generated_it` -- the FQ3 escalation
+- **failed** `tests.regression.test_f6_deliverable_agrees_with_itself::test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree` -- downstream of it (R1223)
+- **failed** `tests.test_report_carried::test_the_answered_verdict_is_the_NEWEST_one` -- EK3's timing guard: `ce5a84f` touches a report sealed at its final verdict and no newer verdict existed yet. Cleared at verdict 66, measured.
+- **failed** `tests.test_report_guard_states::test_the_guard_survives_the_state[baseline]` -- the outer harness reporting the id above; four occurrences in its own output
+- **failed** `tests.test_report_guard_states::test_the_guard_survives_the_state[non_numeric_step_suffix]` -- the outer harness reporting the id above; four occurrences in its own output
+- **failed** `tests.test_report_guard_states::test_the_guard_survives_the_state[superscript_digit_step_number]` -- the outer harness reporting the id above; four occurrences in its own output
+- **failed** `tests.test_report_guard_states::test_the_guard_survives_the_state[draft_suffix_beside_a_step_report]` -- the outer harness reporting the id above; four occurrences in its own output
+- **failed** `tests.test_report_guard_states::test_the_guard_survives_the_state[step_number_is_the_empty_string]` -- the outer harness reporting the id above; four occurrences in its own output
+- **failed** `tests.test_report_guard_states::test_the_guard_survives_the_state[verdict_amended_after_the_commit_the_report_answers]` -- the outer harness reporting the id above; four occurrences in its own output
+- **failed** `tests.test_report_guard_states::test_the_guard_survives_the_state[zero_padded_step_number]` -- the outer harness reporting the id above; four occurrences in its own output
+
+**EVERY ONE IS NAMED WITH ITS NODE ID AND THAT IS NOT COSMETIC.** This block first wrote
+the seven planted states as `seven x test_the_guard_survives_the_state[...]` with the
+parameters in one line -- **a cascade collapsed by family, in a paragraph claiming to
+trace per id.** `test_a_RED_suite_is_named_in_the_report` caught it: *"the whole-suite line
+reports 10 failing tests and the report names 2."* EG3 (i) exists because eight planted
+states were once ruled as one cascade and the eighth was a real defect (R629), and the
+collapsed form is precisely the shape that hid it.
+
+**Two of those ten were green at the commit BEFORE and red here, and that is the finding
+R1249 is about rather than a detail**: reverting the report to satisfy EK3 removed R1243's
+only mention, which turned `check_carried` red about the step's one open blocking item.
+<!-- /cz1-closure-outputs -->
+
+## Carried out of step 0
+
+*`scripts/check_carried.py` and `tests/test_report_carried.py` both read this section once
+the step is closed, because EK3 seals the report and the artifact is the only place a
+closed step's list can still gain a row (R1250).*
+
+| item | state | where it goes |
+|---|---|---|
+| R1243 | **open, blocking** | **step 1.** R1239's observation stands -- chaining rungs in one job hides every rung after a red one whichever order they sit in -- and its repair does not. The fix is to stop the chaining: separate jobs, or `if: always()` per step, with a CI section that names skipped STEPS. CH3's order is restored meanwhile and the gate is green |
+| R1223, R1225 | **open, escalated** | **Xabier.** One item: the committed npz does not regenerate from this tree, FQ3 ruled the case in advance, and the deliverable red is downstream of the same cause |
+| R1232 | open | **the write run**, not this step: `pin_threads()` cannot be called below the module's own numpy import, so the environment is recorded in the provenance and not held |
+| R1248 | open | **step 2.** `scripts/export_buoy_centers_ref.py` checks the stable tree's NAME and never its TAG |
+| R1249, R1250 | **answered in this commit** | the table above, and the router in both of its readers |
+| R1251, R1252, R1253, R1254, R1255 | ledger | figure and needle corrections in this artifact, below |
+| R1244, R1245, R1246, R1247 | answered | in this artifact, above |
+| R1212, R1217, R1218, R1222, R1224, R1234, R1242 | reviewer-side or ledger | carried as the verdict routed them; none is a step-0 matter |
+| R1205, R1206, R1207, R1208 | answered in revision 1 | `docs/reports/R2/step-0.md` §6 -- the marker, exit (iii), step 2's gates, the two keys |
+| R1213, R1214, R1215, R1226, R1227, R1229 | answered in revision 1 | §6a -- the DS0 name test, the set-and-wrong refusal, the marker comment, the stable-key refusal, the STEP condition, the vacuous assertion |
+| R1221, R1228, R1233, R1235, R1236 | answered in revision 2 | §6a and §7 -- the mention filter at both sites, the regenerated quotation, the narrowed magnitude sentence, the two stale figures |
+| R1230, R1231, R1237, R1238, R1240, R1241 | answered in revision 3 | §11, §13, §14, §17, §18, §19 -- the header naming the newest verdict, the three generated sections, the rounds table, the red list, the oldest-round scoping, the two refuted sentences |
+| R1186, R1188, R1189, R1190, R1191, R1193, R1196, R1197, R1198, R1199, R1200, R1201, R1203, R1204, R835 | open, from verdict 58 | **step 1.** None is a step-0 matter; R1188 and R1193 are discharged from the reviewer's side |
+
+## R1245 and R1246 -- two closure items with nowhere to go but here (EK3)
+
+**R1245 -- the R1240 gain is FOUR items, not five, and the correction exists in no file
+until this one.** `docs/reports/R2/step-0.md:1629` and `step-0-answers.json` both read
+*"R1212, R1217, R1218, R1219, R1224 -- five items"*. Measured: `R1219 in EXPECTED` is
+`False` (35 ids), and it has no row in §19b. **It is four.** The figure was wrong in
+verdict 64 and I restated it without checking it against `EXPECTED` itself, which is the
+same failure as every other restated figure in this step.
+
+The correction was made in `e71ecd5` **and the byte-for-byte restore in `ce5a84f` reverted
+it** -- `git show e71ecd5:docs/reports/R2/step-0.md | grep -c "four items"` is `0`, so it
+never existed in a file at all. It lived in a commit message, which no guard and no reader
+of the record reads.
+
+**R1246 -- the same thing happened to the `<!-- generated: scripts/untouched_sites.py -->`
+marker.** It was at `e71ecd5` and is absent now, reverted by the same restore.
+
+**AND THAT COLLISION IS THE REUSABLE PART.** EK3 seals a step report at its final verdict;
+CZ0 requires the whole closure list fixed in the closure commit. **For any closure item
+whose SITE is inside the closed report, those two instructions cannot both be obeyed** --
+the repair must touch the report, and touching it is forbidden. The restore that satisfied
+EK3 necessarily reverted every closure-item repair sited there. Both items now have only
+this artifact as a home, and `docs/reports/R2/step-0.md:1616` and `:1629` are
+**declare-only** from here: step 1's report records them `**no change** -- EK3`, which is
+the one form of answer still available.
+
+**`:1616` is the other one**: it still reads the refuted "ONE red to TWO" prediction, and
+the verdict that asked for its replacement named a site inside the report it was closing.
+The reviewer withdrew that half of its own condition for exactly this reason.
 
 ## What is escalated, and it is the substance of this step
 
@@ -95,7 +280,11 @@ judge  **THE PREDICTION IS REFUTED BY ITS OWN COMMIT'S RUN: one red, not two.** 
        Nothing would have said so: `ci_section.py` reads a JOB's conclusion and parses
        `run_rung:` lines, and a skipped STEP emits no such line.
        **A general principle was appealed to over a specific, measured, gated ruling
-       recorded eight lines from the edit.** That is the whole error.
+       recorded TWENTY-FIVE lines from the edit** -- `ci.yml:528` against the edit, measured,
+       and "eight" was wrong at every commit in play. The distance is not the point and
+       getting it wrong twice in the same sentence is: a figure in `.github/` and one in
+       `docs/closure/` are both outside `test_tree_prose_consistent.py`'s ROOTS, so
+       nothing in the tree checks either. That is the whole error.
 ```
 
 **Reverted; `tests/test_ci_determinism_gate.py` is green again (13 passed).** R1239's
@@ -165,7 +354,11 @@ touched".
 
 ## The honest account of the round
 
-Five reviewer rounds produced **nineteen blocking findings and every one was real.** The
+Six reviewer rounds -- three interim checks, which count against no round, and three
+reviewed revisions -- produced **ten findings carrying the blocking marker, and every one
+was real.** The "five rounds" and "nineteen blocking findings" this paragraph used to
+carry were both wrong: 3 + 3 is six, and nineteen was a count of RED TEST IDS rather than
+of findings. Two arithmetic errors in one sentence about the step's own cost. The
 implementer's own, recorded because the pattern matters more than any single instance:
 
 * two wrong diagnoses of the `--check` refusal, the second with the refuting ablation

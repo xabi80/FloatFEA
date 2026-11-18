@@ -69,6 +69,41 @@ def _read(path: Path) -> str:
     return path.read_bytes().decode("utf-8", errors="replace")
 
 
+def _closes(verdict: Path) -> str:
+    """What the newest verdict says it CLOSES, or `""` (R1250's router, second reader).
+
+    `docs/reviews/` is the one record the implementer cannot write, so this signal is
+    unsettable by the constrained party and false mid-step, true at closure.
+    """
+    found = re.search(r"^Closes:\s*(\S+)\s*$", _read(verdict), re.MULTILINE)
+    return found.group(1) if found else ""
+
+
+def _carrier(verdict: Path, report: Path) -> Path:
+    """Where a closed step's `Carried` section lives, and where an open one's does.
+
+    **R1250's REPAIR, APPLIED TO THE SECOND READER OF THE SAME PREDICATE.** The verdict
+    that closes a step seals its report under EK3 -- "a closure commit NEVER touches a step
+    report after that report's final verdict" -- so after closure the report CANNOT gain a
+    row, and this script was asking for one. Measured at R2 step 0's closure: it demanded
+    `R1243`, the step's only open blocking item, in a file no permitted edit could add it
+    to. A guard whose only satisfying action is forbidden is not a guard anyone can answer.
+
+    `tests/test_report_carried.py` reached the same wall from the other side (R1250) and
+    the repair there was to resolve the artifact from the verdict's own `Closes:` line.
+    This is that repair in the second place the predicate is implemented -- the FOURTH
+    time in this step that one predicate with two readers needed fixing in both, after
+    R1221's filter, R1240's scoping and the touched-line census.
+    """
+    closes = _closes(verdict)
+    m = re.fullmatch(r"(\w+)/step-?(\d+)", closes.strip()) if closes else None
+    if m:
+        artifact = ROOT / "docs" / "closure" / f"{m.group(1)}-step{int(m.group(2))}.md"
+        if artifact.is_file():
+            return artifact
+    return report
+
+
 def _newest_report_carried(report: Path) -> tuple[str, set[str]]:
     """The `Carried` section of the LAST revision in the report file."""
     text = _read(report)
@@ -152,7 +187,12 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 1
 
-    section, carried = _newest_report_carried(report)
+    # R1250, second reader: after a step closes, EK3 seals its report and the closure
+    # artifact is where the carried list lives. Open step -> the report, unchanged.
+    carrier = _carrier(verdict, report)
+    if carrier != report:
+        print(f"check_carried: the step is CLOSED, so reading {carrier.name}")
+    section, carried = _newest_report_carried(carrier)
     if not section.strip():
         print("check_carried: the newest revision has no Carried section", file=sys.stderr)
         return 1
