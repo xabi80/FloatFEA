@@ -21,6 +21,17 @@ Each file records where its text came from. **This is not uniform and the record
 * `FM.md`, `FN.md`, `FO.md`, `FP.md`, `FQ.md`, `FR.md`, `FS.md`, `FT.md`, `FU.md`,
   `FV.md`, `FW.md`, `GB.md`, `GC.md` — **verbatim** from the directive message.
   (`GB.md` was listed twice here until GC's commit — R1152.)
+* `GJ.md` — **verbatim** from the directive message. Issued by Xabier, 2026-11-18.
+  Answers the three decisions R2 step 0's report escalated: GJ1 rules FQ3 (restore the
+  lock, do not re-base), GJ2 corrects the D1-against-GI5-step-2(iii) bookkeeping, GJ3
+  confirms D1–D4 with a raised iteration cap. GJ4 opens step 1; GJ5 tightens GI2.
+* `GI.md` — **verbatim** from the directive message. Issued by Xabier, 2026-11-17.
+  Opens R2 and supersedes GG4's park and GH's ban on running FloatSim.
+* `GH.md` — **verbatim** from the directive message. Issued by Xabier, 2026-11-10.
+  A user test of the R1 tool against the newest FloatSim run, with no reviewer and no step
+  report. **`GH.md` and `GI.md` were absent from this list until GJ's commit**, which is
+  the same defect as R1152 one letter later: the files existed and were cited, and the
+  record of where their text came from did not.
 * `GG.md` — **verbatim** from the directive message. Issued by Xabier, 2026-11-10.
   Its own file, as its `Record:` line asks. The R1 tidy-up, and **the last directive before
   R2 opens**: GG1 took the dead corpus-pause clause out of both reviewer instruction files
