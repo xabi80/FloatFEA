@@ -1319,3 +1319,32 @@ defect in the R1 record and it causes no wrong number**: the FV2 door is audited
 graph and the reflog, not by the author field, and GF3 (a) makes that the mechanism outright.
 But it does mean one obvious audit of the door does not work, so it leaves R1 as an observation
 for Xabier rather than as a repair I make to the user's git configuration unasked.
+
+**SR-75: the lock's `-e git+` editable line is NOT installed, and that is recorded as a
+deviation rather than escalated.**
+*Ruling applied:* FZ rule 7 — an ambiguous instruction is resolved toward the existing
+convention — together with GI1's "from the pinned HSP worktree (tag `floatfea-ref-1`)".
+*Why:* GJ1 says build the environment from `requirements-lock.txt` **exactly** and
+escalate rather than substitute a version. Its fortieth line is
+`-e git+https://github.com/xabi80/HSP.git@928ae474...#egg=floatsim`, and installing it as
+written would clone HSP from the network into a fourth checkout, write an `egg-info` into
+that clone, and put FloatSim at `928ae474` on the path —
+`git merge-base --is-ancestor 928ae474 25de7ce` is TRUE, so that commit is an **ancestor
+of the pin and not the pin**. Obeying the line literally would break the constraint the
+environment exists to serve. **No version is substituted** — the same package is taken at
+a strictly more pinned state, from the worktree GI1 names — so GJ1's escalation clause
+("if a locked version cannot be installed … escalate with the exact pip error") is not
+reached: there is no pip error, and every one of the other 39 lines installed at its
+pinned version. Recorded in `docs/milestones/R2.md` §7a and reported at step 1 close.
+
+**SR-76: the FloatSim-environment check REFUSES rather than re-execs.**
+*Ruling applied:* FZ rule 2 — refuse rather than silently adjust.
+*Why:* GJ1 requires every FloatSim invocation to use the locked environment. Two
+mechanisms would satisfy that sentence: re-exec into `.venv-floatsim`'s interpreter when
+the running one is not it, or refuse and print the command to re-run. A re-exec is the
+more convenient and the less honest — the process that reports the result would not be
+the process the user started, and a run whose environment was silently corrected is
+indistinguishable in its output from one that was right to begin with, which is the whole
+shape FQ3 was adopted against. So FloatFEA refuses by name, naming both interpreters.
+It is also not new apparatus: it is one preflight in the command that invokes FloatSim,
+beside the three DS0 refusals that already guard the worktrees.
