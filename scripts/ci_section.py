@@ -786,9 +786,14 @@ def section() -> str:
             "",
             f"**{len(step_skips)} STEP(S) SKIPPED inside a job that ran:**"
             f" {', '.join(f'`{s}`' for s in step_skips)}."
-            " Each step of the lint job and of the ladder runs on its own"
-            " (R1243), so a skipped step is the install failing or the run"
-            " being cancelled -- never one check hiding the next.",
+            " **What a skip MEANS depends on whether the run predates R1243.**"
+            " From R1243 on, each step of the lint job and of the ladder carries"
+            " its own `if:`, so a skip is the install failing or the run being"
+            " cancelled. BEFORE it, steps stopped at the first failure, so a skip"
+            " is one check hiding the next -- which is the defect, and the first"
+            " run this block was ever pointed at showed `ladder 4` and `ladder 5`"
+            " skipped behind a red `ladder 6`. Read the run's date against"
+            " `ci.yml`'s history rather than this sentence.",
         ]
     if skipped:
         lines += [
