@@ -44,6 +44,73 @@ judge  The map above repeats figures that are measured elsewhere in this file. I
 
 ---
 
+## 0. CI at `8fe7fea`, the commit verdict 68 judged — conclusion **FAILURE**
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py`, anchored on verdict 68 at `8fe7fea` through the report's own `Answers:` line. Run `44222328359`, event `push`, conclusion **failure**.
+
+| job | passed | failed | skipped |
+|---|---|---|---|
+| lint, unit and guards | 1406 | 0 | 0 |
+| the verification ladder | 2147 | 1 | 0 |
+| CI determinism -- leg | 0 | 0 | 0 |
+| CI determinism -- ten legs agree | 0 | 0 | 0 |
+
+**Job conclusions: 4 jobs, 1 not green.**
+
+**3 STEP(S) SKIPPED inside a job that ran:** `the verification ladder / ladder 4 -- the loads are the loads`, `the verification ladder / ladder 5 -- independent confirmation`, `the verification ladder / Post Run actions/setup-python@v5`. **What a skip MEANS depends on whether the run predates R1243.** From R1243 on, each step of the lint job and of the ladder carries its own `if:`, so a skip is the install failing or the run being cancelled. BEFORE it, steps stopped at the first failure, so a skip is one check hiding the next -- which is the defect, and the first run this block was ever pointed at showed `ladder 4` and `ladder 5` skipped behind a red `ladder 6`. Read the run's date against `ci.yml`'s history rather than this sentence.
+
+**2 job(s) SKIPPED, so unavailable rather than passing:** `CI determinism -- leg`, `CI determinism -- ten legs agree`. A skipped job measured nothing; its zeros are an absence of evidence and not a pass.
+
+- the verification ladder (failure)
+
+**Failing tests named in the log: 1.**
+
+- `tests.regression.test_f6_deliverable_agrees_with_itself::test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree` (the verification ladder)
+
+---
+
+## 0a. Runs since the commit verdict 68 judged
+
+<!-- generated: scripts/ci_section.py -->
+
+Generated: `python scripts/ci_section.py --rounds`, anchored on verdict 68 at `8fe7fea` through the report's own `Answers:` line. Every run whose head is a commit in this round, from `gh run list --json databaseId,event,conclusion,status,headSha`. A run that reached no conclusion ABOUT THE CODE -- cancelled, or still running -- has **no result** and no job lines: it reached no verdict on anything, so no reason is attributed to it. A cancelled run IS `completed`, which is why the test is the conclusion and not the status (CX0, R449, R1130).
+
+| run | event | head | outcome |
+|---|---|---|---|
+| `44222328359` | push | `8fe7fea` | conclusion **failure** |
+| `44227031570` | push | `ed5b859` | conclusion **failure** |
+| `44468004759` | push | `2a7ded8` | **no result** (status `in_progress`) |
+| `44468319569` | push | `44597ae` | **no result** (status `in_progress`) |
+| `44469942995` | push | `1df2298` | **no result** (status `in_progress`) |
+| `44470087130` | push | `1e8975b` | **no result** (status `in_progress`) |
+
+**Run `44222328359`, conclusion **failure**: 1 failing test name(s) in the log.**
+- `tests.regression.test_f6_deliverable_agrees_with_itself::test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree` (the verification ladder)
+
+**Run `44227031570`, conclusion **failure**: 1 failing test name(s) in the log.**
+- `tests.regression.test_f6_deliverable_agrees_with_itself::test_R756_the_SHIPPED_report_IS_a_regeneration_of_the_current_tree` (the verification ladder)
+
+**THE FOUR `no result` ROWS ABOVE ARE RUNS THAT WERE STILL RUNNING WHEN THIS WAS PASTED,
+AND THAT IS R1237's TRAP WITH THE SAFETY CATCH NAMED.** R1237 was a FAILED run published
+as "no result" because the table was generated while the run was in flight and committed
+after it concluded. Here the four are in flight AT THIS COMMIT -- `gh run list` at the
+paste reports `in_progress` for all four, which the row states rather than hides -- and
+**the next revision regenerates this section**, which is where EG3 (ii) already puts the
+re-measurement. What the table must never do is call a concluded failure "no result"; what
+it is doing here is reporting four runs that had reached no conclusion, truthfully, at a
+commit that could not wait for them without the report having no CI section at all.
+
+**One of them is already partly readable and it is R1243's proof.** At `2a7ded8` the lint
+job finished `unit tests: failure` and then ran `guards and meta-tests: success` --
+measured on the job's own step list. Under the chaining R1243 removed, that guards step
+would have been SKIPPED behind the red one, and the only record would have been a
+job-level `failure`. That is the mechanism CZ1 (iii) was written for, caught at its first
+opportunity after the repair.
+
+---
+
 ## 1. FOR XABIER — the cause is found, and it is TWO conditions, neither of them the lock
 
 **GJ1 ruled: restore the lock, do not re-base.** The lock is restored exactly, and it was
@@ -604,17 +671,17 @@ directive behind it.
 | R1206 | **later** — §11 | carried, and the verdict says nothing further about it here |
 | R1207 | **later** — §11 | carried, and the verdict says nothing further about it here |
 | R1208 | **later** — §11 | carried, and the verdict says nothing further about it here |
-| R1212 | **later** — §11 | ','R1217','R1218','R1224') if i in t.EXPECTED])" |
+| R1212 | **later** — §11 | no clause this generator can cut -- see the verdict's Carried section |
 | R1213 | **later** — §11 | The DS0 refusal in run_floatsim_design_waves.py DOES NOT FIRE on the input this diff newly... |
 | R1214 | **later** — §11 | A key that is SET BUT WRONG is silently discarded and a different worktree is used. claim what... |
 | R1215 | **later** — §11 | docs/milestones/R2.md:5 says the marker reads 1 while :3 reads 0, and calls the shipped state... |
-| R1217 | **later** — §11 | ','R1218','R1224') if i in t.EXPECTED])" |
-| R1218 | **later** — §11 | ','R1224') if i in t.EXPECTED])" |
-| R1219 | **later** — §11 | ' in t.EXPECTED, |
+| R1217 | **later** — §11 | no clause this generator can cut -- see the verdict's Carried section |
+| R1218 | **later** — §11 | no clause this generator can cut -- see the verdict's Carried section |
+| R1219 | **later** — §11 | no clause this generator can cut -- see the verdict's Carried section |
 | R1221 | **later** — §11 | The Carried gate is parametrised over PHANTOM finding ids -- R2, and R1 too -- and no wording... |
 | R1222 | **later** — §11 | test_a_blocking_item_is_not_routed_to_4a is red because verdict 59 wrote its dispositions as... |
 | R1223 | **open** — §1 | A PUBLISHED DELIVERABLE no longer regenerates from this tree, and the two rows that moved are... |
-| R1224 | **later** — §11 | ') if i in t.EXPECTED])" |
+| R1224 | **later** — §11 | no clause this generator can cut -- see the verdict's Carried section |
 | R1225 | **open** — §1 | THE --check REFUSAL IS NOT THREAD COUNT. The npz golden moved when THIS REPOSITORY'S OWN... |
 | R1226 | **later** — §11 | R1213 ONE KEY OVER: NOTHING TIES THE TREE THE STABLE KEY NAMES TO THE TREE THE SNAPSHOT... |
 | R1227 | **later** — §11 | R1206's FOURTH SITE: tests/test_report_carried.py:579 still reads assert STEP > 0, and it goes... |
@@ -634,9 +701,8 @@ directive behind it.
 | R1241 | **later** — §11 | TWO SENTENCES THAT ONE COMMAND EACH REFUTES. Sec.14 reads "the verification ladder at 4c19570... |
 | R1242 | **later** — §11 | THE _FINDING PATH IS UNFILTERED, SO A MILESTONE LABEL CAN STILL ENTER THE PARAMETRISED SET.... |
 | R1243 | **answered** — §8 | THE RUNG REORDER BREAKS THE GATE THAT EXISTS TO PREVENT IT, AND IT TAKES THE WHOLE OF... |
-| R1244 | **later** — §11 | no clause this generator can cut -- see the verdict's Carried section |
-| R1245 | **later** — §11 | MOVED TO THE ARTIFACT AND THE CORRECTION IS RIGHT. The paragraph around it is not, and |
-| R1246 | **later** — §11 | MOVED TO THE ARTIFACT, and this one's history IS what the artifact says. Measured, |
+| R1245 | **later** — §11 | 's correction was never in any file and that the reverted |
+| R1246 | **later** — §11 | 's. One item was never written, the other was written and reverted. |
 | R1247 | **later** — §11 | no clause this generator can cut -- see the verdict's Carried section |
 | R1248 | **later** — §11 | no clause this generator can cut -- see the verdict's Carried section |
 | R1249 | **later** — §11 | THE CLOSURE ARTIFACT'S "WHICH GATES PASS" TABLE PUBLISHES TWO OF ITS FIVE ROWS AS GREEN WHERE... |
@@ -653,6 +719,11 @@ directive behind it.
 | R1260 | **later** — §11 | THE ESCALATION CITES requirements-lock.txt AS THOUGH IT WERE FLOATFEA-LOCAL, IT IS HSP's, AND... |
 | R1261 | **later** — §11 | THE TWO READERS STILL DIVERGE ON THE MILESTONE CHECK, WHICH IS THE SIXTH INSTANCE OF THIS... |
 | R1262 | **later** — §11 | THE BLOCK IS LABELLED "CZ1 (ii)-(iv)" AND CARRIES (ii) PLUS A RUN CENSUS; (iii)'s EVIDENCE IS... |
+| R1263 | **later** — §11 | THE REPLACEMENT FOR THE FIGURE YOU CORRECTED IS ALSO WRONG, AND IT IS THE REVIEWER'S NUMBER... |
+| R1264 | **later** — §11 | THE REPAIR IS CORRECT AND NOTHING HOLDS IT. R1256's CLOSING CONDITION HAD THREE LIMBS; TWO ARE... |
+| R1265 | **later** — §11 | THE SEVENTH INSTANCE OF ONE PREDICATE WITH TWO READERS, IN THE FUNCTION THE SIXTH WAS FIXED IN:... |
+| R1266 | **later** — §11 | A HEADING ANNOUNCING THE SIX-INSTANCE TABLE IS FOLLOWED BY THREE BLANK LINES AND A DIFFERENT... |
+| R1267 | **later** — §11 | THE WHOLE-SUITE LINE CAN BE SHADOWED BY PREPENDING INSIDE THE CZ1 BLOCK -- AT EXACTLY THE... |
 ```
 claim  every row of the closure artifact's carried table is answered above, and the ids
        this section does NOT name are the ones that table records as already answered
