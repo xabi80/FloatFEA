@@ -37,7 +37,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from floatfea import hsp_pin  # noqa: E402
+from floatfea import floatsim_env, hsp_pin  # noqa: E402
 from floatfea.io.integrator import (  # noqa: E402
     generalized_alpha_coefficients,
     rho_inf_from_deck,
@@ -180,12 +180,27 @@ def solve_one(period_s: float, duration_s: float, dt: float) -> tuple:
         sys.path.insert(0, str(path))
     import warnings
 
+    # **WHICH FLOATSIM ANSWERED THE IMPORT, CHECKED RATHER THAN ASSUMED (GJ1).** The
+    # inserts above put the pinned worktree on `sys.path` BEFORE this block, which is what
+    # makes these imports resolve to the pin -- and that is a property of call order, not
+    # of any declaration. Measured in the system interpreter: a bare `import floatsim`
+    # lands in a working checkout 121 commits past the pin, because an editable install's
+    # finder sits after `PathFinder` in `sys.meta_path`. Nine source files differ between
+    # the two trees and one of them is the radiation convolution `discrete_residual`
+    # imports below.
+    #
+    # Every caller of `solve_one` reaches the refusal, so the guarantee stops depending on
+    # the order in which a caller happened to import things. `docs/milestones/R2.md` §7
+    # carries the measurements.
+    import floatsim
     import platform_rao_pilot as prp
     from floatsim.hydro.excitation import make_regular_wave_force
     from floatsim.hydro.readers.capytaine import read_capytaine
     from floatsim.solver.newmark import integrate_cummins
     from floatsim.solver.ramp import HalfCosineRamp
     from floatsim.waves.regular import RegularWave
+
+    floatsim_env.refuse_unless_declared_worktree(floatsim.__file__, declared=HSP_RUNS)
 
     deck = prp._deck_with_drag()
     print(f"  {_apply_platform_override(deck)}", flush=True)

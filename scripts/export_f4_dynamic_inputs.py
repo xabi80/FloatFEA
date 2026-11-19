@@ -69,7 +69,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "scripts" / "measure"))
 
 # R1225: both already existed and nothing in this path called either.
-from floatfea import determinism, hsp_pin  # noqa: E402
+from floatfea import determinism, floatsim_env, hsp_pin  # noqa: E402
 
 OUT_DIR = ROOT / "data" / "f4"
 NPZ = OUT_DIR / "dynamic_inputs.npz"
@@ -180,6 +180,114 @@ def _hsp_tag() -> str:
         if out.returncode == 0 and out.stdout.strip():
             return f"{out.stdout.strip()}  ({repo.name})"
     return f"UNKNOWN -- {repo} is not a git checkout"
+
+
+def _is_tracked(path: Path) -> bool:
+    """Is this file committed to this repository?
+
+    `git ls-files --error-unmatch` is the question asked directly, rather than "is it
+    under `data/`" or any other guess from the path: a scratch export outside the
+    repository is untracked, a new destination inside it is untracked until somebody
+    commits it, and the committed golden is tracked. A `git` that cannot answer -- not a
+    repository, binary missing -- returns False, because refusing an export on the
+    grounds that the check itself failed would stop work over a question nobody asked.
+    """
+    try:
+        done = subprocess.run(
+            ["git", "-C", str(ROOT), "ls-files", "--error-unmatch", str(path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError:  # pragma: no cover - git missing
+        return False
+    return done.returncode == 0
+
+
+def _recorded_path(path: Path) -> str:
+    """How a written file names itself in its own provenance.
+
+    Repository-relative with forward slashes when it is under the root -- which is what
+    `data/f4/dynamic_inputs.npz` has always been, so the committed sidecar's field does
+    not move -- and the absolute path otherwise, because a relative path computed against
+    a root the file is not under is not a path to anything.
+    """
+    try:
+        return path.resolve().relative_to(ROOT).as_posix()
+    except ValueError:
+        return str(path.resolve())
+
+
+def sensitivity_note(prov_path: Path) -> str:
+    """What a bit-exact refusal has to say beside the count of differing arrays.
+
+    **WITHOUT THIS A READER GETS A NUMBER AND NO HANDLE.** R2 step 1 measured the handle
+    on `case0` at `T_full = 10 s`, one variable per step: the same case is BIT-IDENTICAL
+    at numpy 2.4.0 with the thread counts UNPINNED, differs at numpy 2.4.0 with them
+    pinned to 1, and differs DIFFERENTLY at numpy 2.4.4 unpinned -- while the three PINNED
+    cells at numpy 2.4.0 and 2.4.4 agree to every printed digit across two kernel
+    settings -- but numpy 2.5.4 PINNED does not agree with them, so pinning narrows the
+    version sensitivity without removing it. So two conditions move this comparison and
+    neither is in the arrays being compared.
+
+    **AND IT SAYS WHETHER THE FILE IT COMPARED AGAINST RECORDS THEM.** The committed
+    sidecar predates R1225(ii)'s `environment` block, so it records neither, and that
+    absence is printed rather than left for someone to discover: a comparison against a
+    file whose conditions are unrecorded cannot be attributed to any of them.
+    """
+    here = {v: os.environ.get(v) for v in determinism.THREAD_ENV}
+    recorded: object = None
+    if prov_path.is_file():
+        try:
+            recorded = json.loads(prov_path.read_text(encoding="utf-8")).get("environment")
+        except (OSError, ValueError):
+            recorded = None
+    says = (
+        "records an `environment` block -- compare it against the two lines above"
+        if recorded
+        else "RECORDS NEITHER (its sidecar predates that block)"
+    )
+    return (
+        "  THE COMPARISON IS SENSITIVE TO THE THREAD COUNT AND THE LIBRARY VERSIONS.\n"
+        f"    this run   threads {here}\n"
+        f"               OPENBLAS_CORETYPE {os.environ.get('OPENBLAS_CORETYPE')}\n"
+        f"    the file   {says}\n"
+        "    measured   bit-identical at numpy 2.4.0 with the threads UNPINNED. Six\n"
+        "               arrays differ at every other configuration tried, and the\n"
+        "               AMOUNTS differ too: 2.4.0 and 2.4.4 pinned agree with each\n"
+        "               other, 2.4.4 unpinned does not, and 2.5.4 pinned does not.\n"
+        "    FQ3        if the golden moves under these pins, STOP and report rather\n"
+        "               than re-baselining."
+    )
+
+
+def covered_headings() -> list[float]:
+    """The wave headings the pinned BEM dataset actually carries, in degrees.
+
+    **FL2(c)'s REFUSAL NEEDED A SET NOBODY COULD PRODUCE, AND THIS IS IT.**
+    `floatfea/run/pipeline.py:879`'s `refuse_uncovered_headings` has shipped complete and
+    tested since R1, with its call site written as a comment at `cli.py:1279` because the
+    covered set "is a fact about the PINNED HSP STATE: the datasets and their reader live
+    in HSP, this repository contains neither". Both halves of that are still true. What
+    changed at GJ1 is that FloatFEA now has an interpreter with `capytaine` and `xarray`
+    in it, so the fact can be ASKED FOR instead of hard-coded.
+
+    Asked of HSP's own reader rather than of the file: `read_capytaine` sorts the headings
+    and converts radians to degrees, and a second interpretation of the same `.nc` here
+    would be a second reader of one predicate -- the defect shape R2 step 0 paid five
+    rounds for. Whatever FloatSim thinks it covers is what is covered.
+    """
+    import report_joint_reactions as rjr
+
+    for path in (rjr.HSP_RUNS, rjr.STUDY):
+        sys.path.insert(0, str(path))
+    import floatsim
+    import platform_rao_pilot as prp
+    from floatsim.hydro.readers.capytaine import read_capytaine
+
+    floatsim_env.refuse_unless_declared_worktree(floatsim.__file__, declared=rjr.HSP_RUNS)
+    hdb = read_capytaine(prp._PLAT_NC)
+    return [float(h) for h in np.asarray(hdb.heading_deg, dtype=np.float64)]
 
 
 def _inertia_matrix(inertia: Any) -> np.ndarray:
@@ -427,7 +535,62 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="EX0(c): regenerate and compare against the committed file, do not overwrite",
     )
+    ap.add_argument(
+        "--out",
+        type=Path,
+        default=None,
+        help="directory to write into; default data/f4, which is the committed location",
+    )
+    ap.add_argument(
+        "--allow-regenerate",
+        action="store_true",
+        help="overwrite a COMMITTED dynamic-inputs file. Needs a written reason in the "
+        "milestone closure artifact, per CLAUDE.md section Testing.",
+    )
+    ap.add_argument(
+        "--covered-headings",
+        action="store_true",
+        help="print the BEM dataset's covered headings as JSON and exit (FL2(c))",
+    )
     args = ap.parse_args(argv)
+
+    # **GJ1's PREFLIGHT, AND IT IS THE FIRST THING THIS COMMAND DOES.** Every FloatSim
+    # invocation by FloatFEA runs under the environment built from the pinned worktree's
+    # own `requirements-lock.txt`. It REFUSES rather than re-execing (SR-76): a run whose
+    # environment was silently corrected reads exactly like one that was right to begin
+    # with, and FQ3 was adopted because an artifact's bit-exactness gate was deciding
+    # whether to believe it while the interpreter underneath had moved -- numpy
+    # 2.4.4 -> 2.5.4, scipy 1.17.1 -> 1.18.1, 36 of 100 arrays differing with all 64
+    # INPUT arrays bit-identical.
+    #
+    # It is BEFORE the heading query as well as before the solve, because the query opens
+    # the BEM dataset with `capytaine` and `xarray`, whose versions the same lock pins.
+    lock_file = floatsim_env.lock_path()
+    lock = floatsim_env.refuse_unless_locked(
+        lock_file,
+        # The MODE, not just the command: the preflight runs before the mode branch, and
+        # a message reading "cannot export the dynamic inputs" for `--covered-headings`
+        # describes an action nobody asked for. All three need the locked environment --
+        # the heading query opens the `.nc` with `capytaine` and `xarray`, whose versions
+        # the same lock pins -- so the refusal is right and only its noun was wrong.
+        doing=(
+            "read the BEM dataset's covered headings"
+            if args.covered_headings
+            else (
+                "regenerate and compare the dynamic inputs"
+                if args.check
+                else "export the dynamic inputs"
+            )
+        ),
+    )
+
+    if args.covered_headings:
+        print(json.dumps({"heading_deg": covered_headings()}))
+        return 0
+
+    out_dir = args.out if args.out is not None else OUT_DIR
+    npz_path = out_dir / NPZ.name
+    prov_path = out_dir / PROVENANCE.name
     periods = args.period or list(g41.T_FULL)
 
     cases = [export_case(p, args.dt) for p in periods]
@@ -450,18 +613,49 @@ def main(argv: list[str] | None = None) -> int:
     # used without an assumption, and the assumption was wrong by 8x and 16x.
     flat["froude_lambda"] = np.array(g41.LAMBDA, dtype=np.float64)
 
-    target = NPZ if not args.check else NPZ.with_suffix(".check.npz")
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    # **A COMMITTED GOLDEN IS NOT OVERWRITTEN WITHOUT SAYING SO (R2 step 1).** Without
+    # this, `floatfea export <the export config>` -- whose `outputs.directory` is the
+    # committed location, because that is what makes `--check` compare against the golden
+    # -- silently replaces `data/f4/dynamic_inputs.npz`. `CLAUDE.md` § Testing:
+    # "Regenerating a golden file to match new output, without that explanation, is the
+    # same error as widening a tolerance", and FQ3 is a live escalation about this exact
+    # file. The refusal names `--check`, which is what somebody who wanted to COMPARE
+    # meant to type, and `--allow-regenerate`, which is what somebody who meant to
+    # re-baseline has to type and then justify in a closure artifact.
+    if not args.check and not args.allow_regenerate and _is_tracked(npz_path):
+        print(
+            f"  REFUSED: {_recorded_path(npz_path)} is COMMITTED, and this would "
+            f"overwrite it.\n"
+            "    to COMPARE against it, which is almost certainly what you want:\n"
+            "        add --check; it writes nothing and reports every differing array\n"
+            "    to RE-BASELINE it, which needs a written reason in the closure "
+            "artifact:\n"
+            "        add --allow-regenerate\n"
+            "    `CLAUDE.md` section Testing: regenerating a golden to match new output, "
+            "without\n"
+            "    that explanation, is the same error as widening a tolerance."
+        )
+        return 1
+    target = npz_path if not args.check else npz_path.with_suffix(".check.npz")
+    out_dir.mkdir(parents=True, exist_ok=True)
     # `savez_compressed`'s stub takes `allow_pickle` where the arrays go, so a keyword
     # splat of named arrays -- which is the documented call -- does not type. Narrow
     # ignore rather than a cast, because the call itself is right.
     np.savez_compressed(target, **flat)  # type: ignore[arg-type]
     size_mb = target.stat().st_size / (1 << 20)
-    print(f"\n  wrote {target.relative_to(ROOT)}  ({size_mb:.2f} MiB, {len(flat)} arrays)")
+    # `_recorded_path`, NOT `relative_to(ROOT)`: the latter RAISES for a path outside the
+    # repository, and `--out` -- added in this same step -- made that reachable. Measured
+    # by running it rather than by reading it: a 26-minute export into a scratch directory
+    # wrote the npz, raised HERE, and never reached the provenance, so `floatfea run` on
+    # the result published "wave basis: NOT RECORDED" in both CSVs and in the report. The
+    # arrays were fine and the record beside them did not exist, which is the worse of the
+    # two failures -- and no unit test reached it, because the flag's own tests stop at the
+    # argv the engine is handed.
+    print(f"\n  wrote {_recorded_path(target)}  ({size_mb:.2f} MiB, {len(flat)} arrays)")
 
     if args.check:
-        if not NPZ.exists():
-            print(f"  REFUSED: {NPZ.relative_to(ROOT)} is not committed; nothing to compare")
+        if not npz_path.exists():
+            print(f"  REFUSED: {npz_path} is not committed; nothing to compare")
             return 1
         # CLOSED BEFORE THE UNLINK (FO1). These were left open, and `target.unlink()`
         # below then raised `PermissionError: [WinError 32] ... being used by another
@@ -469,7 +663,7 @@ def main(argv: list[str] | None = None) -> int:
         # `worst relative difference 0.000000e+00` exited on a traceback and left a
         # 12 MiB `dynamic_inputs.check.npz` in `data/f4/`. The comparison was right and
         # the gate looked broken, which is the worst of both.
-        committed_npz = np.load(NPZ, allow_pickle=False)
+        committed_npz = np.load(npz_path, allow_pickle=False)
         fresh_npz = np.load(target, allow_pickle=False)
         committed = dict(committed_npz)
         fresh = dict(fresh_npz)
@@ -515,13 +709,27 @@ def main(argv: list[str] | None = None) -> int:
                 f"{differing[:6]}. A regeneration either reproduces it exactly or it does "
                 f"not (Q8); there is no tolerance on this comparison."
             )
+            # **AND THE MESSAGE NAMES THE TWO CONDITIONS THE COMPARISON IS SENSITIVE TO,
+            # AND WHETHER THE FILE IT COMPARED AGAINST RECORDS THEM.** Without this a
+            # reader gets a count and no handle. R2 step 1 measured the handle: the same
+            # case is BIT-IDENTICAL with the thread counts unpinned and differs at
+            # `3.0e-15` on `lam` with them pinned to 1, at three different numpy/scipy
+            # sets -- so the thread configuration is the variable and the library versions
+            # are not. `ci.yml` says the same thing from the other side: "THE BLAS KERNEL,
+            # PINNED (CF1). Thread count alone was not enough."
+            #
+            # The committed sidecar predates R1225(ii)'s `environment` block, so it records
+            # NEITHER. That absence is printed rather than left for someone to discover:
+            # a comparison against a file whose conditions are unrecorded cannot be
+            # attributed, and saying so is the honest output.
+            print(sensitivity_note(prov_path))
             target.unlink()
             return 1
         print(f"  {len(committed)} arrays reproduce the committed file EXACTLY")
         target.unlink()
         return 0
 
-    npz_sha = _sha256(NPZ)
+    npz_sha = _sha256(npz_path)
     prov = {
         "hsp_tag": _hsp_tag(),
         "override": {"platform": ER0_OVERRIDE},
@@ -538,13 +746,31 @@ def main(argv: list[str] | None = None) -> int:
         # R1225. THE TOOLCHAIN THIS FILE WAS BUILT UNDER, RECORDED. It was not, and the
         # consequence was measured: `--check` was GREEN at `cfb76ff` and REFUSES at
         # `9e1092a` with 36 of 100 arrays differing, while all 64 INPUT arrays stayed
-        # bit-identical and the HSP worktree stayed at `floatfea-ref-1`. One variable
-        # moved between those commits and it is not in this file: `constraints-dev.txt`'s
-        # numpy and scipy pins (`09d5bc9`), 2.4.4 -> 2.5.4 and 1.17.1 -> 1.18.1.
+        # bit-identical and the HSP worktree stayed at `floatfea-ref-1`. A variable moved
+        # between those commits and it is not in this file: `constraints-dev.txt`'s numpy
+        # and scipy pins (`09d5bc9`), 2.4.0 -> 2.5.4 and 1.17.1 -> 1.18.1.
         #
-        # The thread count is NOT the cause -- it was unpinned on both sides of the
-        # boundary -- and `ci.yml` says why that was never sufficient anyway: "THE BLAS
-        # KERNEL, PINNED (CF1). Thread count alone was not enough."
+        # **AND THE WORD "ONE" IS WHAT R2 STEP 1 CORRECTED. THERE ARE TWO.** This comment
+        # read "One variable moved", and it also read "the thread count is NOT the cause --
+        # it was unpinned on both sides of the boundary". The second sentence is sound
+        # about THAT boundary and was then used to read a red measured with the threads
+        # PINNED, which put a second variable into a cell meant to have one. Measured on
+        # `case0` at `T_full = 10 s`, one variable per step:
+        #
+        #   numpy 2.4.0, threads UNPINNED   16 of 16 arrays exact      <- the golden
+        #   numpy 2.4.0, threads pinned 1   10 exact, 6 differ
+        #   numpy 2.4.4, threads pinned 1   10 exact, 6 differ, SAME magnitudes as 2.4.0
+        #   numpy 2.4.4, threads UNPINNED   10 exact, 6 differ, DIFFERENT magnitudes
+        #   numpy 2.5.4, threads pinned 1   10 exact, 6 differ, DIFFERENT again
+        #
+        # So the committed file needs numpy 2.4.0 AND an unfixed thread count, together.
+        # **AND "PINNING MAKES IT VERSION-INDEPENDENT" IS TOO STRONG**: it was written on
+        # the first three rows, before the last was measured. Pinning makes 2.4.0 and 2.4.4
+        # agree; 2.5.4 pinned differs from both. Pinning NARROWS the version sensitivity
+        # and does not remove it.
+        # `ci.yml` says the other half: "THE BLAS KERNEL, PINNED (CF1). Thread count alone
+        # was not enough." The full cells are in `docs/reports/R2/step-1.md` sec. A2, which
+        # is regenerated by rule, rather than here, which is not (BI3).
         #
         # So a bit-exactness gate was deciding whether this artifact is believed while
         # the conditions its answer depends on appeared nowhere in the artifact. Both
@@ -563,6 +789,22 @@ def main(argv: list[str] | None = None) -> int:
                 "provenance whose environment differs from this one is FQ3's case -- "
                 "'if the golden moves under these pins, STOP and report rather than "
                 "re-baselining' -- and not a finding about FloatSim."
+            ),
+            # **GJ1: THE LOCKED ENVIRONMENT'S PATH AND THE LOCK'S HASH, RECORDED.** The
+            # block above was R1225's answer to "the conditions appeared nowhere in the
+            # artifact", and it recorded the versions WITHOUT recording what they were
+            # supposed to be -- so a reader could see numpy 2.5.4 and had nothing to
+            # compare it against. This carries the lock itself: where it is, its sha256,
+            # how many pins it holds, and the one editable line SR-75 does not install.
+            #
+            # Recorded here AND asserted at the preflight above, which is R1225's own
+            # lesson applied to its own repair: recording without asserting is how the
+            # drift got in, and asserting without recording leaves a reader unable to see
+            # what was asserted.
+            "locked": floatsim_env.record(
+                lock_file=lock_file,
+                lock=lock,
+                floatsim_file=sys.modules["floatsim"].__file__,
             ),
         },
         # R726: THE RUN PARAMETERS AS EXPLICIT FIELDS, so a consumer can assert them
@@ -583,10 +825,18 @@ def main(argv: list[str] | None = None) -> int:
             "window": "DQ6: the last 5 whole periods, starting no earlier than ramp + 10",
             "mass_eps": float(g41.MASS_EPS),
         },
-        "npz": {"path": "data/f4/dynamic_inputs.npz", "sha256": npz_sha},
+        # **THE PATH WRITTEN HERE IS THE PATH WRITTEN TO (R2 step 1).** This read
+        # `"data/f4/dynamic_inputs.npz"`, a literal, which was true for as long as that
+        # was the only place this script could write. `--out` made it configurable in
+        # this same step and would have left every export outside `data/f4` carrying a
+        # sidecar naming a file it is not beside -- a record saying something other than
+        # what happened, which is FR1's second head in the provenance itself. Relative to
+        # the repository root where it is under it, absolute where it is not, so the
+        # committed file's own field is unchanged.
+        "npz": {"path": _recorded_path(npz_path), "sha256": npz_sha},
     }
-    PROVENANCE.write_text(json.dumps(prov, indent=2) + "\n", encoding="utf-8", newline="\n")
-    print(f"  wrote {PROVENANCE.relative_to(ROOT)}  sha256 {npz_sha[:16]}...")
+    prov_path.write_text(json.dumps(prov, indent=2) + "\n", encoding="utf-8", newline="\n")
+    print(f"  wrote {prov_path}  sha256 {npz_sha[:16]}...")
     return 0
 
 

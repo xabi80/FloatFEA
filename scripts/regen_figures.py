@@ -36,6 +36,8 @@ OUT = ROOT / "docs" / "milestones" / "F2_figures.md"
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tests" / "verification" / "rung1"))
 
+from floatfea import determinism as _determinism  # noqa: E402
+
 
 class _Silent:
     """The `capsys` fixture the shipped headroom test takes, without pytest."""
@@ -648,7 +650,10 @@ def tie_set(edges: list[tuple[float, str]], window: float) -> list[str]:
 # one whose deletion `tests/test_ci_canonical_environment.py` reddens. What
 # kernel OpenBLAS then selected is measured on CI by the ten legs agreeing.
 CANONICAL_PYTHON = "3.13"
-CANONICAL_CORETYPE = "Haswell"
+CANONICAL_CORETYPE = _determinism.CANONICAL_CORETYPE
+"""Single-sourced in `floatfea/determinism.py`. This was its own string literal
+until GJ1 needed a third reader in `floatfea/cli.py`; the name is kept so the two
+call sites below read unchanged."""
 
 # Q8's third local class, DERIVED FROM THE GENERATOR RATHER THAN GRANTED BY A
 # LIST (CI3, R312). A figure is floor-class when the code that produces it says

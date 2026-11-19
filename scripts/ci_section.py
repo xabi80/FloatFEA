@@ -763,6 +763,33 @@ def section() -> str:
     # the table as `0 | 0 | 0` under "0 not green" with nothing saying so, and
     # a reader counts it among the greens. That is the distinction CK2 draws
     # and the table collapsed it.
+    # **AND THE SAME DISTINCTION ONE LEVEL DOWN, WHICH IS R1243's SECOND HALF.** A job
+    # reports one conclusion for however many steps it has, and steps in a job stop at the
+    # first failure -- so a red `mypy` used to leave `unit tests` and `guards and
+    # meta-tests` SKIPPED inside a job reported simply as `failure`, and CZ1 (iii) exists
+    # because that is how "CI had never run R1's unit tests or guards at all" happened
+    # without anything in the record saying so. `ci.yml` now runs each step on its own
+    # (`!cancelled() && steps.deps.outcome == 'success'`), so a skipped step means the
+    # INSTALL failed or the run was cancelled -- both of which a reader has to be told
+    # rather than left to infer from a job-level `failure`.
+    #
+    # R1243's repair condition asks for "a CI section that names skipped STEPS". This is
+    # that sentence, and it reads the same `--json jobs` payload the table above does.
+    step_skips = [
+        f"{job['name']} / {step['name']}"
+        for job in jobs
+        for step in job.get("steps") or []
+        if step.get("conclusion") == "skipped"
+    ]
+    if step_skips:
+        lines += [
+            "",
+            f"**{len(step_skips)} STEP(S) SKIPPED inside a job that ran:**"
+            f" {', '.join(f'`{s}`' for s in step_skips)}."
+            " Each step of the lint job and of the ladder runs on its own"
+            " (R1243), so a skipped step is the install failing or the run"
+            " being cancelled -- never one check hiding the next.",
+        ]
     if skipped:
         lines += [
             "",

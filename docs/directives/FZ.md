@@ -1348,3 +1348,35 @@ indistinguishable in its output from one that was right to begin with, which is 
 shape FQ3 was adopted against. So FloatFEA refuses by name, naming both interpreters.
 It is also not new apparatus: it is one preflight in the command that invokes FloatSim,
 beside the three DS0 refusals that already guard the worktrees.
+
+**SR-77: SR-41 is CLOSED by GJ4, not by a decision — the message it ledgered no longer exists.**
+*Ruling applied:* FZ rule 5 (a self-found defect is fixed with a named test row), read with
+BP0 (a statement whose rule has moved is rewritten in the same commit).
+*Why:* SR-41 ledgered `floatfea export`'s "not implemented in R1 step 1" refusal, correctly:
+the outcome was right, the step reference was stale, and editing a user-visible refusal
+string for no change in what a user can do was not worth a round. **GJ4 replaced the
+refusal with the run, so the string is gone and the ledger row has no subject.** What went
+with it is a whole subsection of `docs/USER_GUIDE.md`, which quoted that message and said
+"today it refuses" — prose that would have been false the moment step 1 landed. It is
+rewritten in the same commit, with both surviving refusals' output pasted from a real run,
+and the new behaviour is held by `tests/unit/test_cli_export_refusals.py`.
+*The reusable half:* a ledgered item can be closed by a later change rather than by a
+later decision, and the ledger does not notice. SR-41's subject was a string; the string's
+removal is what closed it.
+
+**SR-78: GI3(e)'s CONFIG KEY is built in step 1 rather than ledgered, because its absence
+made a shipped docstring false.**
+*Ruling applied:* CW0 — prose in the source tree is a test, a triple, or deleted — read with
+FZ rule 5.
+*Why:* GI3(e) asked, in its own words, to "make it a config key with an env-var fallback".
+R2 step 0 built the env-var half and the default, and `hsp_pin.worktree`'s docstring named
+the key anyway: "`declared` (a config key, `floatsim.worktree_runs` /
+`floatsim.worktree_stable`)". **No such key existed and `_reject_unknown` would have
+refused one.** Measured: `grep` over every `worktree(` call shows no production site passed
+`declared`, so the first arm of that decision table was reachable only from `tests/`, under
+a docstring describing a key nobody could write — and GJ1 was about to add a second copy of
+the same false sentence for the venv. The repair is three optional keys in the `floatsim:`
+block, which is smaller than a paragraph explaining a dead branch, and it is what the
+directive asked for in the first place. Held by three rows in
+`tests/unit/test_cli_export_refusals.py`, including the inverted one: a FOURTH key is still
+refused, so a typo like `worktree_run` cannot fall through to the environment.

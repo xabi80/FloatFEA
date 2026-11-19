@@ -382,7 +382,15 @@ jobs:
       # R824 / FP2: ONE PINNED SET, used here and by the documented local setup.
       # Five of six tools differed between CI and local at R1 step 1, and the gap
       # was a CI-only mypy red that then skipped this job's unit tests and guards.
-      - run: python -m pip install --upgrade pip && pip install -c constraints-dev.txt -e ".[dev]"
+      - name: install
+        id: deps
+        run: python -m pip install --upgrade pip && pip install -c constraints-dev.txt -e ".[dev]"
+      # **R1243 APPLIES HERE TOO, AND THIS JOB IS WHERE THE DEFECT WAS MEASURED.** CZ1
+      # (iii) exists because a CI-only `mypy` red SKIPPED this job's `unit tests` and
+      # `guards and meta-tests` steps, so "CI had never run R1's unit tests or guards at
+      # all" -- which is the comment four lines above this one. A lint error hiding the
+      # unit suite is the same mechanism R1243 names in the ladder, in the job whose
+      # skipped steps CZ1 (iii) asks a reader to look for.
       # CM2: THE WORKFLOW IS LINTED BEFORE IT IS TRUSTED. A duplicate `if:`
       # key silently discarded a gate and nothing in this repository noticed
       # -- `yaml.safe_load` keeps the last key and reports nothing, which is
@@ -390,6 +398,12 @@ jobs:
       # failure on that shape, and `tests/test_ci_workflow_is_wellformed.py`
       # asserts the same thing in the suite, where it runs without a binary.
       - name: actionlint
+        # NOT gated on the install, unlike every other step here: `actionlint` is a
+        # container action that reads `.github/workflows/` and needs nothing this job
+        # pip-installed. Gating it on `deps` would let a broken install hide the
+        # WORKFLOW lint -- one check hiding another, which is the defect R1243 is about,
+        # reintroduced three lines after fixing it.
+        if: ${{ !cancelled() }}
         uses: raven-actions/actionlint@v2
       # `scripts/` IS LINTED TOO (EB3, C75b). The pathspec was `floatfea tests`,
       # so `write_verdict.py`, `ci_section.py`, `check_carried.py`, `suite_count.py`
@@ -412,12 +426,16 @@ jobs:
       # present on a CI runner. **That is exactly why it must not be on a gate's path**,
       # and R721 is what happened when something like it was.
       - name: ruff
+        if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
         run: ruff check floatfea tests scripts
       - name: black --check
+        if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
         run: black --check floatfea tests scripts
       - name: mypy
+        if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
         run: mypy floatfea scripts/f4_dynamic_residual.py
       - name: unit tests
+        if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
         run: pytest tests/unit -q
       # `GH_TOKEN` IS FOR ONE TEST AND IT IS NAMED (CY3, R462).
       # `test_the_CI_TABLE_agrees_with_gh_FOR_EVERY_ROW` asks `gh run view`
@@ -427,6 +445,7 @@ jobs:
       # token is not optional: without it the guard job goes red and says
       # why, which is the honest state for a check that cannot run.
       - name: guards and meta-tests
+        if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: pytest tests --ignore=tests/unit --ignore=tests/verification --ignore=tests/regression -q
@@ -517,12 +536,40 @@ jobs:
       # R824 / FP2: ONE PINNED SET, used here and by the documented local setup.
       # Five of six tools differed between CI and local at R1 step 1, and the gap
       # was a CI-only mypy red that then skipped this job's unit tests and guards.
-      - run: python -m pip install --upgrade pip && pip install -c constraints-dev.txt -e ".[dev]"
+      - name: install
+        id: deps
+        run: python -m pip install --upgrade pip && pip install -c constraints-dev.txt -e ".[dev]"
+      # **R1243: THE CHAINING IS STOPPED (step 1).** Steps in a job stop at the first
+      # failure, so every step below used to be hidden behind every red step above it.
+      # R1239 tried to fix that by REORDERING, and R1243 measured what the reorder cost
+      # and reverted it: choosing which step gets hidden is not a fix, because the
+      # mechanism hides one either way. Two runs, one variable:
+      #
+      #   rungs 1,2,3,6   ladder row  2143 passed, 1 failed, 0 skipped
+      #   rungs 1,2,3,4   ladder row  2011 passed, 1 failed, 0 skipped
+      #                   -477 (rung 6 AND the whole of tests/regression), +345 (rung 4)
+      #
+      # So each step below runs on its own. The condition names the real dependency --
+      # the INSTALL, not the step before it -- because a rung cannot run without its
+      # dependencies and a rung's result does not depend on another rung's exit code.
+      # `!cancelled()` rather than `always()`: a superseded run is cancelled on purpose
+      # (see the header of this file) and resurrecting its steps would spend a runner on
+      # a result nobody will read.
+      #
+      # **THE LADDER'S ORDERING RULE IS UNCHANGED AND IT MOVES TO WHERE IT BELONGS.**
+      # `docs/verification/README.md` says a failure at rung n makes rung n+1
+      # UNINTERPRETABLE -- which is an instruction to the reader, not a reason to destroy
+      # the evidence. CH3's order is kept below so the rungs still read top-down, and
+      # `scripts/ci_section.py` names every step's own conclusion so a reader can see
+      # which rungs ran under a red rung 1.
       - name: "ladder 1 -- the solver is a solver"
+        if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
         run: sh scripts/run_rung.sh full:tests/verification/rung1
       - name: "ladder 2 -- the element is the element"
+        if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
         run: sh scripts/run_rung.sh full:tests/verification/rung2
       - name: "ladder 3 -- the model is the platform"
+        if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
         run: sh scripts/run_rung.sh full:tests/verification/rung3
       # R1243 REVERTS R1239's REPAIR. The order below is CH3's and it is deliberate; the
       # comment eight lines above this one says so, and I reordered the steps without
@@ -546,8 +593,11 @@ jobs:
       # carried by name, and `tests/test_ci_determinism_gate.py` asserts the position
       # below in the meantime.
       - name: "ladder 6 -- it stays fixed"
+        if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
         run: sh scripts/run_rung.sh empty:tests/verification/rung6 full:tests/regression
       - name: "ladder 4 -- the loads are the loads"
+        if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
         run: sh scripts/run_rung.sh full:tests/verification/rung4
       - name: "ladder 5 -- independent confirmation"
+        if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
         run: sh scripts/run_rung.sh full:tests/verification/rung5

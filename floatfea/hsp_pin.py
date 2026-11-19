@@ -14,6 +14,7 @@ and is one of the more valuable things this tool will produce.
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from pathlib import Path
 from typing import Final, Literal
 
@@ -81,59 +82,106 @@ def worktree(
     preflight still refuses, with its own message, and R1208's three DS0 refusals
     are untouched. `require=True` is for a caller that is about to open the tree
     and wants one refusal naming every place it looked.
+
+    The decision table itself lives in `resolve_declared_path` -- see its docstring
+    for why it is one function and not two copies.
     """
     if which not in _LEGACY_SIBLING:
         raise ValueError(f"which must be 'runs' or 'stable', not {which!r}")
     env_name = HSP_RUNS_ENV if which == "runs" else HSP_STABLE_ENV
     legacy = _repo_root().parent / _LEGACY_SIBLING[which]
+    return resolve_declared_path(
+        what=f"HSP {which} worktree",
+        declared=declared,
+        declared_source=f"declared (floatsim.worktree_{which})",
+        env_name=env_name,
+        fallback=legacy,
+        fallback_source=f"legacy sibling of the repo root: {legacy}",
+        what_require=f"pinned HSP {which} worktree",
+        require=require,
+        exists=Path.is_dir,
+        noun="a directory",
+        hint=(f"Set ${env_name}, or declare floatsim.worktree_{which} in the run config."),
+        extra=f" (tag {HSP_TAG})",
+    )
+
+
+def resolve_declared_path(
+    *,
+    what: str,
+    what_require: str | None = None,
+    declared: Path | str | None,
+    declared_source: str,
+    env_name: str,
+    fallback: Path,
+    fallback_source: str,
+    require: bool,
+    exists: Callable[[Path], bool],
+    noun: str,
+    hint: str,
+    extra: str = "",
+) -> Path:
+    """`declared` key, then `$env_name`, then `fallback`. One table, one reader.
+
+    **IT IS ONE FUNCTION BECAUSE A SECOND COPY OF THIS TABLE IS THE DEFECT R2 STEP 0
+    PAID FIVE ROUNDS FOR.** That step's one recurring shape was "one predicate, two
+    readers, diverging on a clause after they were made to agree on the first" --
+    R1221, R1240, R1250, R1256 and R1261 were each that, and each needed fixing twice.
+    GJ1 adds a third thing to resolve by exactly this table (the FloatSim interpreter),
+    so the table is factored here rather than written again. `worktree()`'s behaviour is
+    unchanged and `tests/unit/test_hsp_worktree_resolution.py` is what says so.
+
+    The three rules it carries, each earned at a measured defect:
+
+    * **R1214** -- a source that is SET AND WRONG refuses. Only an UNSET one falls
+      through. The first version appended to `tried` and continued whenever a set path
+      was not valid, so a mistyped key was silently discarded and the caller opened a
+      different target from the one declared, with nothing printed: FR1's second head.
+      Someone who sets a key has stated an intent, and the only honest answers are
+      "that one" or a refusal naming it.
+    * **R1219** -- a RELATIVE value anchors to the repository root, never the cwd, so
+      the same declaration cannot name two targets depending on where the process was
+      started.
+    * **The fallback is not such a source.** Nobody set it; it is the implicit default,
+      so its absence is the ordinary state of a machine that has not got the thing --
+      true of CI by design -- and it falls through under `require=False`.
+    """
+    # THE TWO MESSAGES DIFFERED BY ONE WORD AND A TEST ASSERTS IT. The declared-and-wrong
+    # refusal says "the HSP runs worktree"; the cannot-locate refusal says "the PINNED HSP
+    # runs worktree (tag ...)". Factoring the table collapsed them to one label and
+    # `test_require_True_refuses_and_names_every_candidate_it_tried` went red on the
+    # missing word -- which is the test doing its job: a refusal's wording is what a
+    # person reads at 2am, and a refactor is not a licence to reword it.
     tried: list[str] = []
-    # R1214. A SOURCE THAT IS SET AND WRONG IS A REFUSAL. ONLY AN UNSET ONE FALLS THROUGH.
-    #
-    # The first version of this loop appended to `tried` and CONTINUED whenever a set path
-    # was not a directory, so a mistyped `FLOATFEA_HSP_RUNS` was silently discarded and the
-    # legacy sibling used instead -- the caller then opened a DIFFERENT tree from the one
-    # declared, with nothing printed. That is FR1's second head: an input accepted and used
-    # other than as declared. Someone who sets a key has stated an intent, and the only
-    # honest answers are "that tree" or a refusal naming it.
-    #
-    # The legacy sibling is NOT such a source. Nobody set it; it is the implicit
-    # pre-GI3(e) fallback, so its absence is the ordinary state of a machine with no
-    # worktree -- true of CI by design -- and it falls through under `require=False` for
-    # the import-time reason in the docstring above.
     for source, value in (
-        (f"declared (floatsim.worktree_{which})", declared),
+        (declared_source, declared),
         (f"${env_name}", os.environ.get(env_name)),
     ):
         if value is None or value == "":
             tried.append(f"{source}: not set")
             continue
-        # R1219. A RELATIVE VALUE IS RESOLVED AGAINST THE REPOSITORY ROOT, NOT THE CWD.
-        # `FLOATFEA_HSP_RUNS=../HSP-runs` otherwise resolved to a different tree
-        # depending on where the process was started -- measured at two values -- so the
-        # same declaration named two worktrees. The repo root is the only anchor that is
-        # a property of the declaration rather than of the caller's shell.
         path = Path(value).expanduser()
         if not path.is_absolute():
             path = _repo_root() / path
-        if path.is_dir():
+        if exists(path):
             return path.resolve()
         raise SystemExit(
-            f"REFUSED: the HSP {which} worktree was declared and is not a directory.\n"
+            f"REFUSED: the {what} was declared and is not {noun}.\n"
             f"  {source} = {path}\n"
             f"This is not silently replaced by another source (R1214): a key that is set "
-            f"states an intent, and using a different tree than the one declared is an "
+            f"states an intent, and using a different one than the one declared is an "
             f"input used other than as declared. Fix the value or unset it."
         )
-    if legacy.is_dir():
-        return legacy.resolve()
-    tried.append(f"legacy sibling of the repo root: {legacy} is not a directory")
+    if exists(fallback):
+        return fallback.resolve()
+    tried.append(f"{fallback_source} is not {noun}")
     if require:
         raise SystemExit(
-            f"REFUSED: cannot locate the pinned HSP {which} worktree (tag {HSP_TAG}).\n"
+            f"REFUSED: cannot locate the {what_require or what}{extra}.\n"
             + "".join(f"  tried {line}\n" for line in tried)
-            + f"Set ${env_name}, or declare floatsim.worktree_{which} in the run config."
+            + hint
         )
-    return legacy
+    return fallback
 
 
 def _repo_root() -> Path:

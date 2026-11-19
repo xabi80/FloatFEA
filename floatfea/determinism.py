@@ -56,6 +56,36 @@ THREAD_ENV: Final[tuple[str, ...]] = (
     "VECLIB_MAXIMUM_THREADS",
 )
 
+CANONICAL_CORETYPE: Final[str] = "Haswell"
+"""The OpenBLAS kernel the determinism gate is measured at (CF1).
+
+**THREAD COUNT ALONE WAS NOT ENOUGH, AND THE MEASUREMENT IS IN `ci.yml`.** OpenBLAS
+selects its kernel from the CPU it finds, so ten runs with the threads pinned produced
+different files on different runners -- an EPYC run produced a DIFFERENT file and PASSED.
+`Haswell` is a baseline every current runner implements, so the kernel is the same
+wherever the gate runs.
+
+**IT LIVES HERE BECAUSE IT HAD TWO READERS AND IS ABOUT TO HAVE A THIRD.**
+`.github/workflows/ci.yml:82` sets it and `scripts/regen_figures.py` compared against its
+own copy of the string; `floatfea/cli.py` now has to set it for the environment it spawns.
+A third copy of a value whose whole job is to be identical everywhere is the defect shape
+R2 step 0 spent five rounds on, so the Python side is single-sourced here and the
+workflow's own line is the one copy that cannot import it.
+
+**WHAT IS MACHINED AND WHAT IS NOT, STATED RATHER THAN IMPLIED.**
+`tests/test_ci_canonical_environment.py` holds `ci.yml`'s `env:` against
+`docs/milestones/F2.md` -- the pin must exist, must be top-level for every job, and the
+two files must name the same kernel. It was written for exactly the hole
+`tests/corpus/ci_determinism.txt` measured twice (the `env:` line deleted, the whole
+guards job still green), so that hole is CLOSED and the corpus rows describe the tree
+before it.
+
+What NOTHING ties is THIS constant to those two files. It is the Python single source and
+it could drift from the workflow without anything going red. Closing that means another
+assertion, which is new apparatus under the freeze GI2 carries forward from GA1, so it is
+recorded as a ledger row in step 1's report instead of built here.
+"""
+
 # ---------------------------------------------------------------------------
 # 2. Sparse direct solve. SuperLU's column permutation default is
 #    COLAMD, whose output can differ between SciPy versions. Pinned explicitly

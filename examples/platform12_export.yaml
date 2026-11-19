@@ -1,0 +1,201 @@
+# The EXPORT configuration (R2 step 1 / GI5, FL2(c), GJ4).
+#
+# `floatfea export examples/platform12_export.yaml` runs FloatSim from the pinned HSP
+# worktree and writes `data/f4/dynamic_inputs.npz` and its provenance sidecar. With
+# `--check` it regenerates and compares BIT-EXACTLY against the committed file, writing
+# nothing -- which is GJ1's acceptance and the mechanism GI5 step 2's zero-change test
+# reuses.
+#
+# **IT IS THE PLACEHOLDER CONFIGURATION WITH ONE BLOCK CHANGED, AND THAT IS DELIBERATE.**
+# Everything from `floatsim:` down to `code_check:` is byte-identical to
+# `platform12_placeholder.yaml`, because the file this export must reproduce was produced
+# at those inputs: a second set of numbers here would make a bit-identical comparison a
+# coincidence rather than a property. `tests/regression/test_r1_example_golden.py` holds
+# the placeholder to `U = 1.71167`, and
+# `tests/regression/test_export_config_matches_the_placeholder.py` holds THIS file to the
+# placeholder, so the two cannot drift.
+#
+# The one block that differs is `load_cases`, and it differs in the two ways `export`
+# needs:
+#
+#   * `cases:` instead of `npz:` -- the configuration declares the FloatSim runs to make
+#     rather than a file to read. Declaring both is refused as ambiguous.
+#   * `headings: [0.0]` -- R2 step 0 measured that NO configuration in this repository
+#     declared a heading (docs/milestones/R2.md section 2b), so GI4 D4's "every heading in
+#     the R1 config" was unrepresentable and FL2(c)'s refusal had no input. `export`
+#     refuses without it, because one npz records ONE heading for the whole file and the
+#     heading is therefore an input to the export rather than something it discovers.
+#     `0.0` is the only heading the pinned BEM database carries; a second needs a BEM
+#     solve, which GI1 forbids.
+#
+# Relative paths resolve against THIS FILE'S directory, so the configuration means the
+# same thing wherever it is run from.
+
+floatsim:
+  # The deck is the authority for every coordinate, every body total, the centre of
+  # gravity and the inertia. Nothing here overrides those; see `mass_distribution`.
+  deck: ../data/platform/platform12_deck.yaml
+  tag: "(pinned HSP state; see docs/hsp-coupling.md and floatfea/hsp_pin.py)"
+  froude_lambda: 50.0          # -   docs/conventions.md's scale. FE is FULL scale.
+
+# topology: WHICH MEMBERS THE PLATFORM BODY IS BUILT FROM (FL2(a)).
+#
+# Leaving this block out generates the STAR -- one member from the platform centre to
+# each hub joint -- which is what this example runs and what every run did before
+# FL2(a). `topology: {platform: star}` says the same thing explicitly.
+#
+# To declare the members one by one, name their ends. The node names are `centre` and
+# the DECK's own hub body names; naming a hub the deck does not carry is refused against
+# the deck's list rather than built as something else.
+#
+#   topology:
+#     platform:
+#       members:
+#         - [centre, hub1]        # declaring exactly these four reproduces the star,
+#         - [centre, hub2]        # labels included -- `platform:hub1_arm` and so on
+#         - [centre, hub3]
+#         - [centre, hub4]
+#         - [hub1, hub2]          # and a brace between two hubs is `platform:hub1_hub2`
+#
+# Each hub's tripod is NOT configurable: it is three cluster arms to that hub's own
+# buoys, a count the builder already refuses to vary.
+
+mass_distribution:
+  # `f` is the fraction of each body's DECK mass carried by its members, with DY0's
+  # remainder rule: the remainder's position is FORCED by the deck's own CoG,
+  # `z_r(f) = (z_cog - f z_joint) / (1 - f)`, not chosen. The PSD / realisability result
+  # is reported per body, never assumed.
+  #
+  # 0.75 is the top rung of MASS_FRACTION_LADDER and what the shipped default descends
+  # to. Declaring it explicitly is physically identical to that descent -- same
+  # equivalent density, remainder mass, remainder point, remainder inertia, member mass
+  # and link length -- and the step-1 report carries that measurement.
+  platform: {f: 0.75}
+  hub1:     {f: 0.75}
+  hub2:     {f: 0.75}
+  hub3:     {f: 0.75}
+  hub4:     {f: 0.75}
+
+sections:
+  # Per member group. For the current star each body's members are one group, so the
+  # group names are the body names; FL2(a) replaces this with a member list carrying its
+  # own group labels.
+  #
+  # **THE TUBE IS A STIFFNESS STAND-IN FOR A TRIANGULATED TRUSS OF UNDECIDED DEPTH**
+  # (docs/milestones/F1.md:389-390), which is why F6b sized a truss against it. I_y
+  # works out at 0.888 m^4.
+  groups:
+    platform: {d_outer: 2.5, wall: 0.180}    # m, m  -> D/t = 13.9
+    hub1:     {d_outer: 2.5, wall: 0.180}
+    hub2:     {d_outer: 2.5, wall: 0.180}
+    hub3:     {d_outer: 2.5, wall: 0.180}
+    hub4:     {d_outer: 2.5, wall: 0.180}
+  # FT2.4's candidate grid for `outputs.required_section`, per member group, ORDERED BY
+  # AREA and strictly growing -- FM0's loop STEPS THE SECTION UP, so declaration order is
+  # the order it walks, and a list that does not grow is refused by name. The tool does
+  # not extend this grid: if it runs out with `max U > 1.0` the run refuses and names the
+  # group and the governing case. Left out here because `required_section` is off; with
+  # it on, a group with no grid is not sized and is named as such in every artifact.
+  #
+  # The two utilisations below are asserted by
+  # `tests/regression/test_ft24_required_section.py` -- the first by
+  # `test_the_TRIMMED_fixture_reproduces_the_SHIPPED_governing_figure`, the second by
+  # `test_END_TO_END_the_CLI_writes_required_section_md_with_both_max_U_values` -- so they
+  # are checkable rather than remembered.
+  #
+  # candidates:
+  #   platform:
+  #     - {d_outer: 2.5, wall: 0.180}    # the declared section; U = 1.71167, FAILS
+  #     - {d_outer: 2.5, wall: 0.300}
+  #     - {d_outer: 2.5, wall: 0.410}    # U = 0.995702, and f6a's own search answer
+  # FT2.5's truss parameters for `outputs.truss_sizing`. DECLARED, not constants of the
+  # library: `scripts/measure/f6b_truss_sizing.py` holds these as module constants, which
+  # is right for a measure script and forbidden on a production path. Left out here
+  # because `truss_sizing` is off.
+  #
+  # NOTE WHAT `depths` AND `widths` ARE NOT. They are the (h, b) grid the truss is
+  # REPORTED over; they are not the candidate grid the loop steps through. That is
+  # `candidates` above and it is TUBES, because docs/milestones/R1.md section 4 fixes the
+  # candidate grid as the config's declared section list. The truss is derived from the
+  # accepted tube's forces and is never re-solved, and `truss_sizing.md` says so first.
+  #
+  # truss:
+  #   depths:  [3.0, 4.0, 5.0, 6.0, 8.0, 10.0]   # m
+  #   widths:  [3.0, 4.0, 5.0, 6.0, 8.0]         # m
+  #   shapes:  [box, triangle]                   # FI1(a) and FI1(b)
+  #   d_over_t: 24.0                             # chord/diagonal slenderness, FI's value
+  #   joint_allowance: 1.15                      # on CHORD AND DIAGONAL steel (L6)
+  #   diameter_search: [0.05, 6.0]               # m, the bisection bracket. The floor is
+  #                                              # TUBE_DIAMETER's own minimum: a chord is
+  #                                              # a tube and goes through the same bound.
+  material:
+    E: 210000000000.0            # Pa      S355 steel
+    # G is DERIVED by the model from E and nu = 0.3, and is checked here for EXACT
+    # agreement rather than injected: 210e9 / (2 * 1.3). Declaring anything else is
+    # refused, because a G the stiffness does not use would still appear in the report.
+    G: 80769230769.23077         # Pa
+    # NOMINAL only. The builder BACK-COMPUTES an equivalent density per body so that
+    # rho * A is the deck's own line mass whatever the section is, which is why the hub
+    # arms come out at 11433.5 kg/m^3 -- above steel (DZ5 / ER1(e)). The run reports
+    # every equivalent density against this nominal.
+    rho: 7850.0                  # kg/m^3
+    Fy: 355000000.0              # Pa      ASSUMED grade (S355), not a certificate
+
+load_cases:
+  # The six design waves the committed dynamic inputs carry, at the one heading the BEM
+  # database covers. `periods_full_s` in `data/f4/dynamic_inputs.npz` is
+  # `[10, 12.5, 14, 15, 16.2, 20]` and `run.heading_deg` in its provenance sidecar is
+  # `0.0`; `H = 24.2 m` full scale is `run.wave_height_full_m`. Those three fields are
+  # what this block has to agree with for `--check` to be a meaningful comparison.
+  cases:
+    - {heading: 0.0, H: 24.2, T: 10.0}
+    - {heading: 0.0, H: 24.2, T: 12.5}
+    - {heading: 0.0, H: 24.2, T: 14.0}
+    - {heading: 0.0, H: 24.2, T: 15.0}
+    - {heading: 0.0, H: 24.2, T: 16.2}
+    - {heading: 0.0, H: 24.2, T: 20.0}
+  # FL2(c). The headings this configuration asks a file to be produced AT, checked
+  # against what the pinned BEM dataset covers before any solve starts -- the refusal has
+  # to fire before a 26-minute run, not after it. Asking for 45 deg here refuses by name
+  # and says what the dataset carries.
+  headings: [0.0]
+  # Carried unchanged from the placeholder so that a `floatfea run` on the exported file
+  # reads the same envelope. EZ2(a): the only cases allowed to SET the envelope. T = 10 s
+  # and T = 20 s are outside the associated-period range for H = 24.2 m and are reported
+  # as sensitivity only.
+  governing_periods: [12.5, 14.0, 15.0, 16.2]
+  # FA0, made explicit: T = 12.5 s sits 0.042 s (0.3%) below sqrt(6.5 H) and is admitted
+  # by name rather than by widening the band.
+  out_of_band_governing: [12.5]
+  window_rule: "the committed window per case; see data/f4/dynamic_inputs.provenance.json"
+
+code_check:
+  # API RP 2A-WSD working-stress checks. These are the clause's own options, not
+  # tolerances: the report states which were used.
+  K: 2.0                         # -  EZ4 Q3: a cantilever from the body centre, the
+                                 #    gimbal end giving no reliable lateral restraint.
+  Cm: 0.85                       # -  section 3.3's joint-translation value
+  one_third_increase: false      # -  EZ4 Q2, LOCKED OFF. Section 3.1.2's increase is
+                                 #    written for a declared extreme event and these are
+                                 #    screening design waves with no return period. The
+                                 #    tool REFUSES `true` rather than ignoring it.
+  K_sensitivity: 1.0             # -  one variable moved: K = 1.0 reported alongside
+  Cm_sensitivity: 1.0            # -  one variable moved: Cm = 1.0 reported alongside
+
+outputs:
+  # WHERE THE EXPORTED FILE GOES, which for this configuration is the committed location
+  # -- that is what makes `--check` compare against the golden rather than against
+  # nothing. `--check` writes no file: it regenerates to a `.check.npz` beside it,
+  # compares every array with `np.array_equal`, and unlinks.
+  #
+  # `outputs.directory` is reused rather than a new key being added for it. The exported
+  # npz is this configuration's artifact, and this configuration drives `export` only --
+  # `floatfea run` is given `platform12_placeholder.yaml`, which points `npz:` at the file
+  # this one writes.
+  directory: ../data/f4
+  # The FE pipeline's own artifacts, all off: this configuration does not run it.
+  report: false
+  member_forces_csv: false
+  utilisation_csv: false
+  required_section: false
+  truss_sizing: false

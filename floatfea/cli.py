@@ -16,15 +16,24 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Final
 
+from floatfea import determinism, floatsim_env, hsp_pin
 from floatfea.basis import BREAKING_STEEPNESS_LIMIT
 from floatfea.post.forces_table import _stresses
 from floatfea.post.member_forces import COMPONENTS
 from floatfea.run.config import ConfigError, RunConfig, load_config
-from floatfea.run.pipeline import HEIGHT_PAIR, RunResult, recorded_height_keys
+from floatfea.run.pipeline import (
+    HEIGHT_PAIR,
+    RunResult,
+    recorded_height_keys,
+    refuse_uncovered_headings,
+)
 from floatfea.run.pipeline import run as run_pipeline
 from floatfea.run.sizing import (
     SizingReport,
@@ -1259,13 +1268,96 @@ def _cmd_run(args: argparse.Namespace) -> int:
     return 0
 
 
-def _cmd_export(args: argparse.Namespace) -> int:
-    """FloatSim runs -> a dynamic-inputs npz. Needs the HSP worktree.
+EXPORT_ENGINE: Final[Path] = Path("scripts") / "export_f4_dynamic_inputs.py"
+"""The producer of the committed dynamic inputs, which `export` drives rather than reimplements.
 
-    **NOT IMPLEMENTED IN STEP 1, AND IT SAYS SO.** FL1(b) names the command and step 1
-    is specified "on existing data", so what exists here is the configuration path and an
-    honest refusal. Producing a file this command cannot actually produce -- or silently
-    writing an empty one -- is the failure this project is built to prevent.
+**IT IS NOT DUPLICATED, AND THAT IS THE WHOLE DESIGN DECISION OF THIS COMMAND.** The
+acceptance GI5 step 1 sets is that exporting the reference run *reproduces the golden
+dynamic-inputs file*. A second implementation would have to be bit-identical to the first
+by luck; driving the one that produced the golden makes it bit-identical by construction.
+And R2 step 0's single recurring defect was one predicate with two readers diverging --
+R1221, R1240, R1250, R1256, R1261, each needing the same repair twice -- so a second copy
+of a 600-line solve path is the shape with the worst record in this repository.
+
+What this command adds is what a script cannot: a validated configuration, the FL2(c)
+heading refusal against the dataset's own covered set, and GJ1's locked environment.
+"""
+
+
+def _engine(repo_root: Path, declared_venv: Path | None = None) -> list[str]:
+    """The locked interpreter and the engine script, as an argv prefix.
+
+    GJ1: *"Every FloatSim invocation by FloatFEA uses that environment."* `require=True`
+    here because this caller is about to run it -- `hsp_pin`'s non-refusing default exists
+    for module-level constants on a machine with no worktree, which this is not.
+    """
+    return [
+        str(floatsim_env.interpreter(declared_venv, require=True)),
+        str(repo_root / EXPORT_ENGINE),
+    ]
+
+
+def _covered_headings(
+    repo_root: Path, env: dict[str, str], declared_venv: Path | None = None
+) -> tuple[float, ...]:
+    """Ask the engine what headings the pinned BEM dataset carries (FL2(c)).
+
+    A separate, cheap invocation rather than a flag threaded into the solve: the refusal
+    has to fire BEFORE a 26-minute run, not after it, and the whole cost here is opening
+    one `.nc`.
+
+    **THE SET IS ASKED FOR, NEVER ASSUMED.** `cli.py` carried the sentence "hard-coding a
+    covered set here would be FloatFEA asserting a fact about HSP's datasets that nothing
+    in this repository can check" for the whole of R1, and it was right. This asks HSP's
+    own reader, through the one interpreter that has `capytaine` in it.
+    """
+    out = subprocess.run(
+        [*_engine(repo_root, declared_venv), "--covered-headings"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        cwd=repo_root,
+        check=False,
+    )
+    if out.returncode != 0:
+        raise ConfigError(
+            f"could not read the BEM dataset's covered headings (exit {out.returncode}). "
+            f"`export` refuses rather than exporting at an assumed heading.\n"
+            f"{out.stdout.strip()}\n{out.stderr.strip()}"
+        )
+    try:
+        got = json.loads(out.stdout.strip().splitlines()[-1])["heading_deg"]
+    except (ValueError, KeyError, IndexError) as why:
+        raise ConfigError(
+            f"the covered-heading query returned something this command cannot read "
+            f"({why}). Its output was:\n{out.stdout.strip()}"
+        ) from why
+    return tuple(float(h) for h in got)
+
+
+def _cmd_export(args: argparse.Namespace) -> int:
+    """FloatSim runs -> a dynamic-inputs npz, under GJ1's locked environment.
+
+    **WHAT R1 LEFT HERE, AND WHAT GJ4 OPENED.** This was a validated configuration path
+    and an honest refusal: FL1 scoped R1 step 1 to existing data, and producing a file the
+    command could not actually produce -- or silently writing an empty one -- is the
+    failure this project exists to prevent. GI1 authorised running FloatSim from the
+    pinned worktree and GJ4 opened the step, so the refusal is replaced by the run.
+
+    Four things happen before any solve, in this order, and each one REFUSES:
+
+    1. the configuration validates, and a configuration that already points at a
+       committed npz is refused -- `export` produces that file;
+    2. `load_cases.headings` must be declared. R2 step 0 measured that no configuration in
+       this repository declares one (`docs/milestones/R2.md` §2b), so D4's "every heading
+       in the R1 config" was unrepresentable; `export` is the command that cannot proceed
+       without it, because the heading is what it is being asked to produce a file AT;
+    3. every declared heading must be one the BEM dataset covers (FL2(c)), asked of HSP's
+       own reader;
+    4. the running environment must be the one built from the pinned worktree's lock
+       (GJ1), which the engine checks for itself at `main()` -- a refusal, not a re-exec
+       (SR-76).
     """
     cfg: RunConfig = load_config(args.config)
     if cfg.load_cases.npz_files:
@@ -1276,26 +1368,131 @@ def _cmd_export(args: argparse.Namespace) -> int:
             f"({listed}). `export` PRODUCES that file from FloatSim runs; "
             f"declare `cases` instead, or run `floatfea run` with this configuration."
         )
-    # **FL2(c): THE HEADING REFUSAL BELONGS HERE, AND ITS INPUT IS NOT HERE YET.**
-    # `refuse_uncovered_headings` is the naming half and it is complete and tested. What
-    # it needs is the set the BEM dataset actually carries, and that is a fact about the
-    # PINNED HSP STATE: the datasets and their reader live in HSP
-    # (docs/hsp-coupling.md), this repository contains neither, and the committed
-    # dynamic-inputs npz records one heading in its sidecar rather than a coverage list.
-    #
-    # So the call site is written where the dataset is opened, which is inside the export
-    # this command still cannot perform. Hard-coding a covered set here to make the call
-    # reachable would be FloatFEA asserting a fact about HSP's datasets that nothing in
-    # this repository can check -- and the refusal below is the honest state until the
-    # worktree is wired.
-    raise ConfigError(
-        f"`floatfea export` is not implemented in R1 step 1. It needs the pinned HSP "
-        f"worktree (docs/hsp-coupling.md), and FL1 scopes step 1 to existing data. The "
-        f"{len(cfg.load_cases.cases)} declared case(s) validated cleanly, so this "
-        f"configuration is ready for the export path when FL2(c) wires it; what it cannot "
-        f"do is invent dynamic inputs. Point `load_cases.npz` at a committed file to run "
-        f"now."
+    repo_root = Path(__file__).resolve().parents[1]
+    # The declared keys GI3(e) asked for, which `floatfea export` is the first caller to
+    # pass. `None` falls through to the environment variable and then the default; a key
+    # that is set and wrong REFUSES (R1214).
+    runs = hsp_pin.worktree("runs", cfg.floatsim.worktree_runs, require=True)
+    venv = cfg.floatsim.venv
+
+    # The RESOLVED venv, not the declared key: `venv` is `None` when nothing was
+    # declared, and the parent is the side that applied the precedence table, so the
+    # child is told the answer rather than asked to repeat the question. Symmetric with
+    # `runs` above, which was passed resolved from the start -- the first version passed
+    # the venv only when a key declared one, and an asymmetry between two paths resolved
+    # by the same table is the shape that diverges later.
+    env = _child_env(runs, floatsim_env.venv(venv))
+    # **AN ABSENT HEADING KEY IS A REFUSAL HERE AND A NO-OP EVERYWHERE ELSE.**
+    # `refuse_uncovered_headings((), covered)` returns without raising, correctly: for
+    # `floatfea run` an undeclared heading set means "do not check", and the recorded
+    # basis of each npz is what is published. `export` is the other case -- it is being
+    # asked to produce a file AT a heading -- so the empty set is an error and not a skip,
+    # which is the same argument `load_cases.npz: []` is refused under.
+    if not cfg.load_cases.headings:
+        # **THE COVERED SET IS A COURTESY HERE AND THE REFUSAL IS NOT CONDITIONAL ON IT.**
+        # Naming what the dataset carries is the difference between a refusal a reader can
+        # act on and one they have to go and investigate -- but building that sentence
+        # means a subprocess, and the first version of this message called it inline, so a
+        # broken venv turned "headings is not declared" into a confusing second refusal
+        # about the covered-heading query. The primary refusal cannot depend on the
+        # secondary one succeeding.
+        try:
+            covered = _covered_headings(repo_root, env, venv)
+            hint = f"the pinned BEM dataset covers {list(covered)} deg"
+        except (ConfigError, SystemExit) as why:
+            hint = f"what the pinned BEM dataset covers could not be read here ({why})"
+        raise ConfigError(
+            f"{cfg.source.name}: load_cases.headings is not declared, and `export` "
+            f"cannot produce a dynamic-inputs file without it. One npz records ONE "
+            f"heading for the whole file, so the heading is an input to this command "
+            f"rather than something it discovers. Declare `headings: [<deg>]`; {hint}."
+        )
+    refuse_uncovered_headings(cfg.load_cases.headings, _covered_headings(repo_root, env, venv))
+
+    # AND THE CASES MUST AGREE WITH THE HEADINGS THEY ARE DECLARED BESIDE. Two keys
+    # describing one quantity is two readers of one predicate, so they are compared rather
+    # than one of them being ignored: a config asking for `headings: [0]` while its cases
+    # sit at 45 deg would export six files at 0 deg under a configuration that reads as 45.
+    declared = sorted({c.heading_deg for c in cfg.load_cases.cases})
+    asked = sorted(set(cfg.load_cases.headings))
+    if declared and declared != asked:
+        raise ConfigError(
+            f"{cfg.source.name}: load_cases.headings is {asked} deg but the declared "
+            f"cases sit at {declared} deg. `export` runs the cases and labels the file "
+            f"with the heading, so the two cannot disagree -- one of them would be a "
+            f"false label on a published file."
+        )
+
+    periods = sorted({c.period_s for c in cfg.load_cases.cases})
+    if not periods:
+        raise ConfigError(
+            f"{cfg.source.name}: load_cases.cases is empty, so there is nothing to "
+            f"export. An empty case set is an error and not a skip."
+        )
+    out_dir = cfg.outputs.directory
+    argv = [
+        *_engine(repo_root, venv),
+        "--dt",
+        repr(float(args.dt)),
+        "--out",
+        str(out_dir),
+    ]
+    for period in periods:
+        argv += ["--period", repr(float(period))]
+    if args.check:
+        argv.append("--check")
+
+    # **`flush=True`, AND IT IS NOT COSMETIC.** This banner says which worktree and which
+    # interpreter the run resolved, and the child then writes for 26 minutes. Python
+    # line-buffers to a terminal and BLOCK-buffers to a pipe or a file, so with the output
+    # redirected -- which is how a run this long is actually taken -- the parent's six
+    # lines sat in a buffer until the process exited while the child's case headers
+    # appeared immediately. A reader watching the log saw a solve under way and nothing
+    # saying what it was solving against, which is the one thing the banner exists to say.
+    print(f"floatfea export: {cfg.source.name}", flush=True)
+    print(
+        f"  pinned worktree {runs}  (tag {hsp_pin.HSP_TAG}, {hsp_pin.HSP_COMMIT})",
+        flush=True,
     )
+    print(f"  locked env      {floatsim_env.interpreter(venv, require=True)}", flush=True)
+    print(f"  heading         {asked} deg, covered by the BEM dataset", flush=True)
+    print(f"  periods (full)  {periods}", flush=True)
+    print(f"  into            {out_dir}", flush=True)
+    completed = subprocess.run(argv, env=env, cwd=repo_root, check=False)
+    return int(completed.returncode)
+
+
+def _child_env(runs: Path | None = None, venv: Path | None = None) -> dict[str, str]:
+    """The engine's environment: this one, with the determinism pins and the resolved paths.
+
+    **THE RESOLVED PATHS ARE PASSED DOWN, AND THE FIRST VERSION DID NOT PASS THEM.** The
+    parent may resolve the worktree and the venv from CONFIG KEYS (`floatsim.worktree_runs`,
+    `floatsim.venv`), and the child resolves them again for itself -- `floatsim_env.lock_path()`
+    asks `hsp_pin.worktree("runs")`, and `report_joint_reactions.HSP_RUNS` is a module-level
+    constant evaluated at the child's import. A config key reaches the parent and nothing
+    else, so a configuration that declared a worktree and set no environment variable had the
+    child fall through to the default and refuse -- or, worse on a machine where the default
+    exists, open a DIFFERENT tree from the one the configuration names, which is FR1's second
+    head.
+
+    **THE PINS ARE SET RATHER THAN INHERITED, AND THAT IS NOT A CONVENIENCE.** Reduction
+    ORDER varies with thread count, so a floating-point sum is not bit-reproducible unless
+    the count is fixed -- `floatfea/determinism.py` says so at the top -- and GI5 step 2's
+    zero-change test is a BIT-IDENTICAL comparison. A child that inherited an unpinned
+    thread count would be a different computation from the one that produced the golden,
+    and the only symptom would be a `--check` refusal nobody could explain.
+    """
+    env = dict(os.environ)
+    for var in determinism.THREAD_ENV:
+        env[var] = "1"
+    env.setdefault("OPENBLAS_CORETYPE", determinism.CANONICAL_CORETYPE)
+    # ASSIGNED, not `setdefault`: the parent has already resolved these, and an inherited
+    # variable naming a different tree is the disagreement this is here to prevent.
+    if runs is not None:
+        env[hsp_pin.HSP_RUNS_ENV] = str(runs)
+    if venv is not None:
+        env[floatsim_env.VENV_ENV] = str(venv)
+    return env
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1311,6 +1508,19 @@ def main(argv: list[str] | None = None) -> int:
 
     p_export = sub.add_parser("export", help="FloatSim runs -> dynamic inputs (needs HSP)")
     p_export.add_argument("config", type=Path, help="path to a run configuration (YAML)")
+    p_export.add_argument(
+        "--dt",
+        type=float,
+        default=0.01,
+        help="integration step, seconds at MODEL scale; default 0.01, which is what the "
+        "committed dynamic inputs were produced at",
+    )
+    p_export.add_argument(
+        "--check",
+        action="store_true",
+        help="regenerate and compare bit-exactly against the file already there, writing "
+        "nothing (Q8). This is GJ1's acceptance and the zero-change test's mechanism.",
+    )
     p_export.set_defaults(handler=_cmd_export)
 
     args = parser.parse_args(argv)

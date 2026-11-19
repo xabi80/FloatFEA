@@ -412,33 +412,85 @@ Stages, in order, each timed and reported: `build`, `load`, `solve`, `code_check
 
 ### `floatfea export <config.yaml>`
 
-Produces a dynamic-inputs file from FloatSim runs. **It needs the pinned HSP worktree, which
-this repository does not contain, so today it refuses.** Both ways of invoking it refuse,
-and the message tells you which situation you are in:
+Runs FloatSim from the pinned HSP worktree and writes a dynamic-inputs file and its
+provenance sidecar. **It needs the pinned worktree and the locked run environment, neither
+of which is in this repository**, so on a fresh clone it refuses by name rather than
+inventing loads. `floatfea run` needs neither, which is why the worked example above runs
+anywhere.
 
 ```
-floatfea: load_cases already points at 1 existing npz file(s) (...). `export` PRODUCES
-that file from FloatSim runs; declare `cases` instead, or run `floatfea run` with this
-configuration.
+floatfea export examples/platform12_export.yaml            # write the file
+floatfea export examples/platform12_export.yaml --check     # regenerate and compare, write nothing
 ```
 
-```
-floatfea: `floatfea export` is not implemented in R1 step 1. It needs the pinned HSP
-worktree (docs/hsp-coupling.md), and FL1 scopes step 1 to existing data. The 2 declared
-case(s) validated cleanly, so this configuration is ready for the export path when FL2(c)
-wires it; what it cannot do is invent dynamic inputs. Point `load_cases.npz` at a committed
-file to run now.
+**What it needs, and where it looks.** Two paths, each resolved the same way: a config key
+first, then an environment variable, then a default.
+
+| what | config key | environment variable | default |
+|---|---|---|---|
+| the pinned HSP runs worktree | `floatsim.worktree_runs` | `FLOATFEA_HSP_RUNS` | `../HSP-runs` beside the repository |
+| the locked FloatSim environment | `floatsim.venv` | `FLOATFEA_FLOATSIM_VENV` | `.venv-floatsim` in the repository |
+
+A key that is **set and wrong refuses**; only an **absent** one falls through to the next
+source. Those are not the same thing, and the difference is deliberate: if you have said
+where the worktree is, running against a different one is an input used other than as
+declared, and the only honest answers are that tree or a refusal naming it. The same is
+true of `floatsim.worktree_runs: ""`, which is refused as empty rather than treated as
+absent.
+
+Build the locked environment from the pinned worktree's own lock file:
+
+```bash
+python -m venv .venv-floatsim
+.venv-floatsim/Scripts/python -m pip install -r <worktree>/requirements-lock.txt
 ```
 
-Note that the second message names "R1 step 1" as the scope it was written under; the
-scoping is current but the step reference is stale. The outcome is the one that matters:
-`export` validates your configuration and then refuses rather than inventing loads.
+Leave out that file's one `-e git+...#egg=floatsim` line. It names a commit that is an
+*ancestor* of the pinned tag, so installing it would put FloatSim at a state that is not
+the pin; FloatSim comes from the worktree instead. Every FloatSim invocation then runs
+under that interpreter, and `export` **refuses rather than correcting you** if the one you
+started is not it — a run whose environment was silently fixed up reads exactly like one
+that was right to begin with.
 
-**What `export` will do when it is wired, and the half that already exists:** a declared
-heading the BEM dataset does not carry is refused **by name**, with the whole missing list
-rather than the first entry, and the comparison is exact — exporting 44.9° for a declared
-45° would publish an envelope for a sea state nobody asked for. The naming half of that
-refusal is written and tested; what it waits on is the dataset, which lives in HSP.
+**The configuration declares the runs to make, not a file to read.** `examples/platform12_export.yaml`
+is `platform12_placeholder.yaml` with one block changed, and a test holds the two together
+so they cannot drift. Give exactly one of `npz:` or `cases:` — both or neither is refused
+as ambiguous:
+
+```
+floatfea: platform12_placeholder.yaml: load_cases already points at 1 existing npz
+file(s) (C:\dev\floatfea\data\f4\dynamic_inputs.npz). `export` PRODUCES that file from
+FloatSim runs; declare `cases` instead, or run `floatfea run` with this configuration.
+```
+
+**And it needs `load_cases.headings`.** One dynamic-inputs file records ONE heading for the
+whole file, so the heading is an *input* to the export rather than something it discovers,
+and an absent key is refused. A declared heading the BEM database does not carry is refused
+**by name**, with the whole missing list rather than the first entry, and the comparison is
+exact — exporting 44.9° for a declared 45° would publish an envelope for a sea state nobody
+asked for:
+
+```
+floatfea: load_cases.headings asks for [45.0] deg, which the BEM dataset does not cover.
+It carries [0.0] deg. Every missing heading is named above rather than the first one,
+because a reader fixing a configuration needs the whole list; and the comparison is exact,
+because a heading is a declared input -- exporting 44.9 deg for a declared 45 would publish
+an envelope for a sea state nobody asked for.
+```
+
+The covered set is **asked of HSP's own reader**, never hard-coded here, and the question is
+put before the solve starts: one iteration of all six design waves is about 26 minutes, so a
+heading check that fired afterwards would charge an afternoon for a typo. The pinned database
+is solved at **one** heading, `0°`; a second needs a BEM solve, which is out of scope.
+
+**`--check` compares bit-exactly and writes nothing.** It regenerates beside the committed
+file, compares every array with `np.array_equal` — there is no tolerance on that comparison —
+and removes its copy. A non-finite value anywhere is a failure in its own right, because it
+cannot be compared. If `--check` refuses, **that is a finding to report, not a file to
+re-baseline**: regenerating a golden to match new output is the same error as widening a
+tolerance.
+
+---
 
 ---
 

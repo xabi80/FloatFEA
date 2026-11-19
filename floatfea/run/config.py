@@ -840,11 +840,37 @@ class FloatsimRef:
     `deck` is a path to the exported deck YAML. `tag` records WHICH HSP state it came
     from, for provenance (ER1's mechanism, generalised): it is recorded and reported,
     never used to fetch anything.
+
+    **THE THREE PATHS ARE GI3(e)'s MISSING HALF.** GI3(e) asked, in its own words, to
+    "make it a config key with an env-var fallback". R2 step 0 built the env-var half and
+    the default, and `hsp_pin.worktree`'s own docstring named the config key -- "`declared`
+    (a config key, `floatsim.worktree_runs` / `floatsim.worktree_stable`)" -- for a key the
+    schema did not have and `_reject_unknown` would have refused. Measured: no production
+    call site passed `declared`, so the first arm of that decision table was reachable only
+    from `tests/`, under a docstring describing a key nobody could write. That is CW0 in
+    shipped source, and the cheaper repair is the key rather than a sentence explaining a
+    dead branch.
+
+    `venv` is GJ1's: the environment built from the pinned worktree's own
+    `requirements-lock.txt`, which every FloatSim invocation runs under.
+
+    All three are `None` when undeclared, and `None` is what makes `hsp_pin`'s table fall
+    through to the environment variable -- a DECLARED key that is wrong refuses instead
+    (R1214), which is why an absent key and an empty string are not the same thing here.
+
+    **WHAT THEY DO NOT REACH, STATED.** The six `hsp_pin.worktree(...)` calls in `scripts/`
+    are MODULE-LEVEL constants evaluated at import, before any configuration is read, so
+    they resolve by environment variable and default only. These keys reach the commands
+    that take a configuration -- today that is `floatfea export` -- and a script run
+    directly still needs `$FLOATFEA_HSP_RUNS`.
     """
 
     deck: Path
     tag: str = ""
     froude_lambda: float = 50.0
+    worktree_runs: Path | None = None
+    worktree_stable: Path | None = None
+    venv: Path | None = None
 
 
 def _or_none(value: float | None) -> str:
@@ -1067,7 +1093,9 @@ def _parse_topology(block: Any) -> Topology:
 def _parse_floatsim(block: Any, base: Path) -> FloatsimRef:
     where = "floatsim"
     _reject_unknown(
-        block if isinstance(block, dict) else {}, ("deck", "tag", "froude_lambda"), where
+        block if isinstance(block, dict) else {},
+        ("deck", "tag", "froude_lambda", "worktree_runs", "worktree_stable", "venv"),
+        where,
     )
     deck = Path(_require_string(_require(block, "deck", where), f"{where}.deck"))
     if not deck.is_absolute():
@@ -1083,7 +1111,38 @@ def _parse_floatsim(block: Any, base: Path) -> FloatsimRef:
         deck=deck,
         tag=_require_string(block.get("tag", ""), f"{where}.tag"),
         froude_lambda=_checked(lam, f"{where}.froude_lambda", FROUDE_LAMBDA),
+        worktree_runs=_optional_path(block, "worktree_runs", where),
+        worktree_stable=_optional_path(block, "worktree_stable", where),
+        venv=_optional_path(block, "venv", where),
     )
+
+
+def _optional_path(block: Any, key: str, where: str) -> Path | None:
+    """A declared path, or `None` when the key is absent. NOT resolved here.
+
+    **DELIBERATELY NOT MADE ABSOLUTE AGAINST THE CONFIGURATION'S DIRECTORY**, which is what
+    every other path in this file does. These three go to `hsp_pin.resolve_declared_path`,
+    which anchors a relative value to the REPOSITORY ROOT -- R1219, because the cwd made
+    one declaration name two different worktrees. Resolving here against the config's own
+    directory would silently win that race and reintroduce the defect under a third anchor.
+    So the string is carried through and resolved in the one place that owns the rule.
+
+    An EMPTY string is refused rather than treated as absent: `worktree_runs: ""` is
+    something somebody typed, and R1214's rule is that a source which is set and wrong
+    refuses rather than falling through to another one.
+    """
+    if key not in block:
+        return None
+    text = _require_string(block[key], f"{where}.{key}")
+    if not text.strip():
+        raise ConfigError(
+            f"{where}.{key} is declared EMPTY. An empty value is not the same as an "
+            f"absent key: absent falls through to the environment variable and the "
+            f"default, while a key that is SET states an intent, and using a different "
+            f"path than the one declared is an input used other than as declared "
+            f"(R1214). Give a path or remove the line."
+        )
+    return Path(text)
 
 
 def _parse_mass(block: Any) -> dict[str, MassDistribution]:

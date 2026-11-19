@@ -29,6 +29,7 @@ import textwrap
 from pathlib import Path
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
@@ -180,11 +181,20 @@ def test_ladder_6_is_not_gated_behind_a_rung_that_is_red_under_Q8() -> None:
     interpretability, and "do today's bytes equal yesterday's" stays
     interpretable whatever ladder 4 says.
 
-    THE SHAPE CHANGED AND THE PROPERTY DID NOT. Six jobs became six steps of
-    one job, and steps stop at the first failure -- so the chain is now the
-    ORDER, and rung 6 is not behind rung 4 exactly when its step comes first.
-    It still comes after rungs 1 to 3, which are what make a golden's inputs
-    mean anything.
+    THE SHAPE CHANGED TWICE AND THE PROPERTY SURVIVED BOTH. Six jobs became six
+    steps of one job (CK0), and steps stop at the first failure -- so for a
+    while the chain WAS the order, and rung 6 was not behind rung 4 exactly
+    when its step came first. **R1243 then stopped the chaining**: every rung
+    step carries `if: !cancelled() && steps.deps.outcome == 'success'`, so no
+    rung gates any other and the order no longer decides what runs.
+
+    THAT MAKES THE POSITIONAL ASSERTION BELOW NECESSARY BUT NO LONGER
+    SUFFICIENT, which is why there are now two. CH3's order is kept because the
+    rungs should still read top-down in the log, and the second assertion is
+    the one that carries the property this test is named for: an un-chained
+    rung 6 is not gated behind rung 4 wherever it sits. Asserting only the
+    position would, after R1243, be asserting a proxy for a mechanism that is
+    no longer there -- BP0's case, in a test rather than in a figure.
     """
     text = WORKFLOW.read_text(encoding="utf-8")
     ladder = text[text.index("  ladder:") :]
@@ -204,4 +214,21 @@ def test_ladder_6_is_not_gated_behind_a_rung_that_is_red_under_Q8() -> None:
     assert where["rung3"] < where["rung6"], (
         "the goldens run before rung 3, whose tests are what make a golden's "
         "inputs mean anything."
+    )
+    # **R1243: AND NO RUNG GATES ANY OTHER.** The positional check above is kept and is
+    # no longer what carries the property -- this is. Every rung step must run on its own
+    # condition, so a red rung 1 cannot take rungs 2 to 6 with it. Measured on the two
+    # runs R1239's repair produced: reordering moved which rung was hidden and hid one
+    # either way, `-477` tests on one ordering and `+345` on the other.
+    rung_steps = [
+        step
+        for step in yaml.safe_load(text)["jobs"]["ladder"]["steps"]
+        if "run_rung.sh" in str(step.get("run", ""))
+    ]
+    assert len(rung_steps) >= 6, f"the ladder job runs {len(rung_steps)} rungs"
+    ungated = [str(s.get("name")) for s in rung_steps if "cancelled()" not in str(s.get("if", ""))]
+    assert not ungated, (
+        f"{ungated} run without an `if:` of their own, so a red step above them hides "
+        "them. R1239 tried to fix that by reordering and R1243 measured the cost: "
+        "choosing which rung gets hidden is not a fix, because one is hidden either way."
     )
