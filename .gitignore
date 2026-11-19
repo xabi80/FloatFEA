@@ -4,6 +4,10 @@ __pycache__/
 build/
 dist/
 .venv/
+# The locked FloatSim run environment (GJ1), built from the pinned worktree's own
+# requirements-lock.txt. Machine-specific, exactly as the HSP worktrees are, so it is
+# a path FloatFEA resolves and records rather than a directory it tracks.
+.venv-floatsim/
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
