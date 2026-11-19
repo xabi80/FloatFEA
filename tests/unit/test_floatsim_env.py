@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import importlib.metadata as md
 import os
+import sys
 from pathlib import Path
 
 import pytest
@@ -354,7 +355,13 @@ def test_the_record_carries_the_path_and_the_lock_hash_GJ1_asks_for(
     at.write_bytes(LOCK_TEXT.encode("utf-8"))
     lock = fse.parse_lock(LOCK_TEXT)
     got = fse.record(lock_file=at, lock=lock, floatsim_file=tmp_path / "f" / "__init__.py")
-    assert got["interpreter"].endswith(("python.exe", "python"))  # type: ignore[union-attr]
+    # **THE EXACT INTERPRETER, NOT A NAME TEST.** This read
+    # `endswith(("python.exe", "python"))`, which is a guess about what the executable is
+    # CALLED: it passes on Windows and on a Linux runner whose `sys.executable` ends
+    # `/bin/python`, and FAILS on one ending `/bin/python3` -- a platform difference the
+    # test has no business depending on. What `record()` promises is the path of the
+    # interpreter that produced the record, so that is what is asserted.
+    assert got["interpreter"] == str(Path(sys.executable).resolve())
     assert got["lock"] == {  # type: ignore[comparison-overlap]
         "path": str(at),
         "sha256": fse.lock_sha256(at),
