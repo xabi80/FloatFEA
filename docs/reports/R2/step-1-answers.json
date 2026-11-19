@@ -1,0 +1,323 @@
+{
+ "_": [
+  "POINTERS ONLY (CH4). No prose here -- every row points at the section that",
+  "discusses it, and the guard checks that the section MENTIONS the id.",
+  "",
+  "R2 STEP 1, revision 1, answering the newest verdict -- step 0's, which",
+  "`Closes: R2/step-0`. Its carried list therefore lives in",
+  "`docs/closure/R2-step0.md` (R1250), and section 7 answers every row of it.",
+  "",
+  "THE STATES COME FROM THAT TABLE RATHER THAN FROM A FRESH READING: it is what",
+  "routed each item out of step 0, and re-deciding the routing here would be a",
+  "second reader of one predicate -- the shape step 0 paid five rounds for.",
+  "",
+  "R1243 is the one item whose state this step CHANGES: carried in blocking by",
+  "GJ4, answered in section 8. R1223 and R1225 stay open and escalated, and",
+  "section 1 is where the escalation now stands -- with the cause measured, which",
+  "is new, and the ruling still Xabier's, which is not.",
+  "",
+  "Everything else is `later`: step 0's closure routed it to a later step or to",
+  "the ledger, and this step did not reach it. Claiming otherwise would be the",
+  "defect `tests/test_report_carried.py` exists to catch -- a report recording an",
+  "item as answered where it was not, which that file's docstring says happened",
+  "twice in three rounds.",
+  "",
+  "AND THE GENERATOR'S LIST IS WIDER THAN THE VERDICT'S OWN FINDINGS. It also carries the ids the verdict CARRIES IN from earlier ones -- R835 and the verdict-58 block -- which come out as `not classified in this verdict` unless they have a row here. They are `later` for the same reason the rest are: step 0's closure routed them forward and this step did not reach them.",
+  "",
+  "POINTERS NAME SECTION 11, NOT SECTION 7. `test_a_carried_row_points_at_a_section_that_discusses_it` refuses a pointer at the Carried section itself -- 'every item is in that table by construction, so the pointer resolves whatever it says' -- and it refused all 70 rows that pointed at section 7. Section 11 is the section that does the work: it names every carried id, grouped by how step 0's closure routed it, and says what this step did or did not do about each group."
+ ],
+ "answered": {
+  "R835": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1186": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1188": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1189": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1190": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1191": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1193": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1196": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1197": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1198": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1199": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1200": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1201": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1203": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1204": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1205": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1206": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1207": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1208": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1212": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1213": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1214": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1215": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1217": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1218": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1219": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1221": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1222": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1223": {
+   "state": "open",
+   "where": "\u00a71"
+  },
+  "R1224": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1225": {
+   "state": "open",
+   "where": "\u00a71"
+  },
+  "R1226": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1227": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1228": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1229": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1230": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1231": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1232": {
+   "state": "open",
+   "where": "\u00a711"
+  },
+  "R1233": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1234": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1235": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1236": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1237": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1238": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1239": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1240": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1241": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1242": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1243": {
+   "state": "answered",
+   "where": "\u00a78"
+  },
+  "R1244": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1245": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1246": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1247": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1248": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1249": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1250": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1251": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1252": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1253": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1254": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1255": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1256": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1257": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1258": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1259": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1260": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1261": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1262": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1263": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1264": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1265": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1266": {
+   "state": "later",
+   "where": "\u00a711"
+  },
+  "R1267": {
+   "state": "later",
+   "where": "\u00a711"
+  }
+ }
+}
