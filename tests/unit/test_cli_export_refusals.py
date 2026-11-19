@@ -75,6 +75,32 @@ def covered_zero(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(cli, "_covered_headings", lambda *a, **k: (0.0,))
 
 
+# The sea state the real engine solves at: `WAVE_HEIGHT_MODEL_M * LAMBDA`, which is
+# `0.484 * 50.0`, at `WAVE_HEADING_DEG`. Written out here rather than imported because
+# `report_joint_reactions` lives in HSP's worktree and this file is green without one --
+# and the number is held against the engine by the regression row in
+# `tests/regression/test_export_config_matches_the_placeholder.py`, which reads the
+# committed sidecar rather than a value retyped in a test.
+ENGINE_WAVE: dict[str, float] = {
+    "heading_deg": 0.0,
+    "wave_height_full_m": 24.2,
+    "wave_height_model_m": 0.484,
+}
+
+
+@pytest.fixture
+def engine_wave(monkeypatch: pytest.MonkeyPatch) -> None:
+    """What `--design-wave` answers (R1268).
+
+    Substituted at `cli._design_wave` rather than through the `subprocess` spy, so that
+    `spy.calls[0]` stays THE EXPORT INVOCATION in the tests that assert on argv. The
+    query itself -- that the command asks the engine instead of carrying a copy of the
+    constants -- is measured by
+    `test_the_design_wave_is_ASKED_OF_THE_ENGINE_and_not_carried_here`.
+    """
+    monkeypatch.setattr(cli, "_design_wave", lambda *a, **k: dict(ENGINE_WAVE))
+
+
 def _cfg(tmp_path: Path, replace: list[tuple[str, str]], name: str = "cfg.yaml") -> Path:
     """The export configuration with substitutions, written beside the real one.
 
@@ -229,12 +255,241 @@ def test_an_EMPTY_case_list_is_refused_rather_than_exporting_nothing(
 
 
 # ---------------------------------------------------------------------------
+# 3a. The declared sea state against the one the engine solves at (R1268)
+# ---------------------------------------------------------------------------
+
+
+def test_the_ENGINE_S_OWN_HEIGHT_PROCEEDS(
+    no_hsp: None, covered_zero: None, engine_wave: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """EH4's weakening direction, and it is the control the refusal rows need.
+
+    A refusal that fires on everything is not a check, it is a wall. The shipped
+    configuration declares `H: 24.2` on all six cases and that is the engine's own
+    height, so this must reach the engine -- and it is asserted on the INVOCATION rather
+    than on the exit code, because a command that refused and returned 0 would pass an
+    exit-code assertion.
+    """
+    spy = _Spy()
+    monkeypatch.setattr(cli.subprocess, "run", spy)
+    assert cli.main(["export", str(EXPORT_CFG)]) == 0
+    assert len(spy.calls) == 1, "the engine must be invoked exactly once"
+    assert "--period" in spy.calls[0]["argv"]
+
+
+def test_a_DECLARED_HEIGHT_THE_ENGINE_WILL_NOT_SOLVE_AT_is_refused(
+    tmp_path: Path,
+    no_hsp: None,
+    covered_zero: None,
+    engine_wave: None,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys,
+) -> None:
+    """R1268's own case. `H: 40.0` is inside `WAVE_HEIGHT`'s domain, was accepted, and
+    exported a file at 24.2 m -- so every force published from it described a sea state
+    smaller than the declaration, in the unconservative direction, with the only trace
+    in a sidecar field.
+
+    The engine must not be invoked: the refusal is worth nothing if it fires after
+    26 minutes of solving.
+    """
+    spy = _Spy()
+    monkeypatch.setattr(cli.subprocess, "run", spy)
+    cfg = _cfg(tmp_path, [("H: 24.2,", "H: 40.0,")], name="h40.yaml")
+    assert cli.main(["export", str(cfg)]) == REFUSED
+    message = _refusal(capsys)
+    assert "declares the wave height(s) [40.0] m full scale" in message
+    assert "the engine solves at 24.2 m" in message
+    assert spy.calls == [], "the height refusal must fire BEFORE the engine is invoked"
+
+
+def test_the_height_refusal_fires_at_the_DOMAIN_EDGES_TOO(
+    tmp_path: Path, no_hsp: None, covered_zero: None, engine_wave: None, capsys
+) -> None:
+    """`H: 0.0` is a legal declaration -- `WAVE_HEIGHT`'s domain is inclusive -- and it
+    was accepted and exported at 24.2 m, which is a declaration of NO WAVE answered with
+    the design wave. The upper edge is the same shape from the other side."""
+    for height, name in (("0.0", "h0.yaml"), ("99.0", "h99.yaml")):
+        cfg = _cfg(tmp_path, [("H: 24.2,", f"H: {height},")], name=name)
+        assert cli.main(["export", str(cfg)]) == REFUSED
+        assert f"declares the wave height(s) [{float(height)}] m" in _refusal(capsys)
+
+
+def test_ONE_CASE_OUT_OF_SIX_with_a_wrong_height_is_refused_and_NAMED(
+    tmp_path: Path, no_hsp: None, covered_zero: None, engine_wave: None, capsys
+) -> None:
+    """The set, not the first element. A configuration where five cases agree and one
+    does not is the realistic typo, and a refusal naming only `[24.2]` or only the first
+    disagreement would send a reader to the wrong line."""
+    text = EXPORT_CFG.read_text(encoding="utf-8")
+    assert text.count("H: 24.2,") == 6, text.count("H: 24.2,")
+    at = EXPORT_CFG.parent / "tmp_one_of_six.yaml"
+    at.write_text(text.replace("H: 24.2,", "H: 11.0,", 1), encoding="utf-8")
+    _WROTE.append(at)
+    assert cli.main(["export", str(at)]) == REFUSED
+    assert "declares the wave height(s) [11.0] m full scale" in _refusal(capsys)
+
+
+def test_a_HEADING_THE_ENGINE_WILL_NOT_SOLVE_AT_is_refused_even_when_BOTH_CONFIG_KEYS_AGREE(
+    tmp_path: Path, no_hsp: None, engine_wave: None, monkeypatch: pytest.MonkeyPatch, capsys
+) -> None:
+    """The half that was unreachable only by accident.
+
+    `headings: [45]` with cases at 45 deg passes the two-key check AND the covered-set
+    check against a two-heading database, and the engine still solves at
+    `WAVE_HEADING_DEG = 0.0`. It is unreachable against the PINNED database because that
+    database carries one heading -- a property of the dataset, not of this code -- so the
+    covered set is substituted here with two headings to reach it.
+    """
+    monkeypatch.setattr(cli, "_covered_headings", lambda *a, **k: (0.0, 45.0))
+    spy = _Spy()
+    monkeypatch.setattr(cli.subprocess, "run", spy)
+    cfg = _cfg(
+        tmp_path,
+        [("heading: 0.0,", "heading: 45.0,"), ("headings: [0.0]", "headings: [45.0]")],
+        name="head45.yaml",
+    )
+    assert cli.main(["export", str(cfg)]) == REFUSED
+    message = _refusal(capsys)
+    assert "sits at [45.0] deg and the engine solves at 0.0 deg" in message
+    assert spy.calls == []
+
+
+def test_360_IS_THE_SAME_DIRECTION_AS_0_AND_PROCEEDS(
+    tmp_path: Path, no_hsp: None, engine_wave: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The weakening direction for the heading comparison (EH4).
+
+    `uncovered_headings` is reused rather than a third comparison written, so this asks
+    the same question `refuse_uncovered_headings` asks and gets R872's answer: `360`
+    names the direction `0` names. An exact comparison here would refuse a legal
+    declaration, which is the defect R872 was adopted for, one reader over.
+    """
+    monkeypatch.setattr(cli, "_covered_headings", lambda *a, **k: (0.0, 360.0))
+    spy = _Spy()
+    monkeypatch.setattr(cli.subprocess, "run", spy)
+    cfg = _cfg(
+        tmp_path,
+        [("heading: 0.0,", "heading: 360.0,"), ("headings: [0.0]", "headings: [360.0]")],
+        name="head360.yaml",
+    )
+    assert cli.main(["export", str(cfg)]) == 0
+    assert len(spy.calls) == 1
+
+
+def test_TWO_CASES_AT_ONE_PERIOD_are_refused_rather_than_SILENTLY_COLLAPSED(
+    tmp_path: Path,
+    no_hsp: None,
+    covered_zero: None,
+    engine_wave: None,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys,
+) -> None:
+    """A declared case that produces nothing and says nothing.
+
+    `periods` is a set over `period_s`, so seven declared cases became six `--period`
+    flags. The two refusals above close the two fields that could differ today, which is
+    why this is asserted rather than left to them: a third field on `WaveCase` would
+    reopen it, and the failure mode is a declaration that vanishes.
+    """
+    spy = _Spy()
+    monkeypatch.setattr(cli.subprocess, "run", spy)
+    text = EXPORT_CFG.read_text(encoding="utf-8")
+    anchor = "    - {heading: 0.0, H: 24.2, T: 20.0}"
+    assert text.count(anchor) == 1, text.count(anchor)
+    at = EXPORT_CFG.parent / "tmp_dup_period.yaml"
+    at.write_text(text.replace(anchor, f"{anchor}\n{anchor}"), encoding="utf-8")
+    _WROTE.append(at)
+    assert cli.main(["export", str(at)]) == REFUSED
+    message = _refusal(capsys)
+    assert "more than one case at the period(s) [20.0] s" in message
+    assert "would be dropped without a message" in message
+    assert spy.calls == []
+
+
+def test_the_design_wave_is_ASKED_OF_THE_ENGINE_and_not_carried_here(
+    no_hsp: None, covered_zero: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The query itself, with `_design_wave` NOT substituted.
+
+    The two constants live in HSP's worktree behind the locked interpreter, so the
+    command asks instead of carrying a copy -- the same decision `_covered_headings`
+    documents, and for the same reason: a copy is a second reader of one predicate.
+    `scripts/export_f4_dynamic_inputs.py:design_wave` is the single reader and the
+    provenance writer calls it too.
+    """
+
+    class _TwoCall:
+        def __init__(self) -> None:
+            self.argvs: list[list[str]] = []
+
+        def __call__(self, argv, **kw):  # type: ignore[no-untyped-def]
+            self.argvs.append(list(argv))
+            if "--design-wave" in argv:
+                import json as _json
+
+                return subprocess.CompletedProcess(
+                    argv, 0, stdout=_json.dumps(ENGINE_WAVE), stderr=""
+                )
+            return subprocess.CompletedProcess(argv, 0, stdout="", stderr="")
+
+    spy = _TwoCall()
+    monkeypatch.setattr(cli.subprocess, "run", spy)
+    assert cli.main(["export", str(EXPORT_CFG)]) == 0
+    assert any(
+        "--design-wave" in a for a in spy.argvs
+    ), "the command must ASK the engine for the sea state it solves at"
+    asked = next(a for a in spy.argvs if "--design-wave" in a)
+    assert asked[0] == str(
+        Path("/locked/python")
+    ), "GJ1: every FloatSim invocation uses the locked environment, this query included"
+    assert "--period" not in asked, "the query must not be threaded into the solve"
+
+
+def test_a_FAILING_design_wave_query_REFUSES_rather_than_exporting_unchecked(
+    no_hsp: None, covered_zero: None, monkeypatch: pytest.MonkeyPatch, capsys
+) -> None:
+    """The query is a subprocess and a subprocess can fail. A command that treated an
+    unreadable answer as "no check to make" would export at an unchecked height, which
+    is the state R1268 is about -- so the absence of an answer refuses, the same way an
+    unreadable covered set does."""
+    monkeypatch.setattr(
+        cli.subprocess,
+        "run",
+        lambda argv, **kw: subprocess.CompletedProcess(argv, 1, stdout="", stderr="boom"),
+    )
+    assert cli.main(["export", str(EXPORT_CFG)]) == REFUSED
+    message = _refusal(capsys)
+    assert "could not read the sea state the engine solves at" in message
+    assert "refuses rather than exporting at an unchecked wave height" in message
+
+
+def test_an_UNREADABLE_design_wave_ANSWER_refuses_and_shows_what_it_got(
+    no_hsp: None, covered_zero: None, monkeypatch: pytest.MonkeyPatch, capsys
+) -> None:
+    """Exit 0 with output this command cannot read is the other half, and it is the
+    shape R873/R874 are about on the recorded side: a reader that crashes out of the one
+    comparison it exists to make. Refused by name, with the output quoted."""
+    monkeypatch.setattr(
+        cli.subprocess,
+        "run",
+        lambda argv, **kw: subprocess.CompletedProcess(
+            argv, 0, stdout='{"heading_deg": 0.0}', stderr=""
+        ),
+    )
+    assert cli.main(["export", str(EXPORT_CFG)]) == REFUSED
+    message = _refusal(capsys)
+    assert "the design-wave query returned something this command cannot read" in message
+    assert "heading_deg" in message
+
+
+# ---------------------------------------------------------------------------
 # 4. What the engine is handed
 # ---------------------------------------------------------------------------
 
 
 def test_the_engine_gets_the_LOCKED_interpreter_and_one_period_per_declared_case(
-    no_hsp: None, covered_zero: None, monkeypatch: pytest.MonkeyPatch
+    no_hsp: None, covered_zero: None, engine_wave: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     spy = _Spy()
     monkeypatch.setattr(cli.subprocess, "run", spy)
@@ -248,7 +503,7 @@ def test_the_engine_gets_the_LOCKED_interpreter_and_one_period_per_declared_case
 
 
 def test_check_is_passed_through_and_the_exit_code_is_the_ENGINE_S(
-    no_hsp: None, covered_zero: None, monkeypatch: pytest.MonkeyPatch
+    no_hsp: None, covered_zero: None, engine_wave: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """A refusal inside the engine -- `--check` finding one array different -- must reach
     the caller's exit status. Swallowing it would make a failed bit-exactness comparison
@@ -289,7 +544,7 @@ def test_an_INHERITED_coretype_is_NOT_overridden(monkeypatch: pytest.MonkeyPatch
 
 
 def test_a_DECLARED_worktree_wins_over_the_environment_variable(
-    monkeypatch: pytest.MonkeyPatch, covered_zero: None
+    monkeypatch: pytest.MonkeyPatch, covered_zero: None, engine_wave: None
 ) -> None:
     """GI3(e): *"Make it a config key with an env-var fallback."*
 
@@ -349,7 +604,10 @@ def test_an_UNKNOWN_key_in_the_floatsim_block_is_still_refused(capsys) -> None:
 
 
 def test_the_RESOLVED_worktree_and_venv_REACH_THE_CHILD(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, covered_zero: None
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    covered_zero: None,
+    engine_wave: None,
 ) -> None:
     """A config key reaches the parent and nothing else unless it is passed down.
 
@@ -396,7 +654,7 @@ def test_the_RESOLVED_worktree_and_venv_REACH_THE_CHILD(
 
 
 def test_an_INHERITED_worktree_variable_is_OVERRIDDEN_by_the_resolved_one(
-    monkeypatch: pytest.MonkeyPatch, covered_zero: None
+    monkeypatch: pytest.MonkeyPatch, covered_zero: None, engine_wave: None
 ) -> None:
     """`setdefault` would be wrong here, and this is the inverted direction that says so.
 
@@ -415,7 +673,7 @@ def test_an_INHERITED_worktree_variable_is_OVERRIDDEN_by_the_resolved_one(
 
 
 def test_the_sweep_does_NOT_remove_a_tmp_FILE_THIS_FILE_DID_NOT_WRITE(
-    no_hsp: None, covered_zero: None, monkeypatch: pytest.MonkeyPatch
+    no_hsp: None, covered_zero: None, engine_wave: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """The inverted direction for the cleanup fixture, and it is the defect it was
     written after.

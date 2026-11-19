@@ -33,6 +33,7 @@ from floatfea.run.pipeline import (
     RunResult,
     recorded_height_keys,
     refuse_uncovered_headings,
+    uncovered_headings,
 )
 from floatfea.run.pipeline import run as run_pipeline
 from floatfea.run.sizing import (
@@ -1336,6 +1337,57 @@ def _covered_headings(
     return tuple(float(h) for h in got)
 
 
+def _design_wave(
+    repo_root: Path, env: dict[str, str], declared_venv: Path | None = None
+) -> dict[str, float]:
+    """Ask the engine which sea state it will actually solve at (R1268).
+
+    **THE COMMAND READ `T` OUT OF EACH DECLARED CASE AND NOTHING ELSE.** The declared
+    height was parsed and range-checked by the schema and then never read, and the
+    declared heading was compared only against the other config key and against the
+    dataset's covered set -- never against the constant the solve uses. A configuration
+    declaring `H: 40.0` produced a file at `24.2 m`, and every force and utilisation
+    published from it described a sea state smaller than the declaration, which is the
+    unconservative direction.
+
+    Asked rather than copied, for the reason `_covered_headings` gives: the two constants
+    live in HSP's worktree behind the locked interpreter, and a copy here would be a
+    second reader of one predicate -- R2 step 0's single recurring defect, five rounds of
+    it. `scripts/export_f4_dynamic_inputs.py:design_wave` is the one reader, and the
+    provenance writer calls it too, so what is refused against is what gets recorded.
+
+    Cheap, and before the solve: two module imports, no `.nc`, no FloatSim run.
+    """
+    out = subprocess.run(
+        [*_engine(repo_root, declared_venv), "--design-wave"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        cwd=repo_root,
+        check=False,
+    )
+    if out.returncode != 0:
+        raise ConfigError(
+            f"could not read the sea state the engine solves at (exit {out.returncode}). "
+            f"`export` refuses rather than exporting at an unchecked wave height."
+            f"\n{out.stdout.strip()}\n{out.stderr.strip()}"
+        )
+    try:
+        got = json.loads(out.stdout.strip().splitlines()[-1])
+        wave = {
+            "heading_deg": float(got["heading_deg"]),
+            "wave_height_full_m": float(got["wave_height_full_m"]),
+            "wave_height_model_m": float(got["wave_height_model_m"]),
+        }
+    except (ValueError, KeyError, IndexError, TypeError) as why:
+        raise ConfigError(
+            f"the design-wave query returned something this command cannot read "
+            f"({why}). Its output was:\n{out.stdout.strip()}"
+        ) from why
+    return wave
+
+
 def _cmd_export(args: argparse.Namespace) -> int:
     """FloatSim runs -> a dynamic-inputs npz, under GJ1's locked environment.
 
@@ -1429,6 +1481,90 @@ def _cmd_export(args: argparse.Namespace) -> int:
             f"{cfg.source.name}: load_cases.cases is empty, so there is nothing to "
             f"export. An empty case set is an error and not a skip."
         )
+
+    # **AND THE DECLARED SEA STATE MUST BE THE ONE THE ENGINE WILL SOLVE AT (R1268).**
+    # This command honoured `T` -- one `--period` per distinct declared period -- and
+    # discarded the other two fields of every case. `WaveCase` is documented as "One
+    # regular wave: heading, height, period. Full scale, SI." and the shipped
+    # configuration's own comment names all three as fields the block "has to agree
+    # with"; two were checked and the third had no reader anywhere. So a configuration
+    # declaring `H: 40.0` exported at the engine's `24.2 m` and said nothing, and the
+    # only trace was `run.wave_height_full_m` in the sidecar, for a reader to compare by
+    # hand against a file they wrote.
+    #
+    # The recorded basis of a dynamic-inputs file is four fields, and this closes the one
+    # that was protected nowhere: `pipeline.py:775` already refuses a declared
+    # `froude_lambda` that disagrees with the exported one, `:703` already refuses a
+    # declared heading the files do not record, and `wave_height_full_m` had a DOMAIN
+    # check and no comparison. On the run side that is defensible -- `cases` need not be
+    # declared beside `npz:`, so there may be no declared height -- which is exactly why
+    # the check belongs here, where the declaration exists and was being discarded.
+    wave = _design_wave(repo_root, env, venv)
+    engine_h = wave["wave_height_full_m"]
+    # EXACT, AND NO TOLERANCE IS NEEDED OR WANTED. The engine's height is
+    # `WAVE_HEIGHT_MODEL_M * LAMBDA` and `0.484 * 50.0 == 24.2` is True, so the shipped
+    # declaration and the engine's expression are the same double. A check that needed an
+    # epsilon here would be a factor introduced to make two numbers agree, which
+    # `CLAUDE.md` calls a fudge factor. `refuse_uncovered_headings` makes the same
+    # argument for the heading in its own words: "a heading is a declared input and not a
+    # measurement".
+    wrong = sorted({c.height_m for c in cfg.load_cases.cases if c.height_m != engine_h})
+    if wrong:
+        raise ConfigError(
+            f"{cfg.source.name}: load_cases.cases declares the wave height(s) {wrong} m "
+            f"full scale, and the engine solves at {engine_h} m "
+            f"({wave['wave_height_model_m']} m model scale). `export` cannot honour a "
+            f"declared height -- the sea state is a constant of the FloatSim study, not "
+            f"a parameter of this command -- so a case declaring any other value would "
+            f"produce a file labelled with the engine's height and read as the "
+            f"declaration's. Every force, stress and utilisation published from it would "
+            f"describe a sea state nobody asked for. Declare H: {engine_h} on every "
+            f"case, or change the study."
+        )
+
+    # **THE HEADING GETS THE SAME COMPARISON, AND NOT BECAUSE THE DATASET HAPPENS TO
+    # AGREE.** The two checks above it compare the config's two heading keys with each
+    # other and with the dataset's covered set; neither reaches the constant the solve
+    # uses. They coincide today only because the pinned BEM database carries one heading
+    # -- a property of the dataset, not of this code. `headings: [45.0]` with cases at
+    # 45 deg, against a two-heading database, passes both and still solves at 0 deg.
+    #
+    # `uncovered_headings` is reused rather than a third comparison being written here:
+    # it is the single reader of "do these two names denote one wave direction", and it
+    # answers modulo 360 because `360` names the direction `0` names (R872). Two readers
+    # of one predicate is the shape this step has paid for five times.
+    off = uncovered_headings(
+        tuple(sorted({c.heading_deg for c in cfg.load_cases.cases})),
+        (wave["heading_deg"],),
+    )
+    if off:
+        raise ConfigError(
+            f"{cfg.source.name}: load_cases.cases sits at {list(off)} deg and the engine "
+            f"solves at {wave['heading_deg']} deg. The heading is a constant of the "
+            f"FloatSim study here, so `export` would label the file with its own heading "
+            f"and publish an envelope for a direction nobody declared. This agrees with "
+            f"the covered-set check above it only while the BEM database carries one "
+            f"heading, which is a fact about the dataset and not about this command."
+        )
+
+    # **AND TWO CASES AT ONE PERIOD ARE NOT SILENTLY ONE CASE.** `periods` is a set over
+    # `period_s`, so seven declared cases differing only in a field this command does not
+    # pass through became six `--period` flags and one declared case produced nothing.
+    # The two refusals above close the two fields that could differ, so this is now
+    # unreachable through them -- which is exactly why it is asserted rather than left to
+    # them: a third field added to `WaveCase` would reopen it, and the failure mode is a
+    # declaration that vanishes without a message.
+    seen: dict[float, int] = {}
+    for case in cfg.load_cases.cases:
+        seen[case.period_s] = seen.get(case.period_s, 0) + 1
+    collapsed = sorted(p for p, n in seen.items() if n > 1)
+    if collapsed:
+        raise ConfigError(
+            f"{cfg.source.name}: load_cases.cases declares more than one case at the "
+            f"period(s) {collapsed} s. `export` solves once per distinct period, so the "
+            f"extra case(s) would be dropped without a message. Declare one case per "
+            f"period."
+        )
     out_dir = cfg.outputs.directory
     argv = [
         *_engine(repo_root, venv),
@@ -1456,6 +1592,14 @@ def _cmd_export(args: argparse.Namespace) -> int:
     )
     print(f"  locked env      {floatsim_env.interpreter(venv, require=True)}", flush=True)
     print(f"  heading         {asked} deg, covered by the BEM dataset", flush=True)
+    # R1268: the banner printed the worktree, the interpreter, the heading and the
+    # periods, and not the one field of the recorded basis that nothing checked. It is
+    # printed from the engine's own answer rather than from the configuration, so the
+    # line says what will be SOLVED rather than repeating what was asked.
+    print(
+        f"  wave height     {engine_h} m full ({wave['wave_height_model_m']} m model)",
+        flush=True,
+    )
     print(f"  periods (full)  {periods}", flush=True)
     print(f"  into            {out_dir}", flush=True)
     completed = subprocess.run(argv, env=env, cwd=repo_root, check=False)

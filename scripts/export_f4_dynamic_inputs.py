@@ -261,6 +261,36 @@ def sensitivity_note(prov_path: Path) -> str:
     )
 
 
+def design_wave() -> dict[str, float]:
+    """The sea state this engine ACTUALLY solves at, as the provenance records it.
+
+    **R1268: THE DECLARED WAVE HEIGHT WAS PARSED, RANGE-CHECKED AND NEVER READ.**
+    `floatfea export` honoured each case's `T` -- one `--period` per distinct declared
+    period -- and discarded its `H` and its heading, while the solve ran at the two
+    constants below. A configuration declaring `H: 40.0` produced a dynamic-inputs file
+    at `24.2 m`, every force and utilisation published from it described a sea state 39.5%
+    smaller than the one declared, and nothing refused. That is FR1's second head: an
+    input accepted and used other than as declared.
+
+    **THIS EXISTS SO THERE IS ONE READER AND NOT TWO.** The command cannot import these
+    constants -- they live in HSP's worktree, behind the locked interpreter -- so it has
+    to ask, the way it already asks for the covered headings. What it must not do is
+    carry a copy: R2 step 0's single recurring defect was one predicate with two readers
+    diverging (R1221, R1240, R1250, R1256, R1261, each needing the same repair twice).
+    So the provenance writer calls this function too, and `--design-wave` prints exactly
+    what the sidecar will record.
+    """
+    import g41_dynamic as g41
+    import report_joint_reactions as rjr
+
+    return {
+        "heading_deg": float(rjr.WAVE_HEADING_DEG),
+        "wave_height_model_m": float(rjr.WAVE_HEIGHT_MODEL_M),
+        "wave_height_full_m": float(rjr.WAVE_HEIGHT_MODEL_M) * float(g41.LAMBDA),
+        "lambda": float(g41.LAMBDA),
+    }
+
+
 def covered_headings() -> list[float]:
     """The wave headings the pinned BEM dataset actually carries, in degrees.
 
@@ -525,7 +555,12 @@ def export_case(period_full_s: float, dt: float) -> dict[str, Any]:
 
 def main(argv: list[str] | None = None) -> int:
     import g41_dynamic as g41
-    import report_joint_reactions as rjr
+
+    # `report_joint_reactions` was imported here and is now imported by `design_wave()`,
+    # which is the only reader of the two wave constants (R1268). It still reaches
+    # `sys.modules` before `_import_closure_shas()` runs -- `export_case` imports it for
+    # every case, and the provenance writer calls `design_wave()` -- so the recorded
+    # closure is unchanged.
 
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--period", type=float, action="append")
@@ -552,6 +587,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="print the BEM dataset's covered headings as JSON and exit (FL2(c))",
     )
+    ap.add_argument(
+        "--design-wave",
+        action="store_true",
+        help="print the sea state this engine solves at as JSON and exit (R1268)",
+    )
     args = ap.parse_args(argv)
 
     # **GJ1's PREFLIGHT, AND IT IS THE FIRST THING THIS COMMAND DOES.** Every FloatSim
@@ -577,15 +617,26 @@ def main(argv: list[str] | None = None) -> int:
             "read the BEM dataset's covered headings"
             if args.covered_headings
             else (
-                "regenerate and compare the dynamic inputs"
-                if args.check
-                else "export the dynamic inputs"
+                "read the design wave this engine solves at"
+                if args.design_wave
+                else (
+                    "regenerate and compare the dynamic inputs"
+                    if args.check
+                    else "export the dynamic inputs"
+                )
             )
         ),
     )
 
     if args.covered_headings:
         print(json.dumps({"heading_deg": covered_headings()}))
+        return 0
+
+    # **BEFORE THE SOLVE, LIKE THE HEADING QUERY AND FOR THE SAME REASON.** The refusal
+    # R1268 asks for has to fire before a 26-minute run, not after it, and the whole cost
+    # of this mode is two module imports.
+    if args.design_wave:
+        print(json.dumps(design_wave()))
         return 0
 
     out_dir = args.out if args.out is not None else OUT_DIR
@@ -814,9 +865,13 @@ def main(argv: list[str] | None = None) -> int:
             # READ FROM THE SOLVE'S OWN MODULE, not mirrored here (R726). A mirror is
             # the thing that diverges; `report_joint_reactions` is the one source and its
             # blob sha is in `import_closure` below, so an edit to either reddens.
-            "heading_deg": float(rjr.WAVE_HEADING_DEG),
-            "wave_height_model_m": float(rjr.WAVE_HEIGHT_MODEL_M),
-            "wave_height_full_m": float(rjr.WAVE_HEIGHT_MODEL_M) * float(g41.LAMBDA),
+            # **ONE READER (R1268).** These three were written out here as expressions
+            # over `rjr` and `g41`, and `floatfea export` had no way to ask what they
+            # were -- so it checked neither against the declaration it was handed.
+            # `design_wave()` is now the single expression; `--design-wave` prints it,
+            # the command refuses against it, and this records it. An edit to any of the
+            # three moves all three together.
+            **{k: v for k, v in design_wave().items() if k != "lambda"},
             "periods_full_s": [float(p) for p in periods],
             "dt": float(args.dt),
             "rho_inf": float(g41.RHO_INF),
