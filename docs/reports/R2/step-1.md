@@ -879,7 +879,7 @@ rule   FV1: the local selection is the modules the diff touches, `tests/unit`, t
        root guards, and any regression test reading a deliverable the diff regenerates;
        **the whole of `tests/regression` is CI's job at the pushed sha.** EG3 (i): every
        red traces by name. FS1/FT1: the predicate, per id.
-judge  **ELEVEN OF THE TWELVE ARE ONE CAUSE: THIS REVISION HAS NO CI SECTION YET.** The
+judge  **ELEVEN OF THE TWELVE ARE ONE CAUSE: THIS REVISION HAD NO CI SECTION YET.** The
        seven `test_the_guard_survives_the_state` cases each plant a state, run the report
        guards inside it, and assert the guards do not ALL fail -- and the inner failure
        printed in all seven is the same line:
@@ -902,6 +902,44 @@ judge  **ELEVEN OF THE TWELVE ARE ONE CAUSE: THIS REVISION HAS NO CI SECTION YET
        `test_the_npz_is_NOT_STALE_against_the_code_that_generated_it`, which is §1's
        escalation. It clears when §1 is ruled and not before. It is **not** a boundary
        red and is not claimed as one.
+```
+
+**RE-MEASURED AFTER THE CI SECTION LANDED, WHICH IS EG3 (ii)'s OWED HALF TAKEN EARLY.**
+The list above was taken at `44597ae`, before the CI section existed. At `4db742d`, with
+it committed:
+
+```
+claim  the red set once the CI section exists
+cmd    pytest tests/test_report_guard_states.py tests/test_report_carried.py
+              tests/verification/rung4/test_f4_g41_dynamic.py -q -p no:randomly
+       pytest "tests/test_report_guard_states.py::
+               test_the_guard_survives_the_state[baseline]" -q   # for its inner message
+out    tests/test_report_carried.py                   1 failed, 563 passed
+         the one is test_the_guard_reads_the_step_being_worked_on
+       tests/test_report_guard_states.py              7 failed  (the same seven)
+       tests/verification/rung4/...                   1 failed, 115 passed
+       and the INNER failure inside the baseline planted state is now ONE line:
+         "step 1 has a report and no verdict yet. That is the legitimate boundary --
+          the verdict is written after the report is committed -- and until it lands
+          this guard checks step 1, so step 1's carry list is UNCHECKED. Invoke the
+          gating-supervisor."
+rule   EG3 (i): each `FAILED` id is tested against the predicate individually, never by
+       family -- eight planted states were once ruled as one cascade and the eighth was
+       a real defect (R629).
+judge  **THE ELEVEN CI REDS ARE GONE AND THE EIGHT THAT REMAIN ARE ONE CAUSE: NO VERDICT
+       EXISTS YET.** The seven planted states each build a tree and run the report guards
+       inside it, and the inner failure each one now reports is that single line -- not
+       the CI line it reported before. So they are not seven independent reds and they are
+       not being ruled as a family: each was run and each printed the SAME boundary
+       message, which is what makes them one cause by measurement rather than by class.
+       **And the CI section being committed is what moved them**, which is also the proof
+       that they were the CI absence before: the planted trees are built from the
+       COMMITTED tree, so they saw a report without the section until `4db742d` existed.
+       Running them against the uncommitted edit left all seven red, and that is why this
+       block is dated at a commit rather than at an edit.
+       **THE NINTH RED IS NOT IN THAT SET AND DOES NOT CLEAR AT THE VERDICT**:
+       `test_the_npz_is_NOT_STALE_against_the_code_that_generated_it`, which is §1's
+       escalation. It clears when §1 is ruled.
 ```
 
 **The one thing this section cannot do at this commit, stated rather than left implied.**
